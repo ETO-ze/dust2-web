@@ -1,0 +1,60 @@
+{
+  "capturedOn": "2026-09-08",
+  "note": "Original browser screenshots copied without image editing. Source paths refer to local QA evidence and are not required to render the documentation.",
+  "files": [
+    {
+      "file": "dust2-awp-gameplay.png",
+      "source": "output/playwright/awp-dragon-live.png",
+      "sha256": "ecdc8ab1bca7f3caf7a0d3ed390bd6b100a355ebbf69d2659ee9387e84e713f6",
+      "bytes": 3874002,
+      "width": 2560,
+      "height": 1273,
+      "modified": false
+    },
+    {
+      "file": "server-confirmed-kill.png",
+      "source": "output/playwright/upgrade-confirmed-kill.png",
+      "sha256": "25764f5765432c412660ff1bae172b5506dd4fea202cc48864ba8678bce31afd",
+      "bytes": 1804844,
+      "width": 1440,
+      "height": 900,
+      "modified": false
+    },
+    {
+      "file": "buy-menu.png",
+      "source": "output/playwright/public-cs-shop.png",
+      "sha256": "cdc531bf634c72c476621a44ace165b2d68a5e895aafc1ae24ce8270d8b6f74e",
+      "bytes": 692439,
+      "width": 2560,
+      "height": 1273,
+      "modified": false
+    },
+    {
+      "file": "skin-inventory.png",
+      "source": "output/playwright/skin-menu-integrated.png",
+      "sha256": "a43cf7ad648f8a0dead8a46ba2fabcb5a552f6e4847211b796908f58e61119a6",
+      "bytes": 558171,
+      "width": 2560,
+      "height": 1273,
+      "modified": false
+    },
+    {
+      "file": "local-assets-cache.png",
+      "source": "output/playwright/local-cache-complete.png",
+      "sha256": "1f69b20b0e1e9f9edc9805e62127b5b67b6097cdc2df612dbd305d5b7f4c6382",
+      "bytes": 436527,
+      "width": 2560,
+      "height": 1273,
+      "modified": false
+    },
+    {
+      "file": "loading-screen.png",
+      "source": "output/playwright/upgrade-public-loading.png",
+      "sha256": "9b81a8a7ea3dc0472b191f1921437eb3ce33669c3bd10796fcaf0dd10e32fdde",
+      "bytes": 1248878,
+      "width": 1440,
+      "height": 900,
+      "modified": false
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+[Unit]
+Description=Dust II Web multiplayer server
+After=network.target
+
+[Service]
+Type=simple
+User=dust2-web
+Group=dust2-web
+WorkingDirectory=/opt/dust2-web/current
+ExecStart=/opt/dust2-runtime/current/bin/node server/index.js
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3005
+Environment=MAX_ROOMS=4
+Environment=NODE_OPTIONS=--max-old-space-size=384
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+MemoryMax=600M
+CPUQuota=130%
+TasksMax=64
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,26 @@
+{
+  "name": "dust2-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dust2 inspired personal browser FPS with authoritative multiplayer and bots",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5178 --strictPort",
+    "build": "node scripts/build-asset-manifest.mjs && vite build",
+    "start": "node server/index.js",
+    "test": "node --test tests/*.mjs",
+    "assets:fetch": "node scripts/fetch-assets.mjs",
+    "assets:check": "node scripts/fetch-assets.mjs --check"
+  },
+  "dependencies": {
+    "three": "0.185.1",
+    "three-mesh-bvh": "0.9.14",
+    "ws": "8.21.3"
+  },
+  "devDependencies": {
+    "vite": "8.2.2"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

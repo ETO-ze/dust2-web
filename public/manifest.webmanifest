@@ -1,0 +1,10 @@
+{
+  "id":"./","name":"DuskRain · Dust II 网页对战","short_name":"Dust II",
+  "description":"Dust II 网页对战；保存基础资源后可离线打开大厅，多人对战需要联网。",
+  "start_url":"./","scope":"./","display":"standalone","orientation":"landscape",
+  "background_color":"#111715","theme_color":"#111715","lang":"zh-CN",
+  "icons":[
+    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"}
+  ]
+}

@@ -1,0 +1,12 @@
+Quaternius - Ultimate Modular Men Pack, February 2022
+Author: Quaternius
+Source: https://quaternius.com/packs/ultimatemodularcharacters.html
+License: Creative Commons Zero (CC0 1.0 Universal)
+License deed: https://creativecommons.org/publicdomain/zero/1.0/
+Author's license page: https://quaternius.com/license.html
+
+The original asset page explicitly marks this pack CC0 and permits personal
+and commercial projects. Swat.gltf and Casual_Hoodie.gltf were downloaded
+from the Google Drive folder directly linked by that page on 2026-09-08.
+This file records source/license evidence; it is not a replacement license.
+GLB copies only repack existing bytes and preserve original content.

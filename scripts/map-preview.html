@@ -1,0 +1,13 @@
+<!doctype html><html><head><base href="/"><meta charset="utf-8"><title>Dust II map visual audit</title><style>body{margin:0;background:#bdd7e0}#state{position:fixed;top:15px;left:15px;background:#172734df;color:white;padding:12px;font:14px system-ui}button{padding:8px;margin:4px}</style></head><body><div id="state">Loading map…</div><script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {createMapScene,MAP} from '../client/map-scene.js';
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();const camera=new THREE.PerspectiveCamera(74,innerWidth/innerHeight,.05,400);const controls=new OrbitControls(camera,renderer.domElement);
+const state=document.querySelector('#state');await createMapScene(scene,{onProgress:t=>state.textContent=t});
+const views={T:[[-18.7,4.7,23.2],[0,4.7,23.2]],A:[[30,4.3,-66.7],[8,2,-53]],B:[[-39,1.9,-67],[-40,1.7,-51]],MID:[[-10,-1.3,-40],[-8,-1.3,-50]],OVERVIEW:[[82,85,80],[-5,0,-25]]};
+function view(name){camera.position.fromArray(views[name][0]);controls.target.fromArray(views[name][1]);controls.update();}
+view(new URLSearchParams(location.search).get('view')||'T');state.innerHTML=Object.keys(views).map(n=>`<button>${n}</button>`).join('')+'<div id=stats></div>';state.querySelectorAll('button').forEach(b=>b.onclick=()=>view(b.textContent));
+window.mapPreview={scene,camera,controls,renderer,MAP};let frames=0,lastTime=performance.now(),renderMs=0,lastFrame=performance.now(),frameMs=0;renderer.setAnimationLoop(()=>{controls.update();const startRender=performance.now();renderer.render(scene,camera);renderMs=performance.now()-startRender;frames++;const now=performance.now();frameMs=now-lastFrame;lastFrame=now;if(now-lastTime>1000){document.querySelector('#stats').textContent=`${Math.round(frames*1000/(now-lastTime))} FPS | ${renderer.info.render.calls} draw calls | ${(renderer.info.render.triangles/1000000).toFixed(2)}M tris | ${renderer.info.memory.textures} textures | ${renderer.info.programs.length} programs | render ${renderMs.toFixed(1)} ms | RAF ${frameMs.toFixed(1)} ms | ${document.visibilityState}`;frames=0;lastTime=now;}});
+onresize=()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();};
+</script></body></html>
