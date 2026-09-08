@@ -88,7 +88,7 @@ export class GameAudio {
     } else source.connect(gain);
     gain.connect(panner); panner.connect(this.mix);
     const voice = { source, nodes, channel }; this.voices.add(voice);
-    source.onended = () => { this.voices.delete(voice); for (const node of nodes) node.disconnect(); };
+    source.onended = () => this.releaseVoice(voice);
     source.start(c.currentTime + Math.max(0, delay));
     return voice;
   }
@@ -144,7 +144,18 @@ export class GameAudio {
   }
 
   reload(id = this.lastWeapon, options = {}) { this.weaponReload(id, options); }
-  stopVoice(voice) { if (!voice) return; try { voice.source.stop(); } catch { /* Already ended. */ } this.voices.delete(voice); }
+  releaseVoice(voice) {
+    if (!voice || voice.released) return;
+    voice.released = true;this.voices.delete(voice);voice.source.onended = null;
+    for (const node of voice.nodes) node.disconnect();
+  }
+  stopVoice(voice) {
+    if (!voice || voice.released) return;
+    try { voice.source.stop(); } catch { /* Already ended. */ }
+    // Suspended AudioContexts may defer onended until they resume. Disconnect
+    // cancelled voices now, so leaving/reloading cannot retain their graphs.
+    this.releaseVoice(voice);
+  }
   cancelReload() { for (const voice of [...this.voices]) if (voice.channel === 'reload' || voice.channel === 'bolt') this.stopVoice(voice); }
   stopAll() { for (const voice of [...this.voices]) this.stopVoice(voice); this.lastHitAt = this.lastKillAt = -Infinity; }
 
@@ -156,11 +167,12 @@ export class GameAudio {
   // Kept for legacy menu/round notifications only; guns, impacts, kills and reloads use samples.
   beep(hz = 900, duration = 0.06, volume = 0.1) {
     if (!this.ready) return;
+    if (this.voices.size >= 64) this.stopVoice(this.voices.values().next().value);
     const c = this.ctx, t = c.currentTime, source = c.createOscillator(), gain = c.createGain();
     source.frequency.value = clamp(hz, 40, 12000); gain.gain.setValueAtTime(clamp(volume, 0.001, 0.3), t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + Math.max(0.01, duration)); source.connect(gain); gain.connect(this.mix);
     const voice = { source, nodes: [source, gain], channel: 'ui' }; this.voices.add(voice);
-    source.onended = () => { this.voices.delete(voice); source.disconnect(); gain.disconnect(); };
+    source.onended = () => this.releaseVoice(voice);
     source.start(t); source.stop(t + Math.max(0.01, duration));
   }
 }

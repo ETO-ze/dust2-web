@@ -55,6 +55,24 @@
       "width": 1440,
       "height": 900,
       "modified": false
+    },
+    {
+      "file": "death-screen.png",
+      "source": "output/playwright/death-screen-qa.png",
+      "sha256": "0bab6198581ce917a5e54498d2ea4a3c3ea9578ff00748e10a9023a171ccadbe",
+      "bytes": 3528965,
+      "width": 2560,
+      "height": 1273,
+      "modified": false
+    },
+    {
+      "file": "teammate-spectating.png",
+      "source": "output/playwright/spectator-screen-qa.png",
+      "sha256": "e3fea156c39c072c3eaf1e1d3c34f12a060340a410e39fa4d3add66b38d9bb50",
+      "bytes": 3325074,
+      "width": 2560,
+      "height": 1273,
+      "modified": false
     }
   ]
 }

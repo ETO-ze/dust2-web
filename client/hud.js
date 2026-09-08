@@ -1,5 +1,7 @@
 import { MAP } from '../shared/map-data.js';
 import { getWeapon } from '../shared/weapons.js';
+import { DeathScreen } from './death-screen.js';
+import './death-screen.css';
 
 const TEAM_COLORS = { CT: '#79bde2', T: '#dfbd76' };
 const LOCATION_NAMES = {
@@ -36,6 +38,7 @@ export class HUD {
     this.seenEvents = new Set();
     this.feed = [];
     this.myId = null;
+    this.deathScreen = new DeathScreen(document.getElementById('hud'));
     this.snapshotTime = null;
     this.receivedAt = now();
     this.lastRadar = -Infinity;
@@ -57,7 +60,7 @@ export class HUD {
     if (element && element.textContent !== content) element.textContent = content;
   }
 
-  update(snapshot, self, { ping = 0, fps = 0 } = {}) {
+  update(snapshot, self, { ping = 0, fps = 0, spectating = null, scoreboardKey = 'Tab', menuKey = 'Esc', nextSpectatorKey = '左键', previousSpectatorKey = '右键' } = {}) {
     if (!snapshot || !self) return;
     const time = now();
     if (this.snapshotTime !== snapshot.time || this.lastSnapshot?.room !== snapshot.room) {
@@ -74,6 +77,7 @@ export class HUD {
     this.lastSelf = self;
     this.myId = self.id;
     const elapsed = Math.max(0, (time - this.receivedAt) / 1000);
+    this.deathScreen.update(snapshot, self, { elapsed, spectating, scoreboardKey, menuKey, nextSpectatorKey, previousSpectatorKey });
     const round = snapshot.round || {};
     const bomb = snapshot.bomb || {};
     const mode = snapshot.mode === 'defuse' ? 'defuse' : 'deathmatch';
@@ -124,9 +128,6 @@ export class HUD {
       subtitle = `${round.reason || ''}${round.reason ? ' · ' : ''}${Math.ceil(roundLeft)} 秒后下一回合`;
     } else if (mode === 'defuse' && round.phase === 'waiting') {
       title = '等待交战双方'; subtitle = '邀请朋友加入，或添加机器人开始对局';
-    } else if (!self.alive) {
-      title = '你已阵亡';
-      subtitle = mode === 'deathmatch' ? `${Math.ceil(Math.max(0, number(self.respawnIn) - elapsed))} 秒后重生 · Tab 查看战况` : '等待下一回合 · Tab 查看战况';
     } else if (round.phase === 'freeze') {
       title = `回合 ${number(round.number, 1)}`;
       subtitle = `${Math.ceil(roundLeft)} 秒后出发 · B 购买装备${self.hasBomb ? ' · 你携带炸弹' : ''}`;
@@ -251,6 +252,7 @@ export class HUD {
       this.seenEvents.add(event.id);
       if (this.seenEvents.size > 512) this.seenEvents.delete(this.seenEvents.values().next().value);
     }
+    this.deathScreen.event(event, snapshot, myId);
     const players = snapshot?.players || [];
     const me = players.find(player => player.id === myId) || this.lastSelf;
     const find = id => players.find(player => player.id === id);
@@ -312,6 +314,7 @@ export class HUD {
   }
 
   reset() {
+    this.deathScreen.reset();
     this.seenEvents.clear(); this.revealed.clear(); this.combo = 0; this.lastKillAt = -Infinity;
     for (const entry of this.feed) { clearTimeout(entry.timer); entry.node.remove(); }
     this.feed = []; this.lastSnapshot = null; this.snapshotTime = null;

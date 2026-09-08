@@ -186,6 +186,7 @@ export class GameRoom {
   buy(id, rawWeapon) {
     const p = this.players.get(id);
     if (!p?.alive) return { ok: false, message: '存活时才可以购买。' };
+    if (typeof rawWeapon !== 'string') return { ok: false, message: '无效的购买物品。' };
     const availability=this.buyStatus(p);if(!availability.buyAllowed)return {ok:false,message:availability.buyReason};
     const weapon = normalizeWeapon(rawWeapon);
     if (weapon !== 'armor' && (!WEAPONS[weapon] || WEAPONS[weapon].slot !== 1)) return { ok: false, message: '无效的购买物品。' };

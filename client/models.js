@@ -4,6 +4,7 @@ import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { loadViewModels } from './viewmodel.js';
 import { DEFAULT_SKINS, getSkin } from '../shared/skins.js';
 import { registerDefaultSkin, loadedSkin, requestSkin } from './skin-assets.js';
+import { disposeInstanceAnimation, disposeInstanceSkeletons } from './resource-lifecycle.js';
 export { ViewWeapon } from './viewmodel.js';
 
 const loader=new GLTFLoader();
@@ -23,11 +24,11 @@ function box(w,h,d,color){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new
 
 export class PlayerModel{
   constructor(team,scene){
-    this.group=new THREE.Group();this.team=team;scene.add(this.group);this.current='';this.dead=false;
+    this.group=new THREE.Group();this.team=team;scene.add(this.group);this.current='';this.dead=false;this.ownedResources=new Set();this.disposed=false;
     const source=library[team==='CT'?'swat':'hoodie'];
     if(source){this.model=clone(source.scene);this.model.rotation.y=Math.PI;this.group.add(this.model);this.mixer=new THREE.AnimationMixer(this.model);this.actions={};source.animations.forEach(a=>this.actions[a.name]=this.mixer.clipAction(a));this.model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}if(/pistol/i.test(o.name))o.visible=false;});this.animate('Idle_Gun_Pointing');}
-    else{this.model=new THREE.Group();this.group.add(this.model);const torso=box(.55,.7,.33,team==='CT'?0x3c5662:0x967746);torso.position.y=1.04;this.model.add(torso);const head=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),new THREE.MeshStandardMaterial({color:0xa78b70}));head.position.y=1.61;this.model.add(head);for(const x of [-.15,.15]){const leg=box(.2,.7,.2,0x344036);leg.position.set(x,.35,0);this.model.add(leg);}}
-    const ring=new THREE.Mesh(new THREE.RingGeometry(.32,.37,24),new THREE.MeshBasicMaterial({color:team==='CT'?0x82bac9:0xdcbf77,side:THREE.DoubleSide,transparent:true,opacity:.45,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.025;this.group.add(ring);this.ring=ring;
+    else{this.model=new THREE.Group();this.group.add(this.model);const torso=box(.55,.7,.33,team==='CT'?0x3c5662:0x967746);torso.position.y=1.04;this.model.add(torso);const head=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),new THREE.MeshStandardMaterial({color:0xa78b70}));head.position.y=1.61;this.model.add(head);for(const x of [-.15,.15]){const leg=box(.2,.7,.2,0x344036);leg.position.set(x,.35,0);this.model.add(leg);}this.model.traverse(o=>{if(o.isMesh){this.ownedResources.add(o.geometry);for(const material of [].concat(o.material))this.ownedResources.add(material);}});}
+    const ring=new THREE.Mesh(new THREE.RingGeometry(.32,.37,24),new THREE.MeshBasicMaterial({color:team==='CT'?0x82bac9:0xdcbf77,side:THREE.DoubleSide,transparent:true,opacity:.45,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.025;this.group.add(ring);this.ring=ring;this.ownedResources.add(ring.geometry);this.ownedResources.add(ring.material);
     this.gun=new THREE.Group();this.group.add(this.gun);this.weaponCache=new Map();this.weaponId='';
     this.arms={};const bones=new Map();this.model.traverse(o=>{if(o.isBone){const name=o.name.replace(/[^a-z0-9]/gi,'').toLowerCase();bones.set(name,o);for(const side of ['L','R'])for(const key of ['UpperArm','LowerArm','Wrist'])if(name===(key+side).toLowerCase()){this.arms[side]??={};this.arms[side][key]=o;}}});
     this.supportFingers=[];for(const [name,bone] of bones){if(/^(index|middle|ring|pinky|thumb)\dr$/.test(name)){const left=bones.get(name.slice(0,-1)+'l');if(left)this.supportFingers.push([left,bone]);}}
@@ -90,11 +91,25 @@ export class PlayerModel{
     this.model.scale.y=THREE.MathUtils.lerp(this.model.scale.y,p.crouch?.66:1,Math.min(1,dt*16));
     this.ring.visible=p.alive;this.updateWeapon(p);
   }
-  dispose(scene){scene.remove(this.group);this.mixer?.stopAllAction();for(const item of this.weaponCache.values())for(const resource of item.resources)resource.dispose();}
+  dispose(){
+    if(this.disposed)return;this.disposed=true;this.group.removeFromParent();
+    disposeInstanceAnimation(this.mixer,this.model);
+    const skeletons=disposeInstanceSkeletons(this.model);
+    for(const item of this.weaponCache.values()){
+      disposeInstanceSkeletons(item.visual,skeletons);
+      for(const resource of item.resources)resource.dispose();
+      item.visual.removeFromParent();
+    }
+    for(const resource of this.ownedResources)resource.dispose();
+    this.ownedResources.clear();this.weaponCache.clear();this.group.clear();this.gun.clear();
+    this.actions={};this.arms={};this.supportFingers=[];this.weaponSpec=null;this.mixer=null;
+  }
 }
 
 export class Effects{
   constructor(scene){this.scene=scene;this.items=[];this.impactGeo=new THREE.SphereGeometry(.018,5,4);}
   shot(origin,end,own=false){const a=new THREE.Vector3(origin.x,origin.y,origin.z),b=new THREE.Vector3(end.x,end.y,end.z);const delta=b.clone().sub(a);if(own)a.addScaledVector(delta.clone().normalize(),.6);const geom=new THREE.BufferGeometry().setFromPoints([a,b]);const material=new THREE.LineBasicMaterial({color:0xffdfa1,transparent:true,opacity:.38});const line=new THREE.Line(geom,material);this.scene.add(line);this.items.push({obj:line,life:.07,max:.07,dispose:true});const hit=new THREE.Mesh(this.impactGeo,new THREE.MeshBasicMaterial({color:0xffd39a}));hit.position.copy(b);this.scene.add(hit);this.items.push({obj:hit,life:.16,max:.16,dispose:false});}
   update(dt){for(let i=this.items.length-1;i>=0;i--){const e=this.items[i];e.life-=dt;if(e.life<=0){this.scene.remove(e.obj);if(e.dispose)e.obj.geometry.dispose();e.obj.material.dispose();this.items.splice(i,1);}else if(e.obj.material.transparent)e.obj.material.opacity=.4*e.life/e.max;}}
+  clear(){for(const e of this.items){e.obj.removeFromParent();if(e.dispose)e.obj.geometry.dispose();e.obj.material.dispose();}this.items.length=0;}
+  dispose(){this.clear();this.impactGeo.dispose();}
 }

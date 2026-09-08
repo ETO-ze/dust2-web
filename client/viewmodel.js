@@ -4,6 +4,7 @@ import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { WEAPONS } from '../shared/weapons.js';
 import { DEFAULT_SKINS, getSkin } from '../shared/skins.js';
 import { loadedSkin, requestSkin } from './skin-assets.js';
+import { disposeInstanceAnimation, disposeInstanceSkeletons } from './resource-lifecycle.js';
 
 const loader = new GLTFLoader();
 let armSource, animationSource;
@@ -180,7 +181,14 @@ export class ViewWeapon {
 
   dispose() {
     this.camera.remove(this.group);
-    for(const item of this.cache.values()){item.mixer.stopAllAction();item.flash.geometry.dispose();item.flash.material.dispose();}
+    const skeletons=new Set();
+    for(const item of this.cache.values()){
+      disposeInstanceAnimation(item.mixer,item.root);
+      disposeInstanceSkeletons(item.root,skeletons);
+      item.flash.geometry.dispose();item.flash.material.dispose();
+      item.root.removeFromParent();
+    }
     this.cache.clear();
+    this.group.clear();this.rig.clear();this.active=null;
   }
 }

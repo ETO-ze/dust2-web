@@ -30,8 +30,11 @@ function send(socket, value) {
 function error(socket, code, message) { send(socket, { type: 'error', code, message }); }
 
 function joinSettings(msg) {
-  const name = String(msg.name || 'Player').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 20) || 'Player';
-  const room = String(msg.room || '').trim().toUpperCase();
+  // JSON objects can override toString/valueOf; do not coerce protocol fields.
+  if (msg.name !== undefined && typeof msg.name !== 'string') return { error: '玩家名称必须是文字。' };
+  if (msg.room !== undefined && typeof msg.room !== 'string') return { error: '房间码必须是文字。' };
+  const name = (msg.name || 'Player').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 20) || 'Player';
+  const room = (msg.room || '').trim().toUpperCase();
   if (room && !/^[A-Z0-9]{4,12}$/.test(room)) return { error: '房间码应为 4–12 位英文字母或数字。' };
   const mode = msg.mode === 'defuse' ? 'defuse' : 'deathmatch';
   const team = ['T', 'CT'].includes(msg.team) ? msg.team : 'auto';
@@ -60,28 +63,30 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       res.end(JSON.stringify({ ok: true, service: 'dust2-web', release: process.env.DUST2_RELEASE || 'local', protocol: 1, tickRate: TICK_RATE, uptime: Math.round((Date.now() - startedAt) / 1000), rooms: rooms.size, humans: [...rooms.values()].reduce((n, r) => n + r.humanCount, 0), players: [...rooms.values()].reduce((n, r) => n + r.players.size, 0), memory: { rssMiB: Math.round(memory.rss / 1048576), heapMiB: Math.round(memory.heapUsed / 1048576) } })); return;
     }
     if (requestPath.includes('\0') || requestPath.includes('\\')) { res.writeHead(400); res.end('Bad path'); return; }
-    let found = null;
+    let found = null, info = null;
     for (const directory of [staticDir, publicDir]) {
       const base = path.resolve(directory), candidate = path.resolve(base, `.${requestPath === '/' ? '/index.html' : requestPath}`);
       if (!candidate.startsWith(base + path.sep)) continue;
-      try { if ((await stat(candidate)).isFile()) { found = candidate; break; } } catch { /* Try the next permitted static root. */ }
+      try { const candidateInfo = await stat(candidate); if (candidateInfo.isFile()) { found = candidate; info = candidateInfo; break; } } catch { /* Try the next permitted static root. */ }
     }
     if (!found && !path.extname(requestPath) && !requestPath.startsWith('/assets')) {
       const index = path.join(staticDir, 'index.html');
-      try { if ((await stat(index)).isFile()) found = index; } catch { /* The frontend has not been built yet. */ }
+      try { const candidateInfo = await stat(index); if (candidateInfo.isFile()) { found = index; info = candidateInfo; } } catch { /* The frontend has not been built yet. */ }
     }
     if (!found) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('文件不存在。请先运行 npm run build，然后打开游戏首页。'); return; }
-    const info = await stat(found);
+    // Reuse the lookup's metadata. A second awaited stat could reject outside
+    // the lookup's catch if an asset is replaced/deleted during deployment.
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(found).toLowerCase()] || 'application/octet-stream', 'Content-Length': info.size, 'Cache-Control': path.extname(found) === '.html' ? 'no-cache' : 'public, max-age=3600' });
     if (req.method === 'HEAD') res.end(); else { const stream = createReadStream(found); stream.on('error', () => res.destroy()); stream.pipe(res); }
   });
   const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 4096, perMessageDeflate: false });
   wss.on('connection', socket => {
+    // Rejected connections can still receive invalid frames while closing.
+    socket.on('error', () => {});
     if (wss.clients.size > maxRooms * 10 + 20) { socket.close(1013, 'Server busy'); return; }
     socket.isAlive = true; socket.playerId = null; socket.roomCode = null;
     socket.tokens = 150; socket.tokensAt = Date.now(); socket.strikes = 0; socket.connectedAt = Date.now(); socket.buyAt = 0;
     socket.on('pong', () => { socket.isAlive = true; });
-    socket.on('error', () => {});
     socket.on('message', (data, binary) => {
       const now = Date.now();
       socket.tokens = Math.min(150, socket.tokens + (now - socket.tokensAt) * 0.09); socket.tokensAt = now;
