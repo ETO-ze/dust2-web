@@ -144,7 +144,11 @@ for(const spec of specs){
   async function material(index){
     if(materialMap.has(index))return materialMap.get(index);const original=doc.materials[index];
     let m;
-    if(original.name==='shared_scope'){
+    if(original.name==='shared_scope_lens'){
+      // A lens is not a paintable gun surface. Applying the body UV atlas here
+      // made SG 553 sights opaque and covered their center with a colored mosaic.
+      m={name:original.name,pbrMetallicRoughness:{baseColorFactor:[.86,.94,.98,.035],metallicFactor:0,roughnessFactor:.08},alphaMode:'BLEND',doubleSided:true,extras:{sourceMaterial:original.name,materialFidelity:'Original scope-lens geometry; transparent web glass approximation without Source2 refraction.'}};
+    }else if(original.name==='shared_scope'){
       m=structuredClone(original);delete m.extras;
       for(const ref of [m.pbrMetallicRoughness?.baseColorTexture,m.pbrMetallicRoughness?.metallicRoughnessTexture,m.normalTexture,m.occlusionTexture].filter(Boolean))ref.index=await texture(originalTexture(ref));
     }else{

@@ -1,6 +1,33 @@
 /** Disposable local QA fixture. Control port is loopback-only, never deployed. */
 import { createServer } from 'node:http';
 import { startGameServer } from '../server/index.js';
+import {MAP} from '../shared/map-data.js';
+import {raycastWorld} from '../shared/physics.js';
+import {eyePosition} from '../shared/aim.js';
+import {getWeapon} from '../shared/weapons.js';
+let aimLane;
+function setupAimLane(room,weapon){
+ if(!aimLane){
+  const nodes=MAP.nav.filter(n=>n.neighbors?.length>=3);
+  outer:for(const a of nodes)for(const b of nodes){const dx=b.x-a.x,dz=b.z-a.z,d=Math.hypot(dx,dz);if(d<25||d>40||Math.abs(a.y-b.y)>.1)continue;
+   const direction={x:dx/d,y:0,z:dz/d};if(raycastWorld({x:a.x,y:a.y+1.62,z:a.z},direction,d)!==null)continue;
+   aimLane={a,b,d,yaw:Math.atan2(-dx,-dz)};break outer;
+  }
+  if(!aimLane)throw Error('No unobstructed scope QA lane');
+ }
+ const human=[...room.players.values()].find(p=>!p.bot),team=weapon==='sg553'?'T':'CT';
+ room.mode='deathmatch';room.match.status='live';room.round.phase='live';room.round.number++;
+ room.setBots(human.id,9);room.botInput=p=>({...p.input,forward:0,right:0,fire:false,jump:false,interact:false});
+ const target=[...room.players.values()].find(p=>p.bot),{a,b,d,yaw}=aimLane;
+ for(const p of room.players.values()){room.respawn(p);p.protectionUntil=0;p.nextShotAt=0;}
+ Object.assign(human,{x:a.x,y:a.y,z:a.z,vx:0,vy:0,vz:0,yaw,pitch:0,team,teamId:room.teamForSide(team),agentId:human.agents[team],grounded:true,zoomLevel:0,fireQueue:[],triggerWasDown:false,nextShotAt:0});
+ for(const id of Object.keys(human.inventory))if(getWeapon(id).slot===1)delete human.inventory[id];
+ room.giveWeapon(human,weapon);room.selectSlot(human,1);human.weapon=weapon;human.slot=1;human.nextShotAt=0;
+ Object.assign(target,{x:b.x,y:b.y,z:b.z,vx:0,vy:0,vz:0,yaw:yaw+Math.PI,pitch:0,team:team==='CT'?'T':'CT',teamId:room.teamForSide(team==='CT'?'T':'CT'),health:100,armor:0,helmet:false,grounded:true,name:'QA target · 100 HP'});target.agentId=target.agents[target.team];
+ room.poseHistory.clear();room.recordPoses();
+ for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));
+ return {weapon,distance:d,origin:eyePosition(human),target:{id:target.id,x:target.x,y:target.y+1.62,z:target.z},yaw,pitch:0};
+}
 const app = await startGameServer({port:3003,host:'127.0.0.1',rules:{respawnSeconds:3,protectionSeconds:0}});
 let soakTimer = null;
 function killHumans() {
@@ -35,6 +62,10 @@ function matchCase(room,kind){
 const control=createServer((req,res)=>{
   if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress)){res.writeHead(403);res.end();return;}
   if(req.method!=='POST'){res.writeHead(405);res.end();return;}
+  if(/^\/qa\/aim-lane\/(awp|ssg08|scar20|sg553)$/.test(req.url)){
+    clearInterval(soakTimer);soakTimer=null;
+    try{const results=[...app.rooms.values()].map(room=>setupAimLane(room,req.url.split('/').at(-1)));res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(results));}catch(error){res.writeHead(500);res.end(error.message);}return;
+  }
   if(/^\/qa\/(halftime|overtime|victory|defeat)$/.test(req.url)){
     clearInterval(soakTimer);soakTimer=null;for(const room of app.rooms.values())matchCase(room,req.url.split('/').at(-1));
   }else if(req.url==='/kill')killHumans();

@@ -89,7 +89,15 @@ async function verify(base){
  pass('Menu/blur-style cancellation releases a held grenade without throwing or consuming it');
 
  await buy(owner,guest,'awp');await observe(guest,owner,p=>p.weapon==='awp'&&p.alive);await delay(400);
- const before=player(guest.latest,owner.id),shotMark=guest.mark();owner.input({fire:true,pitch:1.45});await observe(guest,owner,p=>p.ammo===before.ammo-1,shotMark,'shot consumes one AWP round');owner.input({fire:false});
+ const before=player(guest.latest,owner.id),shotMark=guest.mark();
+ owner.input({fire:true,pitch:1.45,yaw:.3,zoomLevel:2,shotId:1,shotWeapon:'awp'});
+ owner.input({fire:false,pitch:.2,yaw:1.1,zoomLevel:0,slot:3,shotId:0});
+ const fired=await guest.wait(m=>m.type==='snapshot'&&m.events?.some(e=>e.type==='shot'&&e.shooterId===owner.id&&e.shotId===1),shotMark,'scoped shot survives quick switch');
+ const shot=fired.events.find(e=>e.type==='shot'&&e.shooterId===owner.id&&e.shotId===1);
+ assert.equal(shot.weapon,'awp');assert.equal(shot.zoomLevel,2);assert.ok(Math.abs(shot.aim.yaw-.3)<1e-12);assert.ok(Math.abs(shot.aim.pitch-1.45)<1e-12);
+ await observe(guest,owner,p=>p.weapon==='knife',shotMark,'quick switch replicated');
+ pass('Scoped shot retains click aim and zoom when unzoom/turn/switch arrive immediately afterwards',{shotId:shot.shotId,zoomLevel:shot.zoomLevel,accuracy:shot.accuracy,aim:shot.aim});
+ owner.input({slot:1,pitch:1.45});await observe(guest,owner,p=>p.weapon==='awp'&&p.ammo===before.ammo-1,shotMark,'shot consumes exactly one AWP round');
  const carried=player(guest.latest,owner.id),dropMark=owner.mark(),observerMark=guest.mark();owner.send({type:'dropWeapon'});
  const dropAck=await owner.wait(m=>m.type==='weaponDropped'||m.type==='error',dropMark,'drop ACK');assert.equal(dropAck.type,'weaponDropped',JSON.stringify(dropAck));assert.equal(dropAck.weaponId,'awp');
  const snap=await guest.wait(m=>m.type==='snapshot'&&m.droppedWeapons?.some(d=>d.id===dropAck.id),observerMark,'observer dropped gun');

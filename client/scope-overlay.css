@@ -1,0 +1,7 @@
+#scope[data-mode="scope"]{background:radial-gradient(circle at center,transparent 0,transparent calc(var(--scope-radius) - 5px),#0009 calc(var(--scope-radius) - 2px),#000 var(--scope-radius));}
+#scope[data-mode="scope"] .scope-line-x{width:calc(var(--scope-radius)*2);height:1px;transform:translate(-50%,-50%);background:#161616;filter:blur(var(--scope-blur,0px));}
+#scope[data-mode="scope"] .scope-line-y{height:calc(var(--scope-radius)*2);width:1px;transform:translate(-50%,-50%);background:#161616;filter:blur(var(--scope-blur,0px));}
+#scope[data-mode="optic"]{background:none;}
+#scope[data-mode="optic"] .scope-line-x,#scope[data-mode="optic"] .scope-line-y{display:none;}
+.optic-dot{display:none;position:absolute;left:50%;top:50%;width:3px;height:3px;transform:translate(-50%,-50%);background:#ff3434;border-radius:50%;box-shadow:0 0 2px #e71f1f;}
+#scope[data-mode="optic"] .optic-dot{display:block;}

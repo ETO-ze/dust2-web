@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "version": "d6463eaeeec53a23",
+  "version": "8fd474bf67737246",
   "baseURL": "https://cs2.duskrain.cn/",
-  "baseManifestVersion": "654bd92733b390a8",
-  "totalBytes": 383086948,
+  "baseManifestVersion": "e5353daab67974e5",
+  "totalBytes": 383269166,
   "files": [
     {
       "path": "assets/asset-manifest.json",
       "bytes": 120398,
-      "sha256": "9f174bf7309f56890793cd234f4365b4bfa92e5304c161927c09d1dfea88b402",
+      "sha256": "6e819f41921568d239eae8f6bb019bf7d6ede70d47ee38595b5770d05c49267a",
       "group": "metadata"
     },
     {
@@ -4399,14 +4399,14 @@
     },
     {
       "path": "assets/viewmodel/animations-manifest.json",
-      "bytes": 25271,
-      "sha256": "a4aa5c776de53e4d65162391c5805b4320f8a612423aff192638376e99385b1d",
+      "bytes": 25607,
+      "sha256": "1ea650026d6f307838e76ad070e7c014445b810fde82459431b0c0ce3f88f6c5",
       "group": "metadata"
     },
     {
       "path": "assets/viewmodel/animations.glb",
-      "bytes": 20439872,
-      "sha256": "5bf8272a4bea3f777cf03278b0dc26bf74e62ec0e87685aef1920979b776c128",
+      "bytes": 20615704,
+      "sha256": "563225db5bcbea05d27d137238f3385369f057f712c3afb99e9233a6bf82ca46",
       "group": "weapons"
     },
     {
@@ -4501,8 +4501,8 @@
     },
     {
       "path": "assets/weapons/cs2-loadout/manifest.json",
-      "bytes": 179081,
-      "sha256": "5edf58ee7089285c81dca52a9c93109e6c936c6255f7276ce79647a751a8f871",
+      "bytes": 185271,
+      "sha256": "8a4214b087d34e3f4fc3de91e3c31bc6a39c77f0bb9363b2cbf6b0555dab7f98",
       "group": "metadata"
     },
     {
@@ -4693,8 +4693,8 @@
     },
     {
       "path": "assets/weapons/cs2-loadout/sg553-integrale.glb",
-      "bytes": 2902008,
-      "sha256": "2c4ebb5f6fedcc95ee9fda17fca27c4357598bca97160f23f759a0e693f53f9c",
+      "bytes": 2901868,
+      "sha256": "9b9665f45a812c492928be9030b1be4010e2016994f98d57bedc1e59cddc5266",
       "group": "skin"
     },
     {

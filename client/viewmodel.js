@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { UTILITY_IDS } from '../shared/equipment.js';
 import { WEAPONS, getWeapon } from '../shared/weapons.js';
+import {cs2FovToVertical} from '../shared/cs2-settings.js';
 import { DEFAULT_SKINS, getSkin } from '../shared/skins.js';
 import { loadedSkin, requestSkin, retainSkin, releaseSkin } from './skin-assets.js';
 import { disposeInstanceAnimation, disposeInstanceSkeletons } from './resource-lifecycle.js';
@@ -38,6 +39,7 @@ export class ViewWeapon {
     this.rig.rotation.y = Math.PI; // glTF weapon forward +Z -> camera forward -Z.
     this.group.add(this.rig);
     this.clock = 0;
+    this.aimBlend=0;
     this.id = '';
     this.cache = new Map();
     this.inverseRig = new THREE.Matrix4();
@@ -94,7 +96,7 @@ export class ViewWeapon {
     mixer.addEventListener('finished', event => {
       if (item.current !== event.action) return;
       if(item.actionName==='pullpin'&&this.utilityPrimed){this.playOn(item,this.utilityHoldName(),.055);return;}
-      this.playOn(item, 'idle', .055);
+      this.playOn(item, this.opticActive&&id==='sg553'?'aimIdle':'idle', .055);
     });
 
     // The flash lives on the weapon's original bone so it follows recoil and
@@ -120,7 +122,7 @@ export class ViewWeapon {
     const previous = item.current;
     if (previous && previous !== action) previous.fadeOut(fade);
     action.reset().setEffectiveTimeScale(duration > 0 ? action.getClip().duration / duration : 1).setEffectiveWeight(1);
-    const looping=name==='idle'||name.startsWith('hold');
+    const looping=name==='idle'||name==='aimIdle'||name.startsWith('hold');
     action.setLoop(looping ? THREE.LoopRepeat : THREE.LoopOnce, looping ? Infinity : 1);
     action.clampWhenFinished = !looping;
     if (fade && previous !== action) action.fadeIn(fade);
@@ -153,7 +155,7 @@ export class ViewWeapon {
     if (!this.active) return;
     const heavy=options === true || options?.heavy;
     const mode=options?.mode||this.utilityMode;
-    const name=UTILITY_IDS.includes(this.id)?(['underhand','under','low','drop'].includes(mode)?'throwUnderhand':'throw'):this.id==='knife' ? (heavy ? 'heavy' : (this.slash++%2 ? 'shoot2':'shoot')) : this.id==='elite' ? (this.slash++%2?'shoot2':'shoot') : 'shoot';
+    const name=UTILITY_IDS.includes(this.id)?(['underhand','under','low','drop'].includes(mode)?'throwUnderhand':'throw'):this.id==='knife' ? (heavy ? 'heavy' : (this.slash++%2 ? 'shoot2':'shoot')) : this.id==='elite' ? (this.slash++%2?'shoot2':'shoot') : this.opticActive&&this.id==='sg553'?'aimShoot':'shoot';
     this.utilityPrimed=false;this.utilityReleased=UTILITY_IDS.includes(this.id);
     this.playOn(this.active,name,.025,getWeapon(this.id).unzoomsAfterShot?getWeapon(this.id).fireInterval:0);
     this.flashTime=UTILITY_IDS.includes(this.id)||this.id==='knife'||this.id==='m4a1'||this.id==='usp' ? 0 : .045;
@@ -193,11 +195,15 @@ export class ViewWeapon {
     item.mount.updateWorldMatrix(false,true);
   }
 
-  update(dt,p,scoped) {
+  update(dt,p,scoped,{optic=false}={}) {
     dt=Math.min(.1,Math.max(0,dt||0));this.clock+=dt;
     if(p?.weapon)this.set(p.weapon,p.skinId,p.agentId||DEFAULT_AGENT_IDS[p.team]||'ct-sas');
     this.group.visible=Boolean(p?.alive&&!scoped&&!this.waiting&&this.id===p?.weapon);
     if(!p||!this.active)return;
+    if(this.opticActive!==optic){this.opticActive=optic;if(this.id==='sg553')this.playOn(this.active,optic?'aimIdle':'idle',.1);}
+    this.aimBlend=THREE.MathUtils.lerp(this.aimBlend,optic?1:0,1-Math.exp(-(optic?10:8)*dt));
+    const aimedFov=cs2FovToVertical(45),gunFov=THREE.MathUtils.lerp(68,aimedFov,this.aimBlend);
+    if(Math.abs(this.camera.fov-gunFov)>.01){this.camera.fov=gunFov;this.camera.updateProjectionMatrix();}
     this.primeUtility(p.grenadeState);
     const reloading=p.reloadRemaining>0;
     if(reloading&&(!this.reloadActive||getWeapon(p.weapon).reloadStyle==='shell'&&p.reloadRemaining>this.lastReload+.1))this.playOn(this.active,'reload',.06,p.reloadRemaining);
@@ -206,7 +212,7 @@ export class ViewWeapon {
     this.active.mixer.update(dt);
     const moving=Math.min(1,Math.hypot(p.vx||0,p.vz||0)/5),narrow=Math.max(0,1.35-(this.camera.aspect||1));
     // A subtle locomotion layer leaves the authored wrist/finger poses intact.
-    this.group.position.set(Math.sin(this.clock*9)*.0025*moving-narrow*.045,Math.abs(Math.cos(this.clock*9))*.003*moving,-narrow*.10);
+    this.group.position.set((Math.sin(this.clock*9)*.0025*moving-narrow*.045)*(1-this.aimBlend),Math.abs(Math.cos(this.clock*9))*.003*moving*(1-this.aimBlend),-narrow*.10*(1-this.aimBlend)+.2032*this.aimBlend);
     this.group.rotation.set(0,Math.sin(this.clock*4.5)*.0015*moving,Math.sin(this.clock*9)*.002*moving);
     this.syncAttachment();
     this.flashTime=Math.max(0,this.flashTime-dt);

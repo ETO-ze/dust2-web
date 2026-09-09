@@ -75,6 +75,9 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
   }
   for(const light of originalLights)light.removeFromParent();
   scene.add(group);
+  // The map is static: retain its already-computed transforms instead of
+  // multiplying every imported object matrix on every animation frame.
+  group.traverse(object=>{object.matrixAutoUpdate=false;object.matrixWorldAutoUpdate=false;});
   scene.background=new THREE.Color(0xb6d6e8);
   scene.fog=new THREE.Fog(0xc9d8de,140,300);
   const hemisphere=new THREE.HemisphereLight(0xd5e9ff,0x99805f,2.15);

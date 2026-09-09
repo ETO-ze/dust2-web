@@ -297,6 +297,28 @@
       "bytes": 1420484,
       "width": 1600,
       "height": 950
+    },
+    {
+      "file": "scope-awp-2.png",
+      "source": "output/playwright/scope-awp-2.png",
+      "capturedOn": "2026-09-09",
+      "modified": false,
+      "note": "Actual local browser, final scope build, fixed target QA fixture; not a public match. No image edits.",
+      "sha256": "a563dd684b242fb2f867547dc137978df4ce0b57c9ea0d447d50943729f3c214",
+      "bytes": 1103029,
+      "width": 1600,
+      "height": 950
+    },
+    {
+      "file": "scope-sg553-1.png",
+      "source": "output/playwright/scope-sg553-1.png",
+      "capturedOn": "2026-09-09",
+      "modified": false,
+      "note": "Actual local browser, final scope build, fixed target QA fixture; not a public match. No image edits.",
+      "sha256": "76867bda8205f21a9cd1896b4f1481bc4df65d06d2c8808734aba440ee7ab0c3",
+      "bytes": 1966952,
+      "width": 1600,
+      "height": 950
     }
   ],
   "updatedOn": "2026-09-09"

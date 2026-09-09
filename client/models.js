@@ -130,10 +130,14 @@ export class PlayerModel{
     this.throwRemaining=Math.max(0,(this.throwRemaining||0)-dt);if(this.throwRemaining)return;
     const primed=p.grenadeState?.state==='primed';this.grenadePose(p.crouch?(primed?'crouchPullpin':'crouchIdle'):(primed?'pullpin':'idle'),primed);
   }
-  update(p,dt){
+  update(p,dt,{exactPosition=false,animationRate=60}={}){
+    const target=new THREE.Vector3(p.x,p.y,p.z);if(exactPosition||!this.placed||this.group.position.distanceTo(target)>9){this.group.position.copy(target);this.placed=true;}else this.group.position.lerp(target,Math.min(1,dt*15));
+    let delta=p.yaw-this.group.rotation.y;delta=Math.atan2(Math.sin(delta),Math.cos(delta));this.group.rotation.y+=delta*(exactPosition?1:Math.min(1,dt*18));
+    this.animationElapsed=(this.animationElapsed||0)+dt;
+    const stateChanged=this.dead===p.alive||this.weaponId!==p.weapon||this.crouched!==!!p.crouch;
+    if(!stateChanged&&this.animationElapsed<1/animationRate)return;
+    dt=this.animationElapsed;this.animationElapsed=0;
     if(this.aimRestQuaternion&&this.nativeAimBone){this.nativeAimBone.quaternion.copy(this.aimRestQuaternion);this.aimRestQuaternion=null;}
-    const target=new THREE.Vector3(p.x,p.y,p.z);if(!this.placed||this.group.position.distanceTo(target)>9){this.group.position.copy(target);this.placed=true;}else this.group.position.lerp(target,Math.min(1,dt*15));
-    let delta=p.yaw-this.group.rotation.y;delta=Math.atan2(Math.sin(delta),Math.cos(delta));this.group.rotation.y+=delta*Math.min(1,dt*18);
     this.dead=!p.alive;const moving=Math.hypot(p.vx,p.vz)>.7;let animation=this.nativeAgent?choosePlayerAnimation(p,getWeapon(p.weapon)):!p.alive?'Death':moving?(p.weapon==='knife'?'Run':'Run_Shoot'):(p.weapon==='knife'?'Idle_Sword':'Idle_Gun_Pointing');if(this.nativeAgent&&p.alive&&UTILITY_IDS.includes(p.weapon)&&(p.grenadeState?.state==='primed'||this.throwRemaining>0))animation='lower/'+animation;this.animate(animation);this.updateGrenadePose(p,dt);if(this.mixer)this.mixer.update(dt);
     if(!this.nativeAgent)this.model.scale.y=THREE.MathUtils.lerp(this.model.scale.y,p.crouch?.66:1,Math.min(1,dt*16));
     this.ring.visible=p.alive;this.updateWeapon(p);

@@ -168,7 +168,8 @@ test('new loadouts and combat feedback contracts on the authoritative server', {
   });
 
   await t.test('AWP lethal unarmored/armored body and armored head hits emit one complete feedback sequence', sub => {
-    sub.mock.method(Math, 'random', () => 0.5);
+    // Zero radius in the circular spread sampler isolates damage from accuracy.
+    sub.mock.method(Math, 'random', () => 0);
     for (const [armor, head] of [[0, false], [100, false], [100, true]]) {
       const { room, shooter, target, place } = fixture(lane);
       room.fire(shooter, place(lane.distance, armor, head));

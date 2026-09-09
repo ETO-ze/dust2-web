@@ -11,6 +11,7 @@ import { normalizeAgentLoadout } from '../shared/agents.js';
 import { botCount } from '../shared/match-rules.js';
 import { initPhysics } from '../shared/physics.js';
 import { GameRoom, TICK_RATE, SNAPSHOT_RATE } from './game.js';
+import {ServerPerformance} from './performance-metrics.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = { '.webmanifest': 'application/manifest+json; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.glb': 'model/gltf-binary', '.gltf': 'model/gltf+json', '.wasm': 'application/wasm', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
@@ -54,6 +55,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
   const rooms = new Map();
   const maxRooms = Math.max(1, Math.min(100, Number(process.env.MAX_ROOMS) || 12));
   const startedAt = Date.now();
+  const performanceMetrics=new ServerPerformance();
   const publicDir = path.join(ROOT, 'public');
   const server = createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -65,7 +67,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
     if (requestPath === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       const memory = process.memoryUsage();
-      res.end(JSON.stringify({ ok: true, service: 'dust2-web', release: process.env.DUST2_RELEASE || 'local', protocol: 1, tickRate: TICK_RATE, uptime: Math.round((Date.now() - startedAt) / 1000), rooms: rooms.size, humans: [...rooms.values()].reduce((n, r) => n + r.humanCount, 0), players: [...rooms.values()].reduce((n, r) => n + r.players.size, 0), memory: { rssMiB: Math.round(memory.rss / 1048576), heapMiB: Math.round(memory.heapUsed / 1048576) } })); return;
+      res.end(JSON.stringify({ ok: true, service: 'dust2-web', release: process.env.DUST2_RELEASE || 'local', protocol: 1, tickRate: TICK_RATE, uptime: Math.round((Date.now() - startedAt) / 1000), rooms: rooms.size, humans: [...rooms.values()].reduce((n, r) => n + r.humanCount, 0), players: [...rooms.values()].reduce((n, r) => n + r.players.size, 0), memory: { rssMiB: Math.round(memory.rss / 1048576), heapMiB: Math.round(memory.heapUsed / 1048576) },performance:performanceMetrics.snapshot() })); return;
     }
     if (requestPath.includes('\0') || requestPath.includes('\\')) { res.writeHead(400); res.end('Bad path'); return; }
     let found = null, info = null;
@@ -151,8 +153,9 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       if (!room.humanCount) rooms.delete(room.code); else { room.ensureBots(); room.maybeStart(); }
     });
   });
-  let tickNumber = 0;
+  let tickNumber = 0,lastTickAt=performance.now();
   const tickTimer = setInterval(() => {
+    const tickStarted=performance.now(),delay=Math.max(0,tickStarted-lastTickAt-1000/TICK_RATE);lastTickAt=tickStarted;
     tickNumber++;
     for (const room of rooms.values()) {
       try {
@@ -165,6 +168,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         }
       } catch (e) { console.error(`[room ${room.code}]`, e); for (const socket of room.clients.values()) error(socket, 'SIMULATION_ERROR', '房间模拟出现错误，请重新加入。'); }
     }
+    performanceMetrics.record(performance.now()-tickStarted,delay);
   }, 1000 / TICK_RATE);
   const heartbeatTimer = setInterval(() => {
     for (const socket of wss.clients) {

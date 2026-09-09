@@ -8,6 +8,9 @@ import { WebSocket } from 'ws';
 const args = process.argv.slice(2), repro = args.includes('--repro');
 const realSeconds = Number(args.find(x => x.startsWith('--seconds='))?.split('=')[1] || 90);
 const soakSeconds = Number(args.find(x => x.startsWith('--soak='))?.split('=')[1] || 600);
+const roomCount=Math.max(1,Math.min(4,Number(args.find(x=>x.startsWith('--rooms='))?.split('=')[1])||4));
+const humanCount=Math.max(1,Math.min(2,Number(args.find(x=>x.startsWith('--humans='))?.split('=')[1])||2));
+const botCount=Math.max(0,Math.min(10-humanCount,Number(args.find(x=>x.startsWith('--bots='))?.split('=')[1]??8)));
 const reportPath = args.find(x => x.startsWith('--output='))?.slice(9) || 'output/server-audit/baseline.json';
 fs.mkdirSync(path.dirname(reportPath), { recursive: true });
 
@@ -84,20 +87,22 @@ if (repro) {
   let inputs;
   try {
     samples.push(await w.request('sample', { label: 'startup', gc: true }));
-    for (let room = 0; room < 4; room++) for (let human = 0; human < 2; human++) {
-      clients.push(await peer(w.ready.port, { room: 'LOAD' + room, team: human ? 'CT' : 'T', bots: 8 }));
+    for (let room = 0; room < roomCount; room++) for (let human = 0; human < humanCount; human++) {
+      clients.push(await peer(w.ready.port, { room: 'LOAD' + room, team: human ? 'CT' : 'T', bots: botCount }));
     }
     await delay(300); let frame = 0;
     inputs = setInterval(() => { frame++; clients.forEach((client, index) => client.sendInput(index, frame)); }, 1000 / 30);
-    samples.push(await w.request('sample', { label: '4rooms-8humans-32bots-start' }));
+    samples.push(await w.request('sample', { label: `${roomCount}rooms-${roomCount*humanCount}humans-${roomCount*botCount}bots-start` }));
     for (let elapsed = 0; elapsed < realSeconds; elapsed += 10) {
       await delay(Math.min(10, realSeconds - elapsed) * 1000);
       const result = await w.request('sample', { label: `bots-${Math.min(realSeconds, elapsed + 10)}s` });
       samples.push(result); console.log(`${result.label}: RSS ${(result.memory.rss / 1048576).toFixed(1)} MiB, heap ${(result.memory.heapUsed / 1048576).toFixed(1)} MiB, CPU ${result.cpuPercentOfOneCore.toFixed(1)}%, room tick p95 ${result.workMs.tick.p95.toFixed(2)}ms, cadence p95 ${result.tickIntervalMs.p95.toFixed(2)}ms`);
     }
-    for (let room = 0; room < 4; room++) for (let extra = 0; extra < 8; extra++) clients.push(await peer(w.ready.port, { room: 'LOAD' + room, team: 'auto' }));
-    await delay(300); samples.push(await w.request('sample', { label: '4rooms-40humans-start' }));
-    await delay(15000); samples.push(await w.request('sample', { label: '4rooms-40humans-15s' }));
+    if(!args.includes('--skip-human-load')){
+      for (let room = 0; room < roomCount; room++) for (let extra = 0; extra < 10-humanCount; extra++) clients.push(await peer(w.ready.port, { room: 'LOAD' + room, team: 'auto' }));
+      await delay(300); samples.push(await w.request('sample', { label: `${roomCount}rooms-${roomCount*10}humans-start` }));
+      await delay(15000); samples.push(await w.request('sample', { label: `${roomCount}rooms-${roomCount*10}humans-15s` }));
+    }
     report.clients = clients.map(c => ({ snapshots: c.snapshots, bytes: c.bytes, readyStateBeforeCleanup: c.socket.readyState,
       errors: [...c.errors], closes: [...c.closes],
       protocolErrors: c.messages.filter(m => m.type === 'error') }));

@@ -1,0 +1,680 @@
+{
+  "date": "2026-09-09",
+  "tests": {
+    "command": "node --test --test-concurrency=1 tests/*.mjs",
+    "passed": 168,
+    "failed": 0,
+    "assetFilesVerified": 817
+  },
+  "scopes": [
+    {
+      "weapon": "awp",
+      "zoomLevel": 1,
+      "horizontalFov": 40,
+      "verticalFov": 30.5369432627651,
+      "cameraAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "shotAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "hitId": "b_1",
+      "rewindMs": 133
+    },
+    {
+      "weapon": "awp",
+      "zoomLevel": 2,
+      "horizontalFov": 10,
+      "verticalFov": 7.508333335480519,
+      "cameraAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "shotAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "hitId": "b_1",
+      "rewindMs": 116
+    },
+    {
+      "weapon": "ssg08",
+      "zoomLevel": 1,
+      "horizontalFov": 40,
+      "verticalFov": 30.5369432627651,
+      "cameraAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "shotAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "hitId": "b_1",
+      "rewindMs": 129
+    },
+    {
+      "weapon": "ssg08",
+      "zoomLevel": 2,
+      "horizontalFov": 15,
+      "verticalFov": 11.27814157300883,
+      "cameraAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "shotAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "hitId": "b_1",
+      "rewindMs": 136
+    },
+    {
+      "weapon": "scar20",
+      "zoomLevel": 1,
+      "horizontalFov": 40,
+      "verticalFov": 30.5369432627651,
+      "cameraAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "shotAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "hitId": "b_1",
+      "rewindMs": 120
+    },
+    {
+      "weapon": "scar20",
+      "zoomLevel": 2,
+      "horizontalFov": 15,
+      "verticalFov": 11.27814157300883,
+      "cameraAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "shotAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "hitId": "b_1",
+      "rewindMs": 112
+    },
+    {
+      "weapon": "sg553",
+      "zoomLevel": 1,
+      "horizontalFov": 45,
+      "verticalFov": 34.51587701898169,
+      "cameraAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "shotAim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "hitId": "b_1",
+      "rewindMs": 119
+    }
+  ],
+  "quickSwitch": {
+    "weapon": "awp",
+    "shotId": 10,
+    "zoomLevel": 1,
+    "accuracy": 0.0022,
+    "rewindMs": 120,
+    "aim": {
+      "yaw": 2.865,
+      "pitch": 0
+    },
+    "origin": {
+      "x": 6.523452556179394,
+      "y": 1.6124324356335635,
+      "z": -1.837663369262895
+    },
+    "end": {
+      "x": -2.5331496751456006,
+      "y": 1.6090249655406168,
+      "z": 30.062501732636772
+    },
+    "hitId": "b_1",
+    "at": 288124.30000000075
+  },
+  "browserErrors": [],
+  "aspects": [
+    {
+      "width": 1280,
+      "height": 960,
+      "fov": 30.5369432627651,
+      "quality": "low",
+      "level": 1,
+      "radius": 470.4
+    },
+    {
+      "width": 1600,
+      "height": 900,
+      "fov": 30.5369432627651,
+      "quality": "low",
+      "level": 1,
+      "radius": 441
+    },
+    {
+      "width": 2100,
+      "height": 900,
+      "fov": 30.5369432627651,
+      "quality": "low",
+      "level": 1,
+      "radius": 441
+    }
+  ],
+  "browserProfile": {
+    "durationSeconds": 12,
+    "fixture": "Local complete map, 9 stationary bots, unscoped AWP, low quality, 1600x950, CDP CPU Profiler active",
+    "comparison": "Different camera and actor count from earlier sample; no frame-rate speedup claim",
+    "data": {
+      "samples": 1007,
+      "frameMs": {
+        "p50": 11.199999999953434,
+        "p95": 16.900000000023283,
+        "max": 344.30000000004657
+      },
+      "resources": {
+        "fps": 101,
+        "ping": 12,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1950,
+        "textures": 672,
+        "programs": 30,
+        "actors": 9,
+        "effects": 0,
+        "audioVoices": 0,
+        "viewWeapons": 4,
+        "heapMiB": 368,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 16.8,
+          "cpuP95Ms": 14.4,
+          "actorsP95Ms": 1.5,
+          "renderSubmitP95Ms": 12.8
+        }
+      },
+      "drawCalls": 409,
+      "triangles": 1150160,
+      "hot": [
+        {
+          "name": "intersectsObject",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 1,
+          "percent": 13
+        },
+        {
+          "name": "(program)",
+          "url": "",
+          "line": 0,
+          "percent": 11.9
+        },
+        {
+          "name": "_t",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 4108,
+          "percent": 6.3
+        },
+        {
+          "name": "Et",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 4108,
+          "percent": 5.4
+        },
+        {
+          "name": "s",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 3671,
+          "percent": 3.7
+        },
+        {
+          "name": "o",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 3960,
+          "percent": 3.4
+        },
+        {
+          "name": "bindVertexArray",
+          "url": "",
+          "line": 0,
+          "percent": 3.2
+        },
+        {
+          "name": "updateMatrixWorld",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 1,
+          "percent": 3
+        },
+        {
+          "name": "a",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 4108,
+          "percent": 2.4
+        },
+        {
+          "name": "Zd.renderBufferDirect",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 4108,
+          "percent": 2.4
+        },
+        {
+          "name": "texSubImage2D",
+          "url": "",
+          "line": 0,
+          "percent": 1.5
+        },
+        {
+          "name": "setValue",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 4006,
+          "percent": 1.5
+        },
+        {
+          "name": "Ql",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 4006,
+          "percent": 1.3
+        },
+        {
+          "name": "upload",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 4006,
+          "percent": 1.3
+        },
+        {
+          "name": "bt",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 4108,
+          "percent": 1.3
+        },
+        {
+          "name": "multiplyMatrices",
+          "url": "http://127.0.0.1:3003/assets/index-BXvO7xYM.js",
+          "line": 1,
+          "percent": 1.2
+        }
+      ]
+    }
+  },
+  "serverBenchmark": {
+    "fixture": "Isolated nice 10 process on production host; 1 room, 1 actual WebSocket client and 9 AI bots; 30 seconds; live service untouched",
+    "runtime": {
+      "type": "ready",
+      "port": 41337,
+      "pid": 92655,
+      "startupMs": 826.8102999999999,
+      "runtime": "v22.23.2",
+      "platform": "linux",
+      "cpu": "AMD EPYC 7K62 48-Core Processor",
+      "logicalCpus": 2
+    },
+    "samples": [
+      {
+        "label": "1rooms-1humans-9bots-start",
+        "timestamp": "2026-09-09T06:56:35.180Z",
+        "cpuPercentOfOneCore": 83.68262839419882,
+        "memory": {
+          "rss": 187043840,
+          "heapTotal": 51802112,
+          "heapUsed": 16695208,
+          "external": 17109447,
+          "arrayBuffers": 13359008
+        },
+        "rooms": 1,
+        "humans": 1,
+        "players": 10,
+        "bots": 9,
+        "workMs": {
+          "tick": {
+            "count": 8,
+            "mean": 16.28377450000002,
+            "p50": 14.36026199999992,
+            "p95": 58.296671999999944,
+            "p99": 58.296671999999944,
+            "max": 58.296671999999944,
+            "total": 130.27019600000017
+          },
+          "snapshot": {
+            "count": 5,
+            "mean": 0.5633194000000004,
+            "p50": 0.2983240000000933,
+            "p95": 1.2197209999999359,
+            "p99": 1.2197209999999359,
+            "max": 1.2197209999999359,
+            "total": 2.8165970000000016
+          },
+          "planPath": {
+            "count": 9,
+            "mean": 4.610384888888904,
+            "p50": 2.8351889999999003,
+            "p95": 17.796515,
+            "p99": 17.796515,
+            "max": 17.796515,
+            "total": 41.49346400000013
+          },
+          "botInput": {
+            "count": 72,
+            "mean": 0.6670834861111056,
+            "p50": 0.012956000000031054,
+            "p95": 3.2498709999999846,
+            "p99": 17.951428000000078,
+            "max": 17.951428000000078,
+            "total": 48.030010999999604
+          }
+        },
+        "tickIntervalMs": {
+          "count": 7,
+          "mean": 37.113049999999994,
+          "p50": 33.564461000000165,
+          "p95": 61.103476999999884,
+          "p99": 61.103476999999884,
+          "max": 61.103476999999884,
+          "total": 259.79134999999997
+        },
+        "eventLoopDelayMs": {
+          "mean": 15.694794105263158,
+          "p95": 27.590655,
+          "max": 69.468159
+        },
+        "bufferedBytes": 0,
+        "finitePlayers": true
+      },
+      {
+        "label": "bots-10s",
+        "timestamp": "2026-09-09T06:56:45.183Z",
+        "cpuPercentOfOneCore": 36.468117962326936,
+        "memory": {
+          "rss": 193073152,
+          "heapTotal": 52850688,
+          "heapUsed": 18885136,
+          "external": 17109890,
+          "arrayBuffers": 13359451
+        },
+        "rooms": 1,
+        "humans": 1,
+        "players": 10,
+        "bots": 9,
+        "workMs": {
+          "tick": {
+            "count": 301,
+            "mean": 10.316048172757453,
+            "p50": 9.837788999999248,
+            "p95": 17.169511000000057,
+            "p99": 20.100129999999808,
+            "max": 23.384645999999975,
+            "total": 3105.1304999999934
+          },
+          "snapshot": {
+            "count": 151,
+            "mean": 0.15358378145693852,
+            "p50": 0.1344730000000709,
+            "p95": 0.22575500000039028,
+            "p99": 0.5395280000000184,
+            "max": 1.1735739999999169,
+            "total": 23.191150999997717
+          },
+          "planPath": {
+            "count": 9,
+            "mean": 2.4303117777779133,
+            "p50": 1.359815000000708,
+            "p95": 7.773955999999998,
+            "p99": 7.773955999999998,
+            "max": 7.773955999999998,
+            "total": 21.87280600000122
+          },
+          "botInput": {
+            "count": 2709,
+            "mean": 0.04302182096712409,
+            "p50": 0.011983000000327593,
+            "p95": 0.20287199999984296,
+            "p99": 0.3402119999991555,
+            "max": 8.012947000000167,
+            "total": 116.54611299993917
+          }
+        },
+        "tickIntervalMs": {
+          "count": 301,
+          "mean": 33.180182936877074,
+          "p50": 33.15951700000005,
+          "p95": 33.89177100000006,
+          "p99": 34.0749450000003,
+          "max": 34.26663600000029,
+          "total": 9987.235063999999
+        },
+        "eventLoopDelayMs": {
+          "mean": 11.736899906103288,
+          "p95": 20.643839,
+          "max": 29.982719
+        },
+        "bufferedBytes": 0,
+        "finitePlayers": true
+      },
+      {
+        "label": "bots-20s",
+        "timestamp": "2026-09-09T06:56:55.186Z",
+        "cpuPercentOfOneCore": 29.441174972420058,
+        "memory": {
+          "rss": 193728512,
+          "heapTotal": 53374976,
+          "heapUsed": 30633064,
+          "external": 17119648,
+          "arrayBuffers": 13369209
+        },
+        "rooms": 1,
+        "humans": 1,
+        "players": 10,
+        "bots": 9,
+        "workMs": {
+          "tick": {
+            "count": 302,
+            "mean": 8.275446831125914,
+            "p50": 7.887550999999803,
+            "p95": 14.406489000000875,
+            "p99": 18.394121999999697,
+            "max": 20.532776000000013,
+            "total": 2499.1849430000257
+          },
+          "snapshot": {
+            "count": 151,
+            "mean": 0.15406317218535542,
+            "p50": 0.14630600000236882,
+            "p95": 0.23107600000003004,
+            "p99": 0.2999659999986761,
+            "max": 0.42865900000106194,
+            "total": 23.26353899998867
+          },
+          "planPath": {
+            "count": 13,
+            "mean": 2.320981769230807,
+            "p50": 1.5288340000006428,
+            "p95": 7.117377999999007,
+            "p99": 7.117377999999007,
+            "max": 7.117377999999007,
+            "total": 30.172763000000486
+          },
+          "botInput": {
+            "count": 2566,
+            "mean": 0.04711008846450693,
+            "p50": 0.012514000000010128,
+            "p95": 0.176923999999417,
+            "p99": 0.2830939999985276,
+            "max": 7.392214999999851,
+            "total": 120.88448699992477
+          }
+        },
+        "tickIntervalMs": {
+          "count": 302,
+          "mean": 33.17372434437087,
+          "p50": 33.17862400000013,
+          "p95": 33.864857999999,
+          "p99": 34.10806700000103,
+          "max": 34.19003199999861,
+          "total": 10018.464752000002
+        },
+        "eventLoopDelayMs": {
+          "mean": 11.307671048697623,
+          "p95": 16.416767,
+          "max": 25.755647
+        },
+        "bufferedBytes": 0,
+        "finitePlayers": true
+      },
+      {
+        "label": "bots-30s",
+        "timestamp": "2026-09-09T06:57:05.189Z",
+        "cpuPercentOfOneCore": 30.66439447616456,
+        "memory": {
+          "rss": 197005312,
+          "heapTotal": 53637120,
+          "heapUsed": 24012760,
+          "external": 17119023,
+          "arrayBuffers": 13368584
+        },
+        "rooms": 1,
+        "humans": 1,
+        "players": 10,
+        "bots": 9,
+        "workMs": {
+          "tick": {
+            "count": 301,
+            "mean": 8.452426388704247,
+            "p50": 7.849809999999707,
+            "p95": 15.0174909999987,
+            "p99": 18.446940999998333,
+            "max": 30.22313799999756,
+            "total": 2544.180342999978
+          },
+          "snapshot": {
+            "count": 150,
+            "mean": 0.15250530000019352,
+            "p50": 0.14119700000082958,
+            "p95": 0.2265079999997397,
+            "p99": 0.26935800000137533,
+            "max": 0.5310519999984535,
+            "total": 22.87579500002903
+          },
+          "planPath": {
+            "count": 15,
+            "mean": 1.6739636666658044,
+            "p50": 0.9759009999979753,
+            "p95": 4.6499819999989995,
+            "p99": 4.6499819999989995,
+            "max": 4.6499819999989995,
+            "total": 25.109454999987065
+          },
+          "botInput": {
+            "count": 2567,
+            "mean": 0.06594617841841417,
+            "p50": 0.021841000001586508,
+            "p95": 0.20243200000186334,
+            "p99": 0.3728030000020226,
+            "max": 4.867083000001003,
+            "total": 169.28384000006918
+          }
+        },
+        "tickIntervalMs": {
+          "count": 301,
+          "mean": 33.23139949833887,
+          "p50": 33.23631200000091,
+          "p95": 33.95374400000219,
+          "p99": 34.17513300000064,
+          "max": 38.40650600000299,
+          "total": 10002.651248999999
+        },
+        "eventLoopDelayMs": {
+          "mean": 11.344263409761634,
+          "p95": 16.957439,
+          "max": 42.434559
+        },
+        "bufferedBytes": 0,
+        "finitePlayers": true
+      }
+    ]
+  },
+  "publicRelease": {
+    "release": "20260909T072304Z",
+    "assetFilesVerified": 95,
+    "assetBytesVerified": 92009497,
+    "protocolChecks": [
+      {
+        "name": "Two ordinary WebSocket players create an isolated DM room with zero bots"
+      },
+      {
+        "name": "Owner changes bots 0→2→0; non-owner request is rejected and snapshots agree"
+      },
+      {
+        "name": "Held full throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ1831FB9E:9",
+        "strength": 1
+      },
+      {
+        "name": "Held drop throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ1831FB9E:12",
+        "strength": 0
+      },
+      {
+        "name": "Held lob throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ1831FB9E:16",
+        "strength": 0.5
+      },
+      {
+        "name": "Menu/blur-style cancellation releases a held grenade without throwing or consuming it"
+      },
+      {
+        "name": "Scoped shot retains click aim and zoom when unzoom/turn/switch arrive immediately afterwards",
+        "shotId": 1,
+        "zoomLevel": 2,
+        "accuracy": 0.0022,
+        "aim": {
+          "yaw": 0.3000000000000007,
+          "pitch": 1.45
+        }
+      },
+      {
+        "name": "Dropped AWP preserves exact skin, magazine and reserve in observer snapshot",
+        "weapon": "awp",
+        "skin": "awp-dragon-lore",
+        "ammo": 4,
+        "reserve": 10
+      },
+      {
+        "name": "Both sockets close cleanly; first departure is observed before final disconnect"
+      }
+    ],
+    "healthAfter": {
+      "ok": true,
+      "service": "dust2-web",
+      "release": "20260909T072304Z",
+      "protocol": 1,
+      "tickRate": 30,
+      "uptime": 338,
+      "rooms": 0,
+      "humans": 0,
+      "players": 0,
+      "memory": {
+        "rssMiB": 110,
+        "heapMiB": 16
+      },
+      "performance": {
+        "windowSamples": 1800,
+        "tickBudgetMs": 33.33,
+        "tickP50Ms": 0,
+        "tickP95Ms": 0.01,
+        "tickMaxMs": 0.17,
+        "maxSchedulingDelayMs": 104.55,
+        "lateTicks": 1,
+        "totalTicks": 10151
+      }
+    },
+    "serviceAfter": "Result=success\nNRestarts=0\nMemoryCurrent=65249280\nCPUUsageNSec=4327645000\nActiveState=active\nSubState=running\n",
+    "errorLogAfter": "-- No entries --\n"
+  }
+}

@@ -22,7 +22,10 @@ async function peer(port){
 async function equip(peer,agent,extra={}){
   await delay(Math.max(0,peer.lastEquip+280-Date.now()));const after=peer.mark();peer.lastEquip=Date.now();
   peer.send({type:'equipAgent',agent,...extra});
-  return peer.waitFor(m=>m.type==='agentEquipped'||m.type==='error',after);
+  const response=await peer.waitFor(m=>m.type==='agentEquipped'||m.type==='error',after);
+  // Pace from the acknowledgement: a busy test runner can delay delivery long
+  // enough that two send timestamps 280 ms apart still arrive inside the limit.
+  peer.lastEquip=Date.now();return response;
 }
 const playerIn=(message,id)=>message.players?.find(p=>p.id===id);
 const waitPlayer=(peer,id,predicate,after=0)=>peer.waitFor(m=>m.type==='snapshot'&&playerIn(m,id)&&predicate(playerIn(m,id)),after);

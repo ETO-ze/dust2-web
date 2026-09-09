@@ -10,6 +10,8 @@ import { MATCH_RULES, botCount, defuseDecision, grenadeMode, grenadeStrength } f
 import { BOT_AIM, smoothBotAim } from './bot-aim.js';
 import { DroppedWeapons } from './dropped-weapons.js';
 import { traceBullet as defaultTraceBullet } from './bullet-penetration.js';
+import {eyePosition,accuracyForShot,sampleShotDirection} from '../shared/aim.js';
+import {PlayerTimeline,MAX_REWIND_MS} from '../shared/player-timeline.js';
 
 export const TICK_RATE = 30;
 export const SNAPSHOT_RATE = 15;
@@ -19,7 +21,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lengthXZ = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
 const copyPoint = p => ({ x: p.x, y: p.y, z: p.z });
-const eye = p => ({ x: p.x, y: p.y + (p.crouch ? 0.95 : 1.6), z: p.z });
+const eye = eyePosition;
 const neutralInput = () => ({ forward: 0, right: 0, yaw: 0, pitch: 0, jump: false, crouch: false, walk: false, fire: false, fire2:false, cancelGrenade:false, reload: false, interact: false, slot: 0 });
 const opposite = t => t === 'T' ? 'CT' : 'T';
 const finite = v => typeof v === 'number' && Number.isFinite(v);
@@ -33,7 +35,10 @@ export function sanitizeInput(message) {
     walk: message.walk === true, fire: message.fire === true, fire2:message.fire2===true, cancelGrenade:message.cancelGrenade===true, reload: message.reload === true,
     interact: message.interact === true, slot: [1, 2, 3, 4].includes(message.slot) ? message.slot : 0,
     utilityId: UTILITY_IDS.includes(message.utilityId) ? message.utilityId : null,
-    zoomLevel: Number.isInteger(message.zoomLevel) && message.zoomLevel >= 0 && message.zoomLevel <= 2 ? message.zoomLevel : 0 };
+    zoomLevel: Number.isInteger(message.zoomLevel) && message.zoomLevel >= 0 && message.zoomLevel <= 2 ? message.zoomLevel : 0,
+    shotId:Number.isSafeInteger(message.shotId)&&message.shotId>0&&message.shotId<=2147483647?message.shotId:0,
+    shotWeapon:typeof message.shotWeapon==='string'&&Object.hasOwn(WEAPONS,message.shotWeapon)?message.shotWeapon:null,
+    viewTime:finite(message.viewTime)?message.viewTime:null };
 }
 
 export function directionFromAngles(yaw, pitch) {
@@ -101,6 +106,7 @@ export class GameRoom {
     this.navMap = new Map(this.nav.map(n => [String(n.id), n]));
     this.grenades=new GrenadeSimulation({clock,raycastWorld,emit:(type,fields)=>this.emit(type,fields),onExplosion:(grenade,config)=>this.explodeGrenade(grenade,config),onFlash:(grenade,config)=>this.flashGrenade(grenade,config)});
     this.droppedWeapons=new DroppedWeapons({clock,raycastWorld});
+    this.poseHistory=new PlayerTimeline(16);
   }
 
   emptyBomb() { return { state: 'none', carrierId: null, x: 0, y: 0, z: 0, site: null, plantedAt: 0, explodesAt: 0, planterId: null, actorId: null, action: null, progress: 0, remaining: 0 }; }
@@ -191,9 +197,19 @@ export class GameRoom {
   receiveInput(id, message) {
     const player = this.players.get(id), input = sanitizeInput(message);
     if (!player || !input || input.seq <= player.lastReceivedSeq) return false;
-    // Preserve a short click even when press and release arrive between ticks.
-    // At most one edge is retained, still subject to ammo, reload and fire rate.
-    if (input.fire && !player.input.fire) player.pendingFire = true;
+    // Retain the complete click sample. A later release/turn/unzoom/switch must
+    // not overwrite the aim that actually fired. New clients send one shot ID
+    // per predicted shot; legacy clients still use rising edges and held fire.
+    const explicit=input.shotId>0;
+    if(explicit)player.shotCommands=true;
+    if(input.fire&&input.slot!==4&&((explicit&&input.shotId>(player.lastShotId||0))||(!player.shotCommands&&!player.input.fire))){
+      const weaponId=input.shotWeapon||player.weapon;
+      if(player.inventory[weaponId]&&getWeapon(weaponId).slot!==4){
+        player.fireQueue||=[];
+        if(player.fireQueue.length<4)player.fireQueue.push({input:{...input},weaponId,receivedAt:this.clock(),lifeId:player.lifeId});
+      }
+      player.lastShotId=Math.max(player.lastShotId||0,input.shotId);
+    }
     if(input.interact&&!player.input.interact)player.pendingInteract=true;
     this.captureGrenadeInput(player,input);
     input.jumpId=Math.max(player.input.jumpId||0,input.jumpId);input.reloadId=Math.max(player.input.reloadId||0,input.reloadId);
@@ -202,6 +218,23 @@ export class GameRoom {
   }
 
   giveWeapon(player, id) { const w = getWeapon(id); player.inventory[w.id] = { ammo: w.magazine, reserve: w.reserve }; }
+  fireQueued(player){
+    const queue=player.fireQueue,now=this.clock();if(!queue?.length)return false;
+    while(queue.length&&(now-queue[0].receivedAt>150||queue[0].lifeId!==player.lifeId||!player.inventory[queue[0].weaponId]))queue.shift();
+    if(!queue.length)return false;
+    const command=queue[0];
+    if(command.weaponId!==player.weapon){queue.shift();return true;}
+    if(now<player.nextShotAt)return true;
+    queue.shift();player.triggerWasDown=false;
+    this.fire(player,command.input,command);return true;
+  }
+
+  recordPoses(){this.poseHistory.push(this.clock(),[...this.players.values()].map(p=>({id:p.id,x:p.x,y:p.y,z:p.z,yaw:p.yaw,pitch:p.pitch,crouch:p.crouch,alive:p.alive,team:p.team,lifeId:p.lifeId,protectionUntil:p.protectionUntil})));}
+  shotTargets(viewTime,receivedAt){
+    const current=[...this.players.values()];if(!Number.isFinite(viewTime))return {players:current,rewindMs:0};
+    const time=clamp(viewTime,receivedAt-MAX_REWIND_MS,receivedAt),past=new Map(this.poseHistory.sample(time).map(p=>[p.id,p]));
+    return {rewindMs:Math.round(receivedAt-time),players:current.map(p=>{const old=past.get(p.id);return old?.alive&&p.alive&&old.lifeId===p.lifeId&&old.team===p.team?{...p,x:old.x,y:old.y,z:old.z,crouch:old.crouch}:p;})};
+  }
   selectSlot(player, slot, utilityId=null) {
     const next = slot===4 ? (UTILITY_IDS.includes(utilityId)&&player.inventory[utilityId]?.ammo>0?utilityId:null) : Object.keys(player.inventory).find(id => getWeapon(id).slot === slot);
     if (!next || next === player.weapon) return;
@@ -285,6 +318,7 @@ export class GameRoom {
     this.bomb = this.emptyBomb();
     this.grenades.clear();
     this.droppedWeapons.clear();
+    this.poseHistory.clear();
     for (const p of this.players.values()) this.respawn(p, true);
     const terrorists = [...this.players.values()].filter(p => p.team === 'T');
     const carrier = terrorists.find(p => !p.bot) || terrorists[0];
@@ -296,7 +330,7 @@ export class GameRoom {
     const spawn = this.pickSpawn(p.team);
     if (newRound && !p.alive) { p.inventory = {}; p.armor = 0;p.helmet=false;p.defuseKit=false; this.giveWeapon(p, p.team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(p, 'knife'); }
     const consumedJump=p.input.jumpId||0, consumedReload=p.input.reloadId||0;
-    Object.assign(p, createPlayerState(spawn), { lastJumpId:consumedJump,lastReloadId:consumedReload,alive: true, health: 100, hasBomb: false, respawnAt: 0, flashBlindUntil:0, reloadEndsAt: 0, triggerWasDown: false, pendingFire: false,pendingInteract:false,grenadeState:null,grenadeRequireRelease:true,
+    Object.assign(p, createPlayerState(spawn), { lifeId:(p.lifeId||0)+1,fireQueue:[],lastJumpId:consumedJump,lastReloadId:consumedReload,alive: true, health: 100, hasBomb: false, respawnAt: 0, flashBlindUntil:0, reloadEndsAt: 0, triggerWasDown: false, pendingFire: false,pendingInteract:false,grenadeState:null,grenadeRequireRelease:true,
       protectionUntil: this.mode === 'deathmatch' ? this.clock() + this.rules.protectionSeconds * 1000 : 0,
       nextShotAt: this.clock() + 350, input: neutralInput(), inputAt: 0,zoomLevel:0 });
     p.input.yaw = p.yaw || spawn.yaw || 0;
@@ -449,7 +483,7 @@ export class GameRoom {
     this.selectSlot(p,fallback);
   }
 
-  fire(p, input) {
+  fire(p, input, command=null) {
     const now=this.clock(),w=getWeapon(p.weapon),ammo=p.inventory[p.weapon];
     if(w.slot===4||this.match.status==='ended')return;
     const rising=input.fire&&!p.triggerWasDown;p.triggerWasDown=input.fire;
@@ -458,19 +492,18 @@ export class GameRoom {
     if(p.reloadEndsAt){if(w.reloadStyle==='shell'&&ammo.ammo>0)p.reloadEndsAt=0;else return;}
     if(w.magazine&&ammo.ammo<=0){this.reload(p);return;}
     if(w.magazine)ammo.ammo--;
-    p.lastShotTime=now;p.nextShotAt=now+w.fireInterval*1000;p.protectionUntil=0;
-    const scoped=p.zoomLevel>0&&w.zoomFovs.length>1,movement=Math.hypot(p.vx||0,p.vz||0);
-    const baseSpread=scoped?w.scopedSpread:p.crouch?(w.crouchingSpread??w.spread):w.spread;
-    const spread=baseSpread+(movement>.8?w.movingSpread:0)+(!p.grounded?w.movingSpread:0);
+    p.lastShotTime=now;p.nextShotAt=(command?Math.max(command.receivedAt,p.nextShotAt):now)+w.fireInterval*1000;p.protectionUntil=0;
+    const zoomLevel=clamp(command?input.zoomLevel:p.zoomLevel||0,0,w.zoomFovs.length-1),scoped=zoomLevel>0;
+    const accuracy=accuracyForShot(w,p,zoomLevel),targets=this.shotTargets(command?.input.viewTime,command?.receivedAt??now);
     const origin=eye(p),pellets=[],hits=new Map();
     for(let pellet=0;pellet<(w.pellets||1);pellet++){
-      const dir=directionFromAngles(input.yaw+(Math.random()-.5)*spread*2,input.pitch+(Math.random()-.5)*spread*2);
+      const dir=sampleShotDirection(input.yaw,input.pitch,accuracy);
       let trace;
-      if(this.traceBullet&&w.id!=='knife')trace=this.traceBullet({origin,direction:dir,weapon:w,shooter:p,players:[...this.players.values()],now,rayHitPlayer,raycastWorld});
+      if(this.traceBullet&&w.id!=='knife')trace=this.traceBullet({origin,direction:dir,weapon:w,shooter:p,players:targets.players,now,rayHitPlayer,raycastWorld});
       if(!trace){
         const worldDistance=raycastWorld(origin,dir,w.range);
         let nearest=worldDistance===null?w.range:Math.min(w.range,worldDistance),victim=null,headshot=false;
-        for(const other of this.players.values()){
+        for(const other of targets.players){
           if(!other.alive||other.id===p.id||other.team===p.team||now<other.protectionUntil)continue;
           const hit=rayHitPlayer(origin,dir,other,nearest);
           if(hit&&hit.distance<nearest){nearest=hit.distance;victim=other;headshot=hit.headshot;}
@@ -497,7 +530,7 @@ export class GameRoom {
 
     }
     const representative=pellets.find(pellet=>pellet.hitId)||pellets[0];
-    this.emit('shot',{shooterId:p.id,weapon:p.weapon,origin,...representative,...(pellets.length>1?{pellets}: {})});
+    this.emit('shot',{shooterId:p.id,weapon:p.weapon,shotId:input.shotId||0,inputSeq:input.seq,zoomLevel,accuracy:accuracy.total,rewindMs:targets.rewindMs,aim:{yaw:input.yaw,pitch:input.pitch},origin,...representative,...(pellets.length>1?{pellets}: {})});
     for(const hit of hits.values()){
       if(this.match.status==='ended')break;
       hit.victim.armor=hit.armorState.armor;
@@ -672,6 +705,7 @@ export class GameRoom {
     const now = this.clock();
     if(this.match.status==='ended')return;
     this.maybeStart();
+    this.recordPoses();
     if (this.mode === 'defuse') {
       if (this.round.phase === 'freeze' && now >= this.round.phaseEndsAt) { this.round.phase = 'live'; this.round.phaseEndsAt = now + this.rules.roundSeconds * 1000; }
       else if (this.round.phase === 'ended' && now >= this.round.phaseEndsAt) { if (this.count('T') && this.count('CT')) this.startRound(); else { this.round.phase = 'waiting'; this.round.phaseEndsAt = 0; } }
@@ -681,7 +715,6 @@ export class GameRoom {
       if(this.match.status==='ended')break;
       if (!p.alive) { if (p.respawnAt && now >= p.respawnAt) this.respawn(p); continue; }
       const input = p.bot ? this.botInput(p, dt) : now - p.inputAt < 300 ? { ...p.input } : { ...neutralInput(), yaw: p.yaw || 0, pitch: p.pitch || 0 };
-      if (!p.bot && p.pendingFire && now - p.inputAt < 300) { input.fire = true; p.triggerWasDown = false; }
       p.pendingFire = false;
       if(!p.bot){
         const fresh=now-p.inputAt<300;
@@ -691,6 +724,9 @@ export class GameRoom {
       }
       p.seq = Math.max(p.seq, p.input.seq ?? -1);
       if (!canAct && this.mode === 'defuse') Object.assign(input, { forward: 0, right: 0, jump: false, fire: false, interact: false });
+      const queuedShot=canAct&&!p.bot&&this.fireQueued(p);
+      if(this.match.status==='ended')break;
+      if(!canAct&&p.fireQueue)p.fireQueue.length=0;
       if (input.slot) this.selectSlot(p, input.slot,input.utilityId);
       if(p.grenadeState&&(now-p.inputAt>=300||!canAct))this.cancelGrenade(p,'inactive');
       p.zoomLevel=p.reloadEndsAt?0:clamp(input.zoomLevel||0,0,getWeapon(p.weapon).zoomFovs.length-1);
@@ -703,10 +739,11 @@ export class GameRoom {
       if (input.reload) this.reload(p);
       if((canAct||this.round.phase==='freeze')&&!p.bot&&p.pendingInteract&&now-p.inputAt<300)this.pickupWeapon(p);
       p.pendingInteract=false;
-      if (canAct) {this.stepGrenade(p);this.fire(p, input);}
+      if (canAct) {this.stepGrenade(p);if(!p.shotCommands&&!queuedShot)this.fire(p,input);}
     }
     if(canAct)this.grenades.tick(dt);
     this.droppedWeapons.tick(dt);
+    this.recordPoses();
     if (this.mode === 'defuse' && this.round.phase === 'live') {
       this.stepBomb(dt);
       if (this.round.phase !== 'live') return;
@@ -719,7 +756,7 @@ export class GameRoom {
 
   snapshot({ drainEvents = true } = {}) {
     const now = this.clock();
-    const players = [...this.players.values()].map(p => ({ id: p.id, name: p.name, team: p.team, teamId:p.teamId, bot: p.bot, agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
+    const players = [...this.players.values()].map(p => ({ id: p.id, lifeId:p.lifeId,name: p.name, team: p.team, teamId:p.teamId, bot: p.bot, agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
       vx: round2(p.vx), vy: round2(p.vy), vz: round2(p.vz), yaw: round2(p.yaw), pitch: round2(p.pitch), crouch: !!p.crouch, grounded: !!p.grounded,
       health: p.health, armor: round2(p.armor), helmet:!!p.helmet, defuseKit:!!p.defuseKit,zoomLevel:p.zoomLevel,utilityCounts:Object.fromEntries(UTILITY_IDS.map(id=>[id,p.inventory[id]?.ammo||0])), alive: p.alive, weapon: p.weapon, skinId:this.heldSkin(p), slot: p.slot, ammo: p.inventory[p.weapon]?.ammo || 0, reserve: p.inventory[p.weapon]?.reserve || 0,
       reserveAmmoAsClips:!!getWeapon(p.weapon).reserveAmmoAsClips,reserveClips:getWeapon(p.weapon).reserveAmmoAsClips?Math.ceil((p.inventory[p.weapon]?.reserve||0)/getWeapon(p.weapon).magazine):0,
