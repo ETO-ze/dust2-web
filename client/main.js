@@ -38,6 +38,9 @@ import {MovementPrediction} from './movement-prediction.js';
 import {movementState} from '../shared/movement-commands.js';
 import { HUD } from './hud.js';
 import { downloadAssets, releaseDownloads } from './loading.js';
+import { connectionTarget } from './connection-target.js';
+
+const connection = connectionTarget(location.href, globalThis.__DUST2_PORTABLE__);
 
 const $=id=>document.getElementById(id);
 const canvas=$('game-canvas');
@@ -76,7 +79,7 @@ let viewWeapon=null, socket=null,myId=null,room=null,mode='defuse',snapshot=null
 let loaded=false,loading=false,connected=false,lookYaw=0,lookPitch=0,slot=1;
 let mouseFire=false,pendingFirePress=false,wasFire=false,scoped=false,seq=0,lastShot=0,fireTimer=0,recoil=0;
 let fixed=0,networkAcc=0,hudAcc=0,pingAcc=0,lastTime=performance.now(),fps=60,ping=0,lastStep=0;
-let lastSnapshotAlive=false,previousHealth=100,inviteBase=null;
+let lastSnapshotAlive=false,previousHealth=100,inviteBase=connection.inviteBase;
 let primary='ak47',primaryExplicit=false,downloadAbort=null,pendingJoin=false;
 const handledEvents=new Set();
 let previousWeapon=null,previousReload=0;
@@ -256,7 +259,7 @@ async function start(joinExisting=false){
 }
 function connect(joinExisting){
   if(socket)socket.close();
-  const url=new URL('ws',new URL('.',location.href));url.protocol=location.protocol==='https:'?'wss:':'ws:';
+  const url=connection.socketURL;
   socket=new WebSocket(url);const activeSocket=socket;
   const timeout=setTimeout(()=>{if(!connected&&socket===activeSocket){$('menu-status').textContent='服务器连接超时，请确认游戏服务已启动。';socket.close();}},15000);
   socket.addEventListener('open',()=>{if(socket!==activeSocket)return;const name=$('nickname').value.trim()||'Player';localStorage.setItem('dust2.name',name);activeSocket.send(JSON.stringify({type:'join',name,movementProtocol:1,room:joinExisting?$('room-code').value.trim().toUpperCase():undefined,mode:$('mode').value,team:$('team').value,primary,skins:skins.loadout,agents:agentsUI.loadout,bots:Number($('bots').value)}));});
@@ -369,7 +372,7 @@ async function lockPointer(){if(!connected||!self||contextLost||snapshot?.match?
 function showMenu(){matchAudio.stop();bombView.clear();roomMenu.element.hidden=true;displayedHostBots=null;audio.stopAll();effects.clear();utilityEffects.clear();droppedWeapons.clear();hud.reset();matchView.reset();matchPresentation.reset();spectating=null;spectatorLook=null;pendingShots=[];mouseFire=false;wasFire=false;controls.clear();resetScope();document.exitPointerLock?.();document.body.classList.remove('playing');$('menu').hidden=false;$('hud').hidden=true;$('pause-menu').hidden=true;$('buy-menu').hidden=true;$('scoreboard').hidden=true;for(const a of actors.values())a.dispose(scene);actors.clear();self=null;snapshot=null;}
 function toggleBuy(){if(!connected)return;if(!self?.alive&&$('buy-menu').hidden){hud.toast('阵亡时无法购买，重生或下一回合后可打开商店。');return;}if($('buy-menu').hidden){$('buy-menu').hidden=false;$('pause-menu').hidden=true;mouseFire=false;resetScope();controls.clear();shop.update({player:{...self,skins:skins.loadout},mode,round:snapshot?.round,time:snapshot?.time});document.exitPointerLock();$('close-buy').focus();}else{$('buy-menu').hidden=true;lockPointer();}}
 
-async function invite(){if(!room)return;let url=new URL(location.href);url.searchParams.set('room',room);if(inviteBase){url=new URL(inviteBase);url.searchParams.set('room',room);}try{await navigator.clipboard.writeText(url.href);hud.toast('邀请链接已复制，发送给朋友即可加入');}catch{hud.toast(`房间 ${room} · ${url.href}`);}}
+async function invite(){if(!room)return;if(connection.offline){hud.toast('当前是本机练习；与朋友对战请使用“在线联机”启动入口');return;}let url=new URL(location.href);url.searchParams.set('room',room);if(inviteBase){url=new URL(inviteBase);url.searchParams.set('room',room);}try{await navigator.clipboard.writeText(url.href);hud.toast('邀请链接已复制，发送给朋友即可加入');}catch{hud.toast(`房间 ${room} · ${url.href}`);}}
 function setQuality(value){quality=value==='high'?'high':'low';localStorage.setItem('dust2.quality.v2',quality);$('quality').value=quality;applyQuality();}
 function setBrightness(value){brightness=Math.max(60,Math.min(160,Number(value)||100));localStorage.setItem('dust2.brightness',brightness);renderer.toneMappingExposure=1.03*brightness/100;}
 function applyQuality(){renderer.toneMappingExposure=1.03*brightness/100;renderer.setPixelRatio(quality==='low'?Math.min(1,devicePixelRatio):Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=quality!=='low';renderer.setSize(innerWidth,innerHeight);scene.traverse(o=>{if(o.isLight&&o.shadow)o.shadow.needsUpdate=true;});}

@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { createServer, get } from 'node:http';
+import { startPortable } from '../portable/launch.mjs';
+import { connectionTarget } from '../client/connection-target.js';
+
+test('portable connection keeps remote rooms and public invites, production stays same-origin', () => {
+  const config = {mode:'online',socketURL:'wss://cs2.duskrain.cn/ws'};
+  assert.deepEqual(connectionTarget('http://127.0.0.1:27185/?room=ABC123',config), {socketURL:config.socketURL,inviteBase:'https://cs2.duskrain.cn/',offline:false});
+  assert.deepEqual(connectionTarget('https://site.test/dust2/',config), {socketURL:'wss://site.test/dust2/ws',inviteBase:null,offline:false});
+  assert.deepEqual(connectionTarget('http://127.0.0.1:27195/',{mode:'offline',socketURL:'ws://127.0.0.1:1234/ws'}), {socketURL:'ws://127.0.0.1:1234/ws',inviteBase:null,offline:true});
+});
+test('portable static service supports local assets, ranges, private path guard and duplicate launch', async t => {
+  const root = await mkdtemp(path.join(tmpdir(), 'dust2 portable 中文 '));
+  t.after(()=>rm(root,{recursive:true,force:true}));
+  await mkdir(path.join(root,'dist'));
+  await writeFile(path.join(root,'dist/index.html'), '<html><head></head><body><span>在线大厅</span></body></html>');
+  await writeFile(path.join(root,'dist/sound.mp3'), '0123456789');
+  await writeFile(path.join(root,'private.txt'), 'private');
+  const app = await startPortable({root,port:0}); t.after(()=>app.close());
+  const health = await fetch(app.url+'portable-health').then(r=>r.json());
+  assert.equal(health.socketURL,'wss://cs2.duskrain.cn/ws');
+  assert.match(await fetch(app.url).then(r=>r.text()), /__DUST2_PORTABLE__/);
+  const range = await fetch(app.url+'sound.mp3',{headers:{Range:'bytes=2-5'}});
+  assert.equal(range.status,206); assert.equal(await range.text(),'2345');
+  assert.equal(range.headers.get('content-type'),'audio/mpeg');
+  assert.equal((await fetch(app.url+'sound.mp3',{headers:{Range:'bytes=99-'}})).status,416);
+  assert.equal((await fetch(app.url+'%2e%2e%2fprivate.txt')).status,403);
+  const foreignHostStatus = await new Promise((resolve,reject)=>get(app.url+'sound.mp3',{headers:{Host:'unrelated.example'}},res=>{res.resume();resolve(res.statusCode);}).on('error',reject));
+  assert.equal(foreignHostStatus,403);
+  assert.equal((await fetch(app.url+'private.txt')).status,404);
+  assert.equal((await fetch(app.url,{method:'POST'})).status,405);
+  const reused = await startPortable({root,port:Number(new URL(app.url).port)});
+  assert.equal(reused.reused,true); assert.equal(reused.url,app.url);
+  await reused.close(); assert.equal((await fetch(app.url)).status,200);
+});
+test('occupied unrelated port is preserved and a different loopback port is used', async t => {
+  const root = await mkdtemp(path.join(tmpdir(),'dust2-port-'));
+  t.after(()=>rm(root,{recursive:true,force:true}));
+  await mkdir(path.join(root,'dist'));await writeFile(path.join(root,'dist/index.html'),'<head></head>');
+  const other=createServer((req,res)=>res.end('unrelated'));
+  await new Promise(resolve=>other.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>other.close(resolve)));
+  const port=other.address().port,app=await startPortable({root,port});t.after(()=>app.close());
+  assert.notEqual(Number(new URL(app.url).port),port);
+  assert.equal(await fetch(`http://127.0.0.1:${port}/`).then(r=>r.text()),'unrelated');
+});

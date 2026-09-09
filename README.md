@@ -6,7 +6,7 @@
 
 在浏览器里走进 Dust II：选阵营、买装备、检视皮肤，从中门的第一枪开始。
 
-[新主地址](https://cs2.duskrain.cn/) · [游戏实拍](docs/SHOWCASE.md) · [本地运行](#本地运行) · [当前边界](#当前边界)
+[新主地址](https://cs2.duskrain.cn/) · [游戏实拍](docs/SHOWCASE.md) · [Windows 便携包](docs/PORTABLE.md) · [本地运行](#本地运行) · [当前边界](#当前边界)
 
 **Three.js / WebGL2 · Node.js / WebSocket · 多人房间 · 机器人 · PWA**
 

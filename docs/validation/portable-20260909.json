@@ -1,0 +1,203 @@
+{
+  "online": {
+    "status": {
+      "room": "757256",
+      "loaded": true,
+      "connected": true,
+      "seats": {
+        "CT": [
+          {
+            "team": "CT",
+            "seat": 0,
+            "playerId": null,
+            "name": "",
+            "bot": false,
+            "alive": false,
+            "host": false
+          },
+          {
+            "team": "CT",
+            "seat": 1,
+            "playerId": null,
+            "name": "",
+            "bot": false,
+            "alive": false,
+            "host": false
+          },
+          {
+            "team": "CT",
+            "seat": 2,
+            "playerId": null,
+            "name": "",
+            "bot": false,
+            "alive": false,
+            "host": false
+          },
+          {
+            "team": "CT",
+            "seat": 3,
+            "playerId": null,
+            "name": "",
+            "bot": false,
+            "alive": false,
+            "host": false
+          },
+          {
+            "team": "CT",
+            "seat": 4,
+            "playerId": null,
+            "name": "",
+            "bot": false,
+            "alive": false,
+            "host": false
+          }
+        ],
+        "T": [
+          {
+            "team": "T",
+            "seat": 0,
+            "playerId": "p_40f240f47552",
+            "name": "Portable-QA",
+            "bot": false,
+            "alive": true,
+            "host": true
+          },
+          {
+            "team": "T",
+            "seat": 1,
+            "playerId": null,
+            "name": "",
+            "bot": false,
+            "alive": false,
+            "host": false
+          },
+          {
+            "team": "T",
+            "seat": 2,
+            "playerId": null,
+            "name": "",
+            "bot": false,
+            "alive": false,
+            "host": false
+          },
+          {
+            "team": "T",
+            "seat": 3,
+            "playerId": null,
+            "name": "",
+            "bot": false,
+            "alive": false,
+            "host": false
+          },
+          {
+            "team": "T",
+            "seat": 4,
+            "playerId": null,
+            "name": "",
+            "bot": false,
+            "alive": false,
+            "host": false
+          }
+        ]
+      },
+      "players": [
+        {
+          "id": "p_40f240f47552",
+          "name": "Portable-QA",
+          "bot": false
+        }
+      ],
+      "viewModel": {
+        "id": "ak47",
+        "skinId": "ak47-vulcan",
+        "waiting": false,
+        "visible": true,
+        "action": "draw"
+      }
+    },
+    "invite": "https://cs2.duskrain.cn/?room=757256",
+    "sockets": [
+      "wss://cs2.duskrain.cn/ws"
+    ],
+    "failures": [],
+    "errors": [],
+    "assetRequests": 852,
+    "externalHTTP": []
+  },
+  "friends": {
+    "a": {
+      "room": "757256",
+      "id": "p_40f240f47552",
+      "humans": [
+        "Portable-QA",
+        "Friend-QA"
+      ]
+    },
+    "b": {
+      "room": "757256",
+      "id": "p_ea9110eb1f2c",
+      "humans": [
+        "Portable-QA",
+        "Friend-QA"
+      ]
+    }
+  },
+  "offline": {
+    "status": {
+      "loaded": true,
+      "connected": true,
+      "room": "F964F1",
+      "bots": 3,
+      "viewModel": {
+        "id": "ak47",
+        "skinId": "ak47-vulcan",
+        "waiting": false,
+        "visible": true,
+        "action": "draw"
+      },
+      "settings": {
+        "sensitivity": 1,
+        "zoomSensitivity": 1,
+        "crosshair": {
+          "style": 4,
+          "size": 1,
+          "thickness": 1.5,
+          "gap": -4,
+          "color": 5,
+          "red": 0,
+          "green": 255,
+          "blue": 165,
+          "alpha": 255,
+          "outlineThickness": 0,
+          "fixedCrosshairGap": 0,
+          "splitDistance": 3,
+          "innerSplitAlpha": 0,
+          "outerSplitAlpha": 1,
+          "splitSizeRatio": 1,
+          "useAlpha": true,
+          "dot": false,
+          "outline": false,
+          "tStyle": false,
+          "followRecoil": false,
+          "gapUseWeaponValue": false
+        },
+        "quality": "low",
+        "brightness": 100
+      }
+    },
+    "sockets": [
+      "ws://127.0.0.1:13062/ws"
+    ],
+    "blocked": [],
+    "failures": [],
+    "errors": [],
+    "assetRequests": 25
+  },
+  "date": "2026-09-09",
+  "tests": {
+    "passed": 189,
+    "failed": 0
+  },
+  "offlineExternalHTTPPolicy": "All HTTP requests outside loopback aborted; observed WebSocket endpoint also loopback",
+  "assetFiles": 973
+}

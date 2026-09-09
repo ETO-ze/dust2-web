@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "version": "2dc1d42cce5d4049",
+  "version": "b1d80c4f25521ae1",
   "baseURL": "https://cs2.duskrain.cn/",
   "baseManifestVersion": "9b3a2fac884600ae",
-  "totalBytes": 407900287,
+  "totalBytes": 408106625,
   "files": [
     {
       "path": "assets/asset-manifest.json",
@@ -5314,6 +5314,12 @@
       "bytes": 153557,
       "sha256": "3be20317d1383da6f390a5bb245cabb65857ef08b1e2c5b82b5938a8cb3167bb",
       "group": "metadata"
+    },
+    {
+      "path": "assets/valve-dust2/de_dust2.png",
+      "bytes": 206338,
+      "sha256": "7616b610553374e4fce77d774e1de21d382ea93a2a2c304a13167dc3dbe2fc73",
+      "group": "interface"
     },
     {
       "path": "assets/viewmodel/animations-manifest.json",
