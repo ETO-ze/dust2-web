@@ -1,0 +1,133 @@
+{
+  "release": "20260909T104043Z",
+  "room": {
+    "ok": true,
+    "release": "20260909T104043Z",
+    "room": "RQ4805A457",
+    "checks": [
+      "Five seats on each side; exact bot seat broadcasts",
+      "Non-host cannot remove bot",
+      "Bot removed, owner joins the vacated seat",
+      "Full room remains exactly five versus five",
+      "Host ownership transfers on departure"
+    ],
+    "at": "2026-09-09T10:43:03.740Z"
+  },
+  "gameplay": {
+    "startedAt": "2026-09-09T10:43:03.823Z",
+    "base": "https://cs2.duskrain.cn/",
+    "release": "20260909T104043Z",
+    "mode": "public",
+    "checks": [
+      {
+        "name": "Two ordinary WebSocket players create an isolated DM room with zero bots"
+      },
+      {
+        "name": "Owner changes bots 0→2→0; non-owner request is rejected and snapshots agree"
+      },
+      {
+        "name": "Held full throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ21483169:9",
+        "strength": 1
+      },
+      {
+        "name": "Held drop throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ21483169:12",
+        "strength": 0
+      },
+      {
+        "name": "Held lob throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ21483169:17",
+        "strength": 0.5
+      },
+      {
+        "name": "Menu/blur-style cancellation releases a held grenade without throwing or consuming it"
+      },
+      {
+        "name": "Scoped shot retains click aim and zoom when unzoom/turn/switch arrive immediately afterwards",
+        "shotId": 1,
+        "zoomLevel": 2,
+        "accuracy": 0.0022,
+        "aim": {
+          "yaw": 0.3000000000000007,
+          "pitch": 1.45
+        }
+      },
+      {
+        "name": "Dropped AWP preserves exact skin, magazine and reserve in observer snapshot",
+        "weapon": "awp",
+        "skin": "awp-dragon-lore",
+        "ammo": 4,
+        "reserve": 10
+      },
+      {
+        "name": "Both sockets close cleanly; first departure is observed before final disconnect"
+      }
+    ],
+    "peers": [
+      {
+        "id": "p_52c5543d20fd",
+        "team": "CT",
+        "close": {
+          "code": 1000,
+          "reason": "Gameplay verification complete"
+        }
+      },
+      {
+        "id": "p_4deffeb5280e",
+        "team": "T",
+        "close": {
+          "code": 1000,
+          "reason": "Gameplay verification complete"
+        }
+      }
+    ],
+    "healthBefore": {
+      "ok": true,
+      "service": "dust2-web",
+      "release": "20260909T104043Z",
+      "protocol": 1,
+      "tickRate": 30,
+      "uptime": 37,
+      "rooms": 0,
+      "humans": 0,
+      "players": 0,
+      "memory": {
+        "rssMiB": 119,
+        "heapMiB": 18
+      },
+      "performance": {
+        "windowSamples": 1112,
+        "tickBudgetMs": 33.33,
+        "tickP50Ms": 0.01,
+        "tickP95Ms": 1.43,
+        "tickMaxMs": 39.2,
+        "maxSchedulingDelayMs": 10.01,
+        "lateTicks": 1,
+        "totalTicks": 1112
+      }
+    },
+    "room": "GQ21483169",
+    "ok": true,
+    "finishedAt": "2026-09-09T10:43:15.158Z"
+  },
+  "assets": {
+    "ok": true,
+    "files": 251,
+    "bytes": 116752455,
+    "finishedAt": "2026-09-09T10:49:49.369Z"
+  },
+  "browser": {
+    "ok": true,
+    "url": "https://cs2.duskrain.cn/",
+    "actions": [
+      "create room",
+      "add bot to CT seat 1",
+      "take CT seat 5",
+      "remove bot",
+      "leave room"
+    ],
+    "screenshot": "docs/screenshots/public-room-5v5.png",
+    "scriptErrors": 0
+  }
+}

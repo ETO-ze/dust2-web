@@ -389,6 +389,17 @@
       "height": 900,
       "modified": false,
       "capturedOn": "2026-09-09"
+    },
+    {
+      "file": "public-room-5v5.png",
+      "source": "output/playwright/public-room-5v5.png",
+      "sha256": "9bb0a6f1a1038101aefec61a512a2cdf727477866b84f1ff2f318400e61d4131",
+      "bytes": 464619,
+      "width": 2560,
+      "height": 1273,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "url": "https://cs2.duskrain.cn/"
     }
   ],
   "updatedOn": "2026-09-09"
