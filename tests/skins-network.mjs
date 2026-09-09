@@ -190,7 +190,9 @@ test('skin loadouts remain cosmetic across real WebSocket joins, equips and resp
     const selected = structuredClone(player.skins), deaths = player.deaths, deadMark = observer.mark();
     room.kill(player, target, 'm4a1');
     const dead = await waitPlayer(observer, id, p => !p.alive && p.deaths === deaths + 1, deadMark);
-    assert.equal(playerIn(dead, id).skinId, selected.ak47);
+    assert.equal(playerIn(dead,id).skinId,selected[playerIn(dead,id).weapon]);
+    assert.ok(dead.droppedWeapons.some(item=>item.weaponId==='ak47'&&item.skinId===selected.ak47));
+    assert.deepEqual(player.skins,selected);
     const liveMark = observer.mark(); player.respawnAt = Date.now() - 1;
     const respawned = await waitPlayer(observer, id, p => p.alive && p.deaths === deaths + 1, liveMark);
     const p = playerIn(respawned, id);

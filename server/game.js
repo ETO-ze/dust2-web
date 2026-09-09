@@ -6,6 +6,10 @@ import { DEFAULT_SKINS, getSkin, normalizeSkinLoadout } from '../shared/skins.js
 import { DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } from '../shared/agents.js';
 import { EQUIPMENT, UTILITY_IDS, MAX_GRENADES, getEquipment, canTeamBuyEquipment, equipmentPrice, grenadeCount } from '../shared/equipment.js';
 import { GrenadeSimulation } from './grenades.js';
+import { MATCH_RULES, botCount, defuseDecision, grenadeMode, grenadeStrength } from '../shared/match-rules.js';
+import { BOT_AIM, smoothBotAim } from './bot-aim.js';
+import { DroppedWeapons } from './dropped-weapons.js';
+import { traceBullet as defaultTraceBullet } from './bullet-penetration.js';
 
 export const TICK_RATE = 30;
 export const SNAPSHOT_RATE = 15;
@@ -16,7 +20,7 @@ const lengthXZ = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
 const copyPoint = p => ({ x: p.x, y: p.y, z: p.z });
 const eye = p => ({ x: p.x, y: p.y + (p.crouch ? 0.95 : 1.6), z: p.z });
-const neutralInput = () => ({ forward: 0, right: 0, yaw: 0, pitch: 0, jump: false, crouch: false, walk: false, fire: false, reload: false, interact: false, slot: 0 });
+const neutralInput = () => ({ forward: 0, right: 0, yaw: 0, pitch: 0, jump: false, crouch: false, walk: false, fire: false, fire2:false, cancelGrenade:false, reload: false, interact: false, slot: 0 });
 const opposite = t => t === 'T' ? 'CT' : 'T';
 const finite = v => typeof v === 'number' && Number.isFinite(v);
 const round2 = n => Number.isFinite(n) ? Math.round(n * 1000) / 1000 : 0;
@@ -26,7 +30,7 @@ export function sanitizeInput(message) {
   if (!['forward', 'right', 'yaw', 'pitch'].every(k => finite(message[k]))) return null;
   return { seq: message.seq, forward: clamp(message.forward, -1, 1), right: clamp(message.right, -1, 1), yaw: ((message.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI,
     jumpId: Number.isSafeInteger(message.jumpId)&&message.jumpId>=0&&message.jumpId<=2147483647?message.jumpId:0, reloadId: Number.isSafeInteger(message.reloadId)&&message.reloadId>=0&&message.reloadId<=2147483647?message.reloadId:0, pitch: clamp(message.pitch, -1.48, 1.48), jump: message.jump === true, crouch: message.crouch === true,
-    walk: message.walk === true, fire: message.fire === true, reload: message.reload === true,
+    walk: message.walk === true, fire: message.fire === true, fire2:message.fire2===true, cancelGrenade:message.cancelGrenade===true, reload: message.reload === true,
     interact: message.interact === true, slot: [1, 2, 3, 4].includes(message.slot) ? message.slot : 0,
     utilityId: UTILITY_IDS.includes(message.utilityId) ? message.utilityId : null,
     zoomLevel: Number.isInteger(message.zoomLevel) && message.zoomLevel >= 0 && message.zoomLevel <= 2 ? message.zoomLevel : 0 };
@@ -83,21 +87,36 @@ export function applyArmorDamage(rawDamage, player, { headshot=false, armorRatio
 }
 
 export class GameRoom {
-  constructor(code, { mode = 'deathmatch', bots = 6, clock = () => Date.now(), rules = {} } = {}) {
-    this.code = code; this.mode = mode; this.desiredBots = clamp(Math.floor(bots), 0, 8);
+  constructor(code, { mode = 'defuse', bots = 6, clock = () => Date.now(), rules = {}, traceBullet=defaultTraceBullet } = {}) {
+    this.code = code; this.mode = mode==='deathmatch'?'deathmatch':'defuse'; this.desiredBots = botCount(bots);
+    mode=this.mode;this.traceBullet=traceBullet;this.hostId=null;
     this.clock = clock; this.rules = { ...RULES, ...rules }; this.players = new Map(); this.clients = new Map();
     this.scores = { T: 0, CT: 0 }; this.events = []; this.eventCounter = 0; this.botCounter = 0; this.spawnCounter = { T: 0, CT: 0 };
+    this.teamSides={A:'CT',B:'T'};
+    this.match={status:'live',period:'regulation',roundsPlayed:0,overtimeNumber:0,winTarget:mode==='deathmatch'?MATCH_RULES.deathmatchWinTarget:13,winnerTeamId:null};
+    this.pendingTransition=null;
     this.createdAt = clock(); this.round = { number: 0, phase: mode === 'deathmatch' ? 'live' : 'waiting', phaseEndsAt: 0, buyEndsAt: 0, winner: null, reason: '' };
     this.bomb = this.emptyBomb();
     this.nav = Array.isArray(MAP.nav) ? MAP.nav : [];
     this.navMap = new Map(this.nav.map(n => [String(n.id), n]));
     this.grenades=new GrenadeSimulation({clock,raycastWorld,emit:(type,fields)=>this.emit(type,fields),onExplosion:(grenade,config)=>this.explodeGrenade(grenade,config),onFlash:(grenade,config)=>this.flashGrenade(grenade,config)});
+    this.droppedWeapons=new DroppedWeapons({clock,raycastWorld});
   }
 
   emptyBomb() { return { state: 'none', carrierId: null, x: 0, y: 0, z: 0, site: null, plantedAt: 0, explodesAt: 0, planterId: null, actorId: null, action: null, progress: 0, remaining: 0 }; }
   emit(type, fields = {}) { this.events.push({ type, id: `${this.code}:${++this.eventCounter}`, time: this.clock(), ...fields }); if (this.events.length > 300) this.events.splice(0, this.events.length - 300); }
   count(team, humansOnly = false) { return [...this.players.values()].filter(p => p.team === team && (!humansOnly || !p.bot)).length; }
   get humanCount() { return this.clients.size; }
+  get botCount(){return [...this.players.values()].filter(p=>p.bot).length;}
+  teamForSide(side){return this.teamSides.A===side?'A':'B';}
+  matchSnapshot(){return {...this.match,teams:Object.fromEntries(Object.entries(this.teamSides).map(([id,side])=>[id,{side,score:this.scores[side]}]))};}
+  setBots(id,value){
+    if(id!==this.hostId)return {ok:false,message:'只有房主可以设置机器人数量。'};
+    if(!Number.isInteger(value)||value<0||value>9)return {ok:false,message:'机器人数量必须为 0–9 的整数。'};
+    this.desiredBots=value;this.ensureBots();this.maybeStart();
+    const result={ok:true,bots:value,desiredBots:value,botCount:this.botCount,hostId:this.hostId};
+    this.emit('bots_changed',result);return result;
+  }
 
   addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents }) {
     if (this.humanCount >= MAX_PLAYERS) throw new Error('房间已满，最多 10 名玩家。');
@@ -111,7 +130,8 @@ export class GameRoom {
     player.skins=normalizeSkinLoadout(skins);
     player.agents=normalizeAgentLoadout(agents);player.agentId=player.agents[assigned];
     this.players.set(id, player); this.clients.set(id, socket);
-    if (this.mode === 'defuse' && ['live', 'ended'].includes(this.round.phase)) { player.alive = false; player.health = 0; player.respawnAt = 0; }
+    if(!this.hostId)this.hostId=id;
+    if (this.match.status==='ended'||(this.mode === 'defuse' && ['live', 'ended'].includes(this.round.phase))) { player.alive = false; player.health = 0; player.respawnAt = 0; }
     this.ensureBots();
     this.emit('join', { playerId: id, name, team: assigned, bot: false });
     this.maybeStart();
@@ -119,16 +139,18 @@ export class GameRoom {
   }
 
   makePlayer(id, name, team, bot, primary = 'auto') {
-    const player = { ...createPlayerState(this.pickSpawn(team)), id, name, team, bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
+    const player = { ...createPlayerState(this.pickSpawn(team)), id, name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
       money: this.mode === 'deathmatch' ? 16000 : 800, kills: 0, deaths: 0, assists: 0, inventory: {}, skins:{...DEFAULT_SKINS}, slot: this.mode === 'deathmatch' ? 1 : 2,
       helmet:this.mode==='deathmatch',defuseKit:false,zoomLevel:0,flashBlindUntil:0,agents:{...DEFAULT_AGENT_IDS},agentId:DEFAULT_AGENT_IDS[team],
       weapon: 'pistol', input: neutralInput(), inputAt: 0, seq: -1, lastReceivedSeq: -1, lastShotTime: 0, nextShotAt: 0, reloadEndsAt: 0,
       respawnAt: 0, protectionUntil: this.clock() + this.rules.protectionSeconds * 1000, triggerWasDown: false, hasBomb: false,
+      grenadeState:null,grenadeRequireRelease:false,pendingInteract:false,interactWasDown:false,
       botAI: { nextThinkAt: 0, targetId: null, path: [], goal: null, lastKnown: null, lastSeenAt: 0, reactionAt: 0, stuckAt: this.clock(), previous: null, wanderAt: 0, strafe: Math.random() < 0.5 ? -1 : 1 },
     };
     this.giveWeapon(player, team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(player, 'knife');
     primary=normalizeWeapon(primary);
-    if (this.mode === 'deathmatch') this.giveWeapon(player, PRIMARY_WEAPONS.includes(primary)&&canTeamUseWeapon(team,primary) ? primary : defaultPrimaryForTeam(team));
+    player.loadoutPrimary=PRIMARY_WEAPONS.includes(primary)&&canTeamUseWeapon(team,primary)?primary:defaultPrimaryForTeam(team);
+    if (this.mode === 'deathmatch') this.giveWeapon(player,player.loadoutPrimary);
     this.selectSlot(player, player.slot);
     player.input.yaw = player.yaw || 0;
     return player;
@@ -153,7 +175,7 @@ export class GameRoom {
       const number = ++this.botCounter;
       const player = this.makePlayer(`b_${number}`, `${team === 'T' ? '沙狐' : '哨兵'} BOT ${number}`, team, true);
       this.players.set(player.id, player); bots.push(player);
-      if (this.mode === 'defuse' && ['live', 'ended'].includes(this.round.phase)) { player.alive = false; player.health = 0; }
+      if (this.match.status==='ended'||(this.mode === 'defuse' && ['live', 'ended'].includes(this.round.phase))) { player.alive = false; player.health = 0; }
     }
   }
 
@@ -162,6 +184,7 @@ export class GameRoom {
     if (!player) return;
     if (player.hasBomb) this.dropBomb(player);
     this.players.delete(id); this.clients.delete(id);
+    if(this.hostId===id){this.hostId=this.clients.keys().next().value||null;this.emit('host_changed',{hostId:this.hostId});}
     this.emit('leave', { playerId: id, name: player.name, bot: player.bot });
   }
 
@@ -171,6 +194,8 @@ export class GameRoom {
     // Preserve a short click even when press and release arrive between ticks.
     // At most one edge is retained, still subject to ammo, reload and fire rate.
     if (input.fire && !player.input.fire) player.pendingFire = true;
+    if(input.interact&&!player.input.interact)player.pendingInteract=true;
+    this.captureGrenadeInput(player,input);
     input.jumpId=Math.max(player.input.jumpId||0,input.jumpId);input.reloadId=Math.max(player.input.reloadId||0,input.reloadId);
     player.lastReceivedSeq = input.seq; player.input = input; player.inputAt = this.clock();
     return true;
@@ -180,6 +205,7 @@ export class GameRoom {
   selectSlot(player, slot, utilityId=null) {
     const next = slot===4 ? (UTILITY_IDS.includes(utilityId)&&player.inventory[utilityId]?.ammo>0?utilityId:null) : Object.keys(player.inventory).find(id => getWeapon(id).slot === slot);
     if (!next || next === player.weapon) return;
+    if(player.grenadeState&&player.grenadeState.weapon!==next)this.cancelGrenade(player,'switch');
     player.weapon = next; player.slot = slot; player.reloadEndsAt = 0;player.zoomLevel=0;
     player.nextShotAt = Math.max(player.nextShotAt, this.clock() + 180);
   }
@@ -188,6 +214,7 @@ export class GameRoom {
     const player=this.players.get(id),skin=getSkin(skinId);
     if(!player||!skin||skin.weapon!==weapon)return {ok:false,message:'无效的武器皮肤。'};
     player.skins[weapon]=skin.id;
+    if(player.inventory[weapon])delete player.inventory[weapon].skinId;
     return {ok:true,weapon,skin:skin.id};
   }
 
@@ -199,6 +226,7 @@ export class GameRoom {
   }
 
   buyStatus(p) {
+    if(this.match.status==='ended')return {buyAllowed:false,buyReason:'本场比赛已经结束。'};
     if(!p?.alive)return {buyAllowed:false,buyReason:'存活时才可以购买。'};
     if(this.mode==='defuse'){
       if(!['freeze','live'].includes(this.round.phase)||this.clock()>this.round.buyEndsAt)return {buyAllowed:false,buyReason:'购买时间已经结束。'};
@@ -227,20 +255,36 @@ export class GameRoom {
     else if(weapon==='helmet'){p.armor=100;p.helmet=true;}
     else if(weapon==='defusekit')p.defuseKit=true;
     else if(equipment?.slot===4){p.inventory[weapon]||={ammo:0,reserve:0};p.inventory[weapon].ammo++;}
-    else { for (const id of Object.keys(p.inventory)) if (getWeapon(id).slot === gun.slot) delete p.inventory[id]; this.giveWeapon(p, weapon);p.reloadEndsAt=0;p.zoomLevel=0;this.selectSlot(p, gun.slot); }
+    else { for (const id of Object.keys(p.inventory)) if (getWeapon(id).slot === gun.slot){const ammo=p.inventory[id],drop=this.droppedWeapons.drop(p,{weaponId:id,skinId:this.heldSkin(p,id),ammo:ammo.ammo,reserve:ammo.reserve});delete p.inventory[id];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:id,skinId:drop.skinId,death:false});} this.giveWeapon(p, weapon);if(gun.slot===1)p.loadoutPrimary=weapon;p.reloadEndsAt=0;p.zoomLevel=0;this.selectSlot(p, gun.slot); }
     this.emit('buy', { playerId: id, weapon, money: p.money });
     return { ok: true, weapon, slot:gun?.slot??equipment?.slot??0, money: p.money };
   }
 
   maybeStart() {
-    if (this.mode === 'defuse' && this.round.phase === 'waiting' && this.count('T') && this.count('CT')) this.startRound();
+    if (this.match.status!=='ended'&&this.mode === 'defuse' && this.round.phase === 'waiting' && this.count('T') && this.count('CT')) this.startRound();
   }
 
   startRound() {
+    if(this.match.status==='ended')return;
     const now = this.clock();
+    if(this.pendingTransition){
+      const {swapSides,resetMoney}=this.pendingTransition;this.pendingTransition=null;
+      if(swapSides){
+        [this.scores.T,this.scores.CT]=[this.scores.CT,this.scores.T];
+        for(const id of Object.keys(this.teamSides))this.teamSides[id]=opposite(this.teamSides[id]);
+        for(const p of this.players.values()){p.team=this.teamSides[p.teamId];p.agentId=p.agents[p.team]||DEFAULT_AGENT_IDS[p.team];}
+        this.emit('sides_swapped',{kind:this.match.period==='overtime'?'overtime':'halftime',period:this.match.period,overtimeNumber:this.match.overtimeNumber,teams:this.matchSnapshot().teams,round:this.round.number+1});
+      }
+      if(resetMoney!==null)for(const p of this.players.values()){
+        p.inventory={};p.armor=0;p.helmet=false;p.defuseKit=false;p.money=resetMoney;p.alive=true;
+        this.giveWeapon(p,p.team==='CT'?'usp':'pistol');this.giveWeapon(p,'knife');p.weapon=p.team==='CT'?'usp':'pistol';p.slot=2;
+        this.cancelGrenade(p,'period');
+      }
+    }
     this.round = { number: this.round.number + 1, phase: 'freeze', phaseEndsAt: now + this.rules.freezeSeconds * 1000, buyEndsAt: now + (this.rules.freezeSeconds + this.rules.buySeconds) * 1000, winner: null, reason: '' };
     this.bomb = this.emptyBomb();
     this.grenades.clear();
+    this.droppedWeapons.clear();
     for (const p of this.players.values()) this.respawn(p, true);
     const terrorists = [...this.players.values()].filter(p => p.team === 'T');
     const carrier = terrorists.find(p => !p.bot) || terrorists[0];
@@ -252,41 +296,61 @@ export class GameRoom {
     const spawn = this.pickSpawn(p.team);
     if (newRound && !p.alive) { p.inventory = {}; p.armor = 0;p.helmet=false;p.defuseKit=false; this.giveWeapon(p, p.team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(p, 'knife'); }
     const consumedJump=p.input.jumpId||0, consumedReload=p.input.reloadId||0;
-    Object.assign(p, createPlayerState(spawn), { lastJumpId:consumedJump,lastReloadId:consumedReload,alive: true, health: 100, hasBomb: false, respawnAt: 0, flashBlindUntil:0, reloadEndsAt: 0, triggerWasDown: false, pendingFire: false,
+    Object.assign(p, createPlayerState(spawn), { lastJumpId:consumedJump,lastReloadId:consumedReload,alive: true, health: 100, hasBomb: false, respawnAt: 0, flashBlindUntil:0, reloadEndsAt: 0, triggerWasDown: false, pendingFire: false,pendingInteract:false,grenadeState:null,grenadeRequireRelease:true,
       protectionUntil: this.mode === 'deathmatch' ? this.clock() + this.rules.protectionSeconds * 1000 : 0,
       nextShotAt: this.clock() + 350, input: neutralInput(), inputAt: 0,zoomLevel:0 });
     p.input.yaw = p.yaw || spawn.yaw || 0;
-    if (this.mode === 'deathmatch') {p.armor = 100;p.helmet=true;}
+    if (this.mode === 'deathmatch') {p.armor = 100;p.helmet=true;if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===1))this.giveWeapon(p,p.loadoutPrimary||defaultPrimaryForTeam(p.team));if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===2))this.giveWeapon(p,p.team==='CT'?'usp':'pistol');}
     if (newRound && p.bot) {
       const preferred = p.team === 'T' ? 'ak47' : 'm4a1';
       if (p.money >= WEAPONS[preferred].price) { p.money -= WEAPONS[preferred].price; this.giveWeapon(p, preferred); }
     }
-    for (const id of Object.keys(p.inventory)) if(!UTILITY_IDS.includes(id))this.giveWeapon(p, id);
+    for (const id of Object.keys(p.inventory)) if(!UTILITY_IDS.includes(id)){const skinId=p.inventory[id].skinId;this.giveWeapon(p,id);if(skinId)p.inventory[id].skinId=skinId;}
     p.botAI.path = []; p.botAI.goal = null; p.botAI.targetId = null; p.botAI.nextThinkAt = 0;
     this.selectSlot(p, Object.keys(p.inventory).some(id => getWeapon(id).slot === 1) ? 1 : 2);
     this.emit('spawn', { playerId: p.id, x: p.x, y: p.y, z: p.z });
   }
 
   endRound(team, reason) {
-    if (this.round.phase !== 'live') return;
+    if (this.round.phase !== 'live'||this.match.status==='ended') return;
     this.round.phase = 'ended'; this.round.winner = team; this.round.reason = reason;
     this.round.phaseEndsAt = this.clock() + this.rules.endSeconds * 1000;
     this.scores[team]++;
+    this.match.roundsPlayed++;
     for (const p of this.players.values()) p.money = Math.min(16000, p.money + (p.team === team ? 3250 : 1900));
     this.bomb.action = null; this.bomb.actorId = null; this.bomb.progress = 0;
     this.emit('round_end', { winner: team, reason, scores: { ...this.scores } });
+    const scores=Object.fromEntries(Object.entries(this.teamSides).map(([id,side])=>[id,this.scores[side]]));
+    const decision=defuseDecision(scores,this.match.roundsPlayed);
+    Object.assign(this.match,{period:decision.period,overtimeNumber:decision.overtimeNumber,winTarget:decision.winTarget});
+    for(const p of this.players.values())this.cancelGrenade(p,'round');
+    if(decision.winnerTeamId)this.endMatch(decision.winnerTeamId,'率先赢得比赛所需回合');
+    else this.pendingTransition=decision;
   }
 
-  kill(victim, killer, weapon = 'world', headshot = false) {
-    if (!victim.alive) return;
+  endMatch(winnerTeamId,reason){
+    if(this.match.status==='ended')return;
+    Object.assign(this.match,{status:'ended',winnerTeamId,reason,endedAt:this.clock()});
+    Object.assign(this.round,{phase:'matchEnded',phaseEndsAt:0,winner:this.teamSides[winnerTeamId],reason});
+    this.pendingTransition=null;this.grenades.clear();
+    for(const p of this.players.values()){p.respawnAt=0;p.reloadEndsAt=0;p.pendingFire=false;this.cancelGrenade(p,'match');p.input=neutralInput();p.effectiveInput=neutralInput();p.vx=p.vy=p.vz=0;}
+    this.emit('match_end',{winnerTeamId,winner:this.teamSides[winnerTeamId],reason,match:this.matchSnapshot()});
+  }
+
+  kill(victim, killer, weapon = 'world', headshot = false, metadata={}) {
+    if (!victim.alive||this.match.status==='ended') return;
+    this.dropWeapon(victim.id,true);
     victim.alive = false; victim.health = 0; victim.deaths++; victim.reloadEndsAt = 0;
+    this.cancelGrenade(victim,'death');
     victim.respawnAt = this.mode === 'deathmatch' ? this.clock() + this.rules.respawnSeconds * 1000 : 0;
     if (victim.hasBomb) this.dropBomb(victim);
-    if (killer && killer.id !== victim.id) { killer.kills++; killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.mode === 'deathmatch') this.scores[killer.team]++; }
-    this.emit('kill', { killerId: killer?.id || null, victimId: victim.id, killerName: killer?.name || '环境', victimName: victim.name, weapon, headshot });
+    if (killer && killer.id !== victim.id&&killer.team!==victim.team) { killer.kills++; killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.mode === 'deathmatch') this.scores[killer.team]++; }
+    this.emit('kill', { killerId: killer?.id || null, victimId: victim.id, killerName: killer?.name || '环境', victimName: victim.name, weapon, headshot,...metadata });
+    if(this.mode==='deathmatch'&&killer&&this.scores[killer.team]>=MATCH_RULES.deathmatchWinTarget)this.endMatch(killer.teamId,'队伍率先完成 100 次击杀');
   }
 
   damagePlayer(victim, attacker, rawDamage, weapon, headshot=false, armorRatio=1, bypassArmor=false) {
+    if(!victim.alive||this.match.status==='ended')return;
     const hit=applyArmorDamage(rawDamage,victim,{headshot,armorRatio,bypassArmor});
     victim.health=Math.max(0,victim.health-hit.damage);
     this.emit('hit',{shooterId:attacker?.id||null,targetId:victim.id,...hit,headshot,weapon});
@@ -322,19 +386,76 @@ export class GameRoom {
 
   visibleToBot(a,b){return clearSight(a,b)&&!this.grenades.blocksSight(a,b);}
 
+  heldSkin(p,weapon=p.weapon){return p.inventory[weapon]?.skinId||p.skins[weapon]||DEFAULT_SKINS[weapon];}
+  dropWeapon(id,death=false){
+    const p=this.players.get(id),current=p&&getWeapon(p.weapon);
+    const dropId=death&&current&&![1,2].includes(current.slot)?Object.keys(p.inventory).find(id=>getWeapon(id).slot===1)||Object.keys(p.inventory).find(id=>getWeapon(id).slot===2):p?.weapon;
+    const w=dropId&&getWeapon(dropId);
+    if(!p?.alive||this.match.status==='ended'||(!death&&!['live','freeze'].includes(this.round.phase))||!w||![1,2].includes(w.slot)||!p.inventory[w.id])return {ok:false,message:'当前没有可丢弃的枪械。'};
+    const ammo=p.inventory[w.id],drop=this.droppedWeapons.drop(p,{weaponId:w.id,skinId:this.heldSkin(p,w.id),ammo:ammo.ammo,reserve:ammo.reserve});
+    delete p.inventory[w.id];p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'drop');
+    this.selectSlot(p,Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3);
+    this.emit('weapon_dropped',{playerId:id,droppedId:drop.id,weaponId:w.id,skinId:drop.skinId,death});
+    return {ok:true,id:drop.id,weaponId:w.id};
+  }
+  pickupWeapon(p){
+    if(!p.alive||this.match.status==='ended')return false;
+    const bombPriority=this.mode==='defuse'&&((p.hasBomb&&this.siteAt(p))||(p.team==='CT'&&this.bomb.state==='planted'&&dist(p,this.bomb)<2.8));
+    if(bombPriority)return false;
+    const candidate=this.droppedWeapons.candidate(p);if(!candidate)return false;
+    const w=getWeapon(candidate.weaponId),old=Object.keys(p.inventory).find(id=>getWeapon(id).slot===w.slot);
+    const item=this.droppedWeapons.take(candidate.id);if(!item)return false;
+    if(old){const ammo=p.inventory[old],drop=this.droppedWeapons.drop(p,{weaponId:old,skinId:this.heldSkin(p,old),ammo:ammo.ammo,reserve:ammo.reserve});delete p.inventory[old];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:old,skinId:drop.skinId,death:false});}
+    p.inventory[w.id]={ammo:item.ammo,reserve:item.reserve,skinId:item.skinId};p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'pickup');
+    this.selectSlot(p,w.slot);p.nextShotAt=Math.max(p.nextShotAt,this.clock()+250);
+    this.emit('weapon_picked_up',{playerId:p.id,droppedId:item.id,weaponId:w.id,skinId:item.skinId});return true;
+  }
+
+  cancelGrenade(p,reason){
+    if(p.grenadeState)this.emit('grenade_cancelled',{playerId:p.id,weapon:p.grenadeState.weapon,reason});
+    p.grenadeState=null;p.grenadeRequireRelease=true;
+  }
+
+  captureGrenadeInput(p,input){
+    const now=this.clock(),held=input.fire||input.fire2;
+    if(!held)p.grenadeRequireRelease=false;
+    const requested=input.slot===4?input.utilityId:input.slot?Object.keys(p.inventory).find(id=>getWeapon(id).slot===input.slot):p.weapon;
+    if(!p.alive||this.round.phase!=='live'||input.cancelGrenade){this.cancelGrenade(p,input.cancelGrenade?'cancel':'inactive');return;}
+    if(p.grenadeState&&requested!==p.grenadeState.weapon){this.cancelGrenade(p,'switch');return;}
+    if(!UTILITY_IDS.includes(requested)||!p.inventory[requested]?.ammo)return;
+    let state=p.grenadeState;
+    if(!state){
+      // A press must begin while this utility is selected. Release-only packets,
+      // replays, and holding a button through respawn/switch cannot prime it.
+      if(!held||p.grenadeRequireRelease||(p.input.fire||p.input.fire2))return;
+      state=p.grenadeState={state:'primed',weapon:requested,mode:grenadeMode(input.fire,input.fire2),primedAt:now,readyAt:Math.max(now+200,p.nextShotAt),lastChordAt:input.fire&&input.fire2?now:-Infinity,releaseInput:null};
+      this.emit('grenade_primed',{playerId:p.id,weapon:requested,mode:state.mode,strength:grenadeStrength(state.mode)});
+    }
+    if(state.releaseInput)return;
+    if(held){state.mode=grenadeMode(input.fire,input.fire2);if(input.fire&&input.fire2)state.lastChordAt=now;}
+    else {if(now-state.lastChordAt<=60)state.mode='lob';state.releaseInput={yaw:input.yaw,pitch:input.pitch};}
+  }
+
+  stepGrenade(p){
+    const state=p.grenadeState;if(!state)return;
+    const now=this.clock();
+    if(!p.alive||this.round.phase!=='live'||p.weapon!==state.weapon||now-p.inputAt>=300){this.cancelGrenade(p,'inactive');return;}
+    if(!state.releaseInput||now<state.readyAt||now<p.nextShotAt)return;
+    const ammo=p.inventory[state.weapon],w=getWeapon(state.weapon);
+    if(!ammo?.ammo||!this.grenades.throwGrenade(p,state.weapon,{...state.releaseInput,throwMode:state.mode,throwStrength:grenadeStrength(state.mode)})){this.cancelGrenade(p,'unavailable');return;}
+    ammo.ammo--;if(ammo.ammo===0)delete p.inventory[state.weapon];
+    p.grenadeState=null;p.grenadeRequireRelease=true;p.lastShotTime=now;p.nextShotAt=now+w.fireInterval*1000;p.protectionUntil=0;
+    const fallback=Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3;
+    this.selectSlot(p,fallback);
+  }
+
   fire(p, input) {
     const now=this.clock(),w=getWeapon(p.weapon),ammo=p.inventory[p.weapon];
+    if(w.slot===4||this.match.status==='ended')return;
     const rising=input.fire&&!p.triggerWasDown;p.triggerWasDown=input.fire;
     if(!p.alive || !input.fire || (!w.automatic&&!rising) || !ammo || now<p.nextShotAt)return;
     // A loaded shell can be fired to interrupt a shell-by-shell reload.
     if(p.reloadEndsAt){if(w.reloadStyle==='shell'&&ammo.ammo>0)p.reloadEndsAt=0;else return;}
-    if(w.slot===4){
-      if(ammo.ammo<=0 || !this.grenades.throwGrenade(p,w.id,input))return;
-      ammo.ammo--;if(ammo.ammo===0)delete p.inventory[w.id];
-      p.lastShotTime=now;p.nextShotAt=now+w.fireInterval*1000;p.protectionUntil=0;
-      const fallback=Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3;
-      this.selectSlot(p,fallback);return;
-    }
     if(w.magazine&&ammo.ammo<=0){this.reload(p);return;}
     if(w.magazine)ammo.ammo--;
     p.lastShotTime=now;p.nextShotAt=now+w.fireInterval*1000;p.protectionUntil=0;
@@ -344,28 +465,45 @@ export class GameRoom {
     const origin=eye(p),pellets=[],hits=new Map();
     for(let pellet=0;pellet<(w.pellets||1);pellet++){
       const dir=directionFromAngles(input.yaw+(Math.random()-.5)*spread*2,input.pitch+(Math.random()-.5)*spread*2);
-      const worldDistance=raycastWorld(origin,dir,w.range);
-      let nearest=worldDistance===null?w.range:Math.min(w.range,worldDistance),victim=null,headshot=false;
-      for(const other of this.players.values()){
-        if(!other.alive||other.id===p.id||other.team===p.team||now<other.protectionUntil)continue;
-        const hit=rayHitPlayer(origin,dir,other,nearest);
-        if(hit&&hit.distance<nearest){nearest=hit.distance;victim=other;headshot=hit.headshot;}
+      let trace;
+      if(this.traceBullet&&w.id!=='knife')trace=this.traceBullet({origin,direction:dir,weapon:w,shooter:p,players:[...this.players.values()],now,rayHitPlayer,raycastWorld});
+      if(!trace){
+        const worldDistance=raycastWorld(origin,dir,w.range);
+        let nearest=worldDistance===null?w.range:Math.min(w.range,worldDistance),victim=null,headshot=false;
+        for(const other of this.players.values()){
+          if(!other.alive||other.id===p.id||other.team===p.team||now<other.protectionUntil)continue;
+          const hit=rayHitPlayer(origin,dir,other,nearest);
+          if(hit&&hit.distance<nearest){nearest=hit.distance;victim=other;headshot=hit.headshot;}
+        }
+        trace={end:{x:origin.x+dir.x*nearest,y:origin.y+dir.y*nearest,z:origin.z+dir.z*nearest},hitWorld:!victim&&worldDistance!==null&&worldDistance<=w.range,hits:victim?[{playerId:victim.id,distance:nearest,headshot,damageScale:1}]:[]};
       }
-      const end={x:origin.x+dir.x*nearest,y:origin.y+dir.y*nearest,z:origin.z+dir.z*nearest};
-      pellets.push({end,hitId:victim?.id||null,hitWorld:!victim&&worldDistance!==null&&worldDistance<=w.range,headshot});
-      if(victim){
-        const damage=w.damage*(headshot?w.headMultiplier:1)*(w.id==='knife'?1:Math.pow(w.rangeModifier??.98,nearest/(500*.0254)));
-        const hit=applyArmorDamage(damage,victim,{headshot,armorRatio:w.armorRatio??1,bypassArmor:w.id==='knife'});
-        const total=hits.get(victim.id)||{victim,damage:0,headshot:false,armor:false};
-        total.damage+=hit.damage;total.headshot||=headshot;total.armor||=hit.armor;hits.set(victim.id,total);
+      const accepted=[],hitIds=new Set();
+      for(const result of trace.hits||[]){
+        const victim=this.players.get(result.playerId);
+        if(!victim?.alive||victim.team===p.team||victim.id===p.id||now<victim.protectionUntil||hitIds.has(victim.id)||!Number.isFinite(result.distance)||result.distance<0||result.distance>w.range)continue;
+        hitIds.add(victim.id);
+        const metadata={wallbang:result.wallbang===true,penetrations:Math.max(0,Math.min(4,Number.isInteger(result.penetrations)?result.penetrations:0))};
+        const headshot=result.headshot===true,scale=Number.isFinite(result.damageScale)?clamp(result.damageScale,0,1):1;
+        const damage=w.damage*(headshot?w.headMultiplier:1)*(w.id==='knife'?1:Math.pow(w.rangeModifier??.98,result.distance/(500*.0254)))*scale;
+        // Trace all pellets against a temporary armor state. A winning kill may
+        // end the match before later targets are applied, including their armor.
+        const total=hits.get(victim.id)||{victim,armorState:{armor:victim.armor,helmet:victim.helmet},damage:0,headshot:false,armor:false,wallbang:false,penetrations:0};
+        const hit=applyArmorDamage(damage,total.armorState,{headshot,armorRatio:w.armorRatio??1,bypassArmor:w.id==='knife'});
+        total.damage+=hit.damage;total.headshot||=headshot;total.armor||=hit.armor;total.wallbang||=metadata.wallbang;total.penetrations=Math.max(total.penetrations,metadata.penetrations);hits.set(victim.id,total);
+        accepted.push({playerId:victim.id,headshot,...metadata});
       }
+      const first=accepted[0];
+      pellets.push({end:trace.end,hitId:first?.playerId||null,hitWorld:trace.hitWorld===true,headshot:first?.headshot||false,wallbang:trace.wallbang===true||accepted.some(hit=>hit.wallbang),penetrations:Math.max(trace.penetrations||0,...accepted.map(hit=>hit.penetrations)),segments:trace.segments||[],...(accepted.length>1?{hits:accepted}:{})});
+
     }
     const representative=pellets.find(pellet=>pellet.hitId)||pellets[0];
     this.emit('shot',{shooterId:p.id,weapon:p.weapon,origin,...representative,...(pellets.length>1?{pellets}: {})});
     for(const hit of hits.values()){
+      if(this.match.status==='ended')break;
+      hit.victim.armor=hit.armorState.armor;
       hit.victim.health=Math.max(0,hit.victim.health-hit.damage);
-      this.emit('hit',{shooterId:p.id,targetId:hit.victim.id,damage:hit.damage,headshot:hit.headshot,armor:hit.armor,weapon:w.id});
-      if(hit.victim.health===0)this.kill(hit.victim,p,w.id,hit.headshot);
+      this.emit('hit',{shooterId:p.id,targetId:hit.victim.id,damage:hit.damage,headshot:hit.headshot,armor:hit.armor,weapon:w.id,wallbang:hit.wallbang,penetrations:hit.penetrations});
+      if(hit.victim.health===0)this.kill(hit.victim,p,w.id,hit.headshot,{wallbang:hit.wallbang,penetrated:hit.wallbang,penetrations:hit.penetrations,attackerBlind:now<(p.flashBlindUntil||0),attackerInAir:!p.grounded,noScope:w.zoomStyle==='scope'&&!scoped,throughSmoke:this.grenades.blocksSight(origin,eye(hit.victim))});
     }
     if(w.unzoomsAfterShot)p.zoomLevel=0;
   }
@@ -479,61 +617,60 @@ export class GameRoom {
   }
 
   botInput(p, dt) {
-    const now = this.clock(), ai = p.botAI, input = neutralInput();
-    input.yaw = p.yaw || 0; input.pitch = p.pitch || 0;
-    if (now >= ai.nextThinkAt) {
-      ai.nextThinkAt = now + 230 + Math.random() * 80;
-      const candidates = [...this.players.values()].filter(e => e.alive && e.team !== p.team && now >= e.protectionUntil && dist(p, e) < 110).sort((a, b) => dist(p, a) - dist(p, b));
-      const enemy = now<(p.flashBlindUntil||0)?null:candidates.find(e => this.visibleToBot(eye(p), eye(e)));
-      if (enemy) {
-        if (ai.targetId !== enemy.id) ai.reactionAt = now + 420 + Math.random() * 240;
-        ai.targetId = enemy.id; ai.lastKnown = copyPoint(enemy); ai.lastSeenAt = now;
-        // A hurt bot seeks an adjacent occluded node instead of knowing positions through walls.
-        if (p.health < 40 && Math.random() < 0.25) {
-          const node = this.nearestNav(p);
-          const cover = (node?.neighbors || []).map(id => this.navMap.get(String(id))).find(n => n && !clearSight(eye(enemy), { x: n.x, y: n.y + 1.3, z: n.z }));
-          if (cover) { ai.goal = copyPoint(cover); ai.path = this.planPath(p, cover); }
+    const now=this.clock(),ai=p.botAI,input=neutralInput(),from=eye(p);
+    input.yaw=p.yaw||0;input.pitch=p.pitch||0;
+    if(now>=ai.nextThinkAt){
+      ai.nextThinkAt=now+230+Math.random()*80;
+      const candidates=[...this.players.values()].filter(e=>e.alive&&e.team!==p.team&&now>=e.protectionUntil&&dist(p,e)<110).sort((a,b)=>dist(p,a)-dist(p,b));
+      const current=this.players.get(ai.targetId);
+      const blind=now<(p.flashBlindUntil||0);
+      const visible=blind?[]:candidates.filter(e=>this.visibleToBot(from,eye(e)));
+      let enemy=visible.find(e=>e.id===ai.targetId)||visible[0];
+      if(enemy&&enemy.id===ai.targetId&&visible[0]!==enemy&&now-(ai.targetChangedAt||0)>1200&&dist(p,visible[0])<dist(p,enemy)*.65)enemy=visible[0];
+      if(enemy){
+        if(ai.targetId!==enemy.id){ai.reactionAt=now+420+Math.random()*240;ai.targetChangedAt=now;ai.alignedFor=0;}
+        ai.targetId=enemy.id;ai.lastKnown=copyPoint(enemy);ai.lastSeenAt=now;
+        if(p.health<40&&Math.random()<.25){
+          const node=this.nearestNav(p);
+          const cover=(node?.neighbors||[]).map(id=>this.navMap.get(String(id))).find(n=>n&&!clearSight(eye(enemy),{x:n.x,y:n.y+1.3,z:n.z}));
+          if(cover){ai.goal=copyPoint(cover);ai.path=this.planPath(p,cover);}
         }
-      } else ai.targetId = null;
-      if (!ai.goal || !ai.path.length || lengthXZ(p, ai.goal) < 1.6 || now > ai.wanderAt) {
-        ai.goal = this.chooseBotGoal(p); ai.path = this.planPath(p, ai.goal); ai.wanderAt = now + 5500 + Math.random() * 3000;
-      }
-      if (!ai.previous || lengthXZ(ai.previous, p) > 0.55) { ai.previous = copyPoint(p); ai.stuckAt = now; }
-      else if (now - ai.stuckAt > 2500) { ai.goal = null; ai.path = []; ai.stuckAt = now; }
+      }else if(blind||!current?.alive||now-ai.lastSeenAt>600){ai.targetId=null;ai.alignedFor=0;}
+      if(!ai.goal||!ai.path.length||lengthXZ(p,ai.goal)<1.6||now>ai.wanderAt){ai.goal=this.chooseBotGoal(p);ai.path=this.planPath(p,ai.goal);ai.wanderAt=now+5500+Math.random()*3000;}
+      if(!ai.previous||lengthXZ(ai.previous,p)>.55){ai.previous=copyPoint(p);ai.stuckAt=now;}
+      else if(now-ai.stuckAt>2500){ai.goal=null;ai.path=[];ai.stuckAt=now;}
     }
-    const target = this.players.get(ai.targetId);
-    while (ai.path.length && lengthXZ(p, ai.path[0]) < 0.8 && Math.abs(p.y - ai.path[0].y) < 1.5) ai.path.shift();
-    const waypoint = ai.path[0];
-    if (waypoint) {
-      const dx = waypoint.x - p.x, dz = waypoint.z - p.z, d = Math.hypot(dx, dz);
-      input.yaw = Math.atan2(-dx, -dz); input.pitch = 0;
-      if (d > 0.15) input.forward = 1;
-      if (waypoint.y - p.y > 0.4 || now - ai.stuckAt > 1300) input.jump = Math.floor(now / 600) % 2 === 0;
+    const target=this.players.get(ai.targetId);
+    while(ai.path.length&&lengthXZ(p,ai.path[0])<.8&&Math.abs(p.y-ai.path[0].y)<1.5)ai.path.shift();
+    const waypoint=ai.path[0];
+    let desired={yaw:input.yaw,pitch:input.pitch},engaging=false;
+    if(waypoint){desired={yaw:Math.atan2(-(waypoint.x-p.x),-(waypoint.z-p.z)),pitch:0};if(waypoint.y-p.y>.4||now-ai.stuckAt>1300)input.jump=Math.floor(now/600)%2===0;}
+    if(target?.alive&&now>=(p.flashBlindUntil||0)&&this.visibleToBot(from,eye(target))){
+      const to=eye(target),dx=to.x-from.x,dy=to.y-from.y-.28,dz=to.z-from.z;
+      const aimError=.013+dist(p,target)/12000;
+      desired={yaw:Math.atan2(-dx,-dz)+Math.sin(now/440+Number(p.id.slice(2)))*aimError,pitch:Math.atan2(dy,Math.hypot(dx,dz))+Math.cos(now/630)*aimError};engaging=true;
     }
-    if (target?.alive && now>=(p.flashBlindUntil||0) && this.visibleToBot(eye(p), eye(target))) {
-      const from = eye(p), to = eye(target), dx = to.x - from.x, dy = to.y - from.y - 0.28, dz = to.z - from.z;
-      const aimError = 0.013 + dist(p, target) / 12000;
-      input.yaw = Math.atan2(-dx, -dz) + Math.sin(now / 440 + Number(p.id.slice(2))) * aimError;
-      input.pitch = Math.atan2(dy, Math.hypot(dx, dz)) + Math.cos(now / 630) * aimError;
-      input.forward = 0; input.right = 0;
-      if (now > ai.reactionAt) input.fire = Math.floor(now / 150) % 7 < 5;
-      if (p.weapon === 'knife') input.forward = 1;
-    } else if (waypoint) {
-      const dx = waypoint.x - p.x, dz = waypoint.z - p.z, d = Math.max(0.01, Math.hypot(dx, dz));
-      input.forward = (-Math.sin(input.yaw) * dx - Math.cos(input.yaw) * dz) / d;
-      input.right = (Math.cos(input.yaw) * dx - Math.sin(input.yaw) * dz) / d;
+    const aim=smoothBotAim({yaw:input.yaw,pitch:input.pitch},desired,dt);
+    input.yaw=aim.yaw;input.pitch=aim.pitch;
+    ai.alignedFor=engaging&&aim.aligned?(ai.alignedFor||0)+Math.max(0,Math.min(.1,dt)):0;
+    if(engaging){
+      input.fire=now>ai.reactionAt&&ai.alignedFor>=BOT_AIM.settleSeconds&&Math.floor(now/150)%7<5;
+      if(p.weapon==='knife')input.forward=1;
+    }else if(waypoint){
+      const dx=waypoint.x-p.x,dz=waypoint.z-p.z,d=Math.max(.01,Math.hypot(dx,dz));
+      input.forward=(-Math.sin(input.yaw)*dx-Math.cos(input.yaw)*dz)/d;input.right=(Math.cos(input.yaw)*dx-Math.sin(input.yaw)*dz)/d;
     }
-    const ammo = p.inventory[p.weapon]; if (ammo && ammo.ammo < 3) input.reload = true;
-    if (this.mode === 'defuse') {
-      const plant = p.hasBomb && this.siteAt(p);
-      const defuse = p.team === 'CT' && this.bomb.state === 'planted' && dist(p, this.bomb) < 2.6;
-      if (plant || defuse) { input.forward = 0; input.right = 0; input.fire = false; input.jump = false; input.interact = true; }
+    const ammo=p.inventory[p.weapon];if(ammo&&ammo.ammo<3)input.reload=true;
+    if(this.mode==='defuse'){
+      const plant=p.hasBomb&&this.siteAt(p),defuse=p.team==='CT'&&this.bomb.state==='planted'&&dist(p,this.bomb)<2.6;
+      if(plant||defuse){input.forward=input.right=0;input.fire=input.jump=false;input.interact=true;}
     }
     return input;
   }
 
   tick(dt = 1 / TICK_RATE) {
     const now = this.clock();
+    if(this.match.status==='ended')return;
     this.maybeStart();
     if (this.mode === 'defuse') {
       if (this.round.phase === 'freeze' && now >= this.round.phaseEndsAt) { this.round.phase = 'live'; this.round.phaseEndsAt = now + this.rules.roundSeconds * 1000; }
@@ -541,6 +678,7 @@ export class GameRoom {
     }
     const canAct = this.round.phase === 'live';
     for (const p of this.players.values()) {
+      if(this.match.status==='ended')break;
       if (!p.alive) { if (p.respawnAt && now >= p.respawnAt) this.respawn(p); continue; }
       const input = p.bot ? this.botInput(p, dt) : now - p.inputAt < 300 ? { ...p.input } : { ...neutralInput(), yaw: p.yaw || 0, pitch: p.pitch || 0 };
       if (!p.bot && p.pendingFire && now - p.inputAt < 300) { input.fire = true; p.triggerWasDown = false; }
@@ -554,6 +692,7 @@ export class GameRoom {
       p.seq = Math.max(p.seq, p.input.seq ?? -1);
       if (!canAct && this.mode === 'defuse') Object.assign(input, { forward: 0, right: 0, jump: false, fire: false, interact: false });
       if (input.slot) this.selectSlot(p, input.slot,input.utilityId);
+      if(p.grenadeState&&(now-p.inputAt>=300||!canAct))this.cancelGrenade(p,'inactive');
       p.zoomLevel=p.reloadEndsAt?0:clamp(input.zoomLevel||0,0,getWeapon(p.weapon).zoomFovs.length-1);
       input.speedScale=weaponSpeedScale(p.weapon,p.zoomLevel);
       p.effectiveInput = input;
@@ -562,9 +701,12 @@ export class GameRoom {
       if (!Number.isFinite(p.x + p.y + p.z) || p.outOfWorld || p.y < (MAP.bounds?.min?.y ?? -200) - 30) { this.kill(p, null); continue; }
       if(p.reloadEndsAt&&now>=p.reloadEndsAt)this.finishReload(p);
       if (input.reload) this.reload(p);
-      if (canAct) this.fire(p, input);
+      if((canAct||this.round.phase==='freeze')&&!p.bot&&p.pendingInteract&&now-p.inputAt<300)this.pickupWeapon(p);
+      p.pendingInteract=false;
+      if (canAct) {this.stepGrenade(p);this.fire(p, input);}
     }
     if(canAct)this.grenades.tick(dt);
+    this.droppedWeapons.tick(dt);
     if (this.mode === 'defuse' && this.round.phase === 'live') {
       this.stepBomb(dt);
       if (this.round.phase !== 'live') return;
@@ -577,15 +719,16 @@ export class GameRoom {
 
   snapshot({ drainEvents = true } = {}) {
     const now = this.clock();
-    const players = [...this.players.values()].map(p => ({ id: p.id, name: p.name, team: p.team, bot: p.bot, agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
+    const players = [...this.players.values()].map(p => ({ id: p.id, name: p.name, team: p.team, teamId:p.teamId, bot: p.bot, agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
       vx: round2(p.vx), vy: round2(p.vy), vz: round2(p.vz), yaw: round2(p.yaw), pitch: round2(p.pitch), crouch: !!p.crouch, grounded: !!p.grounded,
-      health: p.health, armor: round2(p.armor), helmet:!!p.helmet, defuseKit:!!p.defuseKit,zoomLevel:p.zoomLevel,utilityCounts:Object.fromEntries(UTILITY_IDS.map(id=>[id,p.inventory[id]?.ammo||0])), alive: p.alive, weapon: p.weapon, skinId:p.skins[p.weapon]||DEFAULT_SKINS[p.weapon], slot: p.slot, ammo: p.inventory[p.weapon]?.ammo || 0, reserve: p.inventory[p.weapon]?.reserve || 0,
+      health: p.health, armor: round2(p.armor), helmet:!!p.helmet, defuseKit:!!p.defuseKit,zoomLevel:p.zoomLevel,utilityCounts:Object.fromEntries(UTILITY_IDS.map(id=>[id,p.inventory[id]?.ammo||0])), alive: p.alive, weapon: p.weapon, skinId:this.heldSkin(p), slot: p.slot, ammo: p.inventory[p.weapon]?.ammo || 0, reserve: p.inventory[p.weapon]?.reserve || 0,
       reserveAmmoAsClips:!!getWeapon(p.weapon).reserveAmmoAsClips,reserveClips:getWeapon(p.weapon).reserveAmmoAsClips?Math.ceil((p.inventory[p.weapon]?.reserve||0)/getWeapon(p.weapon).magazine):0,
+      grenadeState:p.grenadeState?{state:'primed',weapon:p.grenadeState.weapon,mode:p.grenadeState.mode,strength:grenadeStrength(p.grenadeState.mode),primedAt:p.grenadeState.primedAt}:{state:'idle',weapon:null,mode:'full',strength:1,primedAt:0},
       reloadRemaining: Math.max(0, (p.reloadEndsAt - now) / 1000), money: p.money, kills: p.kills, deaths: p.deaths, assists: p.assists, seq: p.seq,
       ...this.buyStatus(p), inventory: Object.keys(p.inventory), hasBomb: p.hasBomb, spawnProtectionRemaining: Math.max(0, (p.protectionUntil - now) / 1000),
       respawnIn: p.respawnAt ? Math.max(0, (p.respawnAt - now) / 1000) : 0, lastShotTime: p.lastShotTime }));
     const events = drainEvents ? this.events.splice(0) : [...this.events];
-    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, players,...this.grenades.snapshot(),
+    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, hostId:this.hostId,desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,droppedWeapons:this.droppedWeapons.snapshot(),...this.grenades.snapshot(),
       round: { ...this.round, timeLeft: this.round.phaseEndsAt ? Math.max(0, (this.round.phaseEndsAt - now) / 1000) : 0 },
       bomb: { ...this.bomb, remaining: this.bomb.state === 'planted' ? Math.max(0, (this.bomb.explodesAt - now) / 1000) : 0 }, scores: { ...this.scores }, events };
   }

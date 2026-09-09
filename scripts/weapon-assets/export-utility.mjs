@@ -20,6 +20,6 @@ function run(resource,file,model=false){
 try{
  for(const [id,stem]of specs){
   run(`weapons/models/grenade/${id}/weapon_${id}.vmdl_c`,path.join(stage,'raw',id,id+'.glb'),true);
-  for(const [action,clip]of Object.entries({draw:'draw',idle:'idle',inspect:'lookat01',pullpin:'pullpin',throw:'throw_overhand',throwUnderhand:'throw_underhand'}))run(`animation/anims/viewmodel/grenade/grenade_${id}/${clip}_${stem}.vnmclip_c`,path.join(stage,'animations',id+'-'+action+'.glb'));
+  for(const [action,clip]of Object.entries({draw:'draw',idle:'idle',inspect:'lookat01',pullpin:'pullpin',throw:'throw_overhand',throwUnderhand:'throw_underhand',holdHigh:'throwcharge_high',holdMid:'throwcharge_mid',holdLow:'throwcharge_low'}))run(`animation/anims/viewmodel/grenade/grenade_${id}/${clip}_${stem}.vnmclip_c`,path.join(stage,'animations',id+'-'+action+'.glb'));
  }
 }finally{fs.closeSync(lock);fs.unlinkSync(lockPath);}

@@ -143,6 +143,160 @@
       "width": 1600,
       "height": 950,
       "modified": false
+    },
+    {
+      "file": "gameplay-halftime.png",
+      "source": "output/playwright/gameplay-halftime.png",
+      "sha256": "caf7e6df77fdfb992ecedb40c37ccda24e15af1033e4c3c7412c9ffbdc9ac7ca",
+      "bytes": 2136957,
+      "width": 1600,
+      "height": 950,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Local browser QA. Match transitions are triggered through the loopback-only test fixture."
+    },
+    {
+      "file": "gameplay-overtime.png",
+      "source": "output/playwright/gameplay-overtime.png",
+      "sha256": "89187799c1d77a78321feaa32c370a539a11a167d07f2363a2901b43008a7c6e",
+      "bytes": 1596657,
+      "width": 1600,
+      "height": 950,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Local browser QA. Match transitions are triggered through the loopback-only test fixture."
+    },
+    {
+      "file": "gameplay-victory.png",
+      "source": "output/playwright/gameplay-victory.png",
+      "sha256": "cca8bed186872559a5048dceb0bf53c933f71d568211ecb164f81e34a02e5c47",
+      "bytes": 502506,
+      "width": 1600,
+      "height": 950,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Local browser QA. Match transitions are triggered through the loopback-only test fixture."
+    },
+    {
+      "file": "gameplay-defeat.png",
+      "source": "output/playwright/gameplay-defeat.png",
+      "sha256": "6316cde6fa9c97d3df62f50601a224603cffcc7eee894db5ddcb04e99c5264d3",
+      "bytes": 486200,
+      "width": 1600,
+      "height": 950,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Local browser QA. Match transitions are triggered through the loopback-only test fixture."
+    },
+    {
+      "file": "gameplay-scoreboard.png",
+      "source": "output/playwright/gameplay-scoreboard.png",
+      "sha256": "13bd2757b6d2db231d6bbfce4cb14bb0ffe201117a6b6b351a99645d819bacd3",
+      "bytes": 493192,
+      "width": 1600,
+      "height": 950,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Local browser QA. Match transitions are triggered through the loopback-only test fixture."
+    },
+    {
+      "file": "gameplay-pickup.png",
+      "source": "output/playwright/gameplay-pickup.png",
+      "sha256": "4784482498bca86b0564073c387ee17e17114ba685b2a4f0e85ce7879be28205",
+      "bytes": 2585473,
+      "width": 1600,
+      "height": 950,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Local browser QA. Match transitions are triggered through the loopback-only test fixture."
+    },
+    {
+      "file": "gameplay-grenade-hold.png",
+      "source": "output/playwright/gameplay-grenade-hold.png",
+      "sha256": "05bf4d3e9665bb4d90a0d8f695f4964ed37b34ce7520b35223564c5a7f1ea84b",
+      "bytes": 2512095,
+      "width": 1600,
+      "height": 950,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Local browser QA. Match transitions are triggered through the loopback-only test fixture."
+    },
+    {
+      "file": "gameplay-death-spectator.png",
+      "source": "output/playwright/gameplay-death-spectator.png",
+      "sha256": "f822445905ce0c7496ccad0e0934507131e2c568bfcdf0580220a2aa185b7394",
+      "bytes": 2244970,
+      "width": 1600,
+      "height": 950,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Local browser QA. Match transitions are triggered through the loopback-only test fixture."
+    },
+    {
+      "file": "agent-arms-synchronized.png",
+      "source": "output/playwright/agent-arms-synchronized.png",
+      "sha256": "c2c9be2e45fd229ed91ab54437e742e4181e163821cf45bf8a8c9a2670d8d90b",
+      "bytes": 242423,
+      "width": 1440,
+      "height": 1000,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Isolated browser asset-validation scene; not public match gameplay."
+    },
+    {
+      "file": "wild-lotus-corrected-pbr-comparison.png",
+      "source": "output/playwright/wild-lotus-corrected-pbr-comparison.png",
+      "sha256": "7872920b3cdffbc2ef3a8b8c8fbc25db2cf69164ac252e410178ce0bb4e1f1d1",
+      "bytes": 496311,
+      "width": 1440,
+      "height": 1000,
+      "modified": false,
+      "capturedOn": "2026-09-09",
+      "note": "Isolated browser asset-validation scene; not public match gameplay."
+    },
+    {
+      "file": "gameplay-awp-lighting.png",
+      "source": "output/playwright/gameplay-awp-lighting.png",
+      "capturedOn": "2026-09-09",
+      "modified": false,
+      "note": "Local browser running the final release build; original screenshot without image edits.",
+      "sha256": "96a311a39bde568fac33099e8cde6a6e9ba7c1825cdcbe8855e0174429fa092e",
+      "bytes": 2178615,
+      "width": 1600,
+      "height": 950
+    },
+    {
+      "file": "gameplay-awp-tracer.png",
+      "source": "output/playwright/gameplay-awp-tracer.png",
+      "capturedOn": "2026-09-09",
+      "modified": false,
+      "note": "Local browser running the final release build; original screenshot without image edits.",
+      "sha256": "1feb678f8cedfb1ecdbe7960dbc8c42d24cfaacda0d03382c5c91577ac57b53c",
+      "bytes": 2122632,
+      "width": 1600,
+      "height": 950
+    },
+    {
+      "file": "gameplay-wild-lotus.png",
+      "source": "output/playwright/gameplay-wild-lotus.png",
+      "capturedOn": "2026-09-09",
+      "modified": false,
+      "note": "Local browser running the final release build; original screenshot without image edits.",
+      "sha256": "b09eac0f2e429a1d06db5263abe8037fbb33875f9cf81f7bed1ac09fc4289ded",
+      "bytes": 2242282,
+      "width": 1600,
+      "height": 950
+    },
+    {
+      "file": "gameplay-public-lobby.png",
+      "source": "output/playwright/gameplay-public-lobby.png",
+      "capturedOn": "2026-09-09",
+      "modified": false,
+      "note": "Public HTTPS lobby screenshot.",
+      "sha256": "069d9085aceb39dee6ee72dbdb32727ffca1d3ee4ec86cb6b617c09fca121fa5",
+      "bytes": 1420484,
+      "width": 1600,
+      "height": 950
     }
   ],
   "updatedOn": "2026-09-09"

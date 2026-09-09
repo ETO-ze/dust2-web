@@ -7,12 +7,13 @@ import {pristinePaintCoverage} from './pristine-coverage.mjs';
 import {resizePackedRgba} from './packed-texture.mjs';
 const require=createRequire('C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/package.json');
 const sharp=require('sharp');
-const extraction=path.resolve('artifacts/weapon-expansion');
+const legacyCatalog=process.argv.includes('--legacy');
+const extraction=path.resolve(legacyCatalog?'output/cs2-skins':'artifacts/weapon-expansion');
 const source=path.join(extraction,'source');
-const out=path.resolve('public/assets/weapons/cs2-loadout');
+const out=path.resolve(legacyCatalog?'public/assets/weapons/cs2-skins':'public/assets/weapons/cs2-loadout');
 const paintdir=path.join(source,'materials/models/weapons/customization/paints/vmats');
 const legacy='materials/models/weapons/customization/';
-const allSpecs=JSON.parse(fs.readFileSync(new URL('./default-skins.json',import.meta.url),'utf8'));
+const allSpecs=JSON.parse(fs.readFileSync(new URL(legacyCatalog?'./legacy-skins.json':'./default-skins.json',import.meta.url),'utf8'));
 const filter=process.argv.find(a=>a.startsWith('--ids='))?.slice(6).split(',');
 const specs=allSpecs.filter(s=>!filter||filter.includes(s.id));
 fs.mkdirSync(out,{recursive:true});
@@ -119,7 +120,7 @@ async function bake(spec){
 const reports=[];
 for(const spec of specs){
   const previewSource=path.join(source,'panorama/images/econ/default_generated',spec.inventory+'_light_png.png');
-  const previewTarget=path.join(out,'previews',spec.file+'.webp');fs.mkdirSync(path.dirname(previewTarget),{recursive:true});
+  const previewTarget=path.join(out,spec.preview||'previews/'+spec.file+'.webp');fs.mkdirSync(path.dirname(previewTarget),{recursive:true});
   await sharp(previewSource).resize(512,384,{fit:'inside',withoutEnlargement:true}).webp({quality:92}).toFile(previewTarget);
   const bakeResult=await bake(spec);const {p,q}=bakeResult;
   const input=path.resolve(spec.rawGLB),bytes=fs.readFileSync(input),jsonLength=bytes.readUInt32LE(12);
@@ -181,13 +182,13 @@ for(const spec of specs){
   result.scenes=[{name:spec.name,nodes:[normalizationIndex]}];
   result.buffers[0].byteLength=total;
   const jsonText=Buffer.from(JSON.stringify(result)),json=Buffer.alloc(Math.ceil(jsonText.length/4)*4,32);jsonText.copy(json);const bin=Buffer.concat(chunks);const output=Buffer.alloc(28+json.length+bin.length);output.writeUInt32LE(0x46546c67,0);output.writeUInt32LE(2,4);output.writeUInt32LE(output.length,8);output.writeUInt32LE(json.length,12);output.writeUInt32LE(0x4e4f534a,16);json.copy(output,20);output.writeUInt32LE(bin.length,20+json.length);output.writeUInt32LE(0x004e4942,24+json.length);bin.copy(output,28+json.length);
-  const filename=path.join(out,spec.file+'.glb');fs.writeFileSync(filename,output);
+  const filename=path.join(out,spec.file+'.glb');fs.mkdirSync(path.dirname(filename),{recursive:true});fs.writeFileSync(filename,output);
   const worlds=new Map();function walk(index,parent){const n=doc.nodes[index];const localM=n.matrix?new Matrix4().fromArray(n.matrix):new Matrix4().compose(new Vector3().fromArray(n.translation||[0,0,0]),new Quaternion().fromArray(n.rotation||[0,0,0,1]),new Vector3().fromArray(n.scale||[1,1,1]));const world=parent.clone().multiply(localM);worlds.set(index,world);for(const child of n.children||[])walk(child,world);}
   for(const index of doc.scenes[doc.scene||0].nodes)walk(index,new Matrix4());
   const joints=result.skins[0].joints.map(index=>({name:doc.nodes[index].name,index,sourcePosition:new Vector3().setFromMatrixPosition(worlds.get(index)).toArray(),normalizedPosition:new Vector3().setFromMatrixPosition(normalization.clone().multiply(worlds.get(index))).toArray()}));
-  const previewFile=path.join(out,'previews',spec.file+'.webp');
-  reports.push({id:spec.id,name:spec.name,file:spec.file+'.glb',paintkit:spec.paintkit,paintKey:spec.paint,bytes:output.length,sha256:hash(filename),triangles,sizeMetres:size,sourceBounds:{minimum,maximum,center},up:'+Y',forward:'-Z',normalizationNode:'normalization',sourceToNormalized:normalization.toArray(),normalizedToSource:normalization.clone().invert().toArray(),sourceScale:1,sourceForward:'+Z',sourceUp:'+Y',sourceUVBody:spec.body,sourceMesh:selected.name,rawGLB:rel(input),rawGLBSha256:hash(input),animations:[],joints,wearMin:spec.wearMin,wearMax:spec.wearMax,condition:'Factory New',chineseName:spec.chineseName,englishName:spec.englishName,preview:{file:'previews/'+spec.file+'.webp',sourceVpkPath:'panorama/images/econ/default_generated/'+spec.inventory+'_light_png.vtex_c',bytes:fs.statSync(previewFile).size,sha256:hash(previewFile)},parameters:{paintStyle:Number(p.F_PAINT_STYLE),patternScale:Number(p.g_flPatternTexCoordScale),patternRotation:Number(p.g_flPatternTexCoordRotation),patternOffset:[0,0],seedEquivalentToCS2:false,wear:0,paintRoughness:Number(p.g_flPaintRoughness),pearlescentScale:Number(p.g_flPearlescentScale),colors:[0,1,2,3].filter(i=>p['g_vColor'+i]).map(i=>vec(p['g_vColor'+i]))},sourceFiles:bakeResult.used.map(file=>({file:rel(file),sha256:hash(file)}))});
+  const previewFile=previewTarget;
+  reports.push({id:spec.id,name:spec.name,file:spec.file+'.glb',paintkit:spec.paintkit,paintKey:spec.paint,bytes:output.length,sha256:hash(filename),triangles,sizeMetres:size,sourceBounds:{minimum,maximum,center},up:'+Y',forward:'-Z',normalizationNode:'normalization',sourceToNormalized:normalization.toArray(),normalizedToSource:normalization.clone().invert().toArray(),sourceScale:1,sourceForward:'+Z',sourceUp:'+Y',sourceUVBody:spec.body,sourceMesh:selected.name,rawGLB:rel(input),rawGLBSha256:hash(input),animations:[],joints,wearMin:spec.wearMin,wearMax:spec.wearMax,condition:'Factory New',chineseName:spec.chineseName,englishName:spec.englishName,preview:{file:spec.preview||'previews/'+spec.file+'.webp',sourceVpkPath:'panorama/images/econ/default_generated/'+spec.inventory+'_light_png.vtex_c',bytes:fs.statSync(previewFile).size,sha256:hash(previewFile)},parameters:{paintStyle:Number(p.F_PAINT_STYLE),patternScale:Number(p.g_flPatternTexCoordScale),patternRotation:Number(p.g_flPatternTexCoordRotation),patternOffset:[0,0],seedEquivalentToCS2:false,wear:0,paintRoughness:Number(p.g_flPaintRoughness),pearlescentScale:Number(p.g_flPearlescentScale),colors:[0,1,2,3].filter(i=>p['g_vColor'+i]).map(i=>vec(p['g_vColor'+i]))},sourceFiles:bakeResult.used.map(file=>({file:rel(file),sha256:hash(file)}))});
   console.log(spec.id,output.length,'bytes',triangles,'triangles',joints.length,'joints',spec.body);
 }
-fs.writeFileSync(path.join(out,filter?'manifest-'+filter.join('-')+'.json':'manifest.json'),JSON.stringify({version:1,extractedAt:new Date().toISOString(),source:'Local owned Counter-Strike 2 installation; pak01_dir.vpk; Valve and workshop creators retain rights.',fidelity:'Original source geometry, correct paintkit UV body, original skin textures, normals, paint masks and parameters. Local pristine PBR bake; Source2 wear randomization, exact composite shader and pearlescence are not reproduced exactly.',tools:{exporter:'Source2Viewer-CLI 20.0.6980',baker:rel(new URL(import.meta.url).pathname.slice(1)),bakerSha256:hash(new URL(import.meta.url))},models:reports},null,2)+'\n');
-fs.writeFileSync(path.join(out,filter?'SHA256SUMS-'+filter.join('-')+'.txt':'SHA256SUMS.txt'),reports.flatMap(m=>[m.sha256+'  '+m.file,m.preview.sha256+'  '+m.preview.file]).join('\n')+'\n');
+fs.writeFileSync(path.join(out,filter?'manifest-'+filter.join('-')+'.json':legacyCatalog?'legacy-manifest.json':'manifest.json'),JSON.stringify({version:1,extractedAt:new Date().toISOString(),source:'Local owned Counter-Strike 2 installation; pak01_dir.vpk; Valve and workshop creators retain rights.',fidelity:'Original source geometry, correct paintkit UV body, original skin textures, normals, paint masks and parameters. Local pristine PBR bake; Source2 wear randomization, exact composite shader and pearlescence are not reproduced exactly.',tools:{exporter:'Source2Viewer-CLI 20.0.6980',baker:rel(new URL(import.meta.url).pathname.slice(1)),bakerSha256:hash(new URL(import.meta.url))},models:reports},null,2)+'\n');
+fs.writeFileSync(path.join(out,filter?'SHA256SUMS-'+filter.join('-')+'.txt':legacyCatalog?'LEGACY-SHA256SUMS.txt':'SHA256SUMS.txt'),reports.flatMap(m=>[m.sha256+'  '+m.file,m.preview.sha256+'  '+m.preview.file]).join('\n')+'\n');

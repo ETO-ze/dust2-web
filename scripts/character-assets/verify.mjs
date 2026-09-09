@@ -22,11 +22,12 @@ for(const [relative,clips,prefix]of [
  ['public/assets/characters-cs2/t-phoenix.glb',world.animations,''],
  ...['ct-ava','t-miami'].filter(id=>fs.existsSync(path.join(root,`public/assets/characters-cs2/optional/${id}.glb`))).map(id=>[`public/assets/characters-cs2/optional/${id}.glb`,world.animations,'']),
  ['public/assets/viewmodel/arms.glb',first.animations,''],
+ ...['ct-sas','t-phoenix','ct-ava','t-miami'].map(id=>[`public/assets/characters-cs2/arms/${id}.glb`,first.animations,'']),
 ]){
  const gltf=await load(relative),names=new Set();gltf.scene.traverse(o=>names.add(o.name));const mixer=new THREE.AnimationMixer(gltf.scene);let tested=0,meshes=0,bones=0,maxMagnitude=0;
  for(const original of clips){
   const clip=original.clone();clip.tracks=clip.tracks.filter(t=>names.has(THREE.PropertyBinding.parseTrackName(t.name).nodeName));if(!clip.tracks.length)continue;clip.duration=Math.max(.1,clip.duration);mixer.stopAllAction();mixer.clipAction(clip).play();mixer.update(clip.duration*.45);gltf.scene.updateMatrixWorld(true);
-  gltf.scene.traverse(o=>{assert.ok(o.matrixWorld.elements.every(Number.isFinite),relative+' '+clip.name+' '+o.name);if(o.isSkinnedMesh){o.skeleton.update();assert.ok([...o.skeleton.boneMatrices].every(Number.isFinite));const box=new THREE.Box3().setFromObject(o);for(const v of [...box.min,...box.max]){assert.ok(Number.isFinite(v));maxMagnitude=Math.max(maxMagnitude,Math.abs(v));}}});tested++;
+  gltf.scene.traverse(o=>{assert.ok(o.matrixWorld.elements.every(Number.isFinite),relative+' '+clip.name+' '+o.name);if(o.isSkinnedMesh){o.skeleton.update();assert.ok([...o.skeleton.boneMatrices].every(Number.isFinite));o.computeBoundingBox();const box=new THREE.Box3().setFromObject(o);for(const v of [...box.min,...box.max]){assert.ok(Number.isFinite(v));maxMagnitude=Math.max(maxMagnitude,Math.abs(v));}}});tested++;
  }
  gltf.scene.traverse(o=>{if(o.isSkinnedMesh)meshes++;if(o.isBone)bones++;});assert.ok(tested>=30);assert.ok(maxMagnitude<5,'animated model escaped metre-scale bounds');results.push({asset:relative,clips:tested,skinnedMeshes:meshes,bones,maxMagnitude});
  mixer.stopAllAction();mixer.uncacheRoot(gltf.scene);

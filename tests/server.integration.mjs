@@ -143,7 +143,7 @@ test('authoritative server integration on real Dust2 collision', { timeout: 9000
 
   await t.test('bots fill both teams, follow real navigation and yield to humans', () => {
     let now = 500000;
-    const r = new GameRoom('BOT001', { bots: 8, clock: () => now });
+    const r = new GameRoom('BOT001', { mode: 'deathmatch', bots: 8, clock: () => now });
     r.addHuman({}, { name: 'human', team: 'T' }); assert.equal(r.players.size, 9);
     const bots = [...r.players.values()].filter(p => p.bot), before = bots.map(p => ({ ...p }));
     for (let i = 0; i < 90; i++) { now += 1000 / 30; r.tick(1 / 30); }

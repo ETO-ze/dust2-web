@@ -52,13 +52,14 @@ class MapCollision {
   }
 }
 
-export function initPhysics(positions) {
+export function initPhysics(positions, surfaceMaterials = null) {
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
   geometry.computeBoundingBox();
   worldBounds.copy(geometry.boundingBox);
   world?.geometry?.dispose();
   world = new MapCollision(geometry);
+  world.surfaceMaterials = surfaceMaterials;
   return world;
 }
 
@@ -79,6 +80,21 @@ export function raycastWorld(origin, direction, maxDistance=300) {
   ray.direction.set(direction.x,direction.y,direction.z).normalize();
   const hit=world.rayIntersect(ray);
   return hit && hit.distance<=maxDistance ? hit.distance : null;
+}
+
+/** Sorted physical crossings, retaining source triangle material after BVH reordering. */
+export function raycastWorldSurfaces(origin,direction,maxDistance=300) {
+  if(!world)return [];
+  const r=new Ray(new Vector3(origin.x,origin.y,origin.z),new Vector3(direction.x,direction.y,direction.z).normalize());
+  const hits=world.bvh.raycast(r,DoubleSide).filter(h=>h.distance<=maxDistance).sort((a,b)=>a.distance-b.distance);
+  const result=[];
+  for(const h of hits){
+    if(result.length&&h.distance-result.at(-1).distance<.002)continue;
+    const triangle=Math.floor(h.face.a/3);
+    result.push({distance:h.distance,point:{x:h.point.x,y:h.point.y,z:h.point.z},normal:{x:h.face.normal.x,y:h.face.normal.y,z:h.face.normal.z},material:world.surfaceMaterials?.[triangle]||0,triangle});
+    if(result.length===48)break;
+  }
+  return result;
 }
 
 export function floorHeight(x,z,fromY=80,maxDistance=200) {

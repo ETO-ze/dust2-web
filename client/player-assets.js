@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {AGENT_ASSETS} from '../shared/agent-assets.js';
 import {fetchCachedAsset} from './loading.js';
+export {loadAgentArms,requestAgentArms,loadedAgentArms,agentArmsCacheStatus} from './agent-arms.js';
 
 export const DEFAULT_AGENTS=Object.freeze({
  CT:Object.freeze({name:'SAS',label:'默认反恐精英 · SAS',path:'assets/characters-cs2/ct-sas.glb'}),
@@ -32,7 +33,7 @@ export async function loadPlayerAssets(loader){
 /** Native forward/back/strafe pose in the same yaw frame as shared physics. */
 export function choosePlayerAnimation(player,weapon={}){
  if(!player.alive)return 'death';
- const family=player.weapon==='knife'?'knife':weapon.slot===2?'pistol':'rifle';
+ const family=player.weapon==='knife'||weapon.slot===4?'knife':weapon.slot===2?'pistol':'rifle';
  const speed=Math.hypot(player.vx||0,player.vz||0);
  if(player.grounded===false && Math.abs(player.vy||0)>.2)return `${family}/jump`;
  if(player.crouch)return `${family}/${speed>.3?'crouchMove':'crouchIdle'}`;

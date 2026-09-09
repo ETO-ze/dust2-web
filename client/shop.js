@@ -1,14 +1,14 @@
 import { getWeapon, TEAM_LOADOUTS } from '../shared/weapons.js';
 import { EQUIPMENT, equipmentPrice, UTILITY_IDS, MAX_GRENADES } from '../shared/equipment.js';
 import { getSkin, DEFAULT_SKINS } from '../shared/skins.js';
+import { uiIconUrl } from './ui-icons.js';
 import './equipment.css';
 const categories=[['equipment','装备'],['pistols','手枪'],['mid','中级'],['rifles','步枪'],['grenades','投掷物']];
 const descriptions={armor:'防弹背心 · 身体防护',helmet:'背心与头盔 · 保护头部',defusekit:'拆弹时间缩短至 5 秒',hegrenade:'范围爆炸伤害',flashbang:'致盲视线内的玩家',smokegrenade:'烟雾遮挡 · 持续 18 秒'};
-const symbols={armor:'▰',helmet:'◒',defusekit:'⚒',hegrenade:'◉',flashbang:'✹',smokegrenade:'☁'};
 export class WeaponShop {
   constructor(container,{buy,close}) {
     this.container=container;this.buy=buy;this.pending=null;this.category=null;
-    container.innerHTML=`<section class="armory-card equipment-card"><header><div><span class="eyebrow" id="shop-team">LOADOUT</span><h2>购买装备</h2></div><div class="buy-wallet"><small>可用资金</small><b id="shop-money">$ 0</b></div><button id="close-buy" type="button">返回战场 ×</button></header><div class="shop-status"><span id="buy-note"></span><b id="shop-time"></b></div><div class="equipment-columns"></div><p id="shop-result" role="status">点击装备购买 · 枪械皮肤可在皮肤仓库中更换</p><footer>1–5 选择分类，再按 1–5 购买 · B 返回战场 · 4 切换投掷物 · Q 上一件装备</footer></section>`;
+    container.innerHTML=`<section class="armory-card equipment-card"><header><div class="shop-title"><span class="eyebrow" id="shop-team">LOADOUT</span><h2>购买菜单</h2></div><div class="buy-wallet"><small>可用资金</small><b id="shop-money">$ 0</b></div><button id="close-buy" type="button"><kbd>B</kbd> 返回游戏 ×</button></header><div class="shop-status"><span id="buy-note"></span><b id="shop-time"></b></div><div class="equipment-columns"></div><div class="shop-bottom"><p id="shop-result" role="status">选择武器或装备</p><footer><kbd>1–5</kbd> 选择分类与装备　<kbd>Q</kbd> 上一件装备　<kbd>4</kbd> 切换投掷物</footer></div></section>`;
     container.querySelector('#close-buy').onclick=close;
     container.addEventListener('click',e=>{const category=e.target.closest('[data-category]');if(category){this.category=category.dataset.category;this.highlight();return;}const button=e.target.closest('[data-buy]');if(button&&!button.disabled&&!this.pending){this.pending=button.dataset.buy;this.pendingAt=performance.now();this.message('正在确认购买…');buy(this.pending);this.update(this.last);}});
     container.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea')||e.repeat)return;if(e.code==='Backspace'){e.preventDefault();this.category=null;this.highlight();}if(!/^Digit[1-5]$/.test(e.code))return;e.preventDefault();const i=Number(e.code.at(-1))-1;if(!this.category){this.category=categories[i][0];this.highlight();}else{container.querySelectorAll(`[data-group="${this.category}"] [data-buy]`)[i]?.click();this.category=null;this.highlight();}});
@@ -18,7 +18,7 @@ export class WeaponShop {
     this.team=p.team;this.container.dataset.team=p.team;
     this.container.querySelector('#shop-team').textContent=p.team==='CT'?'CT / 防守方装备':'T / 进攻方装备';
     const groups={equipment:p.team==='CT'?['armor','helmet','defusekit']:['armor','helmet'],...TEAM_LOADOUTS[p.team],grenades:UTILITY_IDS};
-    this.container.querySelector('.equipment-columns').innerHTML=categories.map(([category,label],index)=>`<section data-group="${category}"><button class="equipment-heading" data-category="${category}"><kbd>${index+1}</kbd> ${label}</button>${(groups[category]||[]).map((id,i)=>{const w=EQUIPMENT[id]||getWeapon(id),skin=getSkin(p.skins?.[id]||DEFAULT_SKINS[id]);return `<button class="equipment-item" data-buy="${id}"><kbd>${i+1}</kbd>${skin?.preview?`<img loading="lazy" src="${skin.preview}" alt="${w.name}">`:`<div class="equipment-symbol" aria-hidden="true">${symbols[id]||'◇'}</div>`}<b>${w.name}</b><span>${descriptions[id]||`${skin?.name||w.skin} · 崭新出厂`}</span><div class="equipment-price"><strong></strong><small></small></div></button>`;}).join('')}</section>`).join('');
+    this.container.querySelector('.equipment-columns').innerHTML=categories.map(([category,label],index)=>`<section data-group="${category}"><button class="equipment-heading" data-category="${category}"><kbd>${index+1}</kbd> ${label}</button>${(groups[category]||[]).map((id,i)=>{const w=EQUIPMENT[id]||getWeapon(id),skin=getSkin(p.skins?.[id]||DEFAULT_SKINS[id]);return `<button class="equipment-item${skin?' weapon-item':' gear-item'}" data-buy="${id}"><kbd>${i+1}</kbd><img loading="lazy" src="${skin?.preview||uiIconUrl(id)}" alt="${w.name}"><b>${w.name}</b><span>${descriptions[id]||`${skin?.name||w.skin}${skin?.condition==='Factory New'?' · 崭新出厂':''}`}</span><div class="equipment-price"><strong></strong><small></small></div></button>`;}).join('')}</section>`).join('');
     this.highlight();
   }
   message(text){this.container.querySelector('#shop-result').textContent=text;}

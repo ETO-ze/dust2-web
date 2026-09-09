@@ -14,7 +14,7 @@ out.mkdir(parents=True, exist_ok=True)
 archive = out / f'dust2-web-{stamp}.tar.gz'
 paths = ['dist', 'server', 'shared', 'package.json', 'package-lock.json',
          'node_modules/three', 'node_modules/three-mesh-bvh', 'node_modules/ws',
-         'public/assets/map/collision.json', 'deploy/dust2-web.service',
+         'public/assets/map/collision.json', 'public/assets/map/penetration-materials.u8', 'deploy/dust2-web.service',
          'deploy/dust2-web.location.conf']
 if not (root / 'dist/index.html').is_file():
     raise SystemExit('Run npm run build before packaging.')

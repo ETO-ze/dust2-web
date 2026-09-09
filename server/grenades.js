@@ -22,13 +22,16 @@ export class GrenadeSimulation {
     if(!UTILITY_IDS.includes(weapon)||this.projectiles.length>=40)return false;
     const config=EQUIPMENT[weapon],pitch=Math.max(-1.48,Math.min(1.48,input.pitch+.12)),c=Math.cos(pitch);
     const direction={x:-Math.sin(input.yaw)*c,y:Math.sin(pitch),z:-Math.cos(input.yaw)*c};
-    const origin={x:player.x,y:player.y+(player.crouch?.95:1.6),z:player.z};
+    const strength=Number.isFinite(input.throwStrength)?Math.max(0,Math.min(1,input.throwStrength)):1;
+    const throwMode=input.throwMode==='drop'?'drop':input.throwMode==='lob'?'lob':'full';
+    const speed=config.throwSpeed*(.3+.7*strength);
+    const origin={x:player.x,y:player.y+(player.crouch?.95:1.6)-(1-strength)*.3,z:player.z};
     const blocked=this.raycastWorld(origin,direction,.35),offset=blocked===null?.30:Math.max(0,blocked-.08);
     const grenade={id:`grenade_${++this.serial}`,weapon,ownerId:player.id,team:player.team,
       x:origin.x+direction.x*offset,y:origin.y+direction.y*offset,z:origin.z+direction.z*offset,
-      vx:direction.x*config.throwSpeed+(player.vx||0),vy:direction.y*config.throwSpeed+(player.vy||0),vz:direction.z*config.throwSpeed+(player.vz||0),
+      vx:direction.x*speed+(player.vx||0),vy:direction.y*speed+(player.vy||0),vz:direction.z*speed+(player.vz||0),throwMode,throwStrength:strength,
       bornAt:this.clock(),detonateAt:this.clock()+config.fuse*1000};
-    this.projectiles.push(grenade);this.emit('grenade_thrown',{grenadeId:grenade.id,shooterId:player.id,weapon,origin:xyz(grenade)});return true;
+    this.projectiles.push(grenade);this.emit('grenade_thrown',{grenadeId:grenade.id,shooterId:player.id,weapon,mode:throwMode,strength,origin:xyz(grenade)});return true;
   }
   advance(grenade,dt){
     const config=EQUIPMENT[grenade.weapon];grenade.vy-=config.gravity*dt;
@@ -54,7 +57,7 @@ export class GrenadeSimulation {
   tick(dt){
     const now=this.clock();this.smokes=this.smokes.filter(smoke=>smoke.expiresAt>now);
     for(let i=this.projectiles.length-1;i>=0;i--){
-      const grenade=this.projectiles[i];let remaining=Math.max(0,Math.min(.25,dt));
+      const grenade=this.projectiles[i];if(!grenade)continue;let remaining=Math.max(0,Math.min(.25,dt));
       while(remaining>1e-8){const step=Math.min(1/120,remaining);this.advance(grenade,step);remaining-=step;}
       if(!Number.isFinite(grenade.x+grenade.y+grenade.z)||grenade.y< -250){this.projectiles.splice(i,1);continue;}
       const settled=Math.hypot(grenade.vx,grenade.vy,grenade.vz)<.5;

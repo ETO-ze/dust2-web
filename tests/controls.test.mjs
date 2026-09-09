@@ -22,7 +22,7 @@ test('CS defaults expose implemented actions and preserve short jump/reload pres
     assert.equal(controls.down(action), false); assert.equal(controls.consume(action), true); assert.equal(controls.consume(action), false);
   }
   assert.deepEqual(callbacks.map(({action,pressed})=>[action,pressed]), [['jump',true],['jump',false],['reload',true],['reload',false]]);
-  assert.equal(CONTROL_ACTIONS.some(a=>['drop','changeTeam'].includes(a.id)), false);
+  assert.deepEqual(DEFAULT_BINDINGS.drop, ['KeyG']);
   assert.deepEqual(DEFAULT_BINDINGS.lastWeapon, ['KeyQ']); assert.deepEqual(DEFAULT_BINDINGS.menu, ['Escape']); controls.destroy();
 });
 
@@ -32,6 +32,19 @@ test('two physical keys for one held action release only after both keys lift; O
   assert.equal(controls.down('walk'), true); assert.equal(callbacks.length, 1);
   release('ShiftRight'); assert.equal(controls.down('walk'), false); assert.equal(callbacks.length, 2);
   assert.equal(controls.consume('walk'), true); assert.equal(controls.consume('walk'), false); controls.destroy();
+});
+
+test('held Tab cancels every browser repeat, closes on release/blur, and leaves menu navigation available', () => {
+  let playing=true; const {controls,press,release,target,callbacks}=setup({enabled:()=>playing});
+  assert.equal(press('Tab').defaultPrevented,true);
+  for(let i=0;i<12;i++) assert.equal(press('Tab',{repeat:true}).defaultPrevented,true);
+  assert.equal(callbacks.length,1); assert.equal(controls.down('scoreboard'),true);
+  release('Tab'); assert.equal(controls.down('scoreboard'),false);
+  press('Tab'); event(target,'blur'); assert.equal(controls.down('scoreboard'),false);
+  playing=false;
+  assert.equal(press('Tab').defaultPrevented,false);
+  assert.equal(press('Tab',{repeat:true}).defaultPrevented,false);
+  controls.destroy();
 });
 
 test('form fields, composition, disabled gameplay, focus and blur cannot trigger or stick movement', () => {

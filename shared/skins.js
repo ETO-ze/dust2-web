@@ -415,12 +415,12 @@ export const SKINS = Object.freeze([
     "englishName": "AK-47 | Wild Lotus",
     "model": "assets/weapons/cs2-skins/ak47-wild-lotus.glb",
     "preview": "assets/weapons/cs2-skins/previews/ak47.webp",
-    "bytes": 3900668,
-    "sha256": "d6cf06e95ed2f4b3977c7e0aeb5aa4cb486eb158f40ef4081d883753cb843a53",
+    "bytes": 3487536,
+    "sha256": "791e22286576eeee8981f4ccf977f41b23ebdba156dfa850ff595a76027389db",
     "isDefault": false,
     "paintkit": 724,
-    "previewBytes": 22150,
-    "previewSha256": "9b113e66b4df5c88ec4f05044215cac59225b189725608fa39cc387c498e25c5"
+    "previewBytes": 20232,
+    "previewSha256": "96418f6a8d15c9732b436e711e25be290d5e2b9f9fbba32d7a94adbbaf79dace"
   },
   {
     "id": "m4a1-blue-phosphor",
@@ -429,12 +429,12 @@ export const SKINS = Object.freeze([
     "englishName": "M4A1-S | Blue Phosphor",
     "model": "assets/weapons/cs2-skins/m4a1-blue-phosphor.glb",
     "preview": "assets/weapons/cs2-skins/previews/m4a1.webp",
-    "bytes": 5179796,
-    "sha256": "8c0cec0f84d642832d08583b64ac43e4c368ddca0c64f9d8e129b20ccb33787d",
+    "bytes": 5170224,
+    "sha256": "ba2be6967166137a3c0ff20ba41325ff2c9f45eaf79a71ed5404860bf878ec5a",
     "isDefault": false,
     "paintkit": 1017,
-    "previewBytes": 18138,
-    "previewSha256": "81beecb357a95950ce07ce8966eec278addae1f2d8a5f2d0ff3e698d41feedc5"
+    "previewBytes": 13918,
+    "previewSha256": "a4352b0c873ae8adb512e0530e2edbff201c1394698be6f44bfaa95e7fc8ac40"
   },
   {
     "id": "awp-gungnir",
@@ -443,12 +443,12 @@ export const SKINS = Object.freeze([
     "englishName": "AWP | Gungnir",
     "model": "assets/weapons/cs2-skins/awp-gungnir.glb",
     "preview": "assets/weapons/cs2-skins/previews/awp.webp",
-    "bytes": 5070040,
-    "sha256": "1eb3a56eadc9221b799670c9727be1e004a89d35eb574565d7d654f27eed8abe",
+    "bytes": 4830704,
+    "sha256": "d2e18693c90e406632b8f064332f410bfd3cbd8af2682c6a0b1ac12ec8e9db72",
     "isDefault": false,
     "paintkit": 756,
-    "previewBytes": 21446,
-    "previewSha256": "a46cdca038be2ccdf9f746a610a03a72129ffba32555e92401c4691f939928f8"
+    "previewBytes": 18258,
+    "previewSha256": "9cf08c2da09073e928ca4762ba0ce3b05dcb5ecff27a8451622b95cfd362cf23"
   },
   {
     "id": "glock-emerald",
@@ -457,12 +457,12 @@ export const SKINS = Object.freeze([
     "englishName": "Glock-18 | Gamma Doppler Emerald",
     "model": "assets/weapons/cs2-skins/glock-emerald.glb",
     "preview": "assets/weapons/cs2-skins/previews/glock.webp",
-    "bytes": 2099136,
-    "sha256": "79922fcca446d14c91543b4b44d8b646cecd3bba41e917e389b07d5a3cb193e9",
+    "bytes": 2039336,
+    "sha256": "ca0dcb282b2e878055122df329061b0770caccf0b5aeac0bc652c38620e06971",
     "isDefault": false,
     "paintkit": 1119,
-    "previewBytes": 17150,
-    "previewSha256": "76234706030bc75ace01ba117c78c626f72e454ce243e646e9136e0b280efc7f"
+    "previewBytes": 14682,
+    "previewSha256": "eb263af191d6520cb1e9919892c81db23f9ec4d7e8610b658c6c2814d5e06234"
   },
   {
     "id": "usp-printstream",
@@ -471,12 +471,12 @@ export const SKINS = Object.freeze([
     "englishName": "USP-S | Printstream",
     "model": "assets/weapons/cs2-skins/usp-printstream.glb",
     "preview": "assets/weapons/cs2-skins/previews/usp.webp",
-    "bytes": 2819444,
-    "sha256": "6403c9984f8b50b1094c6870ed96bc44ab6873a6ba0294695fec2eafa0e88f15",
+    "bytes": 2526060,
+    "sha256": "f88537ed25f95b822937ffab5e04c8b90e095266ccb92bb1e8634adca84f767e",
     "isDefault": false,
     "paintkit": 1142,
-    "previewBytes": 17490,
-    "previewSha256": "68b8722ecf3bfcf861919005b29767c150a9b6ebf7c7098e47b0e9e8f783bd4a"
+    "previewBytes": 14578,
+    "previewSha256": "fa9a33ab18ecea525e41ec0b3473165925caf00569404a01117fc273b4a47ec6"
   },
   {
     "id": "ak47-fire-serpent",
@@ -485,12 +485,12 @@ export const SKINS = Object.freeze([
     "englishName": "AK-47 | Fire Serpent",
     "model": "assets/weapons/cs2-skins/optional/ak47-fire-serpent.glb",
     "preview": "assets/weapons/cs2-skins/optional/previews/ak47-fire-serpent.webp",
-    "bytes": 3588828,
-    "sha256": "878d5faf528cea9437dff8d45217d17745441ac8d574ab3318d31cb5c1e5b18c",
+    "bytes": 3400016,
+    "sha256": "3591d83e3c1de5eab06d4d656fbc0d6a6a753d984df438edb97c7d0549af2550",
     "isDefault": false,
     "paintkit": 180,
-    "previewBytes": 19052,
-    "previewSha256": "38e49e35219126ec24bef2c3ebd497b5cecf155757e9dba4b0e14e2dc22c5a24"
+    "previewBytes": 17268,
+    "previewSha256": "6a2813e82d3e21645b402313be6f0cd4c27fc88ebc21fbbc00f022ef2660342b"
   },
   {
     "id": "m4a1-golden-coil",
@@ -499,12 +499,12 @@ export const SKINS = Object.freeze([
     "englishName": "M4A1-S | Golden Coil",
     "model": "assets/weapons/cs2-skins/optional/m4a1-golden-coil.glb",
     "preview": "assets/weapons/cs2-skins/optional/previews/m4a1-golden-coil.webp",
-    "bytes": 4725948,
-    "sha256": "7be7b478d0c4ded8386a3e268da6d0fe0eaf0ae75d123272c25441eb692b4e8c",
+    "bytes": 4516992,
+    "sha256": "f74ff219e5cc3087ed36e0935637c6bdade5772d28ed1cfb8f1376f9fde38ef3",
     "isDefault": false,
     "paintkit": 497,
-    "previewBytes": 20366,
-    "previewSha256": "b558b305eb87a800a60b591024a2257aaa7afe4ed3c47620a39d89c9bf470aec"
+    "previewBytes": 18220,
+    "previewSha256": "f15ab248a85e50387f96540630b6ebd8b6c3297f03e7e650b2e8b4351b818a37"
   },
   {
     "id": "awp-asiimov",
@@ -513,12 +513,12 @@ export const SKINS = Object.freeze([
     "englishName": "AWP | Asiimov",
     "model": "assets/weapons/cs2-skins/optional/awp-asiimov.glb",
     "preview": "assets/weapons/cs2-skins/optional/previews/awp-asiimov.webp",
-    "bytes": 3658528,
-    "sha256": "b21bb7ccbcd73ef8cf0468e61932f20c24c652f8c4d89e0c71b39ccb5efbd037",
+    "bytes": 3762448,
+    "sha256": "4a02684e94ec663e10e1f7743cf4634c045822ef634662d7a0dd0a3a5062a24d",
     "isDefault": false,
     "paintkit": 279,
-    "previewBytes": 19058,
-    "previewSha256": "3c8a08d31d4b0e29a6cd0e087de14ff9a41b6f9d9970b5de982d9baa1c62d531"
+    "previewBytes": 15690,
+    "previewSha256": "65c4be3027f0c903c5d78149015631dd60ac27b821409a8f08da96918fd65f3d"
   },
   {
     "id": "glock-bullet-queen",
@@ -527,12 +527,12 @@ export const SKINS = Object.freeze([
     "englishName": "Glock-18 | Bullet Queen",
     "model": "assets/weapons/cs2-skins/optional/glock-bullet-queen.glb",
     "preview": "assets/weapons/cs2-skins/optional/previews/glock-bullet-queen.webp",
-    "bytes": 2693544,
-    "sha256": "f264ac1fa86a130485e2df78f2a89d87d34eb03aa780ccfb7e4b737c98ce5268",
+    "bytes": 2686168,
+    "sha256": "06c6caa1132726b288845c7495d15c6f06527863c0fda30411e45f9fe9906717",
     "isDefault": false,
     "paintkit": 957,
-    "previewBytes": 22586,
-    "previewSha256": "42090753c79bd475bfa40b502a706d547899a84d60795e7700f981967847c137"
+    "previewBytes": 24694,
+    "previewSha256": "442abc36c88677c0cb941253f53ac3514ec7b6feab6cdb4d9fa4f3179d39a3c4"
   },
   {
     "id": "glock-neo-noir",
@@ -541,12 +541,12 @@ export const SKINS = Object.freeze([
     "englishName": "Glock-18 | Neo-Noir",
     "model": "assets/weapons/cs2-skins/optional/glock-neo-noir.glb",
     "preview": "assets/weapons/cs2-skins/optional/previews/glock-neo-noir.webp",
-    "bytes": 2463104,
-    "sha256": "4dcd00cc51c88e1f800ea8c154382839b320a3ac1d23384ce1bf3d0e9690c2ad",
+    "bytes": 2439208,
+    "sha256": "0d194852ccb02b3271bced95e2e84b81e1f03ec11f7f72e71292340a7ec81d1a",
     "isDefault": false,
     "paintkit": 988,
-    "previewBytes": 21740,
-    "previewSha256": "28f11a97544c2c69a814c24ea58e6c74424ffd2019f5f5ceaed3460a1a42291d"
+    "previewBytes": 24198,
+    "previewSha256": "db3d0720e8661bc6fc0186c414552ce9d2890d0ab6f3867b6e164d5eef0a07bb"
   },
   {
     "id": "usp-neo-noir",
@@ -555,12 +555,12 @@ export const SKINS = Object.freeze([
     "englishName": "USP-S | Neo-Noir",
     "model": "assets/weapons/cs2-skins/optional/usp-neo-noir.glb",
     "preview": "assets/weapons/cs2-skins/optional/previews/usp-neo-noir.webp",
-    "bytes": 3041608,
-    "sha256": "13727d93b4d1a17b6b8ad617ef6ec082e8e91a7bb2f57b8ca6c9f984719c8209",
+    "bytes": 2885832,
+    "sha256": "9fa397bc35c0f1ba8f03404edaa242217df9e34c32c393788afde7bfa641d58b",
     "isDefault": false,
     "paintkit": 653,
-    "previewBytes": 19406,
-    "previewSha256": "063eeea2a84307b9200f40bb0f48f64dc3f3fa406d2b508bcb0afbddece1adb8"
+    "previewBytes": 19214,
+    "previewSha256": "4b8fb6298b538e5f81adabe2578f3b0337bfd9ece66f9d0f8be8599d33c9d4ae"
   },
   {
     "id": "karambit-ruby",
@@ -569,12 +569,12 @@ export const SKINS = Object.freeze([
     "englishName": "Karambit | Doppler Ruby",
     "model": "assets/weapons/cs2-skins/optional/karambit-ruby.glb",
     "preview": "assets/weapons/cs2-skins/optional/previews/karambit-ruby.webp",
-    "bytes": 2905240,
-    "sha256": "bfb11253124aafc6c09b259ea008b1a24286a0073f1fd5b751bee5df8decced9",
+    "bytes": 2877084,
+    "sha256": "26b05eabd4835f6c3251b27625fcb39d47961cc249ff3ff73512430cf4f89010",
     "isDefault": false,
     "paintkit": 415,
-    "previewBytes": 17454,
-    "previewSha256": "b6db9124c3563134fcfc73e4e5b7d99ad6dbe1f688eec98d8b92bc34fca07356"
+    "previewBytes": 17504,
+    "previewSha256": "f7b877e253b698c0d0e3ad84631d12a46a362e5f3b8ad43c7cb09ce51eaee7ab"
   },
   {
     "id": "karambit-black-pearl",
@@ -583,12 +583,12 @@ export const SKINS = Object.freeze([
     "englishName": "Karambit | Doppler Black Pearl",
     "model": "assets/weapons/cs2-skins/optional/karambit-black-pearl.glb",
     "preview": "assets/weapons/cs2-skins/optional/previews/karambit-black-pearl.webp",
-    "bytes": 2837292,
-    "sha256": "3c97c958f2de3a315337e579d9312fba30c6f9c743b84969fe0cb31134fa749a",
+    "bytes": 2813124,
+    "sha256": "dc1542dfcf12b549158332f9d6397d8406420f099300864fd42e9457a42d5a65",
     "isDefault": false,
     "paintkit": 417,
-    "previewBytes": 16402,
-    "previewSha256": "aacb497151701359c90dec5a2a2e1b2958cc59c8cbab961dea52c924d19d3e33"
+    "previewBytes": 16596,
+    "previewSha256": "a3c6f48bb2ac4ed84c514dbd7601760e979fca35449fb9ad0e0a71a892f2f14e"
   }
 ].map(skin => Object.freeze(skin)));
 export const DEFAULT_SKINS = Object.freeze(Object.fromEntries(SKINS.filter(skin => skin.isDefault).map(skin => [skin.weapon, skin.id])));

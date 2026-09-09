@@ -8,6 +8,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { PRIMARY_WEAPONS } from '../shared/weapons.js';
 import { normalizeSkinLoadout } from '../shared/skins.js';
 import { normalizeAgentLoadout } from '../shared/agents.js';
+import { botCount } from '../shared/match-rules.js';
 import { initPhysics } from '../shared/physics.js';
 import { GameRoom, TICK_RATE, SNAPSHOT_RATE } from './game.js';
 
@@ -16,10 +17,12 @@ const TYPES = { '.webmanifest': 'application/manifest+json; charset=utf-8', '.ht
 let physicsReady = null;
 
 async function loadPhysics() {
-  if (!physicsReady) physicsReady = readFile(path.join(ROOT, 'public/assets/map/collision.json'), 'utf8').then(source => {
+  if (!physicsReady) physicsReady = readFile(path.join(ROOT, 'public/assets/map/collision.json'), 'utf8').then(async source => {
     const { positions } = JSON.parse(source);
     if (!Array.isArray(positions) || positions.length < 9 || positions.length % 9) throw new Error('Invalid Dust2 collision geometry');
-    return initPhysics(positions);
+    const materials=await readFile(path.join(ROOT,'public/assets/map/penetration-materials.u8'));
+    if(materials.length!==positions.length/9)throw new Error('Invalid Dust2 penetration material count');
+    return initPhysics(positions,new Uint8Array(materials));
   }).catch(error => { physicsReady = null; throw error; });
   return physicsReady;
 }
@@ -37,9 +40,10 @@ function joinSettings(msg) {
   const name = (msg.name || 'Player').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 20) || 'Player';
   const room = (msg.room || '').trim().toUpperCase();
   if (room && !/^[A-Z0-9]{4,12}$/.test(room)) return { error: '房间码应为 4–12 位英文字母或数字。' };
-  const mode = msg.mode === 'defuse' ? 'defuse' : 'deathmatch';
+  const mode = msg.mode === 'deathmatch' ? 'deathmatch' : 'defuse';
   const team = ['T', 'CT'].includes(msg.team) ? msg.team : 'auto';
-  const bots = Number.isFinite(msg.bots) ? Math.max(0, Math.min(8, Math.floor(msg.bots))) : 6;
+  if(msg.bots!==undefined&&(!Number.isInteger(msg.bots)||msg.bots<0||msg.bots>9))return {error:'机器人数量必须为 0–9 的整数。'};
+  const bots = botCount(msg.bots);
   const primary = PRIMARY_WEAPONS.includes(msg.primary) ? msg.primary : 'auto';
   return { name, room, mode, team, bots, primary, skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents) };
 }
@@ -109,7 +113,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         }
         try {
           const player = room.addHuman(socket, settings); socket.playerId = player.id; socket.roomCode = room.code;
-          send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, team: player.team, tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1 });
+          send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1 });
           send(socket, room.snapshot({ drainEvents: false }));
         } catch (e) { if (created) rooms.delete(room.code); error(socket, 'JOIN_FAILED', e.message); }
         return;
@@ -118,6 +122,14 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       if (!room || !socket.playerId) { error(socket, 'NOT_JOINED', '请先加入一个房间。'); return; }
       if (msg.type === 'input') {
         if (!room.receiveInput(socket.playerId, msg)) { if (++socket.strikes > 100) socket.close(1008, 'Invalid input'); }
+      } else if(msg.type==='setBots'){
+        if(now-(socket.setBotsAt||0)<250){error(socket,'BOTS_RATE','设置过于频繁，请稍后重试。');return;}
+        socket.setBotsAt=now;const result=room.setBots(socket.playerId,msg.bots);
+        if(!result.ok)error(socket,'BOTS_REJECTED',result.message);else send(socket,{type:'botsUpdated',...result});
+      } else if(msg.type==='dropWeapon'){
+        if(now-(socket.dropWeaponAt||0)<250){error(socket,'DROP_RATE','丢弃过于频繁，请稍后重试。');return;}
+        socket.dropWeaponAt=now;const result=room.dropWeapon(socket.playerId);
+        if(!result.ok)error(socket,'DROP_REJECTED',result.message);else send(socket,{type:'weaponDropped',...result});
       } else if(msg.type==='equipSkin'){
         if(now-(socket.equipSkinAt||0)<250){error(socket,'SKIN_RATE','更换过于频繁，请稍后重试。');return;}
         socket.equipSkinAt=now;const result=room.equipSkin(socket.playerId,msg.weapon,msg.skin);

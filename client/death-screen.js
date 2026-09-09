@@ -1,5 +1,6 @@
 import { WEAPONS, normalizeWeapon } from '../shared/weapons.js';
 import { getEquipment } from '../shared/equipment.js';
+import { uiIconUrl } from './ui-icons.js';
 
 // References: Valve's Spectator UI (2012-08-30) describes staying in the match
 // with player identity, weapon and team status visible while observing.
@@ -23,7 +24,9 @@ export function describeDeath(snapshot, self, { event = null, elapsed = 0, spect
   const weapon = kill ? normalizeWeapon(kill.weapon) : '';
   const weaponName = WEAPONS[weapon]?.name || getEquipment(weapon)?.name || ({ bomb: 'C4 爆炸', c4: 'C4 爆炸', world: '环境伤害' })[weapon] || (kill ? '其他伤害' : '');
   let statusTitle, statusDetail, clock = '', clockLabel = '';
-  if (mode === 'deathmatch') {
+  if (round.phase==='matchEnded'||snapshot.match?.status==='ended') {
+    statusTitle='比赛结束';statusDetail='返回大厅，创建或加入下一场比赛';
+  } else if (mode === 'deathmatch') {
     statusTitle = seconds > 0 ? '自动重生' : '正在重生';
     statusDetail = '重生后自动回到战斗';
     clock = seconds > 0 ? String(Math.ceil(seconds)) : '…';
@@ -47,7 +50,7 @@ export function describeDeath(snapshot, self, { event = null, elapsed = 0, spect
     visible: true, mode, hasKill: !!kill,
     killerName: kill ? label(killer?.name || kill.killerName, kill.killerId ? '对手' : '环境') : '你已阵亡',
     killerTeam: killer?.team === 'CT' || killer?.team === 'T' ? killer.team : '',
-    weaponName, headshot: !!kill?.headshot,
+    weaponName, weaponId:weapon, headshot: !!kill?.headshot,
     statusTitle, statusDetail, seconds, clock, clockLabel,
     teamAlive: teammates.length, observedName: watched ? label(watched.name, '队友') : '',
   };
@@ -65,8 +68,8 @@ export class DeathScreen {
     element.id = 'death-screen'; element.hidden = true;
     element.innerHTML = `<div class="death-screen-shade" aria-hidden="true"></div>
       <section class="death-screen-card" aria-label="阵亡信息">
-        <div class="death-screen-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 5C13 5 8 12 8 21v9l7 5v8h18v-8l7-5v-9C40 12 35 5 24 5Z"/><path d="m15 21 6 3m12-3-6 3m-6 8h6m-6 5v6m6-6v6"/></svg></div>
-        <div class="death-screen-kill"><small class="death-screen-eyebrow">你已阵亡</small><b class="death-screen-killer"></b><div class="death-screen-weapon"><span></span><em hidden>爆头</em></div></div>
+        <div class="death-screen-mark" aria-hidden="true"><img src="${uiIconUrl('death')}" alt=""></div>
+        <div class="death-screen-kill"><small class="death-screen-eyebrow">你已阵亡</small><b class="death-screen-killer"></b><div class="death-screen-weapon"><img class="death-weapon-icon" alt=""><span></span><em hidden><img src="${uiIconUrl('headshot')}" alt="爆头"></em></div></div>
         <div class="death-screen-status"><b></b><span></span><small class="death-screen-keys"></small></div>
         <div class="death-screen-clock" aria-live="off"><strong></strong><span></span></div>
       </section><span class="death-screen-announcement" role="status" aria-live="polite"></span>`;
@@ -100,6 +103,7 @@ export class DeathScreen {
     write(this.parts.killer, state.killerName);
     this.parts.killer.dataset.team = state.killerTeam;
     write(this.parts.weapon.querySelector('span'), state.weaponName);
+    const weaponIcon=this.parts.weapon.querySelector('.death-weapon-icon');if(weaponIcon.dataset.weapon!==state.weaponId){weaponIcon.dataset.weapon=state.weaponId;weaponIcon.src=uiIconUrl(state.weaponId);weaponIcon.alt=state.weaponName;}
     this.parts.weapon.querySelector('em').hidden = !state.headshot;
     this.parts.weapon.hidden = !state.weaponName;
     write(this.parts.status.querySelector('b'), state.statusTitle);

@@ -174,14 +174,15 @@ test('new loadouts and combat feedback contracts on the authoritative server', {
       room.fire(shooter, place(lane.distance, armor, head));
       assert.equal(target.alive, false); assert.equal(target.health, 0); assert.equal(shooter.kills, 1);
       assert.equal(shooter.inventory.awp.ammo, 4);
-      assert.deepEqual(room.events.map(event => event.type), ['shot', 'hit', 'kill']);
-      const [shot, hit, kill] = room.events;
+      assert.deepEqual(room.events.map(event => event.type), ['shot', 'hit', 'weapon_dropped', 'kill']);
+      const [shot, hit, dropped, kill] = room.events;
+      assert.equal(dropped.death,true);assert.ok(room.droppedWeapons.items.some(item=>item.id===dropped.droppedId));
       assert.equal(shot.hitId, target.id); assert.equal(hit.targetId, target.id); assert.equal(hit.weapon, 'awp');
       assert.equal(hit.armor, armor > 0); assert.equal(hit.headshot, head); assert.equal(kill.headshot, head);
       assert.equal(kill.killerName, 'Shooter'); assert.equal(kill.victimName, 'Target');
-      assert.equal(new Set(room.events.map(event => event.id)).size, 3);
+      assert.equal(new Set(room.events.map(event => event.id)).size, 4);
       room.fire(shooter, { fire: true, yaw: 0, pitch: 0 });
-      assert.equal(room.events.length, 3, 'holding semi-automatic fire must not duplicate confirmation');
+      assert.equal(room.events.length, 4, 'holding semi-automatic fire must not duplicate confirmation');
     }
   });
 

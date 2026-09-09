@@ -25,6 +25,7 @@ clips['rifle/reload'] = 'animation/anims/world/rifle/rifle_ak/reload_ak.vnmclip_
 clips['pistol/shoot'] = 'animation/anims/world/pistol/pistol_glock/shoot_glock.vnmclip_c';
 clips['pistol/reload'] = 'animation/anims/world/pistol/pistol_glock/reload_glock.vnmclip_c';
 clips['knife/shoot'] = 'animation/anims/world/knife/_default_knife/frontswing_knife.vnmclip_c';
+for(const [action,stem]of Object.entries({idle:'idle_grenade',crouchIdle:'idle_crouch_grenade',pullpin:'pullpin_grenade',crouchPullpin:'pullpin_crouch_grenade',throw:'throw_overhand_grenade',throwUnderhand:'throw_underhand_grenade',crouchThrow:'crouch_throw_far_grenade',crouchThrowUnderhand:'crouch_throw_near_grenade'}))clips['grenade/'+action]='animation/anims/world/grenade/_default_grenade/'+stem+'.vnmclip_c';
 clips.death = 'animation/anims/world/shared/death_chest_a.vnmclip_c';
 for (const resource of [...Object.values(models), ...Object.values(clips)]) if (!index.has(resource)) throw Error('Missing CS2 resource: ' + resource);
 fs.writeFileSync(path.join(stage, 'source-index.json'), JSON.stringify({ installationBuild: '25175329', models, clips }, null, 2) + '\n');

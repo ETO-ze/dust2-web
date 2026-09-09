@@ -1,10 +1,13 @@
 import { MAP } from '../shared/map-data.js';
 import { UTILITY_IDS, EQUIPMENT } from '../shared/equipment.js';
 import { getWeapon } from '../shared/weapons.js';
+import { getSkin, DEFAULT_SKINS } from '../shared/skins.js';
+import { AGENT_ASSETS } from '../shared/agent-assets.js';
+import { uiIcon } from './ui-icons.js';
 import { DeathScreen } from './death-screen.js';
 import './death-screen.css';
 
-const TEAM_COLORS = { CT: '#79bde2', T: '#dfbd76' };
+const TEAM_COLORS = { CT: '#6f9ce6', T: '#eabe54' };
 const LOCATION_NAMES = {
   'T SPAWN': 'T 出生点', 'CT SPAWN': 'CT 出生点', A: 'A 包点', B: 'B 包点',
   MID: '中路', 'LONG A': 'A 大道', TUNNELS: 'B 洞', CATWALK: 'A 小道',
@@ -28,6 +31,7 @@ export class HUD {
       'slot1', 'slot2', 'slot3', 'slot4', 'weapon-name', 'ammo', 'reserve', 'reload-label',
       'board-room', 'score-body', 'buy-note', 'weapon-skin', 'hit-damage',
       'kill-confirm', 'kill-title', 'kill-victim', 'kill-weapon', 'kill-combo',
+      'team-roster-ct', 'team-roster-t', 'board-match-state',
     ].map(id => [id, document.getElementById(id)]));
     this.utilityBelt=document.createElement('div');this.utilityBelt.className='utility-belt';document.getElementById('weapon-name')?.parentElement.append(this.utilityBelt);
     this.radar = document.getElementById('radar');
@@ -83,7 +87,8 @@ export class HUD {
     const round = snapshot.round || {};
     const bomb = snapshot.bomb || {};
     const mode = snapshot.mode === 'defuse' ? 'defuse' : 'deathmatch';
-    const weapon = getWeapon(self.weapon || 'pistol');
+    const weapon = EQUIPMENT[self.weapon] || getWeapon(self.weapon || 'pistol');
+    document.getElementById('hud')?.setAttribute('data-team',self.team);
 
     this.text('score-ct', number(snapshot.scores?.CT));
     this.text('score-t', number(snapshot.scores?.T));
@@ -97,13 +102,14 @@ export class HUD {
     this.text('armor', `护甲 ${Math.round(clamp(self.armor, 0, 999))}${self.helmet?' · 头盔':''}${self.defuseKit?' · 拆弹器':''}`);
     this.text('money', `$ ${Math.max(0, Math.round(number(self.money))).toLocaleString('en-US')}`);
     this.text('weapon-name', weapon.name);
-    this.text('weapon-skin', weapon.skin || '');
+    this.text('weapon-skin', getSkin(self.skinId||DEFAULT_SKINS[self.weapon])?.name || '');
+    const silhouette=document.getElementById('active-weapon-icon');if(silhouette&&this.iconWeapon!==self.weapon){this.iconWeapon=self.weapon;silhouette.replaceChildren(uiIcon(self.weapon,weapon.name));}
     this.text('ammo', weapon.slot === 3 ? '—' : Math.max(0, Math.floor(number(self.ammo))));
     this.text('reserve', weapon.slot === 3 ? '—' : self.reserveAmmoAsClips ? `${Math.max(0,Math.floor(number(self.reserveClips)))} 匣` : Math.max(0, Math.floor(number(self.reserve))));
     for (let slot = 1; slot <= 4; slot++) {
       this.elements[`slot${slot}`]?.classList.toggle('selected', number(self.slot, weapon.slot) === slot);
     }
-    const utilityKey=JSON.stringify([self.utilityCounts,self.weapon]);if(this.utilityKey!==utilityKey){this.utilityKey=utilityKey;this.utilityBelt.replaceChildren(...UTILITY_IDS.filter(id=>(self.utilityCounts?.[id]||0)>0).map(id=>{const el=document.createElement('span');el.className=self.weapon===id?'selected':'';el.textContent=`${EQUIPMENT[id].name} ×${self.utilityCounts[id]}`;return el;}));}
+    const utilityKey=JSON.stringify([self.utilityCounts,self.weapon]);if(this.utilityKey!==utilityKey){this.utilityKey=utilityKey;this.utilityBelt.replaceChildren(...UTILITY_IDS.filter(id=>(self.utilityCounts?.[id]||0)>0).map(id=>{const el=document.createElement('span');el.className=self.weapon===id?'selected':'';el.append(uiIcon(id,EQUIPMENT[id].name),document.createTextNode(String(self.utilityCounts[id])));return el;}));}
     const reload = Math.max(0, number(self.reloadRemaining) - elapsed);
     const protection = Math.max(0, number(self.spawnProtectionRemaining) - elapsed);
     this.text('reload-label', reload > 0 ? `正在换弹 ${reload.toFixed(1)} s` :
@@ -118,15 +124,19 @@ export class HUD {
 
     const roundLeft = Math.max(0, number(round.timeLeft) - elapsed);
     const bombLeft = Math.max(0, number(bomb.remaining) - elapsed);
-    this.text('round-time', bomb.state === 'planted' ? clockText(bombLeft) : mode === 'deathmatch' ? '∞' : round.phase === 'waiting' ? '—' : clockText(roundLeft));
+    this.text('round-time', round.phase==='matchEnded'?'结束':bomb.state === 'planted' ? clockText(bombLeft) : mode === 'deathmatch' ? '100' : round.phase === 'waiting' ? '—' : clockText(roundLeft));
     if (this.elements['round-time']) this.elements['round-time'].style.color = bomb.state === 'planted' ? '#ffb28c' : '';
     this.text('round-state', bomb.state === 'planted' ? `${bomb.site || ''} 区 · 炸弹已安装` :
-      mode === 'deathmatch' ? '团队击杀 · 自动重生' : round.phase === 'waiting' ? '等待双方玩家' :
+      round.phase==='matchEnded'?'比赛结束':mode === 'deathmatch' ? '率先获得 100 次击杀' : round.phase === 'waiting' ? '等待双方玩家' :
         round.phase === 'freeze' ? `回合 ${number(round.number, 1)} · 准备` :
           round.phase === 'ended' ? '下一回合即将开始' : `回合 ${number(round.number, 1)}`);
 
     let title = '', subtitle = '';
-    if (round.phase === 'ended') {
+    if (round.phase==='matchEnded'||snapshot.match?.status==='ended') {
+      const winner=snapshot.match?.teams?.[snapshot.match.winnerTeamId];
+      title=winner?.side===self.team?'比赛胜利':'比赛结束';
+      subtitle=`${number(snapshot.match?.teams?.A?.score)} : ${number(snapshot.match?.teams?.B?.score)} · ${round.reason||'返回大厅开始下一场比赛'}`;
+    } else if (round.phase === 'ended') {
       title = round.winner === 'CT' ? '防守方 CT 获胜' : round.winner === 'T' ? '进攻方 T 获胜' : '回合结束';
       subtitle = `${round.reason || ''}${round.reason ? ' · ' : ''}${Math.ceil(roundLeft)} 秒后下一回合`;
     } else if (mode === 'defuse' && round.phase === 'waiting') {
@@ -145,7 +155,7 @@ export class HUD {
     this.text('buy-note', mode === 'deathmatch' ? '死斗模式可免费更换武器与补充护甲。' :
       !self.alive ? '阵亡后无法购买，等待下一回合。' : buyLeft <= 0 ? '本回合购买时间已结束。' :
         !inBuyZone ? `请返回己方出生区购买 · 剩余 ${Math.ceil(buyLeft)} 秒` : `购买时间剩余 ${Math.ceil(buyLeft)} 秒 · 当前 $${number(self.money)}`);
-    if (time - this.lastBoard >= 250) { this.updateScoreboard(snapshot, self); this.lastBoard = time; }
+    if (time - this.lastBoard >= 250) { this.updateScoreboard(snapshot, self); this.updateRosters(snapshot,self); this.lastBoard = time; }
     if (time - this.lastRadar >= 50) { this.drawRadar(snapshot, self, time); this.lastRadar = time; }
     this.pruneFeed(time);
   }
@@ -180,24 +190,32 @@ export class HUD {
     if (!body) return;
     const players = [...(snapshot.players || [])].sort((a, b) =>
       Number(b.team === self.team) - Number(a.team === self.team) || String(a.team).localeCompare(String(b.team)) || number(b.kills) - number(a.kills) || number(a.deaths) - number(b.deaths));
-    const key = JSON.stringify([self.id, ...players.map(p => [p.id, p.name, p.team, p.bot, p.alive, p.kills, p.deaths, p.assists, p.score])]);
+    const key = JSON.stringify([self.id,snapshot.scores,snapshot.match, ...players.map(p => [p.id, p.name, p.team, p.bot, p.alive, p.kills, p.deaths, p.assists, p.money])]);
     if (key === this.boardKey) return;
     this.boardKey = key;
     const fragment = document.createDocumentFragment();
+    let currentTeam;
     for (const player of players) {
+      if(player.team!==currentTeam){currentTeam=player.team;const row=document.createElement('tr');row.className='board-team';row.dataset.team=currentTeam;const cell=document.createElement('td');cell.colSpan=5;const title=document.createElement('b');title.textContent=currentTeam==='CT'?'反恐精英':'恐怖分子';const count=document.createElement('span');count.textContent=`${players.filter(p=>p.team===currentTeam&&p.alive).length} 人存活`;const score=document.createElement('strong');score.textContent=String(number(snapshot.scores?.[currentTeam]));cell.append(uiIcon(currentTeam),title,count,score);row.append(cell);fragment.append(row);}
       const row = document.createElement('tr');
       if (player.id === self.id) row.classList.add('own');
       row.style.color = TEAM_COLORS[player.team] || '#ddd';
-      if (player.id === self.id) row.style.background = '#ead89a13';
+      row.classList.toggle('dead',!player.alive);
       const values = [
-        `${player.alive ? '' : '† '}${player.bot ? '[BOT] ' : ''}${player.name || '玩家'}${player.id === self.id ? ' (你)' : ''}`,
+        `${player.bot ? 'BOT ' : ''}${player.name || '玩家'}${player.id === self.id ? ' · 你' : ''}`,
         number(player.kills), number(player.deaths), number(player.assists),
-        number(player.score, number(player.kills) * 2 + number(player.assists)),
+        `$${Math.max(0,number(player.money)).toLocaleString('en-US')}`,
       ];
-      for (const value of values) { const cell = document.createElement('td'); cell.textContent = String(value); row.appendChild(cell); }
+      for (const [i,value] of values.entries()) { const cell = document.createElement('td');if(i===0){cell.append(uiIcon(player.alive?player.team:'death'));const name=document.createElement('span');name.textContent=String(value);cell.append(name);}else cell.textContent = String(value); row.appendChild(cell); }
       fragment.appendChild(row);
     }
     body.replaceChildren(fragment);
+    const match=snapshot.match;this.text('board-match-state',match?.status==='ended'?'比赛结束':snapshot.mode==='deathmatch'?'团队死斗 · 率先 100 次击杀':match?.period==='overtime'?`加时赛 ${number(match.overtimeNumber,1)} · 当前目标 ${number(match.winTarget,16)}`:`竞技爆破 · 率先 13 回合 · ${number(match?.roundsPlayed)} 回合已结束`);
+  }
+
+  updateRosters(snapshot,self){
+    const key=JSON.stringify([self.id,...(snapshot.players||[]).map(p=>[p.id,p.name,p.team,p.alive,p.agentId,p.hasBomb,p.health])]);if(key===this.rosterKey)return;this.rosterKey=key;
+    for(const team of ['CT','T']){const host=this.elements[`team-roster-${team.toLowerCase()}`];if(!host)continue;const players=(snapshot.players||[]).filter(p=>p.team===team);host.replaceChildren(...Array.from({length:Math.max(5,players.length)},(_,i)=>{const p=players[i],card=document.createElement('div');card.className=`roster-player${p?'':' empty'}${p&&!p.alive?' dead':''}${p?.id===self.id?' self':''}`;card.dataset.team=team;if(!p){card.append(uiIcon(team));card.title='空位';return card;}card.title=`${p.bot?'BOT ':''}${p.name} · ${p.alive?'存活':'阵亡'}`;const assetPreview=AGENT_ASSETS[p.agentId]?.preview,preview=typeof assetPreview==='string'?assetPreview:assetPreview?.file;if(preview){const image=document.createElement('img');image.src=preview;image.alt='';image.className='roster-portrait';card.append(image);}else card.append(uiIcon(team));if(!p.alive)card.append(uiIcon('death','阵亡','roster-death'));const label=document.createElement('span');label.textContent=p.name||'玩家';card.append(label);const health=document.createElement('i');health.style.width=`${p.alive?(p.team===self.team?clamp(p.health,0,100):100):0}%`;card.append(health);if(p.hasBomb&&p.team===self.team)card.append(uiIcon('c4','携带炸弹','roster-bomb'));return card;}));}
   }
 
   radarPoint(position) {
@@ -271,17 +289,22 @@ export class HUD {
       if (event.killerId === myId && event.victimId !== myId) this.confirmKill(event, victim);
       if (event.victimId === myId) this.combo = 0;
       const node = document.createElement('div');
-      node.className = `kill-entry${event.killerId === myId || event.victimId === myId ? ' own' : ''}`;
+      node.className = `kill-entry${event.killerId === myId ? ' own killer' : ''}${event.victimId === myId?' victim':''}`;
       const killerLabel = document.createElement('span');
       killerLabel.textContent = killer?.name || event.killerName || (event.killerId ? '玩家' : '环境');
       killerLabel.style.color = TEAM_COLORS[killer?.team] || '#d2d8cc';
-      const weaponLabel = document.createElement('small');
-      weaponLabel.textContent = `${event.weapon ? getWeapon(event.weapon).name : '淘汰'}${event.headshot ? ' · 爆头' : ''} →`;
+      const weaponLabel = uiIcon(event.weapon,event.weapon==='world'?'环境伤害':(EQUIPMENT[event.weapon]||getWeapon(event.weapon)).name,'kill-weapon-icon');
       const victimLabel = document.createElement('span');
       victimLabel.textContent = victim?.name || event.victimName || '玩家'; victimLabel.style.color = TEAM_COLORS[victim?.team] || '#d2d8cc';
-      node.append(killerLabel, weaponLabel, victimLabel);
-      const entry = { node, expiresAt: now() + 6000 };
-      entry.timer = setTimeout(() => { node.remove(); this.feed = this.feed.filter(item => item !== entry); }, 6000);
+      node.append(killerLabel);
+      if(event.assisterId){const assist=find(event.assisterId),label=document.createElement('span');label.className='kill-assister';label.textContent=`+ ${assist?.name||event.assisterName||'队友'}`;label.style.color=TEAM_COLORS[assist?.team]||'';node.append(label);if(event.flashAssist)node.append(uiIcon('assist','闪光助攻'));}
+      if(event.attackerBlind)node.append(uiIcon('blind','致盲时击杀'));
+      node.append(weaponLabel);
+      for(const [flag,icon,title]of [['headshot','headshot','爆头'],['penetrated','wallbang','穿透击杀'],['throughSmoke','smoke','穿烟击杀'],['noScope','noscope','未开镜击杀'],['attackerInAir','airborne','空中击杀']])if(event[flag])node.append(uiIcon(icon,title,'kill-detail-icon'));
+      node.append(victimLabel);
+      const lifetime=event.killerId===myId||event.victimId===myId?7500:5000;
+      const entry = { node, expiresAt: now() + lifetime };
+      entry.timer = setTimeout(() => { node.remove(); this.feed = this.feed.filter(item => item !== entry); }, lifetime);
       this.feed.push(entry); this.elements['kill-feed']?.appendChild(node);
       while (this.feed.length > 5) { const old = this.feed.shift(); clearTimeout(old.timer); old.node.remove(); }
       this.revealed.delete(event.victimId);
@@ -297,7 +320,7 @@ export class HUD {
     } else if (event.type === 'bomb_exploded') {
       this.toast('炸弹爆炸');
     } else if (event.type === 'buy' && event.playerId === myId) {
-      this.toast(event.weapon === 'armor' ? '护甲已补充' : `已装备 ${getWeapon(event.weapon).name}`);
+      this.toast(event.weapon === 'armor' ? '护甲已补充' : `已装备 ${(EQUIPMENT[event.weapon]||getWeapon(event.weapon)).name}`);
     }
   }
 
@@ -321,6 +344,7 @@ export class HUD {
     this.seenEvents.clear(); this.revealed.clear(); this.combo = 0; this.lastKillAt = -Infinity;
     for (const entry of this.feed) { clearTimeout(entry.timer); entry.node.remove(); }
     this.feed = []; this.lastSnapshot = null; this.snapshotTime = null;
+    this.boardKey='';this.rosterKey='';
     clearTimeout(this.killTimer); this.elements['kill-confirm']?.classList.remove('visible', 'expire');
   }
 
@@ -328,10 +352,10 @@ export class HUD {
     const time = now();
     this.combo = time - (this.lastKillAt ?? -Infinity) < 5000 ? (this.combo || 0) + 1 : 1;
     this.lastKillAt = time;
-    const weapon = getWeapon(event.weapon);
+    const weapon = EQUIPMENT[event.weapon]||getWeapon(event.weapon);
     this.text('kill-title', event.headshot ? '爆头击杀' : this.combo > 1 ? `${this.combo} 连杀` : '击杀确认');
     this.text('kill-victim', victim?.name || event.victimName || '对手');
-    this.text('kill-weapon', `${weapon.name}  /  ${weapon.skin || ''}`);
+    this.text('kill-weapon', weapon.name);
     this.text('kill-combo', this.combo > 1 ? `×${this.combo}` : '');
     const element = this.elements['kill-confirm'];
     if (!element) return;

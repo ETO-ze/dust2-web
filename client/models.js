@@ -12,6 +12,7 @@ export { ViewWeapon } from './viewmodel.js';
 
 const loader=new GLTFLoader();
 const library={};
+const sourceBasisInverse=new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion(-.5,-.5,-.5,.5)).invert();
 export async function loadModels(options={}){
   const agents=await loadPlayerAssets(loader);library.swat=agents.CT;library.hoodie=agents.T;
   await loadViewModels(library);
@@ -27,6 +28,16 @@ export class PlayerModel{
     else{this.model=new THREE.Group();this.group.add(this.model);const torso=box(.55,.7,.33,team==='CT'?0x3c5662:0x967746);torso.position.y=1.04;this.model.add(torso);const head=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),new THREE.MeshStandardMaterial({color:0xa78b70}));head.position.y=1.61;this.model.add(head);for(const x of [-.15,.15]){const leg=box(.2,.7,.2,0x344036);leg.position.set(x,.35,0);this.model.add(leg);}this.model.traverse(o=>{if(o.isMesh){this.ownedResources.add(o.geometry);for(const material of [].concat(o.material))this.ownedResources.add(material);}});}
     const ring=new THREE.Mesh(new THREE.RingGeometry(.32,.37,24),new THREE.MeshBasicMaterial({color:team==='CT'?0x82bac9:0xdcbf77,side:THREE.DoubleSide,transparent:true,opacity:.45,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.025;this.group.add(ring);this.ring=ring;this.ownedResources.add(ring.geometry);this.ownedResources.add(ring.material);
     this.gun=new THREE.Group();this.group.add(this.gun);this.weaponCache=new Map();this.weaponId='';
+    this.nativeWeaponAnchor=this.model.getObjectByName('wpn');this.nativeAimBone=this.model.getObjectByName('spine_3');
+    this.upperActions={};
+    if(this.nativeAgent&&source){
+      const upperNames=new Set();this.nativeAimBone?.traverse(o=>upperNames.add(o.name));this.model.getObjectByName('wpnPivot')?.traverse(o=>upperNames.add(o.name));
+      const isUpper=track=>upperNames.has(THREE.PropertyBinding.parseTrackName(track.name).nodeName);
+      for(const original of source.animations){
+        if(original.name.startsWith('grenade/')){const clip=original.clone();clip.tracks=clip.tracks.filter(isUpper);if(/\/(idle|crouchIdle)$/.test(clip.name)){clip.blendMode=THREE.AdditiveAnimationBlendMode;for(const track of clip.tracks)if(track.name.endsWith('.scale'))for(let i=0;i<track.values.length;i++)track.values[i]-=1;}this.upperActions[original.name.split('/')[1]]=this.mixer.clipAction(clip);delete this.actions[original.name];}
+        else if(original.name.startsWith('knife/')){const clip=original.clone();clip.name='lower/'+clip.name;clip.tracks=clip.tracks.filter(t=>!isUpper(t));this.actions[clip.name]=this.mixer.clipAction(clip);}
+      }
+    }
     this.arms={};const bones=new Map();this.model.traverse(o=>{if(o.isBone){const name=o.name.replace(/[^a-z0-9]/gi,'').toLowerCase();bones.set(name,o);for(const side of ['L','R'])for(const key of ['UpperArm','LowerArm','Wrist'])if(name===(key+side).toLowerCase()||name===({UpperArm:'armupper',LowerArm:'armlower',Wrist:'hand'}[key]+side).toLowerCase()){this.arms[side]??={};this.arms[side][key]=o;}}});
     this.supportFingers=[];for(const [name,bone] of bones){if(/^(index|middle|ring|pinky|thumb)\dr$/.test(name)){const left=bones.get(name.slice(0,-1)+'l');if(left)this.supportFingers.push([left,bone]);}}
     // The original pistol aiming pose provides a stable hand orientation. Arm IK is applied after each animation update.
@@ -43,13 +54,13 @@ export class PlayerModel{
     if(!this.weaponCache.has(cacheKey)){
       const spec={ak47:{key:'rifle',length:.72,grip:[0,-.065,.125],support:[0,.090,-.235]},m4a1:{key:'m4a1',length:.75,grip:[0,-.067,.18],support:[0,.085,-.255]},awp:{key:'sniper',length:1,grip:[0,-.045,.22],support:[0,.025,-.28]},pistol:{key:'pistol',length:.23,grip:[0,-.045,.08]},usp:{key:'usp',length:.36,grip:[0,-.045,.085]},knife:{key:'knife',length:.24,grip:[0,0,.065]}}[id]||{key:id,length:getWeapon(id).slot===4?.13:getWeapon(id).slot===2?.25:getWeapon(id).category==='mid'?.6:.88,grip:[0,-.05,.12],...(getWeapon(id).slot===1?{support:[0,.055,-.24]}:{})};
       const visual=new THREE.Group(),resources=[];const source=loadedSkin(visibleSkin)||library[spec.key];
-      if(source){const content=clone(source.scene);content.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(content),size=bounds.getSize(new THREE.Vector3());content.position.sub(bounds.getCenter(new THREE.Vector3()));const normalized=new THREE.Group();normalized.add(content);normalized.scale.setScalar(spec.length/Math.max(.001,size.z));visual.add(normalized);}
+      if(source){const content=clone(source.scene);if(this.nativeAgent){const normalization=content.getObjectByName('normalization');if(normalization){normalization.matrixAutoUpdate=true;normalization.position.set(0,0,0);normalization.quaternion.identity();normalization.scale.set(1,1,1);normalization.updateMatrix();}visual.add(content);}else{content.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(content),size=bounds.getSize(new THREE.Vector3());content.position.sub(bounds.getCenter(new THREE.Vector3()));const normalized=new THREE.Group();normalized.add(content);normalized.scale.setScalar(spec.length/Math.max(.001,size.z));visual.add(normalized);}}
       else{
         const part=(w,h,d,color,x,y,z)=>{const m=box(w,h,d,color);m.position.set(x,y,z);resources.push(m.geometry,m.material);visual.add(m);};
         if(id==='knife'){part(.033,.014,.19,0xb8bfb5,0,0,-.045);part(.045,.032,.09,0x30392e,0,0,.095);part(.085,.021,.015,0x65705b,0,0,.045);}
         else{part(.055,.065,spec.length*.48,0x31382f,0,0,.01);part(.022,.022,spec.length*.36,0x222923,0,.017,-spec.length*.32);part(.035,.10,.045,0x383d31,...spec.grip);}
       }
-      visual.position.set(...spec.grip).multiplyScalar(-1);visual.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});retainSkin(visibleSkin);this.weaponCache.set(cacheKey,{...spec,visual,resources,skinId:visibleSkin});
+      if(!this.nativeAgent)visual.position.set(...spec.grip).multiplyScalar(-1);visual.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});retainSkin(visibleSkin);this.weaponCache.set(cacheKey,{...spec,visual,resources,skinId:visibleSkin});
     }
     this.weaponSpec=this.weaponCache.get(cacheKey);this.gun.add(this.weaponSpec.visual);
     this.weaponCache.delete(cacheKey);this.weaponCache.set(cacheKey,this.weaponSpec);
@@ -71,6 +82,24 @@ export class PlayerModel{
   }
   updateWeapon(p){
     this.gun.visible=Boolean(p.alive);if(!p.alive)return;this.setWeapon(p.weapon||'ak47',p.skinId);if(!this.gun.visible||!this.weaponSpec)return;
+    if(this.nativeAgent&&this.nativeWeaponAnchor){
+      this.group.updateWorldMatrix(true,true);
+      const anchor=this.nativeWeaponAnchor.matrixWorld.clone();
+      if(this.nativeAimBone){
+        const pitch=THREE.MathUtils.clamp(Number(p.pitch)||0,-1.48,1.48),axis=new THREE.Vector3(1,0,0).applyQuaternion(this.group.getWorldQuaternion(new THREE.Quaternion())),rotation=new THREE.Quaternion().setFromAxisAngle(axis,pitch),pivot=this.nativeAimBone.getWorldPosition(new THREE.Vector3());
+        // Rotate the authored shoulder/hand pose and the weapon about the same
+        // upper-body pivot. Guessed hand IK used to detach the wrists whenever
+        // an agent crouched, changed weapon family, or aimed away from level.
+        this.aimRestQuaternion=this.nativeAimBone.quaternion.clone();
+        const world=this.nativeAimBone.getWorldQuaternion(new THREE.Quaternion()).premultiply(rotation);
+        this.nativeAimBone.quaternion.copy(this.nativeAimBone.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(world));
+        this.nativeAimBone.updateWorldMatrix(false,true);
+        const aimMatrix=new THREE.Matrix4().makeTranslation(...pivot).multiply(new THREE.Matrix4().makeRotationFromQuaternion(rotation)).multiply(new THREE.Matrix4().makeTranslation(-pivot.x,-pivot.y,-pivot.z));
+        anchor.premultiply(aimMatrix);
+      }
+      new THREE.Matrix4().copy(this.group.matrixWorld).invert().multiply(anchor).multiply(sourceBasisInverse).decompose(this.gun.position,this.gun.quaternion,this.gun.scale);
+      this.gun.updateWorldMatrix(false,true);return;
+    }
     const pitch=Number.isFinite(p.pitch)?p.pitch:0,aim=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),pitch);this.gun.quaternion.copy(aim);
     const scale=this.nativeAgent?(p.crouch?.66:1):this.model.scale.y,pistol=getWeapon(this.weaponId).slot===2,knife=this.weaponId==='knife',pivot=new THREE.Vector3(0,1.35*scale,0);
     const grip=new THREE.Vector3(knife?.18:pistol?.15:.10,(knife?1.06:pistol?1.36:1.30)*scale,knife?-.18:pistol?-.46:-.13).sub(pivot).applyQuaternion(aim).add(pivot);
@@ -84,10 +113,28 @@ export class PlayerModel{
     }else this.gun.position.copy(grip);
   }
   animate(name){if(!this.actions||this.current===name)return;const action=this.actions[name]||this.actions.Idle_Gun||Object.values(this.actions)[0];if(!action)return;for(const a of Object.values(this.actions))if(a!==action)a.fadeOut(.16);action.reset().fadeIn(.16);if(name==='Death'||name==='death'){action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;}else action.setLoop(THREE.LoopRepeat,Infinity);action.play();this.current=name;}
+  grenadePose(name,once=false,force=false){
+    const action=this.upperActions[name];if(!action||this.upperName===name&&!force)return;
+    for(const a of Object.values(this.upperActions))if(a!==action)a.fadeOut(.08);
+    action.reset().setEffectiveWeight(1).setEffectiveTimeScale(1).fadeIn(.08).setLoop(once?THREE.LoopOnce:THREE.LoopRepeat,once?1:Infinity);action.clampWhenFinished=once;action.play();this.upperName=name;
+  }
+  throwGrenade(mode='full'){
+    if(!UTILITY_IDS.includes(this.weaponId))return;
+    const name=this.crouched?(mode==='drop'?'crouchThrowUnderhand':'crouchThrow'):(mode==='drop'?'throwUnderhand':'throw');this.grenadePose(name,true,true);this.throwRemaining=this.upperActions[name]?.getClip().duration||.5;
+  }
+  updateGrenadePose(p,dt){
+    this.crouched=!!p.crouch;
+    if(!p.alive||!UTILITY_IDS.includes(p.weapon)){
+      if(this.upperName)for(const action of Object.values(this.upperActions))action.stop();this.upperName='';this.throwRemaining=0;return;
+    }
+    this.throwRemaining=Math.max(0,(this.throwRemaining||0)-dt);if(this.throwRemaining)return;
+    const primed=p.grenadeState?.state==='primed';this.grenadePose(p.crouch?(primed?'crouchPullpin':'crouchIdle'):(primed?'pullpin':'idle'),primed);
+  }
   update(p,dt){
+    if(this.aimRestQuaternion&&this.nativeAimBone){this.nativeAimBone.quaternion.copy(this.aimRestQuaternion);this.aimRestQuaternion=null;}
     const target=new THREE.Vector3(p.x,p.y,p.z);if(!this.placed||this.group.position.distanceTo(target)>9){this.group.position.copy(target);this.placed=true;}else this.group.position.lerp(target,Math.min(1,dt*15));
     let delta=p.yaw-this.group.rotation.y;delta=Math.atan2(Math.sin(delta),Math.cos(delta));this.group.rotation.y+=delta*Math.min(1,dt*18);
-    this.dead=!p.alive;const moving=Math.hypot(p.vx,p.vz)>.7;this.animate(this.nativeAgent?choosePlayerAnimation(p,getWeapon(p.weapon)):!p.alive?'Death':moving?(p.weapon==='knife'?'Run':'Run_Shoot'):(p.weapon==='knife'?'Idle_Sword':'Idle_Gun_Pointing'));if(this.mixer)this.mixer.update(dt);
+    this.dead=!p.alive;const moving=Math.hypot(p.vx,p.vz)>.7;let animation=this.nativeAgent?choosePlayerAnimation(p,getWeapon(p.weapon)):!p.alive?'Death':moving?(p.weapon==='knife'?'Run':'Run_Shoot'):(p.weapon==='knife'?'Idle_Sword':'Idle_Gun_Pointing');if(this.nativeAgent&&p.alive&&UTILITY_IDS.includes(p.weapon)&&(p.grenadeState?.state==='primed'||this.throwRemaining>0))animation='lower/'+animation;this.animate(animation);this.updateGrenadePose(p,dt);if(this.mixer)this.mixer.update(dt);
     if(!this.nativeAgent)this.model.scale.y=THREE.MathUtils.lerp(this.model.scale.y,p.crouch?.66:1,Math.min(1,dt*16));
     this.ring.visible=p.alive;this.updateWeapon(p);
   }

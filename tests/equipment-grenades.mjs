@@ -24,7 +24,7 @@ function clearLane(){
     const d=Math.hypot(b.x-a.x,b.z-a.z);if(d<4||d>6||Math.abs(a.y-b.y)>.08)continue;
     const origin={x:a.x,y:a.y+1.6,z:a.z},dy=b.y+1-origin.y,length=Math.hypot(d,dy);
     if(raycastWorld(origin,{x:(b.x-a.x)/length,y:dy/length,z:(b.z-a.z)/length},length)===null)
-      return {a,b,yaw:Math.atan2(a.x-b.x,a.z-b.z),pitch:Math.atan2(dy,d)};
+      return {a:{x:a.x,y:a.y,z:a.z},b:{x:b.x,y:b.y,z:b.z},yaw:Math.atan2(a.x-b.x,a.z-b.z),pitch:Math.atan2(dy,d)};
   }
   throw Error('No unobstructed real-map lane');
 }
@@ -51,6 +51,8 @@ test('team armory, armor, scopes and three server-owned utilities',{timeout:2000
     await owner.waitFor(m=>m.type==='snapshot'&&m.players.find(p=>p.id===owner.id)?.weapon==='hegrenade');
     await delay(220);
     owner.ws.send(JSON.stringify({type:'input',...input(2,{slot:4,utilityId:'hegrenade',fire:true})}));
+    await delay(210);
+    owner.ws.send(JSON.stringify({type:'input',...input(3,{slot:4,utilityId:'hegrenade',fire:false})}));
     const snapshot=await observer.waitFor(m=>m.type==='snapshot'&&m.events.some(e=>e.type==='grenade_thrown'&&e.shooterId===owner.id));
     assert.equal(snapshot.grenades.length,1);const player=snapshot.players.find(p=>p.id===owner.id);
     assert.equal(player.utilityCounts.hegrenade,0);assert.equal(player.slot,1);assert.equal(player.weapon,'ak47');
@@ -153,6 +155,7 @@ test('team armory, armor, scopes and three server-owned utilities',{timeout:2000
     assert.equal(MAX_GRENADES,4);assert.equal(room.buy(terrorist.id,'flashbang').ok,false);assert.equal(room.buy(terrorist.id,'hegrenade').ok,false);
     room.receiveInput(terrorist.id,input(1,{slot:4,utilityId:'hegrenade'}));room.tick();assert.equal(terrorist.weapon,'hegrenade');
     advance(201);room.receiveInput(terrorist.id,input(2,{slot:4,utilityId:'hegrenade',fire:true}));room.tick();
+    advance(210);room.receiveInput(terrorist.id,input(3,{slot:4,utilityId:'hegrenade',fire:false}));room.tick();
     assert.equal(terrorist.inventory.hegrenade,undefined);assert.equal(terrorist.weapon,'ak47');
     let snapshot=room.snapshot();assert.equal(snapshot.grenades.length,1);assert.equal(snapshot.grenades[0].weapon,'hegrenade');
     assert.deepEqual(snapshot.players.find(p=>p.id===terrorist.id).utilityCounts,{hegrenade:0,flashbang:2,smokegrenade:1});

@@ -7,7 +7,7 @@ export const CONTROL_ACTIONS = Object.freeze([
   ['fire', '开火', '战斗'], ['altFire', '副攻击 / 开镜', '战斗'], ['reload', '换弹', '战斗'],
   ['primary', '主武器', '武器'], ['secondary', '手枪', '武器'], ['knife', '近战武器', '武器'], ['utility', '切换投掷物', '武器'],
   ['lastWeapon', '上一把使用的武器', '武器'], ['previousWeapon', '切换上一件武器', '武器'], ['nextWeapon', '切换下一件武器', '武器'],
-  ['buy', '购买菜单', '界面'], ['inspect', '检视武器', '界面'], ['interact', '使用 / 安装 / 拆除', '界面'],
+  ['drop', '丢弃当前枪械', '武器'], ['buy', '购买菜单', '界面'], ['inspect', '检视武器', '界面'], ['interact', '拾取 / 使用 / 安装 / 拆除', '界面'],
   ['scoreboard', '计分板（按住）', '界面'], ['menu', '游戏菜单', '界面'],
 ].map(([id, label, group]) => Object.freeze({ id, label, group })));
 const ACTIONS = new Map(CONTROL_ACTIONS.map(action => [action.id, action]));
@@ -15,7 +15,7 @@ export const DEFAULT_BINDINGS = Object.freeze(Object.fromEntries(Object.entries(
   forward: ['KeyW'], back: ['KeyS'], left: ['KeyA'], right: ['KeyD'], jump: ['Space'],
   walk: ['ShiftLeft', 'ShiftRight'], crouch: ['ControlLeft', 'ControlRight'],
   fire: ['Mouse0'], altFire: ['Mouse2'], reload: ['KeyR'], primary: ['Digit1'], secondary: ['Digit2'], knife: ['Digit3'], utility: ['Digit4'],
-  lastWeapon: ['KeyQ'], previousWeapon: ['WheelUp'], nextWeapon: ['WheelDown'], buy: ['KeyB'], inspect: ['KeyF'], interact: ['KeyE'], scoreboard: ['Tab'], menu: ['Escape'],
+  lastWeapon: ['KeyQ'], previousWeapon: ['WheelUp'], nextWeapon: ['WheelDown'], drop: ['KeyG'], buy: ['KeyB'], inspect: ['KeyF'], interact: ['KeyE'], scoreboard: ['Tab'], menu: ['Escape'],
 }).map(([action, tokens]) => [action, Object.freeze(tokens)])));
 const copy = bindings => Object.fromEntries(CONTROL_ACTIONS.map(({ id }) => [id, [...bindings[id]]]));
 const TOKEN_PATTERN = /^(?:Key[A-Z]|Digit[0-9]|Numpad(?:[0-9]|Add|Subtract|Multiply|Divide|Decimal|Enter|Equal)|F(?:[1-9]|1[0-9]|2[0-4])|Arrow(?:Up|Down|Left|Right)|(?:Shift|Control|Alt|Meta)(?:Left|Right)|Space|Tab|Escape|Enter|Backspace|Delete|Insert|Home|End|PageUp|PageDown|CapsLock|NumLock|ScrollLock|Pause|Backquote|Minus|Equal|BracketLeft|BracketRight|Backslash|Semicolon|Quote|Comma|Period|Slash|IntlBackslash|IntlRo|IntlYen|Mouse[0-4]|WheelUp|WheelDown)$/;
@@ -92,7 +92,13 @@ export class GameControls {
   }
   _keyDown(event) {
     if (this._captureEvent(event.code, event)) return;
-    if (event.repeat || event.isComposing || (event.metaKey && !['MetaLeft', 'MetaRight'].includes(event.code))) return;
+    if (event.isComposing || (event.metaKey && !['MetaLeft', 'MetaRight'].includes(event.code))) return;
+    // Holding Tab generates repeated keydown events. They still need their
+    // browser default cancelled, even though the game action fires only once.
+    if (event.repeat || this.sources.has(event.code)) {
+      if (this.sources.has(event.code) || this._allowed(this.byToken.get(event.code), event)) event.preventDefault?.();
+      return;
+    }
     this._press(event.code, event);
   }
   _mouseDown(event) { if (this._captureEvent(`Mouse${event.button}`, event)) return; if (this.mouse) this._press(`Mouse${event.button}`, event); }

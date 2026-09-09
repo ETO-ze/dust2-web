@@ -1,0 +1,45 @@
+{
+  "checkedDate": "2026-09-09",
+  "sources": {
+    "valveMR12": "https://store.steampowered.com/news/posts/?appids=730&enddate=1694822427&feed=steam_community_announcements",
+    "valveGrenadeSecondary": "https://blog.counter-strike.net/2014/02/9585/",
+    "valveUnderhandExplanation": "https://blog.counter-strike.net/2014/02/8505/"
+  },
+  "localFiles": {
+    "gamemode_competitive.cfg": {
+      "sha256": "54d3f8e527d4a84ddf8dc4a3a56de7728fa259aad018334ed5960a60219ee5ba",
+      "relevantLines": [
+        "mp_halftime\t\t\t\t\t\t\t\t\t\t\t1",
+        "mp_match_can_clinch\t\t\t\t\t\t\t\t\t1\t\t\t// 0=No mercy rule, 1=team can clinch match win early if they win > 1/2 total rounds",
+        "mp_maxrounds\t\t\t\t\t\t\t\t\t\t24",
+        "mp_startmoney\t\t\t\t\t\t\t\t\t\t800"
+      ]
+    },
+    "gamemode_competitive_tmm.cfg": {
+      "sha256": "e4f77dfcc7c327996acbd101231a31e41b6b61ab6c1a65f1d1cdf6cd9e6d6a3c",
+      "relevantLines": [
+        "mp_overtime_enable\t\t\t1",
+        "mp_overtime_limit\t\t\t1"
+      ]
+    },
+    "user_keys_default.vcfg": {
+      "sha256": "aa07bfee305320de8cef87914d876de763574122b483a4444e5b35c9d19aa175",
+      "relevantLines": [
+        "\"MOUSE1\" \t\t\"+attack\"",
+        "\"MOUSE2\" \t\t\"+attack2\""
+      ]
+    }
+  },
+  "weaponData": {
+    "path": "scripts/weapons.vdata_c",
+    "decompiledSha256": "fbd0d6f754c234efb24ec5c6b8c335f190e67f17ac7ec98dc2cd2ea2ddb4037e",
+    "throwVelocitySourceUnitsPerSecond": 750
+  },
+  "implementationNotes": [
+    "Default defuse: first 13 regulation wins, sides after 12 rounds.",
+    "User-selected tie policy: repeat MR3 at 12-12, switch after every 3 overtime rounds. Local Premier config has overtime_limit 1; unlimited repeats are a project choice.",
+    "Team deathmatch first 100 enemy kills is the requested room rule, not claimed as the official CS2 deathmatch ruleset.",
+    "Primary, secondary and combined controls follow Valve grenade semantics; velocity scales full=1,lob=.65,drop=.3, 200ms pin preparation and trajectories are bounded browser approximations. Fuse begins after release, not while pin is held.",
+    "Bot angular damping/reaction/hysteresis is independent implementation. Dropped guns are bounded 64/120s and cleared each round."
+  ]
+}

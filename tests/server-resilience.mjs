@@ -49,7 +49,7 @@ test('bad protocol input, disappearing assets and overflow handshakes cannot kil
       client.send({ type: 'ping', time: 711 });
       assert.equal((await client.waitFor(message => message.type === 'pong')).time, 711);
     }
-    client.send({ type: 'join', room: 'SAFE01', name: 'Valid player', bots: 0 });
+    client.send({ type: 'join', room: 'SAFE01', name: 'Valid player', mode:'deathmatch', bots: 0 });
     assert.equal((await client.waitFor(message => message.type === 'welcome')).room, 'SAFE01');
   });
 

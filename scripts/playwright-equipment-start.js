@@ -9,6 +9,7 @@ async (page) => {
   await page.screenshot({path:'output/playwright/equipment-settings.png'});
   await page.locator('#reset-video').click();await page.locator('#close-settings').click();
   await page.locator('[data-team="CT"]').click();
+  await page.locator('#mode').selectOption('deathmatch');
   await page.locator('#nickname').fill('Equipment QA');
   await page.locator('#start-button').click();
   return {defaults,loading:true};
