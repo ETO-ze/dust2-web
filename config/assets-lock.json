@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "version": "8fd474bf67737246",
+  "version": "d08fb763dfbb2692",
   "baseURL": "https://cs2.duskrain.cn/",
-  "baseManifestVersion": "e5353daab67974e5",
-  "totalBytes": 383269166,
+  "baseManifestVersion": "3c1de127080ff410",
+  "totalBytes": 388721363,
   "files": [
     {
       "path": "assets/asset-manifest.json",
-      "bytes": 120398,
-      "sha256": "6e819f41921568d239eae8f6bb019bf7d6ede70d47ee38595b5770d05c49267a",
+      "bytes": 120675,
+      "sha256": "cf65f8c078f8fbc9207c29952e56d67a5c904a358067c75161cdf9280f8eff0c",
       "group": "metadata"
     },
     {
@@ -4102,6 +4102,18 @@
       "bytes": 8630388,
       "sha256": "bc627e751bb1a73d286a3b10d41b5fe71654b0a014debd473d86444b7266839d",
       "group": "collision"
+    },
+    {
+      "path": "assets/sky/daylight.hdr",
+      "bytes": 5451493,
+      "sha256": "5244534e9cf5b606f2ff513aa00ddb161b0a4826ffd88a0d3bd03ac29247d198",
+      "group": "sky"
+    },
+    {
+      "path": "assets/sky/source.json",
+      "bytes": 427,
+      "sha256": "6ec2208c3f8d7ded7e933b86c2a8f761d7d3b3fd0faad33093a1da00af67d934",
+      "group": "sky"
     },
     {
       "path": "assets/ui-cs2/airborne.svg",

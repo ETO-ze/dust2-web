@@ -12,6 +12,7 @@ import { DroppedWeapons } from './dropped-weapons.js';
 import { traceBullet as defaultTraceBullet } from './bullet-penetration.js';
 import {eyePosition,accuracyForShot,sampleShotDirection} from '../shared/aim.js';
 import {PlayerTimeline,MAX_REWIND_MS} from '../shared/player-timeline.js';
+import {MovementStream,sanitizeMoves,movementState} from '../shared/movement-commands.js';
 
 export const TICK_RATE = 30;
 export const SNAPSHOT_RATE = 15;
@@ -38,7 +39,7 @@ export function sanitizeInput(message) {
     zoomLevel: Number.isInteger(message.zoomLevel) && message.zoomLevel >= 0 && message.zoomLevel <= 2 ? message.zoomLevel : 0,
     shotId:Number.isSafeInteger(message.shotId)&&message.shotId>0&&message.shotId<=2147483647?message.shotId:0,
     shotWeapon:typeof message.shotWeapon==='string'&&Object.hasOwn(WEAPONS,message.shotWeapon)?message.shotWeapon:null,
-    viewTime:finite(message.viewTime)?message.viewTime:null };
+    viewTime:finite(message.viewTime)?message.viewTime:null,moves:sanitizeMoves(message.moves),moveId:Number.isSafeInteger(message.moveId)&&message.moveId>0&&message.moveId<=2147483647?message.moveId:0 };
 }
 
 export function directionFromAngles(yaw, pitch) {
@@ -124,7 +125,7 @@ export class GameRoom {
     this.emit('bots_changed',result);return result;
   }
 
-  addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents }) {
+  addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents, movementProtocol }) {
     if (this.humanCount >= MAX_PLAYERS) throw new Error('房间已满，最多 10 名玩家。');
     let assigned = team;
     if (!['T', 'CT'].includes(assigned)) assigned = this.count('T', true) <= this.count('CT', true) ? 'T' : 'CT';
@@ -133,6 +134,7 @@ export class GameRoom {
     if (botToReplace) this.removePlayer(botToReplace.id);
     const id = `p_${randomBytes(6).toString('hex')}`;
     const player = this.makePlayer(id, name, assigned, false, primary);
+    if(movementProtocol===1){player.movementStream=new MovementStream(player.lifeId);player.movementAt=this.clock();}
     player.skins=normalizeSkinLoadout(skins);
     player.agents=normalizeAgentLoadout(agents);player.agentId=player.agents[assigned];
     this.players.set(id, player); this.clients.set(id, socket);
@@ -145,7 +147,7 @@ export class GameRoom {
   }
 
   makePlayer(id, name, team, bot, primary = 'auto') {
-    const player = { ...createPlayerState(this.pickSpawn(team)), id, name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
+    const player = { ...createPlayerState(this.pickSpawn(team)), id, lifeId:1,name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
       money: this.mode === 'deathmatch' ? 16000 : 800, kills: 0, deaths: 0, assists: 0, inventory: {}, skins:{...DEFAULT_SKINS}, slot: this.mode === 'deathmatch' ? 1 : 2,
       helmet:this.mode==='deathmatch',defuseKit:false,zoomLevel:0,flashBlindUntil:0,agents:{...DEFAULT_AGENT_IDS},agentId:DEFAULT_AGENT_IDS[team],
       weapon: 'pistol', input: neutralInput(), inputAt: 0, seq: -1, lastReceivedSeq: -1, lastShotTime: 0, nextShotAt: 0, reloadEndsAt: 0,
@@ -197,6 +199,7 @@ export class GameRoom {
   receiveInput(id, message) {
     const player = this.players.get(id), input = sanitizeInput(message);
     if (!player || !input || input.seq <= player.lastReceivedSeq) return false;
+    if(input.moves.length){if(!player.movementStream){player.movementStream=new MovementStream(player.lifeId);player.movementAt=this.clock();}player.movementStream.receive(input.moves);}
     // Retain the complete click sample. A later release/turn/unzoom/switch must
     // not overwrite the aim that actually fired. New clients send one shot ID
     // per predicted shot; legacy clients still use rising edges and held fire.
@@ -224,6 +227,7 @@ export class GameRoom {
     if(!queue.length)return false;
     const command=queue[0];
     if(command.weaponId!==player.weapon){queue.shift();return true;}
+    if(player.movementStream&&command.input.moveId>player.movementStream.ack)return true;
     if(now<player.nextShotAt)return true;
     queue.shift();player.triggerWasDown=false;
     this.fire(player,command.input,command);return true;
@@ -334,6 +338,8 @@ export class GameRoom {
       protectionUntil: this.mode === 'deathmatch' ? this.clock() + this.rules.protectionSeconds * 1000 : 0,
       nextShotAt: this.clock() + 350, input: neutralInput(), inputAt: 0,zoomLevel:0 });
     p.input.yaw = p.yaw || spawn.yaw || 0;
+    p.movementStream?.reset(p.lifeId);
+    p.movementAt=this.clock();
     if (this.mode === 'deathmatch') {p.armor = 100;p.helmet=true;if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===1))this.giveWeapon(p,p.loadoutPrimary||defaultPrimaryForTeam(p.team));if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===2))this.giveWeapon(p,p.team==='CT'?'usp':'pistol');}
     if (newRound && p.bot) {
       const preferred = p.team === 'T' ? 'ak47' : 'm4a1';
@@ -724,16 +730,29 @@ export class GameRoom {
       }
       p.seq = Math.max(p.seq, p.input.seq ?? -1);
       if (!canAct && this.mode === 'defuse') Object.assign(input, { forward: 0, right: 0, jump: false, fire: false, interact: false });
+      const movementOptions={canMove:canAct,speedLimit:weaponSpeedScale(p.weapon,p.zoomLevel)};
+      const shotMove=p.fireQueue?.[0]?.input.moveId;
+      if(p.movementStream){
+        // Timer callbacks can arrive late. Accrue real server time, then run
+        // bounded fixed 60 Hz commands; never accumulate a permanent input lag.
+        const elapsed=Math.max(0,(now-(p.movementAt??now))/1000);p.movementAt=now;
+        p.movementStream.advance(p,elapsed,movementOptions,shotMove||Infinity);
+      }
       const queuedShot=canAct&&!p.bot&&this.fireQueued(p);
       if(this.match.status==='ended')break;
       if(!canAct&&p.fireQueue)p.fireQueue.length=0;
-      if (input.slot) this.selectSlot(p, input.slot,input.utilityId);
+      const awaitingShotMove=p.movementStream&&p.fireQueue?.[0]?.input.moveId>p.movementStream.ack;
+      if (input.slot&&!awaitingShotMove) this.selectSlot(p, input.slot,input.utilityId);
       if(p.grenadeState&&(now-p.inputAt>=300||!canAct))this.cancelGrenade(p,'inactive');
       p.zoomLevel=p.reloadEndsAt?0:clamp(input.zoomLevel||0,0,getWeapon(p.weapon).zoomFovs.length-1);
       input.speedScale=weaponSpeedScale(p.weapon,p.zoomLevel);
       p.effectiveInput = input;
       p.yaw = input.yaw; p.pitch = input.pitch;
-      stepPlayer(p, input, dt);
+      if(p.movementStream){
+        p.movementStream.advance(p,0,{canMove:canAct,speedLimit:input.speedScale},awaitingShotMove?shotMove:Infinity);
+        // View/fire input remains immediate; queued movement never rewinds aim.
+        p.yaw=input.yaw;p.pitch=input.pitch;
+      }else stepPlayer(p, input, dt);
       if (!Number.isFinite(p.x + p.y + p.z) || p.outOfWorld || p.y < (MAP.bounds?.min?.y ?? -200) - 30) { this.kill(p, null); continue; }
       if(p.reloadEndsAt&&now>=p.reloadEndsAt)this.finishReload(p);
       if (input.reload) this.reload(p);
@@ -758,6 +777,7 @@ export class GameRoom {
     const now = this.clock();
     const players = [...this.players.values()].map(p => ({ id: p.id, lifeId:p.lifeId,name: p.name, team: p.team, teamId:p.teamId, bot: p.bot, agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
       vx: round2(p.vx), vy: round2(p.vy), vz: round2(p.vz), yaw: round2(p.yaw), pitch: round2(p.pitch), crouch: !!p.crouch, grounded: !!p.grounded,
+      ...(p.movementStream?{movementAck:p.movementStream.ack,movementState:movementState(p)}:{}),
       health: p.health, armor: round2(p.armor), helmet:!!p.helmet, defuseKit:!!p.defuseKit,zoomLevel:p.zoomLevel,utilityCounts:Object.fromEntries(UTILITY_IDS.map(id=>[id,p.inventory[id]?.ammo||0])), alive: p.alive, weapon: p.weapon, skinId:this.heldSkin(p), slot: p.slot, ammo: p.inventory[p.weapon]?.ammo || 0, reserve: p.inventory[p.weapon]?.reserve || 0,
       reserveAmmoAsClips:!!getWeapon(p.weapon).reserveAmmoAsClips,reserveClips:getWeapon(p.weapon).reserveAmmoAsClips?Math.ceil((p.inventory[p.weapon]?.reserve||0)/getWeapon(p.weapon).magazine):0,
       grenadeState:p.grenadeState?{state:'primed',weapon:p.grenadeState.weapon,mode:p.grenadeState.mode,strength:grenadeStrength(p.grenadeState.mode),primedAt:p.grenadeState.primedAt}:{state:'idle',weapon:null,mode:'full',strength:1,primedAt:0},

@@ -5,6 +5,20 @@ import {MAP} from '../shared/map-data.js';
 import {raycastWorld} from '../shared/physics.js';
 import {eyePosition} from '../shared/aim.js';
 import {getWeapon} from '../shared/weapons.js';
+import fs from 'node:fs';
+const movementLedges=JSON.parse(fs.readFileSync(new URL('../tests/fixtures/movement-ledges.json',import.meta.url),'utf8'));
+const movementFlat=JSON.parse(fs.readFileSync(new URL('../tests/fixtures/movement-flat.json',import.meta.url),'utf8'));
+function setupMovement(room,kind){
+ const p=[...room.players.values()].find(p=>!p.bot),probe=movementLedges[0];
+ room.mode='deathmatch';room.round.phase='live';room.round.number++;room.match.status='live';
+ room.botInput=b=>({...b.input,forward:0,right:0,fire:false,fire2:false,jump:false,interact:false});
+ room.respawn(p);
+ const position=kind==='sky'?{...MAP.sites.A,yaw:-.45,pitch:.43}:kind==='flat'?movementFlat:kind==='ledge'?probe.ledge:probe.lower;
+ Object.assign(p,position,{vx:0,vy:0,vz:0,grounded:false,pitch:position.pitch||0,protectionUntil:Infinity});
+ p.input={...p.input,forward:0,right:0,jump:false,fire:false,yaw:p.yaw,pitch:p.pitch};
+ room.poseHistory.clear();room.recordPoses();for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));
+ return {kind,lifeId:p.lifeId,position,ledgeHeight:probe.height,lowerHeight:probe.lower.y};
+}
 let aimLane;
 function setupAimLane(room,weapon){
  if(!aimLane){
@@ -62,6 +76,10 @@ function matchCase(room,kind){
 const control=createServer((req,res)=>{
   if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress)){res.writeHead(403);res.end();return;}
   if(req.method!=='POST'){res.writeHead(405);res.end();return;}
+  if(/^\/qa\/movement\/(flat|ledge|jump|sky)$/.test(req.url)){
+    clearInterval(soakTimer);soakTimer=null;const result=[...app.rooms.values()].map(room=>setupMovement(room,req.url.split('/').at(-1)));
+    res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(result));return;
+  }
   if(/^\/qa\/aim-lane\/(awp|ssg08|scar20|sg553)$/.test(req.url)){
     clearInterval(soakTimer);soakTimer=null;
     try{const results=[...app.rooms.values()].map(room=>setupAimLane(room,req.url.split('/').at(-1)));res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(results));}catch(error){res.writeHead(500);res.end(error.message);}return;

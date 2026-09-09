@@ -1,0 +1,1647 @@
+{
+  "at": "2026-09-09",
+  "build": "index-ghSINOVn.js",
+  "tests": {
+    "passed": 177,
+    "failed": 0,
+    "assets": 819,
+    "deploymentBoundaryChecks": 17
+  },
+  "fixture": {
+    "viewport": [
+      1600,
+      950
+    ],
+    "quality": "low",
+    "stationaryBots": 9,
+    "network": "FIFO proxy, each direction 80 +/- 20 ms; no input/state rewrite"
+  },
+  "browser": {
+    "walk": {
+      "samples": 62,
+      "yRange": 0.031630887609222766,
+      "cameraYRange": 0.03151791092040579,
+      "pendingMax": 20,
+      "maxCorrection": 0.00025134609752960115,
+      "ping": 174,
+      "first": {
+        "t": -8.5,
+        "x": 7.042664921420981,
+        "y": -0.007431663682203881,
+        "z": 2.638224611870245,
+        "grounded": true,
+        "crouch": false,
+        "vy": 0,
+        "camera": {
+          "x": 7.042518282791044,
+          "y": 1.61179549323292,
+          "z": 2.6657018134536297
+        },
+        "movement": {
+          "pending": 17,
+          "unsent": 0,
+          "ack": 57,
+          "nextId": 74,
+          "corrections": 0,
+          "maxCorrection": 0.00025134609752960115,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "stepMs": 16.666666666666668
+        },
+        "ping": 221
+      },
+      "last": {
+        "t": 1213.7000000000116,
+        "x": 7.04742523802983,
+        "y": 0.011636850102657937,
+        "z": -3.3681972170408336,
+        "grounded": true,
+        "crouch": false,
+        "vy": 0,
+        "camera": {
+          "x": 7.0473959357666915,
+          "y": 1.631639606953163,
+          "z": -3.339918551593875
+        },
+        "movement": {
+          "pending": 14,
+          "unsent": 0,
+          "ack": 133,
+          "nextId": 147,
+          "corrections": 0,
+          "maxCorrection": 0.00025134609752960115,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "stepMs": 16.666666666666668
+        },
+        "ping": 174
+      },
+      "backwards": 0
+    },
+    "ledge": {
+      "samples": 137,
+      "yRange": 3.5195500514006994e-08,
+      "cameraYRange": 3.519611269098277e-08,
+      "pendingMax": 21,
+      "maxCorrection": 0.00046111612408368416,
+      "ping": 211,
+      "first": {
+        "t": -6.200000002980232,
+        "x": 4.071263246945901,
+        "y": 1.3419486970728454,
+        "z": -1.9526,
+        "grounded": true,
+        "crouch": false,
+        "vy": 0,
+        "camera": {
+          "x": 4.071263080307365,
+          "y": 2.9619486971717572,
+          "z": -1.9526
+        },
+        "movement": {
+          "pending": 15,
+          "unsent": 1,
+          "ack": 54,
+          "nextId": 69,
+          "corrections": 0,
+          "maxCorrection": 0.00046111612408368416,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "stepMs": 16.666666666666668
+        },
+        "ping": 174
+      },
+      "last": {
+        "t": 2010.4999999970314,
+        "x": 4.071322541546416,
+        "y": 1.3419486618773449,
+        "z": -1.9526,
+        "grounded": true,
+        "crouch": false,
+        "vy": 0,
+        "camera": {
+          "x": 4.071322375938603,
+          "y": 2.9619486619756445,
+          "z": -1.9526
+        },
+        "movement": {
+          "pending": 17,
+          "unsent": 1,
+          "ack": 173,
+          "nextId": 190,
+          "corrections": 0,
+          "maxCorrection": 0.00046111612408368416,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "stepMs": 16.666666666666668
+        },
+        "ping": 211
+      }
+    },
+    "ledgeJump": {
+      "samples": 110,
+      "yRange": 1.4474533105569651,
+      "cameraYRange": 1.447449935004097,
+      "pendingMax": 21,
+      "maxCorrection": 0.00046111612408368416,
+      "ping": 180,
+      "first": {
+        "t": -7.500000002968591,
+        "x": 4.071324011430839,
+        "y": 1.7000802510648658,
+        "z": -1.9526,
+        "grounded": false,
+        "crouch": false,
+        "vy": 6.6546318011999945,
+        "camera": {
+          "x": 4.071324011430839,
+          "y": 3.319170389047008,
+          "z": -1.9526
+        },
+        "movement": {
+          "pending": 14,
+          "unsent": 0,
+          "ack": 182,
+          "nextId": 196,
+          "corrections": 0,
+          "maxCorrection": 0.00046111612408368416,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "stepMs": 16.666666666666668
+        },
+        "ping": 211
+      },
+      "last": {
+        "t": 1203.5999999970081,
+        "x": 4.071339150099378,
+        "y": 1.3419486520190052,
+        "z": -1.9526,
+        "grounded": true,
+        "crouch": false,
+        "vy": 0,
+        "camera": {
+          "x": 4.071338982546021,
+          "y": 2.96194865211846,
+          "z": -1.9526
+        },
+        "movement": {
+          "pending": 17,
+          "unsent": 1,
+          "ack": 252,
+          "nextId": 269,
+          "corrections": 0,
+          "maxCorrection": 0.00046111612408368416,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "stepMs": 16.666666666666668
+        },
+        "ping": 180
+      }
+    },
+    "boxLanding": {
+      "samples": 150,
+      "yRange": 0.30878179823414387,
+      "cameraYRange": 0.3087008799166231,
+      "pendingMax": 20,
+      "maxCorrection": 0.00044721359550030593,
+      "ping": 198,
+      "first": {
+        "t": -6.600000000005821,
+        "x": 4.178067473590228,
+        "y": 1.6499194357620603,
+        "z": -1.9525443702221568,
+        "grounded": false,
+        "crouch": false,
+        "vy": 0.21996513453331795,
+        "camera": {
+          "x": 4.184393993632155,
+          "y": 3.267713411110816,
+          "z": -1.9525456587647887
+        },
+        "movement": {
+          "pending": 17,
+          "unsent": 1,
+          "ack": 73,
+          "nextId": 90,
+          "corrections": 0,
+          "maxCorrection": 0.00044721359550030593,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "stepMs": 16.666666666666668
+        },
+        "ping": 244
+      },
+      "last": {
+        "t": 1810.1000000000058,
+        "x": 3.9826720811870286,
+        "y": 1.3419974967936876,
+        "z": -1.9525045593980985,
+        "grounded": true,
+        "crouch": false,
+        "vy": 0,
+        "camera": {
+          "x": 3.982671843428183,
+          "y": 2.9619974969961556,
+          "z": -1.9525045593980985
+        },
+        "movement": {
+          "pending": 12,
+          "unsent": 2,
+          "ack": 187,
+          "nextId": 199,
+          "corrections": 0,
+          "maxCorrection": 0.00044721359550030593,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "stepMs": 16.666666666666668
+        },
+        "ping": 198
+      }
+    },
+    "final": {
+      "sky": {
+        "source": "Poly Haven / Kloofendal 48d Partly Cloudy",
+        "resolution": "2048 × 1024",
+        "downloadBytes": 5451493
+      },
+      "resources": {
+        "fps": 179,
+        "ping": 165,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1950,
+        "textures": 671,
+        "programs": 31,
+        "actors": 9,
+        "effects": 0,
+        "audioVoices": 0,
+        "viewWeapons": 4,
+        "heapMiB": 383,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 5.7,
+          "cpuP95Ms": 7.3,
+          "actorsP95Ms": 0.5,
+          "renderSubmitP95Ms": 6.4
+        }
+      },
+      "errors": []
+    }
+  },
+  "scopeRegression": {
+    "results": [
+      {
+        "weapon": "awp",
+        "level": 1,
+        "range": 25.357332516256516,
+        "aim": {
+          "zoom": 1,
+          "fov": 40,
+          "cameraFov": 30.5369432627651,
+          "cameraAim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "model": {
+            "id": "awp",
+            "skinId": "awp-dragon-lore",
+            "waiting": false,
+            "visible": false,
+            "action": "idle"
+          },
+          "scopeMode": "scope",
+          "scopeRadius": 465.5,
+          "scopeHidden": false
+        },
+        "shot": {
+          "weapon": "awp",
+          "shotId": 1,
+          "zoomLevel": 1,
+          "accuracy": 0.0022,
+          "rewindMs": 200,
+          "aim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "origin": {
+            "x": 6.528073196992257,
+            "y": 1.6310149379513559,
+            "z": -1.8370924600161453
+          },
+          "end": {
+            "x": -2.574812023054025,
+            "y": 1.6096710270976975,
+            "z": 30.06234491151554
+          },
+          "hitId": "b_1",
+          "at": 37323.400000002235
+        }
+      },
+      {
+        "weapon": "awp",
+        "level": 2,
+        "range": 25.357332516256516,
+        "aim": {
+          "zoom": 2,
+          "fov": 10,
+          "cameraFov": 7.508333335480519,
+          "cameraAim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "model": {
+            "id": "awp",
+            "skinId": "awp-dragon-lore",
+            "waiting": false,
+            "visible": false,
+            "action": "idle"
+          },
+          "scopeMode": "scope",
+          "scopeRadius": 465.5,
+          "scopeHidden": false
+        },
+        "shot": {
+          "weapon": "awp",
+          "shotId": 2,
+          "zoomLevel": 2,
+          "accuracy": 0.0022,
+          "rewindMs": 200,
+          "aim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "origin": {
+            "x": 6.526620460223208,
+            "y": 1.631099576779047,
+            "z": -1.8372719547849536
+          },
+          "end": {
+            "x": -2.5028013601266856,
+            "y": 1.588439867257281,
+            "z": 30.062171926476086
+          },
+          "hitId": "b_1",
+          "at": 40381
+        }
+      },
+      {
+        "weapon": "ssg08",
+        "level": 1,
+        "range": 25.357332516256516,
+        "aim": {
+          "zoom": 1,
+          "fov": 40,
+          "cameraFov": 30.5369432627651,
+          "cameraAim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "model": {
+            "id": "ssg08",
+            "skinId": "ssg08-dragonfire",
+            "waiting": false,
+            "visible": false,
+            "action": "idle"
+          },
+          "scopeMode": "scope",
+          "scopeRadius": 465.5,
+          "scopeHidden": false
+        },
+        "shot": {
+          "weapon": "ssg08",
+          "shotId": 3,
+          "zoomLevel": 1,
+          "accuracy": 0.0032300000000000002,
+          "rewindMs": 200,
+          "aim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "origin": {
+            "x": 6.528826467909542,
+            "y": 1.630971051151812,
+            "z": -1.836999388654541
+          },
+          "end": {
+            "x": -2.5068023119861254,
+            "y": 1.62608850050079,
+            "z": 30.062986614627096
+          },
+          "hitId": "b_1",
+          "at": 44149.60000000149
+        }
+      },
+      {
+        "weapon": "ssg08",
+        "level": 2,
+        "range": 25.357332516256516,
+        "aim": {
+          "zoom": 2,
+          "fov": 15,
+          "cameraFov": 11.27814157300883,
+          "cameraAim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "model": {
+            "id": "ssg08",
+            "skinId": "ssg08-dragonfire",
+            "waiting": false,
+            "visible": false,
+            "action": "idle"
+          },
+          "scopeMode": "scope",
+          "scopeRadius": 465.5,
+          "scopeHidden": false
+        },
+        "shot": {
+          "weapon": "ssg08",
+          "shotId": 4,
+          "zoomLevel": 2,
+          "accuracy": 0.0032300000000000002,
+          "rewindMs": 200,
+          "aim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "origin": {
+            "x": 6.526728070354249,
+            "y": 1.6310933072362552,
+            "z": -1.837258658876153
+          },
+          "end": {
+            "x": -2.4945099044431416,
+            "y": 1.641437819042023,
+            "z": 30.06337593855481
+          },
+          "hitId": "b_1",
+          "at": 47227
+        }
+      },
+      {
+        "weapon": "scar20",
+        "level": 1,
+        "range": 25.357332516256516,
+        "aim": {
+          "zoom": 1,
+          "fov": 40,
+          "cameraFov": 30.5369432627651,
+          "cameraAim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "model": {
+            "id": "scar20",
+            "skinId": "scar20-cyrex",
+            "waiting": false,
+            "visible": false,
+            "action": "idle"
+          },
+          "scopeMode": "scope",
+          "scopeRadius": 465.5,
+          "scopeHidden": false
+        },
+        "shot": {
+          "weapon": "scar20",
+          "shotId": 5,
+          "zoomLevel": 1,
+          "accuracy": 0.0023,
+          "rewindMs": 200,
+          "aim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "origin": {
+            "x": 6.5276427564680946,
+            "y": 1.6310400161225236,
+            "z": -1.8371456436513478
+          },
+          "end": {
+            "x": -2.5344383557912087,
+            "y": 1.6424133188738586,
+            "z": 30.063233510112877
+          },
+          "hitId": "b_1",
+          "at": 50601.300000000745
+        }
+      },
+      {
+        "weapon": "scar20",
+        "level": 2,
+        "range": 25.357332516256516,
+        "aim": {
+          "zoom": 2,
+          "fov": 15,
+          "cameraFov": 11.27814157300883,
+          "cameraAim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "model": {
+            "id": "scar20",
+            "skinId": "scar20-cyrex",
+            "waiting": false,
+            "visible": false,
+            "action": "idle"
+          },
+          "scopeMode": "scope",
+          "scopeRadius": 465.5,
+          "scopeHidden": false
+        },
+        "shot": {
+          "weapon": "scar20",
+          "shotId": 6,
+          "zoomLevel": 2,
+          "accuracy": 0.0023,
+          "rewindMs": 200,
+          "aim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "origin": {
+            "x": 6.526728070354249,
+            "y": 1.6310933072362552,
+            "z": -1.837258658876153
+          },
+          "end": {
+            "x": -2.5357993963567154,
+            "y": 1.6376886624385334,
+            "z": 30.063123621274823
+          },
+          "hitId": "b_1",
+          "at": 53597.400000002235
+        }
+      },
+      {
+        "weapon": "sg553",
+        "level": 1,
+        "range": 25.357332516256516,
+        "aim": {
+          "zoom": 1,
+          "fov": 45,
+          "cameraFov": 34.51587701898169,
+          "cameraAim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "model": {
+            "id": "sg553",
+            "skinId": "sg553-integrale",
+            "waiting": false,
+            "visible": true,
+            "action": "aimIdle"
+          },
+          "scopeMode": "optic",
+          "scopeRadius": 465.5,
+          "scopeHidden": false
+        },
+        "shot": {
+          "weapon": "sg553",
+          "shotId": 7,
+          "zoomLevel": 1,
+          "accuracy": 0.00411,
+          "rewindMs": 200,
+          "aim": {
+            "yaw": 2.865,
+            "pitch": 0
+          },
+          "origin": {
+            "x": 6.528342222319859,
+            "y": 1.6309992640943758,
+            "z": -1.8370592202441438
+          },
+          "end": {
+            "x": -2.4661644485900265,
+            "y": 1.728013227336198,
+            "z": 30.064697949087194
+          },
+          "hitId": "b_1",
+          "at": 57407.10000000149
+        }
+      }
+    ],
+    "quickSwitch": {
+      "weapon": "awp",
+      "shotId": 8,
+      "zoomLevel": 1,
+      "accuracy": 0.0022,
+      "rewindMs": 200,
+      "aim": {
+        "yaw": 2.865,
+        "pitch": 0
+      },
+      "origin": {
+        "x": 6.524253037340314,
+        "y": 1.63123750672047,
+        "z": -1.8375644647785672
+      },
+      "end": {
+        "x": -2.532814468671436,
+        "y": 1.6460867281261267,
+        "z": 30.06332127135398
+      },
+      "hitId": "b_1",
+      "at": 59650.900000002235
+    },
+    "errors": []
+  },
+  "wireLocal": {
+    "at": "2026-09-09T08:39:43.585Z",
+    "mode": "local",
+    "checks": [
+      {
+        "name": "Negotiated 60 Hz commands move and acknowledge in a normal room",
+        "ack": 114,
+        "distance": 1.8566242544185925
+      },
+      {
+        "name": "Short jump press takes off and lands once",
+        "peak": 1.447,
+        "finalY": -3.184,
+        "baseY": -3.184,
+        "ack": 204
+      },
+      {
+        "name": "Wrong-life command does not move or advance acknowledgement",
+        "ack": 204
+      }
+    ],
+    "room": "MQ3B4A29B8",
+    "lifeId": 1,
+    "ok": true,
+    "closeCode": 1000,
+    "remainingRooms": 0
+  },
+  "gameplayLocal": {
+    "startedAt": "2026-09-09T08:47:43.215Z",
+    "base": "http://127.0.0.1:1132/",
+    "mode": "local",
+    "checks": [
+      {
+        "name": "Two ordinary WebSocket players create an isolated DM room with zero bots"
+      },
+      {
+        "name": "Owner changes bots 0→2→0; non-owner request is rejected and snapshots agree"
+      },
+      {
+        "name": "Held full throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ3BB90F16:9",
+        "strength": 1
+      },
+      {
+        "name": "Held drop throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ3BB90F16:12",
+        "strength": 0
+      },
+      {
+        "name": "Held lob throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ3BB90F16:16",
+        "strength": 0.5
+      },
+      {
+        "name": "Menu/blur-style cancellation releases a held grenade without throwing or consuming it"
+      },
+      {
+        "name": "Scoped shot retains click aim and zoom when unzoom/turn/switch arrive immediately afterwards",
+        "shotId": 1,
+        "zoomLevel": 2,
+        "accuracy": 0.0022,
+        "aim": {
+          "yaw": 0.3000000000000007,
+          "pitch": 1.45
+        }
+      },
+      {
+        "name": "Dropped AWP preserves exact skin, magazine and reserve in observer snapshot",
+        "weapon": "awp",
+        "skin": "awp-dragon-lore",
+        "ammo": 4,
+        "reserve": 10
+      },
+      {
+        "name": "Both sockets close cleanly; first departure is observed before final disconnect"
+      },
+      {
+        "name": "Local server deletes the verification room when its last human leaves"
+      }
+    ],
+    "peers": [
+      {
+        "id": "p_4d1cd0b7634a",
+        "team": "CT",
+        "close": {
+          "code": 1000,
+          "reason": "Gameplay verification complete"
+        }
+      },
+      {
+        "id": "p_2329b5a3f8ab",
+        "team": "T",
+        "close": {
+          "code": 1000,
+          "reason": "Gameplay verification complete"
+        }
+      }
+    ],
+    "room": "GQ3BB90F16",
+    "ok": true,
+    "finishedAt": "2026-09-09T08:47:50.314Z"
+  },
+  "movementPublic": {
+    "at": "2026-09-09T08:52:48.699Z",
+    "release": "20260909T084526Z",
+    "mode": "public",
+    "checks": [
+      {
+        "name": "Negotiated 60 Hz commands move and acknowledge in a normal room",
+        "ack": 114,
+        "distance": 1.8566242544185925
+      },
+      {
+        "name": "Short jump press takes off and lands once",
+        "peak": 1.443,
+        "finalY": -3.184,
+        "baseY": -3.184,
+        "ack": 204
+      },
+      {
+        "name": "Wrong-life command does not move or advance acknowledgement",
+        "ack": 204
+      }
+    ],
+    "health": {
+      "ok": true,
+      "service": "dust2-web",
+      "release": "20260909T084526Z",
+      "protocol": 1,
+      "tickRate": 30,
+      "uptime": 109,
+      "rooms": 0,
+      "humans": 0,
+      "players": 0,
+      "memory": {
+        "rssMiB": 116,
+        "heapMiB": 17
+      },
+      "performance": {
+        "windowSamples": 1800,
+        "tickBudgetMs": 33.33,
+        "tickP50Ms": 0.02,
+        "tickP95Ms": 1.46,
+        "tickMaxMs": 16.96,
+        "maxSchedulingDelayMs": 83.71,
+        "lateTicks": 1,
+        "totalTicks": 3253
+      }
+    },
+    "room": "MQC22681BB",
+    "lifeId": 1,
+    "ok": true,
+    "closeCode": 1000
+  },
+  "gameplayPublic": {
+    "startedAt": "2026-09-09T08:52:37.454Z",
+    "base": "https://cs2.duskrain.cn/",
+    "release": "20260909T084526Z",
+    "mode": "public",
+    "checks": [
+      {
+        "name": "Two ordinary WebSocket players create an isolated DM room with zero bots"
+      },
+      {
+        "name": "Owner changes bots 0→2→0; non-owner request is rejected and snapshots agree"
+      },
+      {
+        "name": "Held full throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ0CD5303F:9",
+        "strength": 1
+      },
+      {
+        "name": "Held drop throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ0CD5303F:13",
+        "strength": 0
+      },
+      {
+        "name": "Held lob throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ0CD5303F:17",
+        "strength": 0.5
+      },
+      {
+        "name": "Menu/blur-style cancellation releases a held grenade without throwing or consuming it"
+      },
+      {
+        "name": "Scoped shot retains click aim and zoom when unzoom/turn/switch arrive immediately afterwards",
+        "shotId": 1,
+        "zoomLevel": 2,
+        "accuracy": 0.0022,
+        "aim": {
+          "yaw": 0.3000000000000007,
+          "pitch": 1.45
+        }
+      },
+      {
+        "name": "Dropped AWP preserves exact skin, magazine and reserve in observer snapshot",
+        "weapon": "awp",
+        "skin": "awp-dragon-lore",
+        "ammo": 4,
+        "reserve": 10
+      },
+      {
+        "name": "Both sockets close cleanly; first departure is observed before final disconnect"
+      }
+    ],
+    "peers": [
+      {
+        "id": "p_2164e4723fc8",
+        "team": "CT",
+        "close": {
+          "code": 1000,
+          "reason": "Gameplay verification complete"
+        }
+      },
+      {
+        "id": "p_9f3d70a37cd5",
+        "team": "T",
+        "close": {
+          "code": 1000,
+          "reason": "Gameplay verification complete"
+        }
+      }
+    ],
+    "healthBefore": {
+      "ok": true,
+      "service": "dust2-web",
+      "release": "20260909T084526Z",
+      "protocol": 1,
+      "tickRate": 30,
+      "uptime": 97,
+      "rooms": 0,
+      "humans": 0,
+      "players": 0,
+      "memory": {
+        "rssMiB": 110,
+        "heapMiB": 15
+      },
+      "performance": {
+        "windowSamples": 1800,
+        "tickBudgetMs": 33.33,
+        "tickP50Ms": 0.01,
+        "tickP95Ms": 0.04,
+        "tickMaxMs": 0.3,
+        "maxSchedulingDelayMs": 83.71,
+        "lateTicks": 1,
+        "totalTicks": 2902
+      }
+    },
+    "room": "GQ0CD5303F",
+    "ok": true,
+    "finishedAt": "2026-09-09T08:52:48.606Z"
+  },
+  "publication": {
+    "release": "20260909T084526Z",
+    "previousRelease": "20260909T072304Z",
+    "archiveSha256": "9cf74be6fd12fc3b6eeaa0e9d377fa7bfbf4448581cdbbebd04c297641b319c0",
+    "preActivationHumans": 0,
+    "siteSha256": "2a80a8db07363ffff6019b6dfdb46d1308fc805f8a409c88730089d9a11d2607",
+    "verifiedAssets": 97,
+    "verifiedBytes": 97469932
+  },
+  "serverAudit": {
+    "fixture": "Isolated low-priority process on production host; one legacy-protocol WebSocket human and 9 active bots, 30 seconds; not an online player room",
+    "stderr": "",
+    "samples": [
+      {
+        "label": "startup",
+        "timestamp": "2026-09-09T08:53:36.655Z",
+        "elapsedMs": 806.8488269999999,
+        "cpuPercentOfOneCore": 113.92927265171573,
+        "cpuUserMs": 607.668,
+        "cpuSystemMs": 311.569,
+        "memory": {
+          "rss": 176652288,
+          "heapTotal": 51539968,
+          "heapUsed": 15437280,
+          "external": 23102554,
+          "arrayBuffers": 13358830
+        },
+        "gc": true,
+        "rooms": 0,
+        "humans": 0,
+        "players": 0,
+        "sockets": 0,
+        "bots": 0,
+        "bufferedBytes": 0,
+        "largestEventQueue": 0,
+        "largestBotPath": 0,
+        "finitePlayers": true,
+        "workMs": {
+          "tick": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "snapshot": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "planPath": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "botInput": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "tickIntervalMs": {
+          "count": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0,
+          "max": 0,
+          "total": 0
+        },
+        "changes": {
+          "ticks": 0,
+          "shots": 0,
+          "hits": 0,
+          "kills": 0,
+          "spawns": 0,
+          "batches": 0
+        },
+        "summedRoomTickMsPerBatch": 0,
+        "eventLoopDelayMs": {
+          "mean": 98.920448,
+          "p95": 509.345791,
+          "max": 509.345791
+        }
+      },
+      {
+        "label": "1rooms-1humans-9bots-start",
+        "timestamp": "2026-09-09T08:53:36.974Z",
+        "elapsedMs": 318.4698850000002,
+        "cpuPercentOfOneCore": 81.49059368674682,
+        "cpuUserMs": 248.553,
+        "cpuSystemMs": 10.97,
+        "memory": {
+          "rss": 180977664,
+          "heapTotal": 52326400,
+          "heapUsed": 27913872,
+          "external": 17109447,
+          "arrayBuffers": 13359008
+        },
+        "gc": false,
+        "rooms": 1,
+        "humans": 1,
+        "players": 10,
+        "sockets": 1,
+        "bots": 9,
+        "bufferedBytes": 0,
+        "largestEventQueue": 0,
+        "largestBotPath": 108,
+        "finitePlayers": true,
+        "workMs": {
+          "tick": {
+            "count": 8,
+            "mean": 15.869833125000042,
+            "p50": 8.867451999999957,
+            "p95": 55.76778899999999,
+            "p99": 55.76778899999999,
+            "max": 55.76778899999999,
+            "total": 126.95866500000034
+          },
+          "snapshot": {
+            "count": 5,
+            "mean": 0.36596060000001673,
+            "p50": 0.24300700000003417,
+            "p95": 0.8797050000000581,
+            "p99": 0.8797050000000581,
+            "max": 0.8797050000000581,
+            "total": 1.8298030000000836
+          },
+          "planPath": {
+            "count": 9,
+            "mean": 4.944828555555508,
+            "p50": 3.076096000000007,
+            "p95": 11.866735999999946,
+            "p99": 11.866735999999946,
+            "max": 11.866735999999946,
+            "total": 44.50345699999957
+          },
+          "botInput": {
+            "count": 72,
+            "mean": 0.6575495416666778,
+            "p50": 0.011762999999973545,
+            "p95": 3.728945999999951,
+            "p99": 12.67723100000012,
+            "max": 12.67723100000012,
+            "total": 47.3435670000008
+          }
+        },
+        "tickIntervalMs": {
+          "count": 7,
+          "mean": 36.47690314285712,
+          "p50": 33.324186000000054,
+          "p95": 56.43771899999979,
+          "p99": 56.43771899999979,
+          "max": 56.43771899999979,
+          "total": 255.33832199999983
+        },
+        "changes": {
+          "ticks": 8,
+          "shots": 0,
+          "hits": 0,
+          "kills": 0,
+          "spawns": 0,
+          "batches": 8
+        },
+        "summedRoomTickMsPerBatch": 15.869833125000042,
+        "eventLoopDelayMs": {
+          "mean": 14.219880727272727,
+          "p95": 27.852799,
+          "max": 66.682879
+        }
+      },
+      {
+        "label": "bots-10s",
+        "timestamp": "2026-09-09T08:53:46.978Z",
+        "elapsedMs": 10002.584581000001,
+        "cpuPercentOfOneCore": 25.932357572133384,
+        "cpuUserMs": 2494.333,
+        "cpuSystemMs": 99.573,
+        "memory": {
+          "rss": 183336960,
+          "heapTotal": 52850688,
+          "heapUsed": 18514992,
+          "external": 17109889,
+          "arrayBuffers": 13359450
+        },
+        "gc": false,
+        "rooms": 1,
+        "humans": 1,
+        "players": 10,
+        "sockets": 1,
+        "bots": 9,
+        "bufferedBytes": 0,
+        "largestEventQueue": 0,
+        "largestBotPath": 91,
+        "finitePlayers": true,
+        "workMs": {
+          "tick": {
+            "count": 301,
+            "mean": 6.86400169102993,
+            "p50": 6.681069000000207,
+            "p95": 9.882493000000977,
+            "p99": 10.766045000000304,
+            "max": 15.493279999998776,
+            "total": 2066.064509000009
+          },
+          "snapshot": {
+            "count": 151,
+            "mean": 0.19593680794694754,
+            "p50": 0.18215299999974377,
+            "p95": 0.317827999999281,
+            "p99": 0.44296399999984715,
+            "max": 0.5651029999999082,
+            "total": 29.58645799998908
+          },
+          "planPath": {
+            "count": 9,
+            "mean": 2.2340064444443772,
+            "p50": 1.8989929999997912,
+            "p95": 4.453067999999803,
+            "p99": 4.453067999999803,
+            "max": 4.453067999999803,
+            "total": 20.106057999999393
+          },
+          "botInput": {
+            "count": 2709,
+            "mean": 0.05144494499815667,
+            "p50": 0.012643999999909283,
+            "p95": 0.22316999999929976,
+            "p99": 0.37191100000018196,
+            "max": 4.797295000000304,
+            "total": 139.3643560000064
+          }
+        },
+        "tickIntervalMs": {
+          "count": 301,
+          "mean": 33.30156112292359,
+          "p50": 33.22928899999988,
+          "p95": 34.035625999998956,
+          "p99": 34.402884999999515,
+          "max": 41.49981800000023,
+          "total": 10023.769898
+        },
+        "changes": {
+          "ticks": 301,
+          "shots": 67,
+          "hits": 3,
+          "kills": 0,
+          "spawns": 0,
+          "batches": 301
+        },
+        "summedRoomTickMsPerBatch": 6.86400169102993,
+        "eventLoopDelayMs": {
+          "mean": 11.064489249169435,
+          "p95": 14.753791,
+          "max": 22.773759
+        }
+      },
+      {
+        "label": "bots-20s",
+        "timestamp": "2026-09-09T08:53:56.981Z",
+        "elapsedMs": 10003.574334,
+        "cpuPercentOfOneCore": 23.668779987495217,
+        "cpuUserMs": 2254.55,
+        "cpuSystemMs": 113.174,
+        "memory": {
+          "rss": 188186624,
+          "heapTotal": 53112832,
+          "heapUsed": 27181768,
+          "external": 17111453,
+          "arrayBuffers": 13361014
+        },
+        "gc": false,
+        "rooms": 1,
+        "humans": 1,
+        "players": 10,
+        "sockets": 1,
+        "bots": 9,
+        "bufferedBytes": 0,
+        "largestEventQueue": 0,
+        "largestBotPath": 74,
+        "finitePlayers": true,
+        "workMs": {
+          "tick": {
+            "count": 300,
+            "mean": 5.937924326666671,
+            "p50": 5.578335000000152,
+            "p95": 8.449516999999105,
+            "p99": 22.26452100000097,
+            "max": 31.776436000000103,
+            "total": 1781.3772980000012
+          },
+          "snapshot": {
+            "count": 150,
+            "mean": 0.22038653999997526,
+            "p50": 0.20462599999882514,
+            "p95": 0.3294399999977031,
+            "p99": 0.4222650000010617,
+            "max": 0.428767000001244,
+            "total": 33.05798099999629
+          },
+          "planPath": {
+            "count": 19,
+            "mean": 2.0972844210532218,
+            "p50": 1.298212000001513,
+            "p95": 9.08151800000087,
+            "p99": 9.08151800000087,
+            "max": 9.08151800000087,
+            "total": 39.848404000011215
+          },
+          "botInput": {
+            "count": 2429,
+            "mean": 0.06675398353231822,
+            "p50": 0.013746000000537606,
+            "p95": 0.20212999999785097,
+            "p99": 0.43109000000185915,
+            "max": 9.242260000000897,
+            "total": 162.14542600000095
+          }
+        },
+        "tickIntervalMs": {
+          "count": 300,
+          "mean": 33.32938442333334,
+          "p50": 33.37410400000226,
+          "p95": 34.054315000001225,
+          "p99": 34.35314700000163,
+          "max": 43.13098099999843,
+          "total": 9998.815327
+        },
+        "changes": {
+          "ticks": 300,
+          "shots": 125,
+          "hits": 12,
+          "kills": 4,
+          "spawns": 2,
+          "batches": 300
+        },
+        "summedRoomTickMsPerBatch": 5.937924326666671,
+        "eventLoopDelayMs": {
+          "mean": 11.084571844617093,
+          "p95": 14.442495,
+          "max": 41.451519
+        }
+      },
+      {
+        "label": "bots-30s",
+        "timestamp": "2026-09-09T08:54:06.987Z",
+        "elapsedMs": 10006.358075,
+        "cpuPercentOfOneCore": 22.68945387505534,
+        "cpuUserMs": 2180.275,
+        "cpuSystemMs": 90.113,
+        "memory": {
+          "rss": 190545920,
+          "heapTotal": 53637120,
+          "heapUsed": 19546528,
+          "external": 17118087,
+          "arrayBuffers": 13367648
+        },
+        "gc": false,
+        "rooms": 1,
+        "humans": 1,
+        "players": 10,
+        "sockets": 1,
+        "bots": 9,
+        "bufferedBytes": 0,
+        "largestEventQueue": 0,
+        "largestBotPath": 110,
+        "finitePlayers": true,
+        "workMs": {
+          "tick": {
+            "count": 301,
+            "mean": 5.9887353554816665,
+            "p50": 5.703300999997737,
+            "p95": 9.726350999997521,
+            "p99": 13.019507999997586,
+            "max": 20.6400459999968,
+            "total": 1802.6093419999816
+          },
+          "snapshot": {
+            "count": 150,
+            "mean": 0.19501489999980548,
+            "p50": 0.18719200000123237,
+            "p95": 0.27442599999994854,
+            "p99": 0.31206699999893317,
+            "max": 0.3172869999980321,
+            "total": 29.252234999970824
+          },
+          "planPath": {
+            "count": 18,
+            "mean": 2.6357972222221075,
+            "p50": 1.461750000002212,
+            "p95": 10.170426000000589,
+            "p99": 10.170426000000589,
+            "max": 10.170426000000589,
+            "total": 47.44434999999794
+          },
+          "botInput": {
+            "count": 2345,
+            "mean": 0.0675912571428438,
+            "p50": 0.012113000000681495,
+            "p95": 0.19790199999988545,
+            "p99": 0.391486000000441,
+            "max": 10.435014999999112,
+            "total": 158.5014979999687
+          }
+        },
+        "tickIntervalMs": {
+          "count": 301,
+          "mean": 33.26378299667774,
+          "p50": 33.29529800000091,
+          "p95": 33.95399600000019,
+          "p99": 34.09963200000129,
+          "max": 38.66921899999943,
+          "total": 10012.398682
+        },
+        "changes": {
+          "ticks": 301,
+          "shots": 79,
+          "hits": 13,
+          "kills": 3,
+          "spawns": 4,
+          "batches": 301
+        },
+        "summedRoomTickMsPerBatch": 5.9887353554816665,
+        "eventLoopDelayMs": {
+          "mean": 11.016664202866593,
+          "p95": 14.598143,
+          "max": 24.788991
+        }
+      },
+      {
+        "label": "after-disconnect-before-gc",
+        "timestamp": "2026-09-09T08:54:07.393Z",
+        "elapsedMs": 407.22188800000004,
+        "cpuPercentOfOneCore": 2.7719531618103983,
+        "cpuUserMs": 10.103,
+        "cpuSystemMs": 1.185,
+        "memory": {
+          "rss": 190545920,
+          "heapTotal": 53637120,
+          "heapUsed": 20312280,
+          "external": 17118167,
+          "arrayBuffers": 13367728
+        },
+        "gc": false,
+        "rooms": 0,
+        "humans": 0,
+        "players": 0,
+        "sockets": 0,
+        "bots": 0,
+        "bufferedBytes": 0,
+        "largestEventQueue": 0,
+        "largestBotPath": 0,
+        "finitePlayers": true,
+        "workMs": {
+          "tick": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "snapshot": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "planPath": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "botInput": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "tickIntervalMs": {
+          "count": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0,
+          "max": 0,
+          "total": 0
+        },
+        "changes": {
+          "ticks": 0,
+          "shots": 0,
+          "hits": 0,
+          "kills": 0,
+          "spawns": 0,
+          "batches": 0
+        },
+        "summedRoomTickMsPerBatch": 0,
+        "eventLoopDelayMs": {
+          "mean": 10.168897641025643,
+          "p95": 10.510335,
+          "max": 10.551295
+        }
+      },
+      {
+        "label": "after-disconnect-gc",
+        "timestamp": "2026-09-09T08:54:07.411Z",
+        "elapsedMs": 17.121746999997413,
+        "cpuPercentOfOneCore": 169.42196377510066,
+        "cpuUserMs": 29.003,
+        "cpuSystemMs": 0.005,
+        "memory": {
+          "rss": 190545920,
+          "heapTotal": 53637120,
+          "heapUsed": 16941152,
+          "external": 17118252,
+          "arrayBuffers": 13367286
+        },
+        "gc": true,
+        "rooms": 0,
+        "humans": 0,
+        "players": 0,
+        "sockets": 0,
+        "bots": 0,
+        "bufferedBytes": 0,
+        "largestEventQueue": 0,
+        "largestBotPath": 0,
+        "finitePlayers": true,
+        "workMs": {
+          "tick": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "snapshot": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "planPath": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "botInput": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "tickIntervalMs": {
+          "count": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0,
+          "max": 0,
+          "total": 0
+        },
+        "changes": {
+          "ticks": 0,
+          "shots": 0,
+          "hits": 0,
+          "kills": 0,
+          "spawns": 0,
+          "batches": 0
+        },
+        "summedRoomTickMsPerBatch": 0,
+        "eventLoopDelayMs": {
+          "mean": null,
+          "p95": 0.000511,
+          "max": 0
+        }
+      },
+      {
+        "label": "after-soak-gc",
+        "timestamp": "2026-09-09T08:54:07.424Z",
+        "elapsedMs": 13.245434000000387,
+        "cpuPercentOfOneCore": 182.14578699345975,
+        "cpuUserMs": 23.199,
+        "cpuSystemMs": 0.927,
+        "memory": {
+          "rss": 190545920,
+          "heapTotal": 53637120,
+          "heapUsed": 16933568,
+          "external": 17117552,
+          "arrayBuffers": 13367028
+        },
+        "gc": true,
+        "rooms": 0,
+        "humans": 0,
+        "players": 0,
+        "sockets": 0,
+        "bots": 0,
+        "bufferedBytes": 0,
+        "largestEventQueue": 0,
+        "largestBotPath": 0,
+        "finitePlayers": true,
+        "workMs": {
+          "tick": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "snapshot": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "planPath": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "botInput": {
+            "count": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "tickIntervalMs": {
+          "count": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0,
+          "max": 0,
+          "total": 0
+        },
+        "changes": {
+          "ticks": 0,
+          "shots": 0,
+          "hits": 0,
+          "kills": 0,
+          "spawns": 0,
+          "batches": 0
+        },
+        "summedRoomTickMsPerBatch": 0,
+        "eventLoopDelayMs": {
+          "mean": null,
+          "p95": 0.000511,
+          "max": 0
+        }
+      }
+    ],
+    "clients": [
+      {
+        "snapshots": 456,
+        "bytes": 4323872,
+        "readyStateBeforeCleanup": 1,
+        "errors": [],
+        "closes": [],
+        "protocolErrors": []
+      }
+    ]
+  },
+  "publicBrowser": {
+    "url": "https://cs2.duskrain.cn/",
+    "scripts": [
+      "https://cs2.duskrain.cn/assets/index-ghSINOVn.js"
+    ],
+    "pointerLocked": false,
+    "menuVisible": true,
+    "overflow": false,
+    "errors": []
+  }
+}

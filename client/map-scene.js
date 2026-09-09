@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import { MAP } from '../shared/map-data.js';
 import { assetURL, useDownloadedAssets } from './loading.js';
 
@@ -19,9 +20,10 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
     if(total>5)onProgress(`载入原版材质 ${Math.min(loaded,total)} / ${total}…`);
   };
   const loader=new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
-  const [gltf,response]=await Promise.all([
+  const [gltf,response,sky]=await Promise.all([
     loader.loadAsync(assetUrl('assets/map-cs2/dust2-web.gltf?v=e4f2b2d3903c')),
     fetch(assetURL(assetUrl(MAP.geometryUrl))),
+    new HDRLoader(manager).loadAsync(assetUrl('assets/sky/daylight.hdr?v=5244534e9cf5')),
   ]);
   if(!response.ok)throw new Error(`地图碰撞下载失败 (${response.status})`);
   const positions=new Float32Array(await response.arrayBuffer());
@@ -78,7 +80,10 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
   // The map is static: retain its already-computed transforms instead of
   // multiplying every imported object matrix on every animation frame.
   group.traverse(object=>{object.matrixAutoUpdate=false;object.matrixWorldAutoUpdate=false;});
-  scene.background=new THREE.Color(0xb6d6e8);
+  sky.mapping=THREE.EquirectangularReflectionMapping;
+  scene.background=sky;scene.backgroundIntensity=.8;
+  scene.backgroundRotation.y=1.2;
+  scene.userData.sky={source:'Poly Haven / Kloofendal 48d Partly Cloudy',resolution:'2048 × 1024',downloadBytes:5451493};
   scene.fog=new THREE.Fog(0xc9d8de,140,300);
   const hemisphere=new THREE.HemisphereLight(0xd5e9ff,0x99805f,2.15);
   hemisphere.name='dust2-web-sky';

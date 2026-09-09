@@ -28,6 +28,8 @@ async function walk(dir, group) {
 const entries = [];
 await add('assets/map-cs2/dust2-web.gltf', 'map');
 await add('assets/map/positions.f32', 'collision');
+await add('assets/sky/daylight.hdr','sky');
+await add('assets/sky/source.json','sky');
 await walk('assets/audio', 'audio');
 await add('assets/audio/cs2/manifest.json', 'audio');
 await walk('assets/characters-cs2','characters');

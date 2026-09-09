@@ -1,6 +1,6 @@
-import { BufferGeometry, Float32BufferAttribute, Vector3, Ray, Box3, Line3, DoubleSide } from 'three';
+import { BufferGeometry, Float32BufferAttribute, Vector3, Ray, Box3, DoubleSide } from 'three';
 import { MeshBVH, CENTER } from 'three-mesh-bvh';
-import { Capsule } from 'three/addons/math/Capsule.js';
+import {HullContact} from './hull-collision.js';
 
 export const PLAYER_RADIUS = 0.30;
 export const STAND_HEIGHT = 1.80;
@@ -14,40 +14,36 @@ export const JUMP_BUFFER_TIME = .05;
 // Keep the existing prototype hitbox heights, but cap aerial leg retraction at
 // CS's 18-unit standing/crouched hull difference rather than granting 0.70 m.
 export const CROUCH_JUMP_LIFT = 18 * .0254;
-const WALKABLE_Y = .7;
 let world = null;
 let worldBounds = new Box3();
 const axis = new Vector3();
 const motion = new Vector3();
 const ray = new Ray();
 
-// A typed-array BVH avoids the massive triangle duplication of an octree on
-// long, almost planar map walls. The capsule adapter keeps callers unchanged.
+// Broadphase BVH with a flat, axis-aligned player hull. Render meshes are not
+// used as the character collider; both peers use this same collision geometry.
 class MapCollision {
-  constructor(geometry){this.bvh=new MeshBVH(geometry,{strategy:CENTER,targetLeafSize:16,maxDepth:32});this.geometry=geometry;}
+  constructor(geometry){this.bvh=new MeshBVH(geometry,{strategy:CENTER,targetLeafSize:16,maxDepth:32});this.geometry=geometry;this.contact=new HullContact();}
   rayIntersect(r){return this.bvh.raycastFirst(r,DoubleSide);}
-  capsuleIntersect(c){
-    const line=new Line3(c.start.clone(),c.end.clone());
-    const bounds=new Box3().setFromPoints([line.start,line.end]).expandByScalar(c.radius+.002);
-    const triPoint=new Vector3(),capPoint=new Vector3(),push=new Vector3(),surface=new Vector3(),contacts=[];
+  hullIntersect(c){
+    const resolved=c.clone(),bounds=c.clone().expandByScalar(.002),contacts=[],push=new Vector3();
     this.bvh.shapecast({
       intersectsBounds:box=>box.intersectsBox(bounds),
       intersectsTriangle:tri=>{
-        const distance=tri.closestPointToSegment(line,triPoint,capPoint);
-        if(distance<c.radius){
-          push.subVectors(capPoint,triPoint);
-          if(push.lengthSq()<1e-12){tri.getNormal(push);const side=push.dot(line.start.clone().sub(tri.a));if(side<0)push.negate();}
-          push.normalize();
-          tri.getNormal(surface);if(surface.dot(push)<0)surface.negate();
-          contacts.push({normal:push.clone(),surface:surface.clone(),walkable:surface.y>=WALKABLE_Y&&push.y>.3,depth:c.radius-distance});
-          push.multiplyScalar(c.radius-distance);
-          line.start.add(push);line.end.add(push);
-          bounds.setFromPoints([line.start,line.end]).expandByScalar(c.radius+.002);
+        const contact=this.contact.intersect(tri,resolved);
+        if(contact){
+          contacts.push(contact);resolved.translate(push.copy(contact.normal).multiplyScalar(contact.depth+.00001));
+          bounds.copy(resolved).expandByScalar(.002);
+        }else if(contacts.length){
+          // A vertical side's top edge may resolve upward before its adjacent
+          // tread is visited. Retain the tread's original support contact too.
+          const support=this.contact.intersect(tri,c);
+          if(support?.walkable)contacts.push({...support,depth:0});
         }
         return false;
       }
     });
-    const normal=line.start.sub(c.start),depth=normal.length();
+    const normal=resolved.min.clone().sub(c.min),depth=normal.length();
     return depth>1e-7?{normal:normal.multiplyScalar(1/depth),depth,contacts,walkable:contacts.some(c=>c.walkable)}:false;
   }
 }
@@ -69,9 +65,9 @@ export function createPlayerState(spawn = {}) {
     lastJump:false,lastJumpId:0,jumpBufferRemaining:0,stepDistance:0 };
 }
 
-export function capsuleFor(p, height=p.crouch?CROUCH_HEIGHT:STAND_HEIGHT) {
-  return new Capsule(new Vector3(p.x,p.y+PLAYER_RADIUS,p.z),
-    new Vector3(p.x,p.y+height-PLAYER_RADIUS,p.z),PLAYER_RADIUS);
+export function hullFor(p, height=p.crouch?CROUCH_HEIGHT:STAND_HEIGHT) {
+  return new Box3(new Vector3(p.x-PLAYER_RADIUS,p.y,p.z-PLAYER_RADIUS),
+    new Vector3(p.x+PLAYER_RADIUS,p.y+height,p.z+PLAYER_RADIUS));
 }
 
 export function raycastWorld(origin, direction, maxDistance=300) {
@@ -102,10 +98,10 @@ export function floorHeight(x,z,fromY=80,maxDistance=200) {
   return d === null ? null : fromY-d;
 }
 
-function collide(capsule,p) {
+function collide(hull,p) {
   let grounded=false;
   for (let i=0;i<3;i++) {
-    const hit=world?.capsuleIntersect(capsule);
+    const hit=world?.hullIntersect(hull);
     if (!hit) break;
     if(hit.walkable&&p.vy<=.1){grounded=true;p.vy=0;}
     for(const contact of hit.contacts){
@@ -120,26 +116,26 @@ function collide(capsule,p) {
         if(dot<0){p.vx-=normal.x*dot;p.vy-=normal.y*dot;p.vz-=normal.z*dot;}
       }
     }
-    capsule.translate(axis.copy(hit.normal).multiplyScalar(hit.depth+0.0001));
+    hull.translate(axis.copy(hit.normal).multiplyScalar(hit.depth+0.0001));
   }
   return grounded;
 }
 
-// Sweep the whole capsule, including its leading edge, down onto a tread or
+// Sweep the whole hull, including its leading edge, down onto a tread or
 // ramp. A centre ray misses support at the edge of the real Dust2 stairs.
-function sweepDown(capsule,maxDrop){
+function sweepDown(hull,maxDrop){
   let clear=0;
   const samples=Math.max(1,Math.ceil(maxDrop/.052));
   for(let sample=1;sample<=samples;sample++){
     let blocked=maxDrop*sample/samples;
-    const probe=capsule.clone().translate(new Vector3(0,-blocked,0)),hit=world.capsuleIntersect(probe);
+    const probe=hull.clone().translate(new Vector3(0,-blocked,0)),hit=world.hullIntersect(probe);
     if(hit){
       if(!hit.walkable)return null;
       for(let i=0;i<8;i++){
         const mid=(clear+blocked)/2;
-        if(world.capsuleIntersect(capsule.clone().translate(new Vector3(0,-mid,0))))blocked=mid;else clear=mid;
+        if(world.hullIntersect(hull.clone().translate(new Vector3(0,-mid,0))))blocked=mid;else clear=mid;
       }
-      return capsule.clone().translate(new Vector3(0,-clear,0));
+      return hull.clone().translate(new Vector3(0,-clear,0));
     }
     clear=blocked;
   }
@@ -152,13 +148,13 @@ function updateCrouch(p,wanted){
   const lift=Math.sign(oldHeight-newHeight)*Math.min(Math.abs(oldHeight-newHeight),CROUCH_JUMP_LIFT);
   const y=p.y+(p.grounded?0:lift);
   const candidate={...p,y,crouch:Boolean(wanted)};
-  const test=capsuleFor(candidate,newHeight);
+  const test=hullFor(candidate,newHeight);
   // Raising feet in air retracts the legs. Releasing crouch performs the
   // inverse motion only if the full hull fits; it cannot teleport through a
   // ceiling or the box on which the player is about to land.
   if(!wanted){
     test.translate(new Vector3(0,.0002,0));
-    const hit=world.capsuleIntersect(test);
+    const hit=world.hullIntersect(test);
     if(hit&&hit.contacts.some(c=>c.depth>.0003))return;
   }
   p.y=y;p.crouch=Boolean(wanted);p.height=newHeight;
@@ -203,17 +199,17 @@ export function stepPlayer(p,input={},dt=1/60) {
     const wasGrounded=p.grounded;
     const horizontalSpeed=Math.hypot(p.vx,p.vz);
     p.vy-=GRAVITY*h*.5;
-    const c=capsuleFor(p);
+    const c=hullFor(p);
     const before=c.clone();
     motion.set(p.vx,p.vy,p.vz).multiplyScalar(h);
     c.translate(motion);
-    const hit=world.capsuleIntersect(c);
+    const hit=world.hullIntersect(c);
     // Source stairs have 0.2–0.4 m risers. Try stepping only from grounded movement.
     let ground=false;
     if(hit&&hit.depth*Math.hypot(hit.normal.x,hit.normal.z)>.0001&&wasGrounded&&!jumped&&Math.hypot(motion.x,motion.z)>.001) {
       const stepped=before.clone();
       stepped.translate(new Vector3(motion.x,STEP_HEIGHT,motion.z));
-      if(!world.capsuleIntersect(stepped)) {
+      if(!world.hullIntersect(stepped)) {
         const support=sweepDown(stepped,STEP_HEIGHT+.06);
         if(support){c.copy(support);p.vy=0;ground=true;}
       }
@@ -223,11 +219,11 @@ export function stepPlayer(p,input={},dt=1/60) {
       const support=sweepDown(c,STEP_HEIGHT);
       if(support){c.copy(support);ground=true;}
     }
-    p.x=c.start.x;p.y=c.start.y-PLAYER_RADIUS;p.z=c.start.z;
+    p.x=(c.min.x+c.max.x)/2;p.y=c.min.y;p.z=(c.min.z+c.max.z)/2;
     p.grounded=ground;
     if(ground){
       p.vy=0;
-      // At seams a capsule can touch a steep decorative triangle immediately
+      // At seams a hull can touch a steep decorative triangle immediately
       // before the supporting floor. Its tiny gravity projection must not add
       // horizontal energy even when those contacts arrive in separate passes.
       const afterSpeed=Math.hypot(p.vx,p.vz);

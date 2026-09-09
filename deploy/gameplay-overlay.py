@@ -14,7 +14,7 @@ spec=importlib.util.spec_from_file_location('safe_overlay',Path(__file__).with_n
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 component=r'[A-Za-z0-9_][A-Za-z0-9_. ()-]*'
 asset_path=rf'(?:{component}/)*{component}'
-asset_extension=r'(?:js|css|json|svg|glb|gltf|bin|u8|f32|mesh|nav|png|webp|jpg|jpeg|avif|gif|ogg|mp3|wav|webm|mp4|woff2?|ttf|otf|txt|md)'
+asset_extension=r'(?:js|css|json|svg|glb|gltf|bin|u8|f32|mesh|nav|png|webp|jpg|jpeg|avif|gif|hdr|ogg|mp3|wav|webm|mp4|woff2?|ttf|otf|txt|md)'
 module.OVERLAY_NAME=re.compile(
     rf'(?:dist/(?:(?:index\.html|sw\.js|manifest\.webmanifest)(?:\.gz)?'
     rf'|icons/[A-Za-z0-9_-]+\.png(?:\.gz)?'

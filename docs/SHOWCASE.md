@@ -4,6 +4,13 @@
 
 [新主地址](https://cs2.duskrain.cn/) · [返回项目介绍](../README.md)
 
+## 移动与晴天天空 · 2026-09-09
+
+晴天云层与沙城屋顶保持自然的远近层次；这是最低画质下的真实浏览器画面。天空采用 Poly Haven CC0 全景，来源与移动、跳跃验证见[更新记录](MOVEMENT-AND-SKY.md)。
+
+![A 包点与晴天天空](screenshots/movement-daylight-sky.png)
+
+
 ## 开镜与命中修正 · 2026-09-09
 
 AWP、SSG 08、SCAR-20 的两档视野重新校准，开枪方向与屏幕准星共用同一组数据。SG 553 接入原始举镜和开镜射击动作，镜片能清楚看到前方目标。下图来自固定目标的本地验收；性能数据、参数来源与复现方式见[修正说明](SCOPES-AND-PERFORMANCE.md)。

@@ -319,6 +319,26 @@
       "bytes": 1966952,
       "width": 1600,
       "height": 950
+    },
+    {
+      "file": "movement-daylight-sky.png",
+      "source": "output/playwright/movement-daylight-sky.png",
+      "capturedOn": "2026-09-09",
+      "sha256": "8c52ef54c23a647b22a4a73ec539a6010edc4292a46dcc47132e4f22332d3c00",
+      "bytes": 1939938,
+      "width": 1600,
+      "height": 950,
+      "modified": false
+    },
+    {
+      "file": "movement-box-landing.png",
+      "source": "output/playwright/movement-box-landing.png",
+      "capturedOn": "2026-09-09",
+      "sha256": "f0d1a5d3a72d4682e41b56f74c6e51ca77a5a7b1b90aa82173582d1768e0d96d",
+      "bytes": 1736058,
+      "width": 1600,
+      "height": 950,
+      "modified": false
     }
   ],
   "updatedOn": "2026-09-09"

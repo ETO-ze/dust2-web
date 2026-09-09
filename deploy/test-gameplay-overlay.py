@@ -69,7 +69,7 @@ class ReceiverTests(unittest.TestCase):
     def test_explicit_supported_paths(self):
         for name in ['dist/index.html','dist/index.html.gz','dist/sw.js','dist/manifest.webmanifest',
                      'dist/icons/icon-192.png','dist/assets/index-new.js','dist/assets/index-new.css.gz',
-                     'dist/assets/ui-cs2/headshot.svg','dist/assets/optional/ct-ava.glb',
+                     'dist/assets/ui-cs2/headshot.svg','dist/assets/optional/ct-ava.glb','dist/assets/sky/daylight.hdr',
                      'dist/assets/audio/cs2/ak47.ogg','dist/assets/source/Preview (Variation A).png',
                      'server/game.js','server/bot-aim.js','shared/match-rules.js',
                      'public/assets/map/penetration-materials.json','public/assets/map/penetration-materials.u8']:
