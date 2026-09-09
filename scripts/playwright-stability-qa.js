@@ -1,7 +1,7 @@
 async (page) => {
   await page.bringToFront();
   await page.waitForFunction(()=>window.__dust2?.getStatus().connected,{},{timeout:90000});
-  await page.getByRole('button',{name:'继续游戏 ↗'}).click();
+  if(await page.locator('#pause-menu').isVisible())await page.getByRole('button',{name:'继续游戏 ↗'}).click();
   await page.waitForFunction(()=>!!document.pointerLockElement);
   const check=async()=>page.evaluate(()=>({s:window.__dust2.getStatus(),lock:!!document.pointerLockElement,pause:!document.getElementById('pause-menu').hidden,death:!document.getElementById('death-screen').hidden,text:document.getElementById('death-screen').innerText}));
   const before=await check();

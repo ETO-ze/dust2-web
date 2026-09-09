@@ -1,0 +1,32 @@
+async (page) => {
+ await page.waitForFunction(()=>window.__dust2?.getStatus().connected,{},{timeout:60000});
+ await page.request.post('http://127.0.0.1:3004/hold');
+ if(await page.locator('#pause-menu').isVisible())await page.locator('#resume-button').click();
+ await page.waitForFunction(()=>!!document.pointerLockElement);
+ await page.waitForTimeout(800);
+ await page.screenshot({path:'output/playwright/equipment-m4a1-fn.png'});
+ await page.keyboard.press('b');
+ await page.waitForFunction(()=>!document.getElementById('buy-menu').hidden);
+ const count=await page.locator('[data-buy]').count();if(count!==21)throw Error('CT purchase count '+count);
+ await page.screenshot({path:'output/playwright/equipment-ct-shop.png'});
+ await page.locator('[data-buy="awp"]').click();
+ await page.waitForFunction(()=>window.__dust2.getStatus().player?.weapon==='awp');
+ await page.locator('#close-buy').click();await page.waitForTimeout(500);if(await page.locator('#pause-menu').isVisible())await page.locator('#resume-button').click();await page.waitForFunction(()=>!!document.pointerLockElement);
+ await page.waitForTimeout(1100);await page.mouse.down({button:'right'});await page.mouse.up({button:'right'});await page.waitForTimeout(200);
+ const f1=await page.evaluate(()=>window.__dust2.getStatus().zoomFov);await page.mouse.down({button:'right'});await page.mouse.up({button:'right'});await page.waitForTimeout(180);const f2=await page.evaluate(()=>window.__dust2.getStatus().zoomFov);
+ if(f1!==40||f2!==10)throw Error('AWP FOV wrong '+f1+','+f2);
+ await page.screenshot({path:'output/playwright/equipment-awp-scope.png'});await page.mouse.down({button:'right'});await page.mouse.up({button:'right'});
+ await page.keyboard.press('b');if(await page.locator('[data-buy="helmet"]').isEnabled())await page.locator('[data-buy="helmet"]').click();await page.waitForFunction(()=>window.__dust2.getStatus().player?.helmet===true);
+ await page.locator('[data-buy="defusekit"]').click();await page.waitForFunction(()=>window.__dust2.getStatus().player?.defuseKit===true);
+ await page.locator('[data-buy="hegrenade"]').click();await page.waitForFunction(()=>window.__dust2.getStatus().player?.utilityCounts?.hegrenade===1);
+ await page.locator('[data-buy="flashbang"]').click();await page.waitForFunction(()=>window.__dust2.getStatus().player?.utilityCounts?.flashbang===1);
+ await page.locator('[data-buy="smokegrenade"]').click();await page.waitForFunction(()=>window.__dust2.getStatus().player?.utilityCounts?.smokegrenade===1);
+ await page.locator('#close-buy').click();await page.waitForTimeout(500);if(await page.locator('#pause-menu').isVisible())await page.locator('#resume-button').click();await page.waitForFunction(()=>!!document.pointerLockElement);
+ await page.waitForTimeout(1800);await page.screenshot({path:'output/playwright/equipment-smoke-held.png'});
+ await page.mouse.down();await page.mouse.up();await page.waitForFunction(()=>window.__dust2.getStatus().grenades.length>0);
+ const thrown=await page.evaluate(()=>window.__dust2.getStatus().grenades[0]);
+ await page.waitForFunction(()=>window.__dust2.getStatus().smokes.length>0,{},{timeout:6000});
+ await page.screenshot({path:'output/playwright/equipment-smoke-cloud.png'});
+ const status=await page.evaluate(()=>window.__dust2.getStatus());
+ return {count,f1,f2,thrown,utilityCounts:status.player.utilityCounts,slot:status.player.slot,smokes:status.smokes.length,resources:status.resources};
+}

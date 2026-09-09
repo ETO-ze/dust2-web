@@ -7,6 +7,7 @@ import { randomBytes } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { PRIMARY_WEAPONS } from '../shared/weapons.js';
 import { normalizeSkinLoadout } from '../shared/skins.js';
+import { normalizeAgentLoadout } from '../shared/agents.js';
 import { initPhysics } from '../shared/physics.js';
 import { GameRoom, TICK_RATE, SNAPSHOT_RATE } from './game.js';
 
@@ -40,7 +41,7 @@ function joinSettings(msg) {
   const team = ['T', 'CT'].includes(msg.team) ? msg.team : 'auto';
   const bots = Number.isFinite(msg.bots) ? Math.max(0, Math.min(8, Math.floor(msg.bots))) : 6;
   const primary = PRIMARY_WEAPONS.includes(msg.primary) ? msg.primary : 'auto';
-  return { name, room, mode, team, bots, primary, skins:normalizeSkinLoadout(msg.skins) };
+  return { name, room, mode, team, bots, primary, skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents) };
 }
 
 /** Start the authoritative server after loading collision geometry. No external services. */
@@ -121,6 +122,10 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         if(now-(socket.equipSkinAt||0)<250){error(socket,'SKIN_RATE','更换过于频繁，请稍后重试。');return;}
         socket.equipSkinAt=now;const result=room.equipSkin(socket.playerId,msg.weapon,msg.skin);
         if(!result.ok)error(socket,'SKIN_REJECTED',result.message);else send(socket,{type:'skinEquipped',...result});
+      } else if(msg.type==='equipAgent'){
+        if(now-(socket.equipAgentAt||0)<250){error(socket,'AGENT_RATE','更换过于频繁，请稍后重试。');return;}
+        socket.equipAgentAt=now;const result=room.equipAgent(socket.playerId,msg.agent);
+        if(!result.ok)error(socket,'AGENT_REJECTED',result.message);else send(socket,{type:'agentEquipped',...result});
       } else if (msg.type === 'buy') {
         if (now - socket.buyAt < 250) { error(socket, 'BUY_RATE', '购买操作过于频繁。'); return; }
         socket.buyAt = now;

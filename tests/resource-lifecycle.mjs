@@ -189,7 +189,7 @@ test('real multi-primitive character, AWP and arm clones release every independe
     ['../public/assets/characters/swat.glb', 12],
     ['../public/assets/characters/hoodie.glb', 10],
     ['../public/assets/weapons/cs2-skins/awp-gungnir.glb', 2],
-    ['../public/assets/viewmodel/arms.glb', 2],
+    ['../public/assets/viewmodel/arms.glb', 3],
   ];
   for (const [file, expectedSkeletons] of fixtures) {
     const source = await loadSkeletonFixture(file);

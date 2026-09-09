@@ -79,7 +79,7 @@ test('new loadouts and combat feedback contracts on the authoritative server', {
       room.kill(target, null); advance(3001); room.tick();
       assert.equal(target.alive, true); assert.equal(target.health, 100); assert.equal(target.armor, 100);
       assert.equal(target.weapon, primary); assert.equal(target.slot, 1);
-      assert.equal(target.inventory[primary].ammo, primary === 'awp' ? 5 : 30);
+      assert.equal(target.inventory[primary].ammo, primary === 'awp' ? 5 : 20);
       assert.equal(target.inventory.usp.ammo, 12); assert.equal(target.inventory.pistol, undefined);
     }
   });
@@ -93,17 +93,17 @@ test('new loadouts and combat feedback contracts on the authoritative server', {
     assert.equal(shooter.inventory.pistol.ammo, 20); assert.equal(shooter.inventory.usp, undefined);
   });
 
-  await t.test('USP reload blocks firing, switching cancels it, and completion conserves ammunition', () => {
+  await t.test('USP reload blocks firing, switching cancels it, and completion uses the current CS2 discard-magazine rule', () => {
     const { room, target, advance, now } = fixture(lane);
     room.selectSlot(target, 2); target.inventory.usp = { ammo: 2, reserve: 5 };
-    room.reload(target); assert.equal(target.reloadEndsAt - now(), 1900);
+    room.reload(target); assert.equal(target.reloadEndsAt - now(), 2200);
     advance(500); room.events.length = 0; target.nextShotAt = 0;
     room.fire(target, { fire: true, yaw: 0, pitch: 0 });
     assert.equal(target.inventory.usp.ammo, 2); assert.equal(room.events.some(event => event.type === 'shot'), false);
     room.selectSlot(target, 1); assert.equal(target.reloadEndsAt, 0);
     advance(2000); room.tick(); assert.deepEqual(target.inventory.usp, { ammo: 2, reserve: 5 }, 'cancelled reload must not refill later');
-    room.selectSlot(target, 2); room.reload(target); advance(1901); room.tick();
-    assert.equal(target.reloadEndsAt, 0); assert.deepEqual(target.inventory.usp, { ammo: 7, reserve: 0 });
+    room.selectSlot(target, 2); room.reload(target); advance(2201); room.tick();
+    assert.equal(target.reloadEndsAt, 0); assert.deepEqual(target.inventory.usp, { ammo: 5, reserve: 0 });
   });
 
   await t.test('empty AWP emits no shot/hit/kill and only reloads when reserve ammunition exists', () => {

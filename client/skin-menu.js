@@ -3,12 +3,12 @@ import { getWeapon } from '../shared/weapons.js';
 import { loadSkin } from './skin-assets.js';
 import './skins.css';
 
-export function readSkinLoadout(){try{return normalizeSkinLoadout(JSON.parse(localStorage.getItem('dust2.skins.v1')||'{}'));}catch{return {...DEFAULT_SKINS};}}
+export function readSkinLoadout(){try{const saved=JSON.parse(localStorage.getItem('dust2.skins.v1')||'{}');if(!localStorage.getItem('dust2.skins.v2')){for(const id of ['ak47','m4a1','awp','pistol','usp','knife']){if(['ak47-wild-lotus','m4a1-blue-phosphor','awp-gungnir','glock-emerald','usp-printstream','karambit-sapphire'].includes(saved[id]))delete saved[id];}localStorage.setItem('dust2.skins.v1',JSON.stringify(saved));localStorage.setItem('dust2.skins.v2','1');}return normalizeSkinLoadout(saved);}catch{return {...DEFAULT_SKINS};}}
 export class SkinMenu{
   constructor({onEquip}){
     this.loadout=readSkinLoadout();this.weapon='ak47';this.onEquip=onEquip;this.busy=false;
     const modal=document.createElement('div');modal.className='overlay';modal.id='skin-menu';modal.hidden=true;
-    modal.innerHTML=`<section class="skin-card"><header><div><span class="eyebrow">PERSONAL LOADOUT</span><h2>皮肤仓库</h2></div><button id="close-skins">完成 ×</button></header><p>选择你喜欢的涂装。仅在点击装备时下载模型，并保存在本机；外观会同步给房间里的玩家。</p><nav>${Object.keys(DEFAULT_SKINS).map(id=>`<button data-skin-weapon="${id}">${getWeapon(id).name}</button>`).join('')}</nav><div id="skin-grid" class="skin-grid"></div><div class="skin-status" role="status"></div></section>`;
+    modal.innerHTML=`<section class="skin-card"><header><div><span class="eyebrow">PERSONAL LOADOUT</span><h2>皮肤仓库</h2></div><button id="close-skins">完成 ×</button></header><p>选择你喜欢的涂装。仅在点击装备时下载模型，并保存在本机；外观会同步给房间里的玩家。</p><div class="glove-label">默认手套：运动手套 · 树篱迷宫 · 崭新出厂</div><nav>${Object.keys(DEFAULT_SKINS).map(id=>`<button data-skin-weapon="${id}">${getWeapon(id).name}</button>`).join('')}</nav><div id="skin-grid" class="skin-grid"></div><div class="skin-status" role="status"></div></section>`;
     document.body.append(modal);this.element=modal;
     modal.querySelector('#close-skins').onclick=()=>this.close();
     modal.addEventListener('keydown',e=>{if(e.code==='Escape'){this.close();e.preventDefault();}});
@@ -24,7 +24,7 @@ export class SkinMenu{
       const button=document.createElement('button');button.className='skin-item';button.classList.toggle('selected',this.loadout[skin.weapon]===skin.id);button.disabled=this.busy;
       const image=document.createElement('img');image.src=skin.preview;image.loading='lazy';image.alt=skin.name;
       const name=document.createElement('b');name.textContent=skin.name;
-      const label=document.createElement('small');label.textContent=this.loadout[skin.weapon]===skin.id?'已装备':skin.isDefault?'默认涂装':`按需下载 · ${(skin.bytes/1048576).toFixed(1)} MB`;
+      const label=document.createElement('small');label.textContent=this.loadout[skin.weapon]===skin.id?'已装备':skin.isDefault?'默认 · 崭新出厂':`按需下载 · ${(skin.bytes/1048576).toFixed(1)} MB`;
       button.append(image,name,label);button.onclick=()=>this.equip(skin);grid.append(button);
     }
   }

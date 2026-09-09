@@ -1,32 +1,43 @@
-import { getWeapon } from '../shared/weapons.js';
-
-const items = ['ak47','m4a1','awp','armor'];
+import { getWeapon, TEAM_LOADOUTS } from '../shared/weapons.js';
+import { EQUIPMENT, equipmentPrice, UTILITY_IDS, MAX_GRENADES } from '../shared/equipment.js';
+import { getSkin, DEFAULT_SKINS } from '../shared/skins.js';
+import './equipment.css';
+const categories=[['equipment','装备'],['pistols','手枪'],['mid','中级'],['rifles','步枪'],['grenades','投掷物']];
+const descriptions={armor:'防弹背心 · 身体防护',helmet:'背心与头盔 · 保护头部',defusekit:'拆弹时间缩短至 5 秒',hegrenade:'范围爆炸伤害',flashbang:'致盲视线内的玩家',smokegrenade:'烟雾遮挡 · 持续 18 秒'};
+const symbols={armor:'▰',helmet:'◒',defusekit:'⚒',hegrenade:'◉',flashbang:'✹',smokegrenade:'☁'};
 export class WeaponShop {
-  constructor(container, { buy, close }) {
-    this.container=container; this.pending=null;
-    container.innerHTML=`<section class="armory-card"><header><div><span class="eyebrow">EQUIPMENT / BUY MENU</span><h2>购买装备</h2></div><div class="buy-wallet"><small>可用资金</small><b id="shop-money">$ 0</b></div><button id="close-buy" type="button">返回战场 ×</button></header><div class="shop-status"><span id="buy-note"></span><b id="shop-time"></b></div><div class="shop-grid">${items.map((id,i)=>id==='armor'?`<button data-buy="armor"><kbd>${i+1}</kbd><div class="armor-symbol">▰</div><b>防弹护甲</b><span>补充至 100 护甲</span><strong></strong><small></small></button>`:`<button data-buy="${id}"><kbd>${i+1}</kbd><img src="assets/weapons/cs2-skins/previews/${id}.webp" alt="${getWeapon(id).name}"><b>${getWeapon(id).name}</b><span>${getWeapon(id).skin}</span><strong></strong><small></small></button>`).join('')}</div><p id="shop-result" role="status">选择装备即可购买，皮肤在「皮肤仓库」中更换。</p><footer>鼠标点击或按 1–4 购买 · B 返回 · Esc 菜单</footer></section>`;
+  constructor(container,{buy,close}) {
+    this.container=container;this.buy=buy;this.pending=null;this.category=null;
+    container.innerHTML=`<section class="armory-card equipment-card"><header><div><span class="eyebrow" id="shop-team">LOADOUT</span><h2>购买装备</h2></div><div class="buy-wallet"><small>可用资金</small><b id="shop-money">$ 0</b></div><button id="close-buy" type="button">返回战场 ×</button></header><div class="shop-status"><span id="buy-note"></span><b id="shop-time"></b></div><div class="equipment-columns"></div><p id="shop-result" role="status">点击装备购买 · 枪械皮肤可在皮肤仓库中更换</p><footer>1–5 选择分类，再按 1–5 购买 · B 返回战场 · 4 切换投掷物 · Q 上一件装备</footer></section>`;
     container.querySelector('#close-buy').onclick=close;
-    for(const button of container.querySelectorAll('[data-buy]')) button.onclick=()=>{
-      if(this.pending||button.disabled)return;
-      this.pending=button.dataset.buy; this.pendingAt=performance.now();
-      this.message('正在确认购买…'); buy(this.pending); this.update(this.last);
-    };
-    container.addEventListener('keydown',event=>{if(event.target.matches('input,select,textarea'))return;const i=Number(event.code.slice(-1))-1;if(/^Digit[1-4]$/.test(event.code)&&!event.repeat){event.preventDefault();container.querySelector(`[data-buy="${items[i]}"]`)?.click();}});
+    container.addEventListener('click',e=>{const category=e.target.closest('[data-category]');if(category){this.category=category.dataset.category;this.highlight();return;}const button=e.target.closest('[data-buy]');if(button&&!button.disabled&&!this.pending){this.pending=button.dataset.buy;this.pendingAt=performance.now();this.message('正在确认购买…');buy(this.pending);this.update(this.last);}});
+    container.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea')||e.repeat)return;if(e.code==='Backspace'){e.preventDefault();this.category=null;this.highlight();}if(!/^Digit[1-5]$/.test(e.code))return;e.preventDefault();const i=Number(e.code.at(-1))-1;if(!this.category){this.category=categories[i][0];this.highlight();}else{container.querySelectorAll(`[data-group="${this.category}"] [data-buy]`)[i]?.click();this.category=null;this.highlight();}});
+  }
+  highlight(){for(const column of this.container.querySelectorAll('[data-group]'))column.classList.toggle('active',column.dataset.group===this.category);}
+  render(p){
+    this.team=p.team;this.container.dataset.team=p.team;
+    this.container.querySelector('#shop-team').textContent=p.team==='CT'?'CT / 防守方装备':'T / 进攻方装备';
+    const groups={equipment:p.team==='CT'?['armor','helmet','defusekit']:['armor','helmet'],...TEAM_LOADOUTS[p.team],grenades:UTILITY_IDS};
+    this.container.querySelector('.equipment-columns').innerHTML=categories.map(([category,label],index)=>`<section data-group="${category}"><button class="equipment-heading" data-category="${category}"><kbd>${index+1}</kbd> ${label}</button>${(groups[category]||[]).map((id,i)=>{const w=EQUIPMENT[id]||getWeapon(id),skin=getSkin(p.skins?.[id]||DEFAULT_SKINS[id]);return `<button class="equipment-item" data-buy="${id}"><kbd>${i+1}</kbd>${skin?.preview?`<img loading="lazy" src="${skin.preview}" alt="${w.name}">`:`<div class="equipment-symbol" aria-hidden="true">${symbols[id]||'◇'}</div>`}<b>${w.name}</b><span>${descriptions[id]||`${skin?.name||w.skin} · 崭新出厂`}</span><div class="equipment-price"><strong></strong><small></small></div></button>`;}).join('')}</section>`).join('');
+    this.highlight();
   }
   message(text){this.container.querySelector('#shop-result').textContent=text;}
-  result(result){this.pending=null;this.message(result.ok?`已装备 ${result.weapon==='armor'?'防弹护甲':getWeapon(result.weapon).name} · 剩余 $${result.money}`:result.message||'购买未完成');this.update(this.last);}
+  result(result){this.pending=null;this.message(result.ok?`已购买 ${(EQUIPMENT[result.weapon]||getWeapon(result.weapon)).name} · 剩余 $${result.money}`:result.message||'购买未完成');this.update(this.last);}
   update(state){
-    if(!state)return;this.last=state;const {player:p,mode,round,time}=state;if(!p)return;
+    if(!state?.player)return;this.last=state;const {player:p,mode,round,time}=state;
+    const skinKey=JSON.stringify(p.skins);if(this.team!==p.team||this.skinKey!==skinKey){this.skinKey=skinKey;this.render(p);}
     if(this.pending&&performance.now()-this.pendingAt>3500){this.pending=null;this.message('购买确认超时，请重试。');}
     const free=mode==='deathmatch',remaining=Math.max(0,Math.ceil(((round?.buyEndsAt||0)-time)/1000));
     this.container.querySelector('#shop-money').textContent=`$ ${p.money}`;
-    this.container.querySelector('#shop-time').textContent=free?'免费补给':`购买时间 ${remaining}s`;
-    this.container.querySelector('#buy-note').textContent=p.buyReason||(free?'团队死斗 · 存活时可免费更换':'出生区补给 · 武器费用由服务器结算');
+    this.container.querySelector('#shop-time').textContent=free?'死斗 · 免费补给':`购买时间 ${remaining}s`;
+    this.container.querySelector('#buy-note').textContent=p.buyReason||(free?'存活时可更换装备':'出生区补给');
+    const counts=p.utilityCounts||{},total=UTILITY_IDS.reduce((n,id)=>n+(counts[id]||0),0);
     for(const button of this.container.querySelectorAll('[data-buy]')){
-      const id=button.dataset.buy,price=free?0:id==='armor'?650:getWeapon(id).price;
-      const reason=!p.alive?'等待重生':p.buyAllowed===false?p.buyReason:p.money<price?'余额不足':id==='armor'&&p.armor>=100?'护甲已满':this.pending?'等待购买确认':'';
-      button.disabled=!!reason;button.querySelector('strong').textContent=free?'免费':`$ ${price}`;
-      button.querySelector('small').textContent=reason||(p.inventory?.includes(id)?'已持有 · 补充弹药':'点击购买');
+      const id=button.dataset.buy,item=EQUIPMENT[id],price=free?0:item?equipmentPrice(id,p):getWeapon(id).price;
+      const full=id==='armor'?p.armor>=100:id==='helmet'?p.armor>=100&&p.helmet:id==='defusekit'?p.defuseKit:item?.slot===4?(counts[id]||0)>=item.maxCount||total>=MAX_GRENADES:false;
+      const reason=!p.alive?'等待重生':p.buyAllowed===false?p.buyReason:p.money<price?'余额不足':full?'已配齐':this.pending?'确认中':'';
+      button.disabled=!!reason;button.classList.toggle('owned',!!p.inventory?.includes(id)||!!full);button.querySelector('strong').textContent=free?`$${(item||getWeapon(id)).price} · 免费`:`$${price}`;
+      button.querySelector('small').textContent=reason||(item?.slot===4?`${counts[id]||0} / ${item.maxCount}`:p.inventory?.includes(id)?'已持有':'购买');
     }
   }
 }

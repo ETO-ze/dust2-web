@@ -109,7 +109,7 @@ test('input edge counters and authoritative shop on the real Dust2 collision', {
 
   await t.test('deathmatch purchases are free, replace only the primary, and dead players cannot buy',()=>{
     const {room,player,snapshot}=fixture(spot);player.money=0;
-    for(const weapon of ['awp','m4a1','ak47']){
+    for(const weapon of ['awp','galilar','ak47']){
       const result=room.buy(player.id,weapon);assert.equal(result.ok,true);assert.equal(result.money,0);assert.equal(player.weapon,weapon);
       assert.deepEqual(Object.keys(player.inventory).filter(id=>getWeapon(id).slot===1),[weapon]);
       assert.ok(player.inventory.pistol);assert.ok(player.inventory.knife);assert.equal(snapshot().buyAllowed,true);

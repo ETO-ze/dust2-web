@@ -1,0 +1,10 @@
+import { readFile,writeFile } from 'node:fs/promises';
+import { SKINS } from '../shared/skins.js';
+const root='assets/weapons/cs2-loadout/';
+const manifest=JSON.parse(await readFile('public/'+root+'manifest.json','utf8'));
+const defaults=manifest.models.map(m=>({id:m.file.replace(/\.glb$/,''),weapon:m.id,name:m.chineseName,englishName:m.name,model:root+m.file,preview:root+m.preview.file,bytes:m.bytes,sha256:m.sha256,isDefault:true,condition:'Factory New',wear:m.parameters.wear,wearMin:m.wearMin,paintkit:m.paintkit,previewBytes:m.preview.bytes,previewSha256:m.preview.sha256}));
+const ids=new Set(defaults.map(s=>s.id));
+const catalog=[...defaults,...SKINS.filter(s=>!ids.has(s.id)).map(s=>({...s,isDefault:false}))];
+const current=await readFile('shared/skins.js','utf8');
+await writeFile('shared/skins.js','// Default finishes: original CS2 paintkits, pristine browser PBR bake.\nexport const SKINS = Object.freeze('+JSON.stringify(catalog,null,2)+'.map(skin => Object.freeze(skin)));\n'+current.slice(current.indexOf('export const DEFAULT_SKINS')));
+console.log(`Synced ${defaults.length} pristine defaults; ${catalog.length} total finishes.`);

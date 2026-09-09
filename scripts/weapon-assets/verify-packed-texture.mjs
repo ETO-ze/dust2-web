@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import{createRequire}from'node:module';
+import{resizePackedRgba}from'./packed-texture.mjs';
+import{pristinePaintCoverage}from'./pristine-coverage.mjs';
+const require=createRequire('C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/package.json'),sharp=require('sharp');
+const source=Buffer.from([45,255,120,0,45,255,120,0,45,255,120,0,45,255,120,0]);
+const png=await sharp(source,{raw:{width:2,height:2,channels:4}}).png().toBuffer();
+const resized=await resizePackedRgba(sharp,png,8);
+for(let i=0;i<resized.length;i+=4)assert.deepEqual([...resized.subarray(i,i+4)],[45,255,120,0]);
+assert.equal(pristinePaintCoverage(0),1);assert.equal(pristinePaintCoverage(.1),1);assert.equal(pristinePaintCoverage(1),0);
+assert.ok(pristinePaintCoverage(.63)>.45&&pristinePaintCoverage(.63)<.55);
+console.log('PASS packed RGBA resize preserves RGB beneath zero wear alpha; pristine threshold protects low masks and retains full no-paint regions.');

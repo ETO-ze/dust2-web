@@ -1,4 +1,5 @@
 import { MAP } from '../shared/map-data.js';
+import { UTILITY_IDS, EQUIPMENT } from '../shared/equipment.js';
 import { getWeapon } from '../shared/weapons.js';
 import { DeathScreen } from './death-screen.js';
 import './death-screen.css';
@@ -24,10 +25,11 @@ export class HUD {
       'score-ct', 'score-t', 'mode-label', 'round-time', 'round-state', 'location',
       'network-status', 'room-label', 'kill-feed', 'toast', 'hitmarker', 'damage-vignette',
       'center-message', 'interact-prompt', 'interact-text', 'health', 'armor', 'money',
-      'slot1', 'slot2', 'slot3', 'weapon-name', 'ammo', 'reserve', 'reload-label',
+      'slot1', 'slot2', 'slot3', 'slot4', 'weapon-name', 'ammo', 'reserve', 'reload-label',
       'board-room', 'score-body', 'buy-note', 'weapon-skin', 'hit-damage',
       'kill-confirm', 'kill-title', 'kill-victim', 'kill-weapon', 'kill-combo',
     ].map(id => [id, document.getElementById(id)]));
+    this.utilityBelt=document.createElement('div');this.utilityBelt.className='utility-belt';document.getElementById('weapon-name')?.parentElement.append(this.utilityBelt);
     this.radar = document.getElementById('radar');
     this.context = this.radar?.getContext('2d');
     this.interactFill = this.elements['interact-prompt']?.querySelector('.interact-track i');
@@ -92,20 +94,21 @@ export class HUD {
     const network = this.elements['network-status'];
     if (network) network.style.color = time - this.receivedAt > 2500 ? '#f09b83' : '';
     this.text('health', Math.ceil(clamp(self.health, 0, 999)));
-    this.text('armor', `护甲 ${Math.round(clamp(self.armor, 0, 999))}`);
+    this.text('armor', `护甲 ${Math.round(clamp(self.armor, 0, 999))}${self.helmet?' · 头盔':''}${self.defuseKit?' · 拆弹器':''}`);
     this.text('money', `$ ${Math.max(0, Math.round(number(self.money))).toLocaleString('en-US')}`);
     this.text('weapon-name', weapon.name);
     this.text('weapon-skin', weapon.skin || '');
     this.text('ammo', weapon.slot === 3 ? '—' : Math.max(0, Math.floor(number(self.ammo))));
-    this.text('reserve', weapon.slot === 3 ? '—' : Math.max(0, Math.floor(number(self.reserve))));
-    for (let slot = 1; slot <= 3; slot++) {
+    this.text('reserve', weapon.slot === 3 ? '—' : self.reserveAmmoAsClips ? `${Math.max(0,Math.floor(number(self.reserveClips)))} 匣` : Math.max(0, Math.floor(number(self.reserve))));
+    for (let slot = 1; slot <= 4; slot++) {
       this.elements[`slot${slot}`]?.classList.toggle('selected', number(self.slot, weapon.slot) === slot);
     }
+    const utilityKey=JSON.stringify([self.utilityCounts,self.weapon]);if(this.utilityKey!==utilityKey){this.utilityKey=utilityKey;this.utilityBelt.replaceChildren(...UTILITY_IDS.filter(id=>(self.utilityCounts?.[id]||0)>0).map(id=>{const el=document.createElement('span');el.className=self.weapon===id?'selected':'';el.textContent=`${EQUIPMENT[id].name} ×${self.utilityCounts[id]}`;return el;}));}
     const reload = Math.max(0, number(self.reloadRemaining) - elapsed);
     const protection = Math.max(0, number(self.spawnProtectionRemaining) - elapsed);
     this.text('reload-label', reload > 0 ? `正在换弹 ${reload.toFixed(1)} s` :
       protection > 0 && self.alive ? `重生保护 ${protection.toFixed(1)} s` :
-        self.hasBomb ? '携带 C4 · 前往 A / B 包点' : weapon.slot === 3 ? '鼠标左键 近战 · B 购买' : 'R 换弹 · B 购买');
+        self.hasBomb ? '携带 C4 · 前往 A / B 包点' : weapon.slot === 4 ? '左键投掷 · 4 切换投掷物' : weapon.slot === 3 ? '鼠标左键 近战 · B 购买' : 'R 换弹 · B 购买');
 
     const closest = (MAP.labels || []).reduce((best, label) => {
       const gap = distanceXZ(self, label);
@@ -158,7 +161,7 @@ export class HUD {
         text = bomb.action === 'plant' ? `正在安装 · ${site || bomb.site || ''} 区 · 保持按住 E` : '正在拆除炸弹 · 保持按住 E';
         progress = clamp(bomb.progress, 0, 1); showTrack = true;
       } else if (bomb.state === 'planted' && self.team === 'CT' && distance(self, bomb) < 2.8) {
-        text = '按住 E 拆除炸弹 · 保持静止'; showTrack = true;
+        text = `按住 E 拆除炸弹 · ${self.defuseKit?5:10} 秒 · 保持静止`; showTrack = true;
         if (bomb.action === 'defuse' && bomb.actorId) { text = '队友正在拆除炸弹'; progress = clamp(bomb.progress, 0, 1); }
       } else if (bomb.state === 'carried' && (bomb.carrierId === self.id || self.hasBomb) && site) {
         text = `按住 E 安装炸弹 · ${site} 区 · 保持静止`; showTrack = true;

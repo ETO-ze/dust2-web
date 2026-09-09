@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
-import { WEAPONS } from '../shared/weapons.js';
+import { UTILITY_IDS } from '../shared/equipment.js';
+import { WEAPONS, getWeapon } from '../shared/weapons.js';
 import { DEFAULT_SKINS, getSkin } from '../shared/skins.js';
-import { loadedSkin, requestSkin } from './skin-assets.js';
+import { loadedSkin, requestSkin, retainSkin, releaseSkin } from './skin-assets.js';
 import { disposeInstanceAnimation, disposeInstanceSkeletons } from './resource-lifecycle.js';
 
 const loader = new GLTFLoader();
@@ -45,7 +46,7 @@ export class ViewWeapon {
     this.slash = 0;
     this.reloadActive = false;
     if (!armSource || !animationSource) throw new Error('The original CS2 viewmodel assets have not loaded.');
-    this.set('ak47');
+
   }
 
   build(id,skinId) {
@@ -86,7 +87,8 @@ export class ViewWeapon {
       actions[original.name.split('/')[1]] = mixer.clipAction(clip);
     }
     const wpn = arms.getObjectByName('wpn');
-    const item = { root, arms, weapon, mount, mixer, actions, wpn, current:null, actionName:'' };
+    retainSkin(skinId);
+    const item = { root, arms, weapon, mount, mixer, actions, wpn, current:null, actionName:'',skinId };
     mixer.addEventListener('finished', event => {
       if (item.current !== event.action) return;
       this.playOn(item, 'idle', .055);
@@ -122,14 +124,17 @@ export class ViewWeapon {
   }
 
   set(id,skinId) {
-    if (!weaponKeys[id]) id='ak47';
-    if(getSkin(skinId)?.weapon!==id)skinId=DEFAULT_SKINS[id];
-    requestSkin(skinId);const visibleSkin=loadedSkin(skinId)?skinId:DEFAULT_SKINS[id],cacheKey=id+':'+visibleSkin;
+    if (!WEAPONS[id]&&!UTILITY_IDS.includes(id)) {this.group.visible=false;return;}
+    if(UTILITY_IDS.includes(id))skinId=id;else if(getSkin(skinId)?.weapon!==id)skinId=DEFAULT_SKINS[id];
+    requestSkin(skinId);const visibleSkin=loadedSkin(skinId)?skinId:UTILITY_IDS.includes(id)?id:DEFAULT_SKINS[id],cacheKey=id+':'+visibleSkin;
+    if(!loadedSkin(visibleSkin)){this.waiting=true;return;}this.waiting=false;
     if (id === this.id && this.skinId===visibleSkin) return;
     if (this.active) { this.rig.remove(this.active.root); this.active.flash.visible=false; this.active.light.intensity=0; }
     this.id=id;this.skinId=visibleSkin;
     if (!this.cache.has(cacheKey)) this.cache.set(cacheKey,this.build(id,visibleSkin));
     this.active=this.cache.get(cacheKey); this.rig.add(this.active.root);
+    this.cache.delete(cacheKey);this.cache.set(cacheKey,this.active);
+    while(this.cache.size>4){const key=this.cache.keys().next().value,item=this.cache.get(key);this.cache.delete(key);disposeInstanceAnimation(item.mixer,item.root);disposeInstanceSkeletons(item.root);item.flash.geometry.dispose();item.flash.material.dispose();item.root.removeFromParent();releaseSkin(item.skinId);}
     this.active.mixer.stopAllAction();
     this.playOn(this.active,'draw',0);
     this.active.mixer.update(0);
@@ -140,9 +145,9 @@ export class ViewWeapon {
   shoot(options={}) {
     if (!this.active) return;
     const heavy=options === true || options?.heavy;
-    const name=this.id==='knife' ? (heavy ? 'heavy' : (this.slash++%2 ? 'shoot2':'shoot')) : 'shoot';
-    this.playOn(this.active,name,.025,this.id==='awp'?WEAPONS.awp.fireInterval:0);
-    this.flashTime=this.id==='knife'||this.id==='m4a1'||this.id==='usp' ? 0 : .045;
+    const name=UTILITY_IDS.includes(this.id)?'throw':this.id==='knife' ? (heavy ? 'heavy' : (this.slash++%2 ? 'shoot2':'shoot')) : this.id==='elite' ? (this.slash++%2?'shoot2':'shoot') : 'shoot';
+    this.playOn(this.active,name,.025,getWeapon(this.id).unzoomsAfterShot?getWeapon(this.id).fireInterval:0);
+    this.flashTime=UTILITY_IDS.includes(this.id)||this.id==='knife'||this.id==='m4a1'||this.id==='usp' ? 0 : .045;
   }
 
   inspect() {
@@ -162,12 +167,12 @@ export class ViewWeapon {
   update(dt,p,scoped) {
     dt=Math.min(.1,Math.max(0,dt||0));this.clock+=dt;
     if(p?.weapon)this.set(p.weapon,p.skinId);
-    this.group.visible=Boolean(p?.alive&&!scoped);
+    this.group.visible=Boolean(p?.alive&&!scoped&&!this.waiting&&this.id===p?.weapon);
     if(!p||!this.active)return;
     const reloading=p.reloadRemaining>0;
-    if(reloading&&!this.reloadActive)this.playOn(this.active,'reload',.06,p.reloadRemaining);
+    if(reloading&&(!this.reloadActive||getWeapon(p.weapon).reloadStyle==='shell'&&p.reloadRemaining>this.lastReload+.1))this.playOn(this.active,'reload',.06,p.reloadRemaining);
     else if(!reloading&&this.reloadActive&&this.active.actionName==='reload')this.playOn(this.active,'idle',.06);
-    this.reloadActive=reloading;
+    this.reloadActive=reloading;this.lastReload=p.reloadRemaining;
     this.active.mixer.update(dt);
     const moving=Math.min(1,Math.hypot(p.vx||0,p.vz||0)/5),narrow=Math.max(0,1.35-(this.camera.aspect||1));
     // A subtle locomotion layer leaves the authored wrist/finger poses intact.
@@ -187,6 +192,7 @@ export class ViewWeapon {
       disposeInstanceSkeletons(item.root,skeletons);
       item.flash.geometry.dispose();item.flash.material.dispose();
       item.root.removeFromParent();
+      releaseSkin(item.skinId);
     }
     this.cache.clear();
     this.group.clear();this.rig.clear();this.active=null;

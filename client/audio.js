@@ -135,7 +135,7 @@ export class GameAudio {
 
   weaponReload(id = this.lastWeapon, options = {}) {
     if (!this.ready) return;
-    const weapon = this.weaponId(id, options), sequence = RELOADS[weapon];
+    const weapon = this.weaponId(id, options), sequence = RELOADS[weapon] || (this.banks.has(`${weapon}Shell`) ? [[.7,`${weapon}Shell`]] : [[.08,`${weapon}Out`],[.55,`${weapon}In`]]);
     if (!sequence) return;
     this.cancelReload(); this.lastWeapon = weapon;
     if (options.team) this.lastTeam = options.team;

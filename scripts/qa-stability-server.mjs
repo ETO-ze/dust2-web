@@ -20,6 +20,8 @@ function churn() {
 const control=createServer((req,res)=>{
   if(req.method!=='POST'){res.writeHead(405);res.end();return;}
   if(req.url==='/kill')killHumans();
+  else if(req.url==='/hold'){for(const room of app.rooms.values())room.botInput=p=>({...p.input,forward:0,right:0,fire:false});}
+  else if(req.url==='/team/CT'||req.url==='/team/T'){for(const room of app.rooms.values())for(const p of room.players.values())if(!p.bot){p.team=req.url.endsWith('/CT')?'CT':'T';p.inventory={};room.giveWeapon(p,p.team==='CT'?'usp':'pistol');room.giveWeapon(p,'knife');room.giveWeapon(p,p.team==='CT'?'m4a1':'ak47');room.respawn(p);}}
   else if(req.url==='/churn')churn();
   else if(req.url==='/soak'){
     clearInterval(soakTimer);let ticks=0;

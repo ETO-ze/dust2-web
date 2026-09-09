@@ -29,12 +29,13 @@ await add('assets/map-cs2/dust2-web.gltf', 'map');
 await add('assets/map/positions.f32', 'collision');
 await walk('assets/audio', 'audio');
 await add('assets/audio/cs2/manifest.json', 'audio');
-for (const name of ['swat', 'hoodie']) await add(`assets/characters/${name}.glb`, 'characters');
-for (const dir of ['assets/weapons/cs2-skins', 'assets/viewmodel']) {
+await walk('assets/characters-cs2','characters');
+await walk('assets/weapons/cs2-loadout/previews','weapons');
+for (const dir of ['assets/viewmodel']) {
   if (await stat(path.join(root, dir)).catch(() => null)) await walk(dir, 'weapons');
 }
-// Retain original defaults only until the skin bundle is ready during development.
-if (!entries.some(e => e.path.startsWith('assets/weapons/cs2-skins/'))) await walk('assets/weapons/cs2', 'weapons');
+// Gun and utility models are fetched on equip; only their previews and shared
+// arm animation bundle belong to the initial download.
 entries.sort((a, b) => a.path.localeCompare(b.path));
 const version = createHash('sha256').update(JSON.stringify(entries)).digest('hex').slice(0, 16);
 const manifest = { version, totalBytes: entries.reduce((sum, entry) => sum + entry.bytes, 0), files: entries };

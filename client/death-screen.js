@@ -1,4 +1,5 @@
 import { WEAPONS, normalizeWeapon } from '../shared/weapons.js';
+import { getEquipment } from '../shared/equipment.js';
 
 // References: Valve's Spectator UI (2012-08-30) describes staying in the match
 // with player identity, weapon and team status visible while observing.
@@ -20,7 +21,7 @@ export function describeDeath(snapshot, self, { event = null, elapsed = 0, spect
   const round = snapshot.round || {};
   const seconds = mode === 'deathmatch' ? remaining(self.respawnIn, elapsed) : remaining(round.timeLeft, elapsed);
   const weapon = kill ? normalizeWeapon(kill.weapon) : '';
-  const weaponName = WEAPONS[weapon]?.name || ({ bomb: 'C4 爆炸', c4: 'C4 爆炸', world: '环境伤害' })[weapon] || (kill ? '其他伤害' : '');
+  const weaponName = WEAPONS[weapon]?.name || getEquipment(weapon)?.name || ({ bomb: 'C4 爆炸', c4: 'C4 爆炸', world: '环境伤害' })[weapon] || (kill ? '其他伤害' : '');
   let statusTitle, statusDetail, clock = '', clockLabel = '';
   if (mode === 'deathmatch') {
     statusTitle = seconds > 0 ? '自动重生' : '正在重生';

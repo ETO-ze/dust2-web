@@ -73,6 +73,77 @@
       "width": 2560,
       "height": 1273,
       "modified": false
+    },
+    {
+      "file": "update-ct-shop.png",
+      "source": "output/playwright/equipment-ct-shop.png",
+      "capturedOn": "2026-09-09",
+      "sha256": "2e09bce69233d3e630e2004ee81f95515dac8635f2d565197cae4a2549ee4f1b",
+      "bytes": 551689,
+      "width": 1600,
+      "height": 950,
+      "modified": false
+    },
+    {
+      "file": "update-t-shop.png",
+      "source": "output/playwright/equipment-t-shop.png",
+      "capturedOn": "2026-09-09",
+      "sha256": "89f99b464d6d7c88f5180525d0a7ae1097a9f332ad0dbf195573d1fb8266ea07",
+      "bytes": 571622,
+      "width": 1600,
+      "height": 950,
+      "modified": false
+    },
+    {
+      "file": "update-awp.png",
+      "source": "output/playwright/equipment-awp-final.png",
+      "capturedOn": "2026-09-09",
+      "sha256": "9352d0f9be0eb9f10aaaa56f73c621470bda24a735d9606df0e48922d0eec882",
+      "bytes": 2491229,
+      "width": 1600,
+      "height": 950,
+      "modified": false
+    },
+    {
+      "file": "update-agents.png",
+      "source": "output/playwright/equipment-agents.png",
+      "capturedOn": "2026-09-09",
+      "sha256": "c73c22b341a4bd2ef34044edd9de0fd702b53eb07b35021446f5d026a2fcb0f3",
+      "bytes": 397437,
+      "width": 1600,
+      "height": 950,
+      "modified": false
+    },
+    {
+      "file": "update-death.png",
+      "source": "output/playwright/death-screen-qa.png",
+      "capturedOn": "2026-09-09",
+      "sha256": "b03168f959a704b2fe10c60461ad07d44ce4a1897f2580b972013515732b51b0",
+      "bytes": 2383225,
+      "width": 1600,
+      "height": 950,
+      "modified": false
+    },
+    {
+      "file": "update-settings.png",
+      "source": "output/playwright/equipment-settings.png",
+      "capturedOn": "2026-09-09",
+      "sha256": "42b0e80f613f9729d34533a6b94dd885de001ff88ef17c63261b0a91f546f717",
+      "bytes": 214124,
+      "width": 1600,
+      "height": 950,
+      "modified": false
+    },
+    {
+      "file": "update-smoke.png",
+      "source": "output/playwright/equipment-smoke-cloud.png",
+      "capturedOn": "2026-09-09",
+      "sha256": "fc9204308399654448518144db0ccaae3e8b1c34f8cdf303666e88af6a4e47ad",
+      "bytes": 2590959,
+      "width": 1600,
+      "height": 950,
+      "modified": false
     }
-  ]
+  ],
+  "updatedOn": "2026-09-09"
 }
