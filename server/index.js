@@ -124,6 +124,10 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       if (!room || !socket.playerId) { error(socket, 'NOT_JOINED', '请先加入一个房间。'); return; }
       if (msg.type === 'input') {
         if (!room.receiveInput(socket.playerId, msg)) { if (++socket.strikes > 100) socket.close(1008, 'Invalid input'); }
+      } else if(msg.type==='takeSeat'||msg.type==='setSeatBot'){
+        if(now-(socket.seatAt||0)<300){error(socket,'SEAT_RATE','请稍后再操作席位。');return;}
+        socket.seatAt=now;const result=msg.type==='takeSeat'?room.takeSeat(socket.playerId,msg.team,msg.seat):room.setSeatBot(socket.playerId,msg.team,msg.seat,msg.enabled);
+        if(!result.ok)error(socket,'SEAT_REJECTED',result.message);else send(socket,{type:'seatUpdated',...result});
       } else if(msg.type==='setBots'){
         if(now-(socket.setBotsAt||0)<250){error(socket,'BOTS_RATE','设置过于频繁，请稍后重试。');return;}
         socket.setBotsAt=now;const result=room.setBots(socket.playerId,msg.bots);

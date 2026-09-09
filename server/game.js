@@ -13,6 +13,7 @@ import { traceBullet as defaultTraceBullet } from './bullet-penetration.js';
 import {eyePosition,accuracyForShot,sampleShotDirection} from '../shared/aim.js';
 import {PlayerTimeline,MAX_REWIND_MS} from '../shared/player-timeline.js';
 import {MovementStream,sanitizeMoves,movementState} from '../shared/movement-commands.js';
+import {reloadProfile} from '../shared/reload-profiles.js';
 
 export const TICK_RATE = 30;
 export const SNAPSHOT_RATE = 15;
@@ -34,7 +35,7 @@ export function sanitizeInput(message) {
   return { seq: message.seq, forward: clamp(message.forward, -1, 1), right: clamp(message.right, -1, 1), yaw: ((message.yaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI,
     jumpId: Number.isSafeInteger(message.jumpId)&&message.jumpId>=0&&message.jumpId<=2147483647?message.jumpId:0, reloadId: Number.isSafeInteger(message.reloadId)&&message.reloadId>=0&&message.reloadId<=2147483647?message.reloadId:0, pitch: clamp(message.pitch, -1.48, 1.48), jump: message.jump === true, crouch: message.crouch === true,
     walk: message.walk === true, fire: message.fire === true, fire2:message.fire2===true, cancelGrenade:message.cancelGrenade===true, reload: message.reload === true,
-    interact: message.interact === true, slot: [1, 2, 3, 4].includes(message.slot) ? message.slot : 0,
+    interact: message.interact === true, slot: [1, 2, 3, 4, 5].includes(message.slot) ? message.slot : 0,
     utilityId: UTILITY_IDS.includes(message.utilityId) ? message.utilityId : null,
     zoomLevel: Number.isInteger(message.zoomLevel) && message.zoomLevel >= 0 && message.zoomLevel <= 2 ? message.zoomLevel : 0,
     shotId:Number.isSafeInteger(message.shotId)&&message.shotId>0&&message.shotId<=2147483647?message.shotId:0,
@@ -125,12 +126,46 @@ export class GameRoom {
     this.emit('bots_changed',result);return result;
   }
 
+  freeSeat(team){return [0,1,2,3,4].find(seat=>![...this.players.values()].some(p=>p.team===team&&p.seat===seat))??-1;}
+  roomSeats(){return Object.fromEntries(['CT','T'].map(team=>[team,Array.from({length:5},(_,seat)=>{
+    const p=[...this.players.values()].find(p=>p.team===team&&p.seat===seat);
+    return {team,seat,playerId:p?.id||null,name:p?.name||'',bot:!!p?.bot,alive:!!p?.alive,host:p?.id===this.hostId};
+  })]));}
+  takeSeat(id,team,seat){
+    const p=this.players.get(id);
+    if(!p||p.bot||!['T','CT'].includes(team)||!Number.isInteger(seat)||seat<0||seat>4)return {ok:false,message:'无效的房间位置。'};
+    if([...this.players.values()].some(other=>other.id!==id&&other.team===team&&other.seat===seat))return {ok:false,message:'这个位置已有人，请选择空位。'};
+    if(p.team!==team){
+      if(p.hasBomb)this.dropBomb(p);
+      this.cancelReload(p);this.cancelGrenade(p,'team');
+      if(this.bomb.actorId===id)Object.assign(this.bomb,{actorId:null,action:null,progress:0});
+      p.team=team;p.teamId=this.teamForSide(team);p.agentId=p.agents[team]||DEFAULT_AGENT_IDS[team];
+      p.inventory={};this.giveWeapon(p,team==='CT'?'usp':'pistol');this.giveWeapon(p,'knife');
+      p.weapon=team==='CT'?'usp':'pistol';p.slot=2;p.armor=0;p.helmet=false;p.defuseKit=false;p.loadoutPrimary=defaultPrimaryForTeam(team);
+      this.respawn(p);
+      if(this.match.status==='ended'||this.mode==='defuse'&&['live','ended'].includes(this.round.phase)){p.alive=false;p.health=0;p.respawnAt=0;}
+    }
+    p.seat=seat;this.maybeStart();this.emit('seat_changed',{playerId:id,team,seat});return {ok:true,team,seat};
+  }
+  setSeatBot(id,team,seat,enabled){
+    if(id!==this.hostId)return {ok:false,message:'只有房主可以添加或移除人机。'};
+    if(!['T','CT'].includes(team)||!Number.isInteger(seat)||seat<0||seat>4||typeof enabled!=='boolean')return {ok:false,message:'无效的房间位置。'};
+    const occupant=[...this.players.values()].find(p=>p.team===team&&p.seat===seat);
+    if(occupant&&!occupant.bot)return {ok:false,message:'玩家位置不能替换为人机。'};
+    if(enabled&&!occupant){
+      const number=++this.botCounter,p=this.makePlayer(`b_${number}`,`${team==='T'?'沙狐':'哨兵'} BOT ${number}`,team,true);p.seat=seat;
+      if(this.match.status==='ended'||this.mode==='defuse'&&['live','ended'].includes(this.round.phase)){p.alive=false;p.health=0;}
+      this.players.set(p.id,p);
+    }else if(!enabled&&occupant)this.removePlayer(occupant.id);
+    this.desiredBots=this.botCount;this.maybeStart();this.emit('bots_changed',{botCount:this.botCount,desiredBots:this.desiredBots});return {ok:true,botCount:this.botCount};
+  }
+
   addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents, movementProtocol }) {
     if (this.humanCount >= MAX_PLAYERS) throw new Error('房间已满，最多 10 名玩家。');
     let assigned = team;
     if (!['T', 'CT'].includes(assigned)) assigned = this.count('T', true) <= this.count('CT', true) ? 'T' : 'CT';
     if (this.count(assigned, true) >= 5) { if (team !== 'auto') throw new Error('该阵营已有 5 名玩家，请选择另一队。'); assigned = opposite(assigned); }
-    const botToReplace = [...this.players.values()].find(p => p.bot && (p.team === assigned || this.players.size >= 10));
+    const botToReplace = (this.count(assigned)>=5||this.players.size>=10)?[...this.players.values()].find(p=>p.bot&&p.team===assigned)||[...this.players.values()].find(p=>p.bot):null;
     if (botToReplace) this.removePlayer(botToReplace.id);
     const id = `p_${randomBytes(6).toString('hex')}`;
     const player = this.makePlayer(id, name, assigned, false, primary);
@@ -147,7 +182,7 @@ export class GameRoom {
   }
 
   makePlayer(id, name, team, bot, primary = 'auto') {
-    const player = { ...createPlayerState(this.pickSpawn(team)), id, lifeId:1,name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
+    const player = { ...createPlayerState(this.pickSpawn(team)), id, seat:this.freeSeat(team), lifeId:1,name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
       money: this.mode === 'deathmatch' ? 16000 : 800, kills: 0, deaths: 0, assists: 0, inventory: {}, skins:{...DEFAULT_SKINS}, slot: this.mode === 'deathmatch' ? 1 : 2,
       helmet:this.mode==='deathmatch',defuseKit:false,zoomLevel:0,flashBlindUntil:0,agents:{...DEFAULT_AGENT_IDS},agentId:DEFAULT_AGENT_IDS[team],
       weapon: 'pistol', input: neutralInput(), inputAt: 0, seq: -1, lastReceivedSeq: -1, lastShotTime: 0, nextShotAt: 0, reloadEndsAt: 0,
@@ -243,7 +278,8 @@ export class GameRoom {
     const next = slot===4 ? (UTILITY_IDS.includes(utilityId)&&player.inventory[utilityId]?.ammo>0?utilityId:null) : Object.keys(player.inventory).find(id => getWeapon(id).slot === slot);
     if (!next || next === player.weapon) return;
     if(player.grenadeState&&player.grenadeState.weapon!==next)this.cancelGrenade(player,'switch');
-    player.weapon = next; player.slot = slot; player.reloadEndsAt = 0;player.zoomLevel=0;
+    this.cancelReload(player);
+    player.weapon = next; player.slot = slot;player.zoomLevel=0;
     player.nextShotAt = Math.max(player.nextShotAt, this.clock() + 180);
   }
 
@@ -287,12 +323,13 @@ export class GameRoom {
     if(weapon==='helmet'&&p.armor>=100&&p.helmet)return {ok:false,message:'防弹背心和头盔已完好。'};
     const price = this.mode === 'deathmatch' ? 0 : equipment ? equipmentPrice(weapon,p) : gun.price;
     if (p.money < price) return { ok: false, message: '余额不足。' };
+    if(gun)this.cancelReload(p);
     p.money -= price;
     if (weapon === 'armor') p.armor = 100;
     else if(weapon==='helmet'){p.armor=100;p.helmet=true;}
     else if(weapon==='defusekit')p.defuseKit=true;
     else if(equipment?.slot===4){p.inventory[weapon]||={ammo:0,reserve:0};p.inventory[weapon].ammo++;}
-    else { for (const id of Object.keys(p.inventory)) if (getWeapon(id).slot === gun.slot){const ammo=p.inventory[id],drop=this.droppedWeapons.drop(p,{weaponId:id,skinId:this.heldSkin(p,id),ammo:ammo.ammo,reserve:ammo.reserve});delete p.inventory[id];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:id,skinId:drop.skinId,death:false});} this.giveWeapon(p, weapon);if(gun.slot===1)p.loadoutPrimary=weapon;p.reloadEndsAt=0;p.zoomLevel=0;this.selectSlot(p, gun.slot); }
+    else { for (const id of Object.keys(p.inventory)) if (getWeapon(id).slot === gun.slot){const ammo=p.inventory[id],drop=this.droppedWeapons.drop(p,{weaponId:id,skinId:this.heldSkin(p,id),ammo:ammo.ammo,reserve:ammo.reserve,...(ammo.reloadReadyAt?{reloadReadyAt:ammo.reloadReadyAt}:{})});delete p.inventory[id];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:id,skinId:drop.skinId,death:false});} this.giveWeapon(p, weapon);if(gun.slot===1)p.loadoutPrimary=weapon;p.reloadEndsAt=0;p.zoomLevel=0;this.selectSlot(p, gun.slot); }
     this.emit('buy', { playerId: id, weapon, money: p.money });
     return { ok: true, weapon, slot:gun?.slot??equipment?.slot??0, money: p.money };
   }
@@ -323,14 +360,15 @@ export class GameRoom {
     this.grenades.clear();
     this.droppedWeapons.clear();
     this.poseHistory.clear();
-    for (const p of this.players.values()) this.respawn(p, true);
+    for (const p of this.players.values()){this.respawn(p,true);p.roundKills=0;}
     const terrorists = [...this.players.values()].filter(p => p.team === 'T');
     const carrier = terrorists.find(p => !p.bot) || terrorists[0];
-    if (carrier) { this.bomb.state = 'carried'; this.bomb.carrierId = carrier.id; carrier.hasBomb = true; Object.assign(this.bomb, copyPoint(carrier)); }
+    if (carrier) { this.bomb.state = 'carried'; this.bomb.carrierId = carrier.id; carrier.hasBomb = true;this.giveWeapon(carrier,'c4'); Object.assign(this.bomb, copyPoint(carrier)); }
     this.emit('round_start', { number: this.round.number, mode: this.mode });
   }
 
   respawn(p, newRound = false) {
+    delete p.inventory.c4;
     const spawn = this.pickSpawn(p.team);
     if (newRound && !p.alive) { p.inventory = {}; p.armor = 0;p.helmet=false;p.defuseKit=false; this.giveWeapon(p, p.team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(p, 'knife'); }
     const consumedJump=p.input.jumpId||0, consumedReload=p.input.reloadId||0;
@@ -359,7 +397,8 @@ export class GameRoom {
     this.match.roundsPlayed++;
     for (const p of this.players.values()) p.money = Math.min(16000, p.money + (p.team === team ? 3250 : 1900));
     this.bomb.action = null; this.bomb.actorId = null; this.bomb.progress = 0;
-    this.emit('round_end', { winner: team, reason, scores: { ...this.scores } });
+    const mvp=[...this.players.values()].filter(p=>p.team===team).sort((a,b)=>(b.roundKills||0)-(a.roundKills||0))[0];
+    this.emit('round_end', { winner: team, reason,mvpId:mvp?.id||null, scores: { ...this.scores } });
     const scores=Object.fromEntries(Object.entries(this.teamSides).map(([id,side])=>[id,this.scores[side]]));
     const decision=defuseDecision(scores,this.match.roundsPlayed);
     Object.assign(this.match,{period:decision.period,overtimeNumber:decision.overtimeNumber,winTarget:decision.winTarget});
@@ -384,7 +423,7 @@ export class GameRoom {
     this.cancelGrenade(victim,'death');
     victim.respawnAt = this.mode === 'deathmatch' ? this.clock() + this.rules.respawnSeconds * 1000 : 0;
     if (victim.hasBomb) this.dropBomb(victim);
-    if (killer && killer.id !== victim.id&&killer.team!==victim.team) { killer.kills++; killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.mode === 'deathmatch') this.scores[killer.team]++; }
+    if (killer && killer.id !== victim.id&&killer.team!==victim.team) { killer.kills++;killer.roundKills=(killer.roundKills||0)+1; killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.mode === 'deathmatch') this.scores[killer.team]++; }
     this.emit('kill', { killerId: killer?.id || null, victimId: victim.id, killerName: killer?.name || '环境', victimName: victim.name, weapon, headshot,...metadata });
     if(this.mode==='deathmatch'&&killer&&this.scores[killer.team]>=MATCH_RULES.deathmatchWinTarget)this.endMatch(killer.teamId,'队伍率先完成 100 次击杀');
   }
@@ -429,10 +468,12 @@ export class GameRoom {
   heldSkin(p,weapon=p.weapon){return p.inventory[weapon]?.skinId||p.skins[weapon]||DEFAULT_SKINS[weapon];}
   dropWeapon(id,death=false){
     const p=this.players.get(id),current=p&&getWeapon(p.weapon);
+    if(!death&&p?.alive&&p.weapon==='c4'&&p.hasBomb&&['freeze','live'].includes(this.round.phase)){this.dropBomb(p);p.bombPickupAfter=this.clock()+1500;return {ok:true,weaponId:'c4'};}
     const dropId=death&&current&&![1,2].includes(current.slot)?Object.keys(p.inventory).find(id=>getWeapon(id).slot===1)||Object.keys(p.inventory).find(id=>getWeapon(id).slot===2):p?.weapon;
     const w=dropId&&getWeapon(dropId);
     if(!p?.alive||this.match.status==='ended'||(!death&&!['live','freeze'].includes(this.round.phase))||!w||![1,2].includes(w.slot)||!p.inventory[w.id])return {ok:false,message:'当前没有可丢弃的枪械。'};
-    const ammo=p.inventory[w.id],drop=this.droppedWeapons.drop(p,{weaponId:w.id,skinId:this.heldSkin(p,w.id),ammo:ammo.ammo,reserve:ammo.reserve});
+    this.cancelReload(p);
+    const ammo=p.inventory[w.id],drop=this.droppedWeapons.drop(p,{weaponId:w.id,skinId:this.heldSkin(p,w.id),ammo:ammo.ammo,reserve:ammo.reserve,...(ammo.reloadReadyAt?{reloadReadyAt:ammo.reloadReadyAt}:{})});
     delete p.inventory[w.id];p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'drop');
     this.selectSlot(p,Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3);
     this.emit('weapon_dropped',{playerId:id,droppedId:drop.id,weaponId:w.id,skinId:drop.skinId,death});
@@ -445,8 +486,9 @@ export class GameRoom {
     const candidate=this.droppedWeapons.candidate(p);if(!candidate)return false;
     const w=getWeapon(candidate.weaponId),old=Object.keys(p.inventory).find(id=>getWeapon(id).slot===w.slot);
     const item=this.droppedWeapons.take(candidate.id);if(!item)return false;
-    if(old){const ammo=p.inventory[old],drop=this.droppedWeapons.drop(p,{weaponId:old,skinId:this.heldSkin(p,old),ammo:ammo.ammo,reserve:ammo.reserve});delete p.inventory[old];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:old,skinId:drop.skinId,death:false});}
-    p.inventory[w.id]={ammo:item.ammo,reserve:item.reserve,skinId:item.skinId};p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'pickup');
+    this.cancelReload(p);
+    if(old){const ammo=p.inventory[old],drop=this.droppedWeapons.drop(p,{weaponId:old,skinId:this.heldSkin(p,old),ammo:ammo.ammo,reserve:ammo.reserve,...(ammo.reloadReadyAt?{reloadReadyAt:ammo.reloadReadyAt}:{})});delete p.inventory[old];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:old,skinId:drop.skinId,death:false});}
+    p.inventory[w.id]={ammo:item.ammo,reserve:item.reserve,skinId:item.skinId,...(item.reloadReadyAt?{reloadReadyAt:item.reloadReadyAt}:{})};p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'pickup');
     this.selectSlot(p,w.slot);p.nextShotAt=Math.max(p.nextShotAt,this.clock()+250);
     this.emit('weapon_picked_up',{playerId:p.id,droppedId:item.id,weaponId:w.id,skinId:item.skinId});return true;
   }
@@ -490,13 +532,14 @@ export class GameRoom {
   }
 
   fire(p, input, command=null) {
+    if(p.weapon==='c4'||this.bomb.actorId===p.id&&this.bomb.action)return;
     const now=this.clock(),w=getWeapon(p.weapon),ammo=p.inventory[p.weapon];
     if(w.slot===4||this.match.status==='ended')return;
     const rising=input.fire&&!p.triggerWasDown;p.triggerWasDown=input.fire;
     if(!p.alive || !input.fire || (!w.automatic&&!rising) || !ammo || now<p.nextShotAt)return;
     // A loaded shell can be fired to interrupt a shell-by-shell reload.
     if(p.reloadEndsAt){if(w.reloadStyle==='shell'&&ammo.ammo>0)p.reloadEndsAt=0;else return;}
-    if(w.magazine&&ammo.ammo<=0){this.reload(p);return;}
+    if(now<(ammo.reloadReadyAt||0)||w.magazine&&ammo.ammo<=0)return;
     if(w.magazine)ammo.ammo--;
     p.lastShotTime=now;p.nextShotAt=(command?Math.max(command.receivedAt,p.nextShotAt):now)+w.fireInterval*1000;p.protectionUntil=0;
     const zoomLevel=clamp(command?input.zoomLevel:p.zoomLevel||0,0,w.zoomFovs.length-1),scoped=zoomLevel>0;
@@ -549,9 +592,23 @@ export class GameRoom {
 
   reload(p) {
     const w=getWeapon(p.weapon),ammo=p.inventory[p.weapon];
-    if(!p.reloadEndsAt&&w.slot!==4&&w.magazine&&ammo&&ammo.ammo<w.magazine&&ammo.reserve>0){
-      p.reloadEndsAt=this.clock()+w.reloadTime*1000;p.zoomLevel=0;
+    if(!p.reloadEndsAt&&w.slot<4&&w.magazine&&ammo&&this.clock()>=(ammo.reloadReadyAt||0)&&ammo.ammo<w.magazine&&ammo.reserve>0){
+      p.reloadStartedAt=this.clock();p.reloadEndsAt=p.reloadStartedAt+w.reloadTime*1000;p.zoomLevel=0;
+      p.reloadEmpty=ammo.ammo===0;p.reloadWeapon=p.weapon;p.reloadCommitted=false;
+      p.reloadAmmoAt=p.reloadStartedAt+(w.reloadStyle==='shell'?1:reloadProfile(p.weapon,p.reloadEmpty)?.commitFraction??1)*w.reloadTime*1000;
     }
+  }
+
+  commitReload(p){
+    if(!p.reloadEndsAt||p.reloadCommitted||this.clock()<p.reloadAmmoAt)return;
+    const w=getWeapon(p.reloadWeapon),ammo=p.inventory[p.reloadWeapon];if(!ammo||w.reloadStyle==='shell')return;
+    const transfer=Math.min(w.reserveAmmoAsClips?w.magazine:w.magazine-ammo.ammo,ammo.reserve);
+    ammo.ammo=w.reserveAmmoAsClips?transfer:ammo.ammo+transfer;ammo.reserve-=transfer;
+    ammo.reloadReadyAt=p.reloadEndsAt;p.reloadCommitted=true;
+  }
+
+  cancelReload(p){
+    this.commitReload(p);p.reloadEndsAt=0;p.reloadAmmoAt=0;p.reloadStartedAt=0;p.reloadWeapon=null;
   }
 
   finishReload(p){
@@ -560,17 +617,15 @@ export class GameRoom {
     if(w.reloadStyle==='shell'){
       while(p.reloadEndsAt&&now>=p.reloadEndsAt){
         if(ammo.reserve>0&&ammo.ammo<w.magazine){ammo.ammo++;ammo.reserve--;}
-        p.reloadEndsAt=ammo.reserve>0&&ammo.ammo<w.magazine?p.reloadEndsAt+w.reloadTime*1000:0;
+        p.reloadStartedAt=p.reloadEndsAt;p.reloadEndsAt=ammo.reserve>0&&ammo.ammo<w.magazine?p.reloadEndsAt+w.reloadTime*1000:0;
       }
     }else{
-      // CS2 2026 magazine reload discards the rounds left in the removed magazine.
-      const transfer=Math.min(w.reserveAmmoAsClips?w.magazine:w.magazine-ammo.ammo,ammo.reserve);
-      ammo.ammo=w.reserveAmmoAsClips?transfer:ammo.ammo+transfer;ammo.reserve-=transfer;p.reloadEndsAt=0;
+      this.commitReload(p);delete ammo.reloadReadyAt;p.reloadEndsAt=0;
     }
   }
 
   dropBomb(p) {
-    p.hasBomb = false; this.bomb.state = 'dropped'; this.bomb.carrierId = null;
+    p.hasBomb = false;delete p.inventory.c4;if(p.weapon==='c4')this.selectSlot(p,Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3); this.bomb.state = 'dropped'; this.bomb.carrierId = null;
     Object.assign(this.bomb, copyPoint(p), { actorId: null, action: null, progress: 0 });
   }
 
@@ -584,8 +639,8 @@ export class GameRoom {
       else Object.assign(bomb, copyPoint(carrier));
     }
     if (bomb.state === 'dropped') {
-      const pickup = [...this.players.values()].find(p => p.alive && p.team === 'T' && dist(p, bomb) < 2.3 && clearSight(eye(p), { x: bomb.x, y: bomb.y + 0.4, z: bomb.z }));
-      if (pickup) { pickup.hasBomb = true; bomb.carrierId = pickup.id; bomb.state = 'carried'; }
+      const pickup = [...this.players.values()].find(p => p.alive && p.team === 'T' && now>=(p.bombPickupAfter||0) && dist(p, bomb) < 2.3 && clearSight(eye(p), { x: bomb.x, y: bomb.y + 0.4, z: bomb.z }));
+      if (pickup) { pickup.hasBomb = true;this.giveWeapon(pickup,'c4'); bomb.carrierId = pickup.id; bomb.state = 'carried'; }
     }
     if (bomb.state === 'planted' && now >= bomb.explodesAt) {
       bomb.state = 'exploded'; this.emit('bomb_exploded', { x: bomb.x, y: bomb.y, z: bomb.z }); this.endRound('T', '炸弹爆炸'); return;
@@ -594,17 +649,20 @@ export class GameRoom {
     if (bomb.state === 'carried') {
       const p = this.players.get(bomb.carrierId);
       site = p && this.siteAt(p);
-      if (p?.alive && p.effectiveInput?.interact && site && Math.hypot(p.vx || 0, p.vz || 0) < 0.65) { actor = p; action = 'plant'; }
+      if (p?.alive && (p.effectiveInput?.interact||p.weapon==='c4'&&p.effectiveInput?.fire) && p.grounded && site && Math.hypot(p.vx || 0, p.vz || 0) < 0.65) { actor = p; action = 'plant'; }
     } else if (bomb.state === 'planted') {
       actor = [...this.players.values()].find(p => p.alive && p.team === 'CT' && p.effectiveInput?.interact && dist(p, bomb) < 2.8 && Math.hypot(p.vx || 0, p.vz || 0) < 0.65 && clearSight(eye(p), { x: bomb.x, y: bomb.y + 0.3, z: bomb.z }));
       if (actor) action = 'defuse';
     }
     if (!actor) { bomb.actorId = null; bomb.action = null; bomb.progress = 0; return; }
-    if (bomb.actorId !== actor.id || bomb.action !== action) { bomb.progress = 0; bomb.actorId = actor.id; bomb.action = action; }
+    if (bomb.actorId !== actor.id || bomb.action !== action) { bomb.progress = 0; bomb.actorId = actor.id; bomb.action = action;this.cancelReload(actor);
+      if(action==='plant'){this.giveWeapon(actor,'c4');this.selectSlot(actor,5);actor.input.slot=5;}
+      this.emit('bomb_action',{playerId:actor.id,action,x:actor.x,y:actor.y,z:actor.z});
+    }
     bomb.progress = Math.min(1, bomb.progress + dt / (action === 'plant' ? this.rules.plantSeconds : actor.defuseKit ? this.rules.defuseKitSeconds : this.rules.defuseSeconds));
     if (bomb.progress < 1 - 1e-8) return;
     if (action === 'plant') {
-      actor.hasBomb = false; actor.money = Math.min(16000, actor.money + 300);
+      actor.hasBomb = false;delete actor.inventory.c4;this.selectSlot(actor,Object.keys(actor.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(actor.inventory).some(id=>getWeapon(id).slot===2)?2:3);actor.input.slot=actor.slot; actor.money = Math.min(16000, actor.money + 300);
       Object.assign(bomb, copyPoint(actor), { state: 'planted', carrierId: null, site, plantedAt: now, explodesAt: now + this.rules.bombSeconds * 1000, planterId: actor.id, action: null, actorId: null, progress: 0 });
       this.emit('bomb_planted', { playerId: actor.id, site, explodesAt: bomb.explodesAt, x: bomb.x, y: bomb.y, z: bomb.z });
     } else { bomb.state = 'defused'; this.emit('bomb_defused', { playerId: actor.id }); this.endRound('CT', '炸弹已拆除'); }
@@ -729,6 +787,7 @@ export class GameRoom {
         if(!fresh||(!canAct&&this.mode==='defuse')){p.lastJumpId=Math.max(p.lastJumpId||0,p.input.jumpId||0);p.jumpBufferRemaining=0;}
       }
       p.seq = Math.max(p.seq, p.input.seq ?? -1);
+      this.commitReload(p);
       if (!canAct && this.mode === 'defuse') Object.assign(input, { forward: 0, right: 0, jump: false, fire: false, interact: false });
       const movementOptions={canMove:canAct,speedLimit:weaponSpeedScale(p.weapon,p.zoomLevel)};
       const shotMove=p.fireQueue?.[0]?.input.moveId;
@@ -742,6 +801,7 @@ export class GameRoom {
       if(this.match.status==='ended')break;
       if(!canAct&&p.fireQueue)p.fireQueue.length=0;
       const awaitingShotMove=p.movementStream&&p.fireQueue?.[0]?.input.moveId>p.movementStream.ack;
+      if(this.bomb.actorId===p.id&&this.bomb.action==='plant'&&input.interact)input.slot=5;
       if (input.slot&&!awaitingShotMove) this.selectSlot(p, input.slot,input.utilityId);
       if(p.grenadeState&&(now-p.inputAt>=300||!canAct))this.cancelGrenade(p,'inactive');
       p.zoomLevel=p.reloadEndsAt?0:clamp(input.zoomLevel||0,0,getWeapon(p.weapon).zoomFovs.length-1);
@@ -756,6 +816,8 @@ export class GameRoom {
       if (!Number.isFinite(p.x + p.y + p.z) || p.outOfWorld || p.y < (MAP.bounds?.min?.y ?? -200) - 30) { this.kill(p, null); continue; }
       if(p.reloadEndsAt&&now>=p.reloadEndsAt)this.finishReload(p);
       if (input.reload) this.reload(p);
+      const heldAmmo=p.inventory[p.weapon];
+      if(canAct&&!input.fire&&!input.cancelGrenade&&now-p.inputAt<300&&now>=p.nextShotAt&&!p.fireQueue?.length&&getWeapon(p.weapon).magazine&&heldAmmo?.ammo===0)this.reload(p);
       if((canAct||this.round.phase==='freeze')&&!p.bot&&p.pendingInteract&&now-p.inputAt<300)this.pickupWeapon(p);
       p.pendingInteract=false;
       if (canAct) {this.stepGrenade(p);if(!p.shotCommands&&!queuedShot)this.fire(p,input);}
@@ -775,17 +837,17 @@ export class GameRoom {
 
   snapshot({ drainEvents = true } = {}) {
     const now = this.clock();
-    const players = [...this.players.values()].map(p => ({ id: p.id, lifeId:p.lifeId,name: p.name, team: p.team, teamId:p.teamId, bot: p.bot, agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
+    const players = [...this.players.values()].map(p => ({ id: p.id,seat:p.seat, lifeId:p.lifeId,name: p.name, team: p.team, teamId:p.teamId, bot: p.bot, agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
       vx: round2(p.vx), vy: round2(p.vy), vz: round2(p.vz), yaw: round2(p.yaw), pitch: round2(p.pitch), crouch: !!p.crouch, grounded: !!p.grounded,
       ...(p.movementStream?{movementAck:p.movementStream.ack,movementState:movementState(p)}:{}),
       health: p.health, armor: round2(p.armor), helmet:!!p.helmet, defuseKit:!!p.defuseKit,zoomLevel:p.zoomLevel,utilityCounts:Object.fromEntries(UTILITY_IDS.map(id=>[id,p.inventory[id]?.ammo||0])), alive: p.alive, weapon: p.weapon, skinId:this.heldSkin(p), slot: p.slot, ammo: p.inventory[p.weapon]?.ammo || 0, reserve: p.inventory[p.weapon]?.reserve || 0,
       reserveAmmoAsClips:!!getWeapon(p.weapon).reserveAmmoAsClips,reserveClips:getWeapon(p.weapon).reserveAmmoAsClips?Math.ceil((p.inventory[p.weapon]?.reserve||0)/getWeapon(p.weapon).magazine):0,
       grenadeState:p.grenadeState?{state:'primed',weapon:p.grenadeState.weapon,mode:p.grenadeState.mode,strength:grenadeStrength(p.grenadeState.mode),primedAt:p.grenadeState.primedAt}:{state:'idle',weapon:null,mode:'full',strength:1,primedAt:0},
-      reloadRemaining: Math.max(0, (p.reloadEndsAt - now) / 1000), money: p.money, kills: p.kills, deaths: p.deaths, assists: p.assists, seq: p.seq,
-      ...this.buyStatus(p), inventory: Object.keys(p.inventory), hasBomb: p.hasBomb, spawnProtectionRemaining: Math.max(0, (p.protectionUntil - now) / 1000),
+      reloadRemaining: Math.max(0, (p.reloadEndsAt - now) / 1000),reloadDuration:p.reloadEndsAt?getWeapon(p.weapon).reloadTime:0,reloadElapsed:p.reloadEndsAt?Math.max(0,(now-p.reloadStartedAt)/1000):0,reloadEmpty:!!p.reloadEmpty,reloadCommitted:!!p.reloadEndsAt&&!!p.reloadCommitted,fireReadyRemaining:Math.max(0,((p.inventory[p.weapon]?.reloadReadyAt||0)-now)/1000), money: p.money, kills: p.kills, deaths: p.deaths, assists: p.assists, seq: p.seq,
+      ...this.buyStatus(p), inventory: Object.keys(p.inventory), hasBomb: p.hasBomb,bombAction:this.bomb.actorId===p.id?this.bomb.action:null,bombProgress:this.bomb.actorId===p.id?this.bomb.progress:0,bombActionDuration:this.bomb.action==='plant'?this.rules.plantSeconds:p.defuseKit?this.rules.defuseKitSeconds:this.rules.defuseSeconds, spawnProtectionRemaining: Math.max(0, (p.protectionUntil - now) / 1000),
       respawnIn: p.respawnAt ? Math.max(0, (p.respawnAt - now) / 1000) : 0, lastShotTime: p.lastShotTime }));
     const events = drainEvents ? this.events.splice(0) : [...this.events];
-    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, hostId:this.hostId,desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,droppedWeapons:this.droppedWeapons.snapshot(),...this.grenades.snapshot(),
+    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,droppedWeapons:this.droppedWeapons.snapshot(),...this.grenades.snapshot(),
       round: { ...this.round, timeLeft: this.round.phaseEndsAt ? Math.max(0, (this.round.phaseEndsAt - now) / 1000) : 0 },
       bomb: { ...this.bomb, remaining: this.bomb.state === 'planted' ? Math.max(0, (this.bomb.explodesAt - now) / 1000) : 0 }, scores: { ...this.scores }, events };
   }

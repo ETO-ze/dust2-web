@@ -13,6 +13,9 @@ for(const arms of Object.values(AGENT_ARM_ASSETS))names.set(arms.model,'agent');
 names.set('assets/viewmodel/arms.glb','legacy');
 for(const path of ['assets/map/penetration-materials.u8','assets/map/penetration-materials.json','assets/ui-cs2/manifest.json','assets/weapons/cs2-skins/legacy-manifest.json'])names.set(path,'metadata');
 for(const path of ['assets/asset-manifest.json','assets/map/collision.json','assets/valve-dust2/de_dust2_1_png.png','assets/valve-dust2/de_dust2_radar_psd.png','assets/viewmodel/manifest.json','assets/viewmodel/gloves-manifest.json','assets/viewmodel/animations-manifest.json','assets/characters-cs2/manifest.json','assets/weapons/cs2-loadout/manifest.json','assets/weapons/cs2-utility/manifest.json'])names.set(path,'metadata');
+const music=JSON.parse(await readFile('public/assets/audio/music/manifest.json','utf8'));
+for(const kit of Object.values(music.kits))for(const cue of Object.values(kit.cues))names.set('assets/audio/music/optional/'+cue.file,'music');
+names.set('assets/weapons/cs2-utility/c4-manifest.json','metadata');
 const files=[];
 names.set('assets/characters-cs2/optional-manifest.json','metadata');
 for(const [path,group] of [...names].sort(([a],[b])=>a.localeCompare(b))){const content=await readFile('public/'+path);files.push({path,bytes:content.length,sha256:createHash('sha256').update(content).digest('hex'),group});}

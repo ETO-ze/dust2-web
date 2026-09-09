@@ -32,6 +32,7 @@ await add('assets/sky/daylight.hdr','sky');
 await add('assets/sky/source.json','sky');
 await walk('assets/audio', 'audio');
 await add('assets/audio/cs2/manifest.json', 'audio');
+await add('assets/audio/music/manifest.json','audio');
 await walk('assets/characters-cs2','characters');
 for(const id of ['ct-sas','t-phoenix'])await add(`assets/characters-cs2/arms/${id}.glb`,'characters');
 await walk('assets/weapons/cs2-loadout/previews','weapons');

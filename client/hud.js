@@ -28,7 +28,7 @@ export class HUD {
       'score-ct', 'score-t', 'mode-label', 'round-time', 'round-state', 'location',
       'network-status', 'room-label', 'kill-feed', 'toast', 'hitmarker', 'damage-vignette',
       'center-message', 'interact-prompt', 'interact-text', 'health', 'armor', 'money',
-      'slot1', 'slot2', 'slot3', 'slot4', 'weapon-name', 'ammo', 'reserve', 'reload-label',
+      'slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'weapon-name', 'ammo', 'reserve', 'reload-label',
       'board-room', 'score-body', 'buy-note', 'weapon-skin', 'hit-damage',
       'kill-confirm', 'kill-title', 'kill-victim', 'kill-weapon', 'kill-combo',
       'team-roster-ct', 'team-roster-t', 'board-match-state',
@@ -104,9 +104,10 @@ export class HUD {
     this.text('weapon-name', weapon.name);
     this.text('weapon-skin', getSkin(self.skinId||DEFAULT_SKINS[self.weapon])?.name || '');
     const silhouette=document.getElementById('active-weapon-icon');if(silhouette&&this.iconWeapon!==self.weapon){this.iconWeapon=self.weapon;silhouette.replaceChildren(uiIcon(self.weapon,weapon.name));}
-    this.text('ammo', weapon.slot === 3 ? '—' : Math.max(0, Math.floor(number(self.ammo))));
-    this.text('reserve', weapon.slot === 3 ? '—' : self.reserveAmmoAsClips ? `${Math.max(0,Math.floor(number(self.reserveClips)))} 匣` : Math.max(0, Math.floor(number(self.reserve))));
-    for (let slot = 1; slot <= 4; slot++) {
+    this.text('ammo', [3,5].includes(weapon.slot) ? '—' : Math.max(0, Math.floor(number(self.ammo))));
+    this.text('reserve', [3,5].includes(weapon.slot) ? '—' : self.reserveAmmoAsClips ? `${Math.max(0,Math.floor(number(self.reserveClips)))} 匣` : Math.max(0, Math.floor(number(self.reserve))));
+    if(this.elements.slot5)this.elements.slot5.hidden=!self.hasBomb;
+    for (let slot = 1; slot <= 5; slot++) {
       this.elements[`slot${slot}`]?.classList.toggle('selected', number(self.slot, weapon.slot) === slot);
     }
     const utilityKey=JSON.stringify([self.utilityCounts,self.weapon]);if(this.utilityKey!==utilityKey){this.utilityKey=utilityKey;this.utilityBelt.replaceChildren(...UTILITY_IDS.filter(id=>(self.utilityCounts?.[id]||0)>0).map(id=>{const el=document.createElement('span');el.className=self.weapon===id?'selected':'';el.append(uiIcon(id,EQUIPMENT[id].name),document.createTextNode(String(self.utilityCounts[id])));return el;}));}
@@ -114,7 +115,7 @@ export class HUD {
     const protection = Math.max(0, number(self.spawnProtectionRemaining) - elapsed);
     this.text('reload-label', reload > 0 ? `正在换弹 ${reload.toFixed(1)} s` :
       protection > 0 && self.alive ? `重生保护 ${protection.toFixed(1)} s` :
-        self.hasBomb ? '携带 C4 · 前往 A / B 包点' : weapon.slot === 4 ? '左键投掷 · 4 切换投掷物' : weapon.slot === 3 ? '鼠标左键 近战 · B 购买' : 'R 换弹 · B 购买');
+        self.hasBomb ? '携带 C4 · 前往 A / B 包点' : weapon.slot === 4 ? '左键投掷 · 4 切换投掷物' : [3,5].includes(weapon.slot) ? '鼠标左键 近战 · B 购买' : 'R 换弹 · B 购买');
 
     const closest = (MAP.labels || []).reduce((best, label) => {
       const gap = distanceXZ(self, label);
@@ -168,13 +169,13 @@ export class HUD {
     if (self.alive && snapshot.mode === 'defuse' && snapshot.round?.phase === 'live') {
       const site = Object.entries(MAP.sites || {}).find(([, point]) => distanceXZ(self, point) <= number(point.radius, 6) && Math.abs(number(self.y) - number(point.y)) < 3)?.[0];
       if (bomb.actorId === self.id && bomb.action) {
-        text = bomb.action === 'plant' ? `正在安装 · ${site || bomb.site || ''} 区 · 保持按住 E` : '正在拆除炸弹 · 保持按住 E';
+        text = bomb.action === 'plant' ? `正在安装 · ${site || bomb.site || ''} 区 · 保持按住左键 / E` : '正在拆除炸弹 · 保持按住 E';
         progress = clamp(bomb.progress, 0, 1); showTrack = true;
       } else if (bomb.state === 'planted' && self.team === 'CT' && distance(self, bomb) < 2.8) {
         text = `按住 E 拆除炸弹 · ${self.defuseKit?5:10} 秒 · 保持静止`; showTrack = true;
         if (bomb.action === 'defuse' && bomb.actorId) { text = '队友正在拆除炸弹'; progress = clamp(bomb.progress, 0, 1); }
       } else if (bomb.state === 'carried' && (bomb.carrierId === self.id || self.hasBomb) && site) {
-        text = `按住 E 安装炸弹 · ${site} 区 · 保持静止`; showTrack = true;
+        text = `按住${self.weapon==='c4'?'左键 / E':' E'} 安装炸弹 · ${site} 区 · 保持静止`; showTrack = true;
       } else if (bomb.state === 'dropped' && self.team === 'T' && distance(self, bomb) < 4) {
         text = '靠近地上的炸弹即可拾取';
       }

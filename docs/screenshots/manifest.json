@@ -339,6 +339,56 @@
       "width": 1600,
       "height": 950,
       "modified": false
+    },
+    {
+      "file": "room-5v5.png",
+      "source": "output/playwright/room-5v5.png",
+      "sha256": "12b09abf777a2f03a109b2459045c667a0d656e5165511ee06cfa359faeaa43d",
+      "bytes": 298289,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-09"
+    },
+    {
+      "file": "c4-viewmodel.png",
+      "source": "output/playwright/c4-viewmodel.png",
+      "sha256": "d625581fba1a883721bac186652fa2f889bffe9cbc6eb60f760b772e5829bfa8",
+      "bytes": 1801370,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-09"
+    },
+    {
+      "file": "c4-planting.png",
+      "source": "output/playwright/c4-planting.png",
+      "sha256": "404cd2638b0395601969d091374974a1e54f7516b781c9c0a1ea61cee5a2e251",
+      "bytes": 1855091,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-09"
+    },
+    {
+      "file": "music-kit.png",
+      "source": "output/playwright/music-kit.png",
+      "sha256": "9040dea15791d17bd0d9412264827a39c759892dc2e12dcff6aa8f5e195a76ef",
+      "bytes": 161238,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-09"
+    },
+    {
+      "file": "reload-committed.png",
+      "source": "output/playwright/reload-committed.png",
+      "sha256": "9094e632e0cbdaee5cea79c4e3d1aac0a3bd880a8e6fb3c0ee27e5eb6d6ca39c",
+      "bytes": 1797911,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-09"
     }
   ],
   "updatedOn": "2026-09-09"

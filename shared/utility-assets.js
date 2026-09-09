@@ -1,5 +1,6 @@
+import {C4_ASSET} from './c4-asset.js';
 // Original grenade assets, loaded on demand.
-export const UTILITY_ASSETS=Object.freeze({
+export const UTILITY_ASSETS=Object.freeze({c4:C4_ASSET,
   "hegrenade": {
     "id": "hegrenade",
     "file": "hegrenade.glb",

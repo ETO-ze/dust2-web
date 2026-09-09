@@ -27,7 +27,7 @@ test('MR12 swaps sides after 12 rounds while preserving team identity, score and
   for(let i=0;i<12;i++){winRound(room,i<7?'A':'B');if(i<11)room.startRound();}
   assert.equal(a.team,'CT');assert.equal(room.matchSnapshot().teams.A.score,7);
   room.startRound();assert.equal(a.team,'T');assert.equal(a.teamId,identity);assert.equal(a.agentId,'t-miami');assert.equal(a.agents.CT,'ct-ava');assert.deepEqual(a.skins,skins);
-  assert.equal(a.money,800);assert.deepEqual(Object.keys(a.inventory).sort(),['knife','pistol']);assert.equal(room.scores.T,7);assert.equal(room.scores.CT,5);
+  assert.equal(a.money,800);assert.deepEqual(Object.keys(a.inventory).sort(),['c4','knife','pistol']);assert.equal(room.scores.T,7);assert.equal(room.scores.CT,5);
   const transition=room.events.find(event=>event.type==='sides_swapped');assert.equal(transition.kind,'halftime');assert.equal(transition.teams.A.side,'T');
   for(let i=0;i<6;i++){winRound(room,'A');if(i<5)room.startRound();}
   assert.equal(room.match.status,'ended');assert.equal(room.match.winnerTeamId,'A');assert.equal(room.round.phase,'matchEnded');assert.equal(room.matchSnapshot().teams.A.score,13);

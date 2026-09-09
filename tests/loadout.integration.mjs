@@ -106,7 +106,7 @@ test('new loadouts and combat feedback contracts on the authoritative server', {
     assert.equal(target.reloadEndsAt, 0); assert.deepEqual(target.inventory.usp, { ammo: 5, reserve: 0 });
   });
 
-  await t.test('empty AWP emits no shot/hit/kill and only reloads when reserve ammunition exists', () => {
+  await t.test('empty AWP emits no shot/hit/kill; held attack no longer starts reload', () => {
     const { room, shooter, place } = fixture(lane);
     const aim = place(); shooter.inventory.awp = { ammo: 0, reserve: 0 };
     room.fire(shooter, aim);
@@ -114,7 +114,8 @@ test('new loadouts and combat feedback contracts on the authoritative server', {
     assert.equal(shooter.inventory.awp.ammo, 0);
     room.fire(shooter, { ...aim, fire: false }); shooter.inventory.awp.reserve = 3;
     room.fire(shooter, aim);
-    assert.equal(room.events.length, 0); assert.ok(shooter.reloadEndsAt > 0);
+    assert.equal(room.events.length, 0); assert.equal(shooter.reloadEndsAt,0);
+    room.reload(shooter);assert.ok(shooter.reloadEndsAt>0);
     assert.deepEqual(shooter.inventory.awp, { ammo: 0, reserve: 3 });
   });
 

@@ -1,0 +1,94 @@
+{
+  "ok": true,
+  "reload": {
+    "held": {
+      "weapon": "ak47",
+      "ammo": 0,
+      "reloadRemaining": 0
+    },
+    "inserted": {
+      "ammo": 30,
+      "reserve": 60,
+      "remaining": 1.2946669921875
+    },
+    "switched": {
+      "ammo": 30,
+      "reserve": 60,
+      "remaining": 0,
+      "ready": 1.1336669921875
+    }
+  },
+  "music": {
+    "kit": "neckdeep_01",
+    "volume": 0.22,
+    "cue": null,
+    "playing": false,
+    "cachedClips": 3,
+    "cachedBytes": 750735,
+    "played": [
+      {
+        "kit": "neckdeep_01",
+        "cue": "roundStart",
+        "at": 5062.29999999702
+      },
+      {
+        "kit": "neckdeep_01",
+        "cue": "bombPlanted",
+        "at": 9488.79999999702
+      },
+      {
+        "kit": "neckdeep_01",
+        "cue": "mvp",
+        "at": 9606.29999999702
+      },
+      {
+        "kit": "neckdeep_01",
+        "cue": "bombWarning",
+        "at": 13768.199999999255
+      },
+      {
+        "kit": "neckdeep_01",
+        "cue": "mvp",
+        "at": 23486.699999999255
+      },
+      {
+        "kit": "neckdeep_01",
+        "cue": "roundStart",
+        "at": 28506.099999997765
+      }
+    ]
+  },
+  "viewModel": {
+    "id": "pistol",
+    "skinId": "pistol-fade",
+    "waiting": false,
+    "visible": true,
+    "action": "idle"
+  },
+  "resources": {
+    "fps": 18,
+    "ping": 7,
+    "connected": true,
+    "contextLost": false,
+    "geometries": 781,
+    "textures": 392,
+    "programs": 25,
+    "actors": 1,
+    "effects": 0,
+    "audioVoices": 0,
+    "viewWeapons": 2,
+    "heapMiB": 338,
+    "timing": {
+      "samples": 300,
+      "frameP95Ms": 1005.6,
+      "cpuP95Ms": 8.6,
+      "actorsP95Ms": 0.3,
+      "renderSubmitP95Ms": 7.2
+    }
+  },
+  "mobile": {
+    "pageWidth": 390,
+    "viewport": 390,
+    "roomWidth": 351.20001220703125
+  }
+}

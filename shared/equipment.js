@@ -8,6 +8,7 @@ const grenade = data => item({ category: 'grenades', slot: 4, magazine: 1, reser
   throwSpeed: 750 * 0.0254, gravity: 8.128, bounce: 0.45, fuse: 1.5, maxCount: 1, ...data });
 
 export const EQUIPMENT = Object.freeze({
+  c4: item({id:'c4',name:'C4 炸弹',skin:'原厂',slot:5,price:0,purchasable:false,teams:Object.freeze(['T']),magazine:0,reserve:0,reloadTime:0,fireInterval:1,automatic:false,damage:0,range:0,spread:0,movingSpread:0,recoil:0,zoomFovs:Object.freeze([90]),maxSpeed:6.35}),
   armor: item({ id: 'armor', name: '防弹背心', price: 650 }),
   helmet: item({ id: 'helmet', name: '防弹背心 + 头盔', price: 1000 }),
   defusekit: item({ id: 'defusekit', name: '拆弹工具', price: 400, teams: Object.freeze(['CT']) }),
@@ -20,7 +21,7 @@ export const MAX_GRENADES = 4;
 const aliases = Object.freeze({ kevlar: 'armor', vest: 'armor', vesthelm: 'helmet', armorhelmet: 'helmet', kit: 'defusekit', defuser: 'defusekit', he: 'hegrenade', flash: 'flashbang', smoke: 'smokegrenade' });
 export function normalizeEquipment(id) { return typeof id === 'string' ? aliases[id.toLowerCase()] || id.toLowerCase() : ''; }
 export function getEquipment(id) { const key=normalizeEquipment(id);return Object.hasOwn(EQUIPMENT,key)?EQUIPMENT[key]:null; }
-export function canTeamBuyEquipment(team, id) { return getEquipment(id)?.teams.includes(team) === true; }
+export function canTeamBuyEquipment(team, id) { return getEquipment(id)?.purchasable!==false&&getEquipment(id)?.teams.includes(team) === true; }
 export function equipmentPrice(id, player = {}) {
   const equipment = getEquipment(id); if (!equipment) return Infinity;
   if (equipment.id === 'helmet' && player.armor >= 100) return player.helmet ? 0 : 350;

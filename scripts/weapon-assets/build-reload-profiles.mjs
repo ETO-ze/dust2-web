@@ -1,0 +1,4 @@
+import fs from'node:fs';
+const rows=JSON.parse(fs.readFileSync('artifacts/reload-c4/reload-events.json','utf8')),profiles={};
+for(const[id,modes]of Object.entries(rows)){profiles[id]={};for(const[mode,clip]of Object.entries(modes)){const commit=clip.events.find(e=>e.name==='WPN_RELOAD_ADD_AMMO');if(!commit)throw Error('No ammo event '+id);profiles[id][mode]={commitFraction:commit.time,sourceDuration:clip.duration,source:clip.source,sounds:clip.events.filter(e=>e.type==='CNmSoundEvent').map(e=>({fraction:e.time,event:e.name,bank:'anim_'+e.name.toLowerCase().replace(/[^a-z0-9]/g,'_')}))};}}
+fs.writeFileSync('shared/reload-profiles.js','// Source: installed CS2 CNmSoundEvent and WPN_RELOAD_ADD_AMMO; see asset export manifest.\nexport const RELOAD_PROFILES=Object.freeze('+JSON.stringify(profiles,null,2)+');\nexport function reloadProfile(id,empty=false){const p=RELOAD_PROFILES[id];return (empty&&p?.reloadEmpty)||p?.reload||null;}\n');

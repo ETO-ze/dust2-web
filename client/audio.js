@@ -1,14 +1,8 @@
 import { fetchCachedAsset } from './loading.js';
 // Valve's original CS2 samples. Source paths and conversion hashes live in the asset manifest.
 const clamp = (value, low, high) => Math.max(low, Math.min(high, Number(value) || 0));
-const DURATIONS = { ak47: 2.4, m4a1: 2.3, awp: 3.2, glock: 1.65, usp: 1.9 };
-const RELOADS = {
-  ak47: [[0.05, 'ak47Out'], [0.48, 'ak47In'], [0.80, 'ak47Bolt']],
-  m4a1: [[0.04, 'm4a1Out'], [0.48, 'm4a1In'], [0.79, 'm4a1Back'], [0.89, 'm4a1Forward']],
-  awp: [[0.04, 'awpOut'], [0.49, 'awpIn'], [0.76, 'awpBack'], [0.88, 'awpForward']],
-  glock: [[0.04, 'glockOut'], [0.49, 'glockIn'], [0.77, 'glockBack'], [0.88, 'glockForward']],
-  usp: [[0.04, 'uspOut'], [0.50, 'uspIn'], [0.78, 'uspBack'], [0.89, 'uspForward']],
-};
+import {reloadProfile} from '../shared/reload-profiles.js';
+import {getWeapon} from '../shared/weapons.js';
 
 export class GameAudio {
   constructor() {
@@ -44,11 +38,12 @@ export class GameAudio {
     if (!response.ok) throw new Error(`CS2 音效清单加载失败 (${response.status})`);
     const manifest = await response.json();
     const names = [...new Set(Object.values(manifest.banks).flat())], decoded = new Map();
-    await Promise.all(names.map(async name => {
+    let cursor=0;
+    await Promise.all(Array.from({length:4},async()=>{while(cursor<names.length){const name=names[cursor++];
       const result = await fetchCachedAsset(new URL(name, base));
       if (!result.ok) throw new Error(`CS2 音效加载失败：${name}`);
       decoded.set(name, await this.ctx.decodeAudioData(await result.arrayBuffer()));
-    }));
+    }}));
     for (const [bank, files] of Object.entries(manifest.banks)) this.banks.set(bank, files.map(file => decoded.get(file)));
     // Preserve the existing CC0 footstep samples; firing never falls back to synthesis.
     this.buffers = (await Promise.all(Array.from({ length: 5 }, async (_, i) => {
@@ -135,12 +130,11 @@ export class GameAudio {
 
   weaponReload(id = this.lastWeapon, options = {}) {
     if (!this.ready) return;
-    const weapon = this.weaponId(id, options), sequence = RELOADS[weapon] || (this.banks.has(`${weapon}Shell`) ? [[.7,`${weapon}Shell`]] : [[.08,`${weapon}Out`],[.55,`${weapon}In`]]);
-    if (!sequence) return;
-    this.cancelReload(); this.lastWeapon = weapon;
-    if (options.team) this.lastTeam = options.team;
-    const duration = clamp(options.duration || DURATIONS[weapon], 0.5, 8);
-    for (const [fraction, bank] of sequence) this.play(bank, { level: 0.66, delay: fraction * duration, channel: 'reload' });
+    const weapon=this.weaponId(id,options),w=getWeapon(id==='glock'?'pistol':id),profile=reloadProfile(w.id,options.empty);
+    this.cancelReload();this.lastWeapon=weapon;if(options.team)this.lastTeam=options.team;
+    const duration=clamp(options.duration||w.reloadTime,.1,8),elapsed=Math.max(0,options.elapsed||0);
+    const sequence=w.reloadStyle==='shell'?[{fraction:.7,bank:`${weapon}Shell`}]:profile?.sounds||[];
+    for(const {fraction,bank} of sequence){const delay=fraction*duration-elapsed;if(delay>=-.035)this.play(bank,{level:.66,delay:Math.max(0,delay),channel:'reload'});}
   }
 
   reload(id = this.lastWeapon, options = {}) { this.weaponReload(id, options); }

@@ -1,3 +1,4 @@
+import {c4Display} from './c4-display.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
@@ -110,7 +111,7 @@ export class ViewWeapon {
     flash.position.copy(muzzle); flash.rotation.z = -Math.PI/2; flash.visible = false;
     anchor.add(flash);
     const light = new THREE.PointLight(0xffbf78,0,1.5); light.position.copy(muzzle); anchor.add(light);
-    Object.assign(item,{flash,light});
+    Object.assign(item,{flash,light,display:id==='c4'?c4Display(weapon):null});
     this.playOn(item,'idle',0);
     mixer.update(0);
     return item;
@@ -130,12 +131,12 @@ export class ViewWeapon {
   }
 
   set(id,skinId,agentId=this.agentId||'ct-sas') {
-    if (!WEAPONS[id]&&!UTILITY_IDS.includes(id)) {this.group.visible=false;return;}
-    if(UTILITY_IDS.includes(id))skinId=id;else if(getSkin(skinId)?.weapon!==id)skinId=DEFAULT_SKINS[id];
+    if (!WEAPONS[id]&&!UTILITY_IDS.includes(id)&&id!=='c4') {this.group.visible=false;return;}
+    if(UTILITY_IDS.includes(id)||id==='c4')skinId=id;else if(getSkin(skinId)?.weapon!==id)skinId=DEFAULT_SKINS[id];
     if(!getAgent(agentId))agentId='ct-sas';requestAgentArms(agentId);
     const fallback=DEFAULT_AGENT_IDS[getAgent(agentId).team];requestAgentArms(fallback);
     const visibleAgent=loadedAgentArms(agentId)?agentId:fallback;
-    requestSkin(skinId);const visibleSkin=loadedSkin(skinId)?skinId:UTILITY_IDS.includes(id)?id:DEFAULT_SKINS[id],cacheKey=id+':'+visibleSkin+':'+visibleAgent;
+    requestSkin(skinId);const visibleSkin=loadedSkin(skinId)?skinId:UTILITY_IDS.includes(id)||id==='c4'?id:DEFAULT_SKINS[id],cacheKey=id+':'+visibleSkin+':'+visibleAgent;
     if(!loadedSkin(visibleSkin)||!loadedAgentArms(visibleAgent)){this.waiting=true;return;}this.waiting=false;
     if (id === this.id && this.skinId===visibleSkin && this.agentId===visibleAgent) return;
     if (this.active) { this.rig.remove(this.active.root); this.active.flash.visible=false; this.active.light.intensity=0; }
@@ -143,11 +144,11 @@ export class ViewWeapon {
     if (!this.cache.has(cacheKey)) this.cache.set(cacheKey,this.build(id,visibleSkin,visibleAgent));
     this.active=this.cache.get(cacheKey); this.rig.add(this.active.root);
     this.cache.delete(cacheKey);this.cache.set(cacheKey,this.active);
-    while(this.cache.size>4){const key=this.cache.keys().next().value,item=this.cache.get(key);this.cache.delete(key);disposeInstanceAnimation(item.mixer,item.root);disposeInstanceSkeletons(item.root);item.flash.geometry.dispose();item.flash.material.dispose();item.root.removeFromParent();releaseSkin(item.skinId);releaseAgentArms(item.agentId);}
+    while(this.cache.size>4){const key=this.cache.keys().next().value,item=this.cache.get(key);this.cache.delete(key);disposeInstanceAnimation(item.mixer,item.root);disposeInstanceSkeletons(item.root);item.display?.dispose();item.flash.geometry.dispose();item.flash.material.dispose();item.root.removeFromParent();releaseSkin(item.skinId);releaseAgentArms(item.agentId);}
     this.active.mixer.stopAllAction();
     this.playOn(this.active,'draw',0);
     this.active.mixer.update(0);
-    this.flashTime=0; this.reloadActive=false;this.utilityPrimed=false;this.utilityReleased=false;
+    this.flashTime=0; this.planting=false;this.reloadActive=false;this.utilityPrimed=false;this.utilityReleased=false;
     this.syncAttachment();
   }
 
@@ -205,9 +206,15 @@ export class ViewWeapon {
     const aimedFov=cs2FovToVertical(45),gunFov=THREE.MathUtils.lerp(68,aimedFov,this.aimBlend);
     if(Math.abs(this.camera.fov-gunFov)>.01){this.camera.fov=gunFov;this.camera.updateProjectionMatrix();}
     this.primeUtility(p.grenadeState);
+    const planting=this.id==='c4'&&p.bombAction==='plant';
+    if(planting&&!this.planting){this.playOn(this.active,'plant',.04,p.bombActionDuration||3);this.active.current.time=(p.bombProgress||0)*this.active.current.getClip().duration;}
+    else if(!planting&&this.planting&&this.active.actionName==='plant')this.playOn(this.active,'idle',.06);
+    this.planting=planting;this.active.display?.update(planting?'7355608'.slice(0,Math.min(7,Math.floor((p.bombProgress||0)*8))):'');
     const reloading=p.reloadRemaining>0;
-    if(reloading&&(!this.reloadActive||getWeapon(p.weapon).reloadStyle==='shell'&&p.reloadRemaining>this.lastReload+.1))this.playOn(this.active,'reload',.06,p.reloadRemaining);
-    else if(!reloading&&this.reloadActive&&this.active.actionName==='reload')this.playOn(this.active,'idle',.06);
+    if(reloading&&(!this.reloadActive||getWeapon(p.weapon).reloadStyle==='shell'&&p.reloadRemaining>this.lastReload+.1)){
+      const duration=p.reloadDuration||p.reloadRemaining,name=p.reloadEmpty&&this.active.actions.reloadEmpty?'reloadEmpty':'reload';
+      this.playOn(this.active,name,.06,duration);this.active.current.time=Math.max(0,p.reloadElapsed||0)*this.active.current.getClip().duration/duration;
+    }else if(!reloading&&this.reloadActive&&this.active.actionName.startsWith('reload'))this.playOn(this.active,'idle',.06);
     this.reloadActive=reloading;this.lastReload=p.reloadRemaining;
     this.active.mixer.update(dt);
     const moving=Math.min(1,Math.hypot(p.vx||0,p.vz||0)/5),narrow=Math.max(0,1.35-(this.camera.aspect||1));
@@ -226,7 +233,7 @@ export class ViewWeapon {
     for(const item of this.cache.values()){
       disposeInstanceAnimation(item.mixer,item.root);
       disposeInstanceSkeletons(item.root,skeletons);
-      item.flash.geometry.dispose();item.flash.material.dispose();
+      item.display?.dispose();item.flash.geometry.dispose();item.flash.material.dispose();
       item.root.removeFromParent();
       releaseSkin(item.skinId);
       releaseAgentArms(item.agentId);

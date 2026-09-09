@@ -76,6 +76,23 @@ function matchCase(room,kind){
 const control=createServer((req,res)=>{
   if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress)){res.writeHead(403);res.end();return;}
   if(req.method!=='POST'){res.writeHead(405);res.end();return;}
+  if(req.url==='/qa/reload'||req.url==='/qa/c4'){
+    const results=[];
+    for(const room of app.rooms.values()){
+      const p=[...room.players.values()].find(p=>!p.bot);room.match.status='live';room.round.phase='live';room.pendingTransition=null;
+      room.takeSeat(p.id,'T',room.players.get(p.id).team==='T'?p.seat:room.freeSeat('T'));
+      room.botInput=b=>({...b.input,forward:0,right:0,fire:false,fire2:false,jump:false,interact:false});
+      room.mode=req.url.endsWith('c4')?'defuse':'deathmatch';room.respawn(p);p.protectionUntil=Infinity;
+      room.round.phaseEndsAt=Date.now()+120000;room.round.number++;p.nextShotAt=0;
+      if(room.mode==='defuse'){
+        room.rules.bombSeconds=14;Object.assign(p,MAP.sites.A,{vx:0,vy:0,vz:0,grounded:true,pitch:0,yaw:0});
+        room.bomb={...room.emptyBomb(),state:'carried',carrierId:p.id,...MAP.sites.A};p.hasBomb=true;room.giveWeapon(p,'c4');room.selectSlot(p,5);p.input.slot=5;
+      }else{room.giveWeapon(p,'ak47');room.selectSlot(p,1);p.input.slot=1;p.inventory.ak47.ammo=1;p.inventory.ak47.reserve=90;}
+      room.poseHistory.clear();room.recordPoses();results.push({id:p.id,weapon:p.weapon});
+      for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));
+    }
+    res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(results));return;
+  }
   if(/^\/qa\/movement\/(flat|ledge|jump|sky)$/.test(req.url)){
     clearInterval(soakTimer);soakTimer=null;const result=[...app.rooms.values()].map(room=>setupMovement(room,req.url.split('/').at(-1)));
     res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(result));return;

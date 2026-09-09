@@ -5,7 +5,7 @@ export const CONTROL_ACTIONS = Object.freeze([
   ['forward', '向前移动', '移动'], ['back', '向后移动', '移动'], ['left', '向左移动', '移动'], ['right', '向右移动', '移动'],
   ['jump', '跳跃', '移动'], ['walk', '静步', '移动'], ['crouch', '蹲下', '移动'],
   ['fire', '开火', '战斗'], ['altFire', '副攻击 / 开镜', '战斗'], ['reload', '换弹', '战斗'],
-  ['primary', '主武器', '武器'], ['secondary', '手枪', '武器'], ['knife', '近战武器', '武器'], ['utility', '切换投掷物', '武器'],
+  ['primary', '主武器', '武器'], ['secondary', '手枪', '武器'], ['knife', '近战武器', '武器'], ['utility', '切换投掷物', '武器'], ['bomb','C4 炸弹','武器'],
   ['lastWeapon', '上一把使用的武器', '武器'], ['previousWeapon', '切换上一件武器', '武器'], ['nextWeapon', '切换下一件武器', '武器'],
   ['drop', '丢弃当前枪械', '武器'], ['buy', '购买菜单', '界面'], ['inspect', '检视武器', '界面'], ['interact', '拾取 / 使用 / 安装 / 拆除', '界面'],
   ['scoreboard', '计分板（按住）', '界面'], ['menu', '游戏菜单', '界面'],
@@ -14,7 +14,7 @@ const ACTIONS = new Map(CONTROL_ACTIONS.map(action => [action.id, action]));
 export const DEFAULT_BINDINGS = Object.freeze(Object.fromEntries(Object.entries({
   forward: ['KeyW'], back: ['KeyS'], left: ['KeyA'], right: ['KeyD'], jump: ['Space'],
   walk: ['ShiftLeft', 'ShiftRight'], crouch: ['ControlLeft', 'ControlRight'],
-  fire: ['Mouse0'], altFire: ['Mouse2'], reload: ['KeyR'], primary: ['Digit1'], secondary: ['Digit2'], knife: ['Digit3'], utility: ['Digit4'],
+  fire: ['Mouse0'], altFire: ['Mouse2'], reload: ['KeyR'], primary: ['Digit1'], secondary: ['Digit2'], knife: ['Digit3'], utility: ['Digit4'], bomb:['Digit5'],
   lastWeapon: ['KeyQ'], previousWeapon: ['WheelUp'], nextWeapon: ['WheelDown'], drop: ['KeyG'], buy: ['KeyB'], inspect: ['KeyF'], interact: ['KeyE'], scoreboard: ['Tab'], menu: ['Escape'],
 }).map(([action, tokens]) => [action, Object.freeze(tokens)])));
 const copy = bindings => Object.fromEntries(CONTROL_ACTIONS.map(({ id }) => [id, [...bindings[id]]]));

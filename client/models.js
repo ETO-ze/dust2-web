@@ -46,9 +46,9 @@ export class PlayerModel{
     this.setWeapon(team==='CT'?'m4a1':'ak47');
   }
   setWeapon(id,skinId){
-    id=WEAPONS[id]||UTILITY_IDS.includes(id)?id:'knife';
-    if(UTILITY_IDS.includes(id))skinId=id;else if(getSkin(skinId)?.weapon!==id)skinId=DEFAULT_SKINS[id];
-    requestSkin(skinId);const visibleSkin=loadedSkin(skinId)?skinId:UTILITY_IDS.includes(id)?id:DEFAULT_SKINS[id],cacheKey=id+':'+visibleSkin;
+    id=WEAPONS[id]||UTILITY_IDS.includes(id)||id==='c4'?id:'knife';
+    if(UTILITY_IDS.includes(id)||id==='c4')skinId=id;else if(getSkin(skinId)?.weapon!==id)skinId=DEFAULT_SKINS[id];
+    requestSkin(skinId);const visibleSkin=loadedSkin(skinId)?skinId:UTILITY_IDS.includes(id)||id==='c4'?id:DEFAULT_SKINS[id],cacheKey=id+':'+visibleSkin;
     if(!loadedSkin(visibleSkin)){this.gun.visible=false;return;}
     if(id===this.weaponId&&this.skinId===visibleSkin)return;this.weaponId=id;this.skinId=visibleSkin;this.gun.clear();
     if(!this.weaponCache.has(cacheKey)){

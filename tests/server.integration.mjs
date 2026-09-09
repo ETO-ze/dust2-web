@@ -99,7 +99,7 @@ test('authoritative server integration on real Dust2 collision', { timeout: 9000
     c1.send(input(4, { yaw, pitch, fire: false }));
     await delay(70); shooter.inventory[shooter.weapon].ammo = 0; shooter.inventory[shooter.weapon].reserve = 12;
     room.reload(shooter); assert.ok(shooter.reloadEndsAt > Date.now());
-    shooter.reloadEndsAt = Date.now() - 1; await delay(80);
+    shooter.reloadAmmoAt=Date.now()-2;shooter.reloadEndsAt = Date.now() - 1; await delay(80);
     assert.equal(shooter.inventory[shooter.weapon].ammo, 12); assert.equal(shooter.inventory[shooter.weapon].reserve, 0);
   });
 
@@ -130,13 +130,13 @@ test('authoritative server integration on real Dust2 collision', { timeout: 9000
     r.tick(); assert.equal(r.round.phase, 'live'); assert.equal(terrorist.hasBomb, true);
     assert.equal(r.buy(terrorist.id, 'awp').ok, false); terrorist.money = 5000;
     assert.equal(r.buy(terrorist.id, 'ak47').ok, true); assert.equal(terrorist.money, 2300);
-    const site = MAP.sites.B; Object.assign(terrorist, site, { vx: 0, vz: 0, effectiveInput: { interact: true } });
+    const site = MAP.sites.B; Object.assign(terrorist, site, { grounded:true,vx: 0, vz: 0, effectiveInput: { interact: true } });
     r.stepBomb(0.05); assert.ok(r.bomb.progress > 0);
     terrorist.effectiveInput.interact = false; r.stepBomb(0.05); assert.equal(r.bomb.progress, 0);
     terrorist.effectiveInput.interact = true; r.stepBomb(0.11); assert.equal(r.bomb.state, 'planted');
     Object.assign(ct, { x: site.x + 0.6, y: site.y, z: site.z, vx: 0, vz: 0, effectiveInput: { interact: true } });
     r.stepBomb(0.11); assert.equal(r.bomb.state, 'defused'); assert.equal(r.round.winner, 'CT'); assert.equal(r.scores.CT, 1);
-    r.startRound(); r.tick(); Object.assign(terrorist, site, { vx: 0, vz: 0, effectiveInput: { interact: true } });
+    r.startRound(); r.tick(); Object.assign(terrorist, site, { grounded:true,vx: 0, vz: 0, effectiveInput: { interact: true } });
     r.stepBomb(0.11); assert.equal(r.bomb.state, 'planted'); now += 1100; r.stepBomb(0.01);
     assert.equal(r.bomb.state, 'exploded'); assert.equal(r.round.winner, 'T');
   });
