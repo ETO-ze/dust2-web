@@ -134,7 +134,7 @@ test('authoritative server integration on real Dust2 collision', { timeout: 9000
     r.stepBomb(0.05); assert.ok(r.bomb.progress > 0);
     terrorist.effectiveInput.interact = false; r.stepBomb(0.05); assert.equal(r.bomb.progress, 0);
     terrorist.effectiveInput.interact = true; r.stepBomb(0.11); assert.equal(r.bomb.state, 'planted');
-    Object.assign(ct, { x: site.x + 0.6, y: site.y, z: site.z, vx: 0, vz: 0, effectiveInput: { interact: true } });
+    Object.assign(ct, { x: site.x + 0.6, y: site.y, z: site.z, grounded:true, vx: 0, vz: 0, effectiveInput: { interact: true } });
     r.stepBomb(0.11); assert.equal(r.bomb.state, 'defused'); assert.equal(r.round.winner, 'CT'); assert.equal(r.scores.CT, 1);
     r.startRound(); r.tick(); Object.assign(terrorist, site, { grounded:true,vx: 0, vz: 0, effectiveInput: { interact: true } });
     r.stepBomb(0.11); assert.equal(r.bomb.state, 'planted'); now += 1100; r.stepBomb(0.01);

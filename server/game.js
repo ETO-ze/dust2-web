@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { MAP } from '../shared/map-data.js';
-import { createPlayerState, stepPlayer, raycastWorld } from '../shared/physics.js';
+import { createPlayerState, stepPlayer, raycastWorld, raycastWorldContact } from '../shared/physics.js';
 import { WEAPONS, PRIMARY_WEAPONS, getWeapon, normalizeWeapon, canTeamUseWeapon, defaultPrimaryForTeam, weaponSpeedScale } from '../shared/weapons.js';
 import { DEFAULT_SKINS, getSkin, normalizeSkinLoadout } from '../shared/skins.js';
 import { DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } from '../shared/agents.js';
@@ -14,6 +14,7 @@ import {eyePosition,accuracyForShot,sampleShotDirection} from '../shared/aim.js'
 import {PlayerTimeline,MAX_REWIND_MS} from '../shared/player-timeline.js';
 import {MovementStream,sanitizeMoves,movementState} from '../shared/movement-commands.js';
 import {reloadProfile} from '../shared/reload-profiles.js';
+import {traceKnife,knifeDamage,knifeInterval} from '../shared/melee.js';
 
 export const TICK_RATE = 30;
 export const SNAPSHOT_RATE = 15;
@@ -106,7 +107,8 @@ export class GameRoom {
     this.bomb = this.emptyBomb();
     this.nav = Array.isArray(MAP.nav) ? MAP.nav : [];
     this.navMap = new Map(this.nav.map(n => [String(n.id), n]));
-    this.grenades=new GrenadeSimulation({clock,raycastWorld,emit:(type,fields)=>this.emit(type,fields),onExplosion:(grenade,config)=>this.explodeGrenade(grenade,config),onFlash:(grenade,config)=>this.flashGrenade(grenade,config)});
+    this.grenades=new GrenadeSimulation({clock,raycastWorld,raycastContact:raycastWorldContact,onFire:(fire,config)=>this.burnPlayers(fire,config),emit:(type,fields)=>this.emit(type,fields),onExplosion:(grenade,config)=>this.explodeGrenade(grenade,config),onFlash:(grenade,config)=>this.flashGrenade(grenade,config)});
+    this.defuseKits=[];this.kitSerial=0;
     this.droppedWeapons=new DroppedWeapons({clock,raycastWorld});
     this.poseHistory=new PlayerTimeline(16);
   }
@@ -183,7 +185,7 @@ export class GameRoom {
 
   makePlayer(id, name, team, bot, primary = 'auto') {
     const player = { ...createPlayerState(this.pickSpawn(team)), id, seat:this.freeSeat(team), lifeId:1,name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
-      money: this.mode === 'deathmatch' ? 16000 : 800, kills: 0, deaths: 0, assists: 0, inventory: {}, skins:{...DEFAULT_SKINS}, slot: this.mode === 'deathmatch' ? 1 : 2,
+      money: this.mode === 'deathmatch' ? 16000 : 800, kills: 0, roundKills:0,lifeKills:0,killCards:[],deaths: 0, assists: 0, inventory: {}, skins:{...DEFAULT_SKINS}, slot: this.mode === 'deathmatch' ? 1 : 2,
       helmet:this.mode==='deathmatch',defuseKit:false,zoomLevel:0,flashBlindUntil:0,agents:{...DEFAULT_AGENT_IDS},agentId:DEFAULT_AGENT_IDS[team],
       weapon: 'pistol', input: neutralInput(), inputAt: 0, seq: -1, lastReceivedSeq: -1, lastShotTime: 0, nextShotAt: 0, reloadEndsAt: 0,
       respawnAt: 0, protectionUntil: this.clock() + this.rules.protectionSeconds * 1000, triggerWasDown: false, hasBomb: false,
@@ -240,7 +242,8 @@ export class GameRoom {
     // per predicted shot; legacy clients still use rising edges and held fire.
     const explicit=input.shotId>0;
     if(explicit)player.shotCommands=true;
-    if(input.fire&&input.slot!==4&&((explicit&&input.shotId>(player.lastShotId||0))||(!player.shotCommands&&!player.input.fire))){
+    const attacking=input.fire||(input.slot===3&&input.fire2);
+    if(attacking&&input.slot!==4&&((explicit&&input.shotId>(player.lastShotId||0))||(!player.shotCommands&&(!player.input.fire&&!player.input.fire2)))){
       const weaponId=input.shotWeapon||player.weapon;
       if(player.inventory[weaponId]&&getWeapon(weaponId).slot!==4){
         player.fireQueue||=[];
@@ -357,7 +360,7 @@ export class GameRoom {
     }
     this.round = { number: this.round.number + 1, phase: 'freeze', phaseEndsAt: now + this.rules.freezeSeconds * 1000, buyEndsAt: now + (this.rules.freezeSeconds + this.rules.buySeconds) * 1000, winner: null, reason: '' };
     this.bomb = this.emptyBomb();
-    this.grenades.clear();
+    this.grenades.clear();this.defuseKits=[];
     this.droppedWeapons.clear();
     this.poseHistory.clear();
     for (const p of this.players.values()){this.respawn(p,true);p.roundKills=0;}
@@ -368,11 +371,12 @@ export class GameRoom {
   }
 
   respawn(p, newRound = false) {
+    p.lifeKills=0;p.killCards=[];p.lastKnifeAt=-Infinity;
     delete p.inventory.c4;
     const spawn = this.pickSpawn(p.team);
     if (newRound && !p.alive) { p.inventory = {}; p.armor = 0;p.helmet=false;p.defuseKit=false; this.giveWeapon(p, p.team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(p, 'knife'); }
     const consumedJump=p.input.jumpId||0, consumedReload=p.input.reloadId||0;
-    Object.assign(p, createPlayerState(spawn), { lifeId:(p.lifeId||0)+1,fireQueue:[],lastJumpId:consumedJump,lastReloadId:consumedReload,alive: true, health: 100, hasBomb: false, respawnAt: 0, flashBlindUntil:0, reloadEndsAt: 0, triggerWasDown: false, pendingFire: false,pendingInteract:false,grenadeState:null,grenadeRequireRelease:true,
+    Object.assign(p, createPlayerState(spawn), { lifeId:(p.lifeId||0)+1,objectiveLocked:false,fireQueue:[],lastJumpId:consumedJump,lastReloadId:consumedReload,alive: true, health: 100, hasBomb: false, respawnAt: 0, flashBlindUntil:0, reloadEndsAt: 0, triggerWasDown: false, pendingFire: false,pendingInteract:false,grenadeState:null,grenadeRequireRelease:true,
       protectionUntil: this.mode === 'deathmatch' ? this.clock() + this.rules.protectionSeconds * 1000 : 0,
       nextShotAt: this.clock() + 350, input: neutralInput(), inputAt: 0,zoomLevel:0 });
     p.input.yaw = p.yaw || spawn.yaw || 0;
@@ -411,7 +415,7 @@ export class GameRoom {
     if(this.match.status==='ended')return;
     Object.assign(this.match,{status:'ended',winnerTeamId,reason,endedAt:this.clock()});
     Object.assign(this.round,{phase:'matchEnded',phaseEndsAt:0,winner:this.teamSides[winnerTeamId],reason});
-    this.pendingTransition=null;this.grenades.clear();
+    this.pendingTransition=null;this.grenades.clear();this.defuseKits=[];
     for(const p of this.players.values()){p.respawnAt=0;p.reloadEndsAt=0;p.pendingFire=false;this.cancelGrenade(p,'match');p.input=neutralInput();p.effectiveInput=neutralInput();p.vx=p.vy=p.vz=0;}
     this.emit('match_end',{winnerTeamId,winner:this.teamSides[winnerTeamId],reason,match:this.matchSnapshot()});
   }
@@ -419,12 +423,15 @@ export class GameRoom {
   kill(victim, killer, weapon = 'world', headshot = false, metadata={}) {
     if (!victim.alive||this.match.status==='ended') return;
     this.dropWeapon(victim.id,true);
+    if(victim.defuseKit){this.defuseKits.push({id:`kit_${++this.kitSerial}`,...copyPoint(victim)});if(this.defuseKits.length>20)this.defuseKits.shift();victim.defuseKit=false;}
+    victim.objectiveLocked=false;
     victim.alive = false; victim.health = 0; victim.deaths++; victim.reloadEndsAt = 0;
     this.cancelGrenade(victim,'death');
     victim.respawnAt = this.mode === 'deathmatch' ? this.clock() + this.rules.respawnSeconds * 1000 : 0;
     if (victim.hasBomb) this.dropBomb(victim);
-    if (killer && killer.id !== victim.id&&killer.team!==victim.team) { killer.kills++;killer.roundKills=(killer.roundKills||0)+1; killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.mode === 'deathmatch') this.scores[killer.team]++; }
-    this.emit('kill', { killerId: killer?.id || null, victimId: victim.id, killerName: killer?.name || '环境', victimName: victim.name, weapon, headshot,...metadata });
+    const credited=!!killer&&killer.id!==victim.id&&killer.team!==victim.team;
+    if (credited) { killer.kills++;killer.roundKills=(killer.roundKills||0)+1;killer.lifeKills=(killer.lifeKills||0)+1;killer.killCards||=[];if(killer.killCards.length<5)killer.killCards.push({weapon,headshot,backstab:metadata.backstab===true});killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.mode === 'deathmatch') this.scores[killer.team]++; }
+    this.emit('kill', { killerId: killer?.id || null, victimId: victim.id, killerName: killer?.name || '环境', victimName: victim.name, weapon, headshot,...metadata,credited,killerRoundKills:credited?killer.roundKills:0,killerLifeKills:credited?killer.lifeKills:0 });
     if(this.mode==='deathmatch'&&killer&&this.scores[killer.team]>=MATCH_RULES.deathmatchWinTarget)this.endMatch(killer.teamId,'队伍率先完成 100 次击杀');
   }
 
@@ -445,6 +452,18 @@ export class GameRoom {
       const damage=config.damage*Math.max(0,1-distance/config.radius);
       this.damagePlayer(victim,attacker,damage,grenade.weapon,false,1);
     }
+  }
+
+  burnPlayers(fire,config){
+    const attacker=this.players.get(fire.ownerId),now=this.clock();
+    for(const p of this.players.values()){
+      if(!p.alive||now<p.protectionUntil||p.team===fire.team&&p.id!==fire.ownerId)continue;
+      const burning=fire.cells.some(c=>Math.hypot(p.x-c.x,p.z-c.z)<.75&&p.y<c.y+1.3&&p.y>c.y-.4&&this.grenades.clearSight({...c,y:c.y+.2},{x:p.x,y:p.y+.5,z:p.z}));
+      if(burning)this.damagePlayer(p,attacker,config.damage,fire.weapon,false,1,true);
+    }
+  }
+  pickupKits(){
+    this.defuseKits=this.defuseKits.filter(kit=>{const p=[...this.players.values()].find(p=>p.alive&&p.team==='CT'&&!p.defuseKit&&dist(p,kit)<1.3&&clearSight(eye(p),{...kit,y:kit.y+.25}));if(!p)return true;p.defuseKit=true;this.emit('kit_picked_up',{playerId:p.id});return false;});
   }
 
   flashGrenade(grenade,config){
@@ -535,6 +554,7 @@ export class GameRoom {
     if(p.weapon==='c4'||this.bomb.actorId===p.id&&this.bomb.action)return;
     const now=this.clock(),w=getWeapon(p.weapon),ammo=p.inventory[p.weapon];
     if(w.slot===4||this.match.status==='ended')return;
+    if(w.id==='knife'){this.swingKnife(p,input,command);return;}
     const rising=input.fire&&!p.triggerWasDown;p.triggerWasDown=input.fire;
     if(!p.alive || !input.fire || (!w.automatic&&!rising) || !ammo || now<p.nextShotAt)return;
     // A loaded shell can be fired to interrupt a shell-by-shell reload.
@@ -590,6 +610,21 @@ export class GameRoom {
     if(w.unzoomsAfterShot)p.zoomLevel=0;
   }
 
+  swingKnife(p,input,command=null){
+    const now=this.clock(),heavy=input.fire2===true;
+    if(!p.alive||(!input.fire&&!heavy)||now<p.nextShotAt||!p.inventory.knife||p.reloadEndsAt)return;
+    const targets=this.shotTargets(command?.input.viewTime,command?.receivedAt??now),origin=eye(p),direction=directionFromAngles(input.yaw,input.pitch);
+    const hit=traceKnife({origin,direction,shooter:p,players:targets.players,heavy,now,raycastWorld});
+    const first=now-(p.lastKnifeAt??-Infinity)>1000;
+    p.lastKnifeAt=now;p.lastShotTime=now;p.protectionUntil=0;p.nextShotAt=(command?Math.max(command.receivedAt,p.nextShotAt):now)+knifeInterval(heavy)*1000;
+    this.emit('shot',{shooterId:p.id,weapon:'knife',shotId:input.shotId||0,inputSeq:input.seq,heavy,origin,...hit,headshot:false,zoomLevel:0,accuracy:0,rewindMs:targets.rewindMs,aim:{yaw:input.yaw,pitch:input.pitch}});
+    const victim=this.players.get(hit.hitId);if(!victim?.alive)return;
+    const damage=knifeDamage({heavy,backstab:hit.backstab,first,armor:victim.armor});
+    victim.health=Math.max(0,victim.health-damage);
+    this.emit('hit',{shooterId:p.id,targetId:victim.id,weapon:'knife',damage,heavy,backstab:hit.backstab,headshot:false,armor:victim.armor>0});
+    if(victim.health===0)this.kill(victim,p,'knife',false,{heavy,backstab:hit.backstab});
+  }
+
   reload(p) {
     const w=getWeapon(p.weapon),ammo=p.inventory[p.weapon];
     if(!p.reloadEndsAt&&w.slot<4&&w.magazine&&ammo&&this.clock()>=(ammo.reloadReadyAt||0)&&ammo.ammo<w.magazine&&ammo.reserve>0){
@@ -631,6 +666,14 @@ export class GameRoom {
 
   siteAt(p) { return Object.entries(MAP.sites || {}).find(([, site]) => lengthXZ(site, p) <= site.radius && Math.abs(site.y - p.y) < 3)?.[0] || null; }
 
+  bombIntent(p,input){
+    if(!p?.alive||!p.grounded||this.mode!=='defuse'||this.round.phase!=='live')return null;
+    const bomb=this.bomb,continuing=bomb.actorId===p.id;
+    if(bomb.state==='carried'&&bomb.carrierId===p.id&&this.siteAt(p)&&(input.interact||p.weapon==='c4'&&input.fire))return 'plant';
+    if(bomb.state==='planted'&&p.team==='CT'&&input.interact&&dist(p,bomb)<2.8&&(continuing||clearSight(eye(p),{...bomb,y:bomb.y+.3})))return 'defuse';
+    return null;
+  }
+
   stepBomb(dt) {
     const now = this.clock(), bomb = this.bomb;
     if (bomb.state === 'carried') {
@@ -649,11 +692,13 @@ export class GameRoom {
     if (bomb.state === 'carried') {
       const p = this.players.get(bomb.carrierId);
       site = p && this.siteAt(p);
-      if (p?.alive && (p.effectiveInput?.interact||p.weapon==='c4'&&p.effectiveInput?.fire) && p.grounded && site && Math.hypot(p.vx || 0, p.vz || 0) < 0.65) { actor = p; action = 'plant'; }
+      if (p&&this.bombIntent(p,p.effectiveInput||{})==='plant') { actor = p; action = 'plant'; }
     } else if (bomb.state === 'planted') {
-      actor = [...this.players.values()].find(p => p.alive && p.team === 'CT' && p.effectiveInput?.interact && dist(p, bomb) < 2.8 && Math.hypot(p.vx || 0, p.vz || 0) < 0.65 && clearSight(eye(p), { x: bomb.x, y: bomb.y + 0.3, z: bomb.z }));
+      actor = [...this.players.values()].find(p => this.bombIntent(p,p.effectiveInput||{})==='defuse');
       if (actor) action = 'defuse';
     }
+    for(const p of this.players.values())p.objectiveLocked=p===actor;
+    if(actor){actor.vx=actor.vy=actor.vz=0;actor.crouch=true;actor.height=1.1;actor.jumpBufferRemaining=0;}
     if (!actor) { bomb.actorId = null; bomb.action = null; bomb.progress = 0; return; }
     if (bomb.actorId !== actor.id || bomb.action !== action) { bomb.progress = 0; bomb.actorId = actor.id; bomb.action = action;this.cancelReload(actor);
       if(action==='plant'){this.giveWeapon(actor,'c4');this.selectSlot(actor,5);actor.input.slot=5;}
@@ -661,6 +706,7 @@ export class GameRoom {
     }
     bomb.progress = Math.min(1, bomb.progress + dt / (action === 'plant' ? this.rules.plantSeconds : actor.defuseKit ? this.rules.defuseKitSeconds : this.rules.defuseSeconds));
     if (bomb.progress < 1 - 1e-8) return;
+    actor.objectiveLocked=false;
     if (action === 'plant') {
       actor.hasBomb = false;delete actor.inventory.c4;this.selectSlot(actor,Object.keys(actor.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(actor.inventory).some(id=>getWeapon(id).slot===2)?2:3);actor.input.slot=actor.slot; actor.money = Math.min(16000, actor.money + 300);
       Object.assign(bomb, copyPoint(actor), { state: 'planted', carrierId: null, site, plantedAt: now, explodesAt: now + this.rules.bombSeconds * 1000, planterId: actor.id, action: null, actorId: null, progress: 0 });
@@ -789,6 +835,8 @@ export class GameRoom {
       p.seq = Math.max(p.seq, p.input.seq ?? -1);
       this.commitReload(p);
       if (!canAct && this.mode === 'defuse') Object.assign(input, { forward: 0, right: 0, jump: false, fire: false, interact: false });
+      p.objectiveLocked=canAct&&!!this.bombIntent(p,input);
+      if(p.objectiveLocked){input.crouch=true;input.forward=input.right=0;input.jump=input.reload=false;p.vx=p.vy=p.vz=0;p.jumpBufferRemaining=0;if(this.bombIntent(p,input)==='plant')input.slot=5;}
       const movementOptions={canMove:canAct,speedLimit:weaponSpeedScale(p.weapon,p.zoomLevel)};
       const shotMove=p.fireQueue?.[0]?.input.moveId;
       if(p.movementStream){
@@ -797,7 +845,8 @@ export class GameRoom {
         const elapsed=Math.max(0,(now-(p.movementAt??now))/1000);p.movementAt=now;
         p.movementStream.advance(p,elapsed,movementOptions,shotMove||Infinity);
       }
-      const queuedShot=canAct&&!p.bot&&this.fireQueued(p);
+      if(p.objectiveLocked){p.fireQueue.length=0;this.cancelGrenade(p,'objective');}
+      const queuedShot=canAct&&!p.objectiveLocked&&!p.bot&&this.fireQueued(p);
       if(this.match.status==='ended')break;
       if(!canAct&&p.fireQueue)p.fireQueue.length=0;
       const awaitingShotMove=p.movementStream&&p.fireQueue?.[0]?.input.moveId>p.movementStream.ack;
@@ -820,10 +869,10 @@ export class GameRoom {
       if(canAct&&!input.fire&&!input.cancelGrenade&&now-p.inputAt<300&&now>=p.nextShotAt&&!p.fireQueue?.length&&getWeapon(p.weapon).magazine&&heldAmmo?.ammo===0)this.reload(p);
       if((canAct||this.round.phase==='freeze')&&!p.bot&&p.pendingInteract&&now-p.inputAt<300)this.pickupWeapon(p);
       p.pendingInteract=false;
-      if (canAct) {this.stepGrenade(p);if(!p.shotCommands&&!queuedShot)this.fire(p,input);}
+      if (canAct&&!p.objectiveLocked) {this.stepGrenade(p);if(!p.shotCommands&&!queuedShot)this.fire(p,input);}
     }
     if(canAct)this.grenades.tick(dt);
-    this.droppedWeapons.tick(dt);
+    this.droppedWeapons.tick(dt);this.pickupKits();
     this.recordPoses();
     if (this.mode === 'defuse' && this.round.phase === 'live') {
       this.stepBomb(dt);
@@ -840,14 +889,15 @@ export class GameRoom {
     const players = [...this.players.values()].map(p => ({ id: p.id,seat:p.seat, lifeId:p.lifeId,name: p.name, team: p.team, teamId:p.teamId, bot: p.bot, agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
       vx: round2(p.vx), vy: round2(p.vy), vz: round2(p.vz), yaw: round2(p.yaw), pitch: round2(p.pitch), crouch: !!p.crouch, grounded: !!p.grounded,
       ...(p.movementStream?{movementAck:p.movementStream.ack,movementState:movementState(p)}:{}),
-      health: p.health, armor: round2(p.armor), helmet:!!p.helmet, defuseKit:!!p.defuseKit,zoomLevel:p.zoomLevel,utilityCounts:Object.fromEntries(UTILITY_IDS.map(id=>[id,p.inventory[id]?.ammo||0])), alive: p.alive, weapon: p.weapon, skinId:this.heldSkin(p), slot: p.slot, ammo: p.inventory[p.weapon]?.ammo || 0, reserve: p.inventory[p.weapon]?.reserve || 0,
+      objectiveLocked:!!p.objectiveLocked,health: p.health, armor: round2(p.armor), helmet:!!p.helmet, defuseKit:!!p.defuseKit,zoomLevel:p.zoomLevel,utilityCounts:Object.fromEntries(UTILITY_IDS.map(id=>[id,p.inventory[id]?.ammo||0])), alive: p.alive, weapon: p.weapon, skinId:this.heldSkin(p), slot: p.slot, ammo: p.inventory[p.weapon]?.ammo || 0, reserve: p.inventory[p.weapon]?.reserve || 0,
       reserveAmmoAsClips:!!getWeapon(p.weapon).reserveAmmoAsClips,reserveClips:getWeapon(p.weapon).reserveAmmoAsClips?Math.ceil((p.inventory[p.weapon]?.reserve||0)/getWeapon(p.weapon).magazine):0,
       grenadeState:p.grenadeState?{state:'primed',weapon:p.grenadeState.weapon,mode:p.grenadeState.mode,strength:grenadeStrength(p.grenadeState.mode),primedAt:p.grenadeState.primedAt}:{state:'idle',weapon:null,mode:'full',strength:1,primedAt:0},
       reloadRemaining: Math.max(0, (p.reloadEndsAt - now) / 1000),reloadDuration:p.reloadEndsAt?getWeapon(p.weapon).reloadTime:0,reloadElapsed:p.reloadEndsAt?Math.max(0,(now-p.reloadStartedAt)/1000):0,reloadEmpty:!!p.reloadEmpty,reloadCommitted:!!p.reloadEndsAt&&!!p.reloadCommitted,fireReadyRemaining:Math.max(0,((p.inventory[p.weapon]?.reloadReadyAt||0)-now)/1000), money: p.money, kills: p.kills, deaths: p.deaths, assists: p.assists, seq: p.seq,
       ...this.buyStatus(p), inventory: Object.keys(p.inventory), hasBomb: p.hasBomb,bombAction:this.bomb.actorId===p.id?this.bomb.action:null,bombProgress:this.bomb.actorId===p.id?this.bomb.progress:0,bombActionDuration:this.bomb.action==='plant'?this.rules.plantSeconds:p.defuseKit?this.rules.defuseKitSeconds:this.rules.defuseSeconds, spawnProtectionRemaining: Math.max(0, (p.protectionUntil - now) / 1000),
+      roundKills:p.roundKills||0,lifeKills:p.lifeKills||0,killCards:p.killCards||[],
       respawnIn: p.respawnAt ? Math.max(0, (p.respawnAt - now) / 1000) : 0, lastShotTime: p.lastShotTime }));
     const events = drainEvents ? this.events.splice(0) : [...this.events];
-    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,droppedWeapons:this.droppedWeapons.snapshot(),...this.grenades.snapshot(),
+    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,droppedWeapons:this.droppedWeapons.snapshot(),defuseKits:this.defuseKits.map(k=>({...k})),...this.grenades.snapshot(),
       round: { ...this.round, timeLeft: this.round.phaseEndsAt ? Math.max(0, (this.round.phaseEndsAt - now) / 1000) : 0 },
       bomb: { ...this.bomb, remaining: this.bomb.state === 'planted' ? Math.max(0, (this.bomb.explodesAt - now) / 1000) : 0 }, scores: { ...this.scores }, events };
   }

@@ -1,7 +1,7 @@
 import {stepPlayer} from './physics.js';
 export const MOVEMENT_HZ=60, MOVEMENT_DT=1/MOVEMENT_HZ, MAX_MOVE_BATCH=8, MAX_MOVE_QUEUE=32;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const fields=['x','y','z','vx','vy','vz','yaw','pitch','grounded','crouch','height','lastJump','lastJumpId','jumpBufferRemaining','stepDistance','outOfWorld'];
+const fields=['x','y','z','vx','vy','vz','yaw','pitch','grounded','objectiveLocked','crouch','height','lastJump','lastJumpId','jumpBufferRemaining','stepDistance','outOfWorld'];
 export const movementState=p=>Object.fromEntries(fields.map(key=>[key,p[key]]));
 export function sanitizeMoves(raw){
  if(!Array.isArray(raw)||raw.length>MAX_MOVE_BATCH)return [];

@@ -1,10 +1,10 @@
 import { getWeapon, TEAM_LOADOUTS } from '../shared/weapons.js';
-import { EQUIPMENT, equipmentPrice, UTILITY_IDS, MAX_GRENADES } from '../shared/equipment.js';
+import { EQUIPMENT, equipmentPrice, UTILITY_IDS, MAX_GRENADES,teamUtilities } from '../shared/equipment.js';
 import { getSkin, DEFAULT_SKINS } from '../shared/skins.js';
 import { uiIconUrl } from './ui-icons.js';
 import './equipment.css';
 const categories=[['equipment','装备'],['pistols','手枪'],['mid','中级'],['rifles','步枪'],['grenades','投掷物']];
-const descriptions={armor:'防弹背心 · 身体防护',helmet:'背心与头盔 · 保护头部',defusekit:'拆弹时间缩短至 5 秒',hegrenade:'范围爆炸伤害',flashbang:'致盲视线内的玩家',smokegrenade:'烟雾遮挡 · 持续 18 秒'};
+const descriptions={armor:'防弹背心 · 身体防护',helmet:'背心与头盔 · 保护头部',defusekit:'拆弹缩短至 5 秒 · 走近拾取',hegrenade:'范围爆炸伤害',flashbang:'致盲视线内的玩家',smokegrenade:'遮挡视线 · 可熄灭火焰',molotov:'落地燃烧 · 匪方专用',incgrenade:'落地燃烧 · 警方专用',decoy:'模拟主武器枪声 · 误导敌人'};
 export class WeaponShop {
   constructor(container,{buy,close}) {
     this.container=container;this.buy=buy;this.pending=null;this.category=null;
@@ -17,7 +17,7 @@ export class WeaponShop {
   render(p){
     this.team=p.team;this.container.dataset.team=p.team;
     this.container.querySelector('#shop-team').textContent=p.team==='CT'?'CT / 防守方装备':'T / 进攻方装备';
-    const groups={equipment:p.team==='CT'?['armor','helmet','defusekit']:['armor','helmet'],...TEAM_LOADOUTS[p.team],grenades:UTILITY_IDS};
+    const groups={equipment:p.team==='CT'?['armor','helmet','defusekit']:['armor','helmet'],...TEAM_LOADOUTS[p.team],grenades:teamUtilities(p.team)};
     this.container.querySelector('.equipment-columns').innerHTML=categories.map(([category,label],index)=>`<section data-group="${category}"><button class="equipment-heading" data-category="${category}"><kbd>${index+1}</kbd> ${label}</button>${(groups[category]||[]).map((id,i)=>{const w=EQUIPMENT[id]||getWeapon(id),skin=getSkin(p.skins?.[id]||DEFAULT_SKINS[id]);return `<button class="equipment-item${skin?' weapon-item':' gear-item'}" data-buy="${id}"><kbd>${i+1}</kbd><img loading="lazy" src="${skin?.preview||uiIconUrl(id)}" alt="${w.name}"><b>${w.name}</b><span>${descriptions[id]||`${skin?.name||w.skin}${skin?.condition==='Factory New'?' · 崭新出厂':''}`}</span><div class="equipment-price"><strong></strong><small></small></div></button>`;}).join('')}</section>`).join('');
     this.highlight();
   }

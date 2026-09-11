@@ -66,14 +66,14 @@ export class GameAudio {
     return ({ ak: 'ak47', 'ak-47': 'ak47', m4: 'm4a1', 'm4a1-s': 'm4a1', m4a1s: 'm4a1', glock18: 'glock', 'usp-s': 'usp' })[value] || value;
   }
 
-  play(bank, { level = 0.5, pan = 0, distance = 0, delay = 0, rate = 1, channel = 'effect' } = {}) {
+  play(bank, { level = 0.5, pan = 0, distance = 0, delay = 0, rate = 1, channel = 'effect', loop=false } = {}) {
     if (!this.ready) return null;
     const samples = this.banks.get(bank);
     if (!samples?.length) return null;
     if (channel === 'remote' && [...this.voices].filter(voice => voice.channel === channel).length >= 20) return null;
     if (this.voices.size >= 64) this.stopVoice(this.voices.values().next().value);
     const c = this.ctx, source = c.createBufferSource(), gain = c.createGain(), panner = c.createStereoPanner();
-    source.buffer = samples[Math.floor(Math.random() * samples.length)]; source.playbackRate.value = clamp(rate, 0.75, 1.25);
+    source.loop=loop;source.buffer = samples[Math.floor(Math.random() * samples.length)]; source.playbackRate.value = clamp(rate, 0.75, 1.25);
     gain.gain.value = clamp(level, 0, 1.2); panner.pan.value = clamp(pan, -1, 1);
     const nodes = [source, gain, panner];
     if (distance > 3) {
@@ -91,7 +91,7 @@ export class GameAudio {
   shot(id = 'ak47', distance = 0, pan = 0, options = {}) {
     if (!this.ready) return;
     const weapon = this.weaponId(id, options), remote = options.remote ?? distance > 0;
-    if (weapon === 'knife') { this.knife('swing', distance, pan); return; }
+    if (weapon === 'knife') { this.knife(options.heavy?'heavySwing':'swing', distance, pan); return; }
     if (!remote) { this.lastWeapon = weapon; if (options.team) this.lastTeam = options.team; }
     const gap = Math.max(0, Number(distance) || 0), farBank = `${weapon}Far`;
     const bank = remote && gap >= 26 && this.banks.has(farBank) ? farBank : weapon;
@@ -106,15 +106,17 @@ export class GameAudio {
 
   knife(kind = 'swing', distance = 0, pan = 0) {
     const gap = Math.max(0, Number(distance) || 0);
-    this.play(kind === 'wall' ? 'knifeWall' : kind === 'hit' ? 'knifeHit' : 'knifeSwing', {
+    const bank={wall:'knifeWall',hit:'knifeHit',heavyHit:'knifeHeavyHit',heavySwing:'knifeHeavySwing'}[kind]||'knifeSwing';
+    const voice=this.play(bank, {
       level: (kind === 'swing' ? 0.62 : 0.76) / (1 + gap * 0.13), pan, distance: gap, channel: gap > 0 ? 'remote' : 'effect',
     });
+    if(voice&&gap===0){this.lastKnife={kind,bank,at:this.ctx.currentTime};if(kind==='heavySwing')this.heavySwingCount=(this.heavySwingCount||0)+1;}
   }
 
-  hit({ headshot = false, armor = false, weapon = '' } = {}) {
+  hit({ headshot = false, armor = false, weapon = '', heavy=false } = {}) {
     if (!this.ready || this.ctx.currentTime - this.lastHitAt < 0.035) return;
     this.lastHitAt = this.ctx.currentTime;
-    if (weapon === 'knife') this.knife('hit');
+    if (weapon === 'knife') this.knife(heavy?'heavyHit':'hit');
     else if (headshot) this.headshot({ armor });
     else this.play(armor ? 'armorHit' : 'bodyHit', { level: 0.90, channel: 'feedback' });
   }
@@ -138,6 +140,19 @@ export class GameAudio {
   }
 
   reload(id = this.lastWeapon, options = {}) { this.weaponReload(id, options); }
+  draw(id){
+    this.cancelDraw();const weapon=this.weaponId(id),bank=id==='c4'?'bombDraw':weapon+'Draw';
+    const voice=this.play(bank,{level:.68,channel:'draw'});
+    if(voice){this.drawCount=(this.drawCount||0)+1;this.lastDraw={weapon:id,bank,at:this.ctx.currentTime};}
+    return voice;
+  }
+  utilityAmbient(snapshot,position){
+    this.fireVoices||=new Map();
+    const near=(snapshot.fires||[]).map(f=>({id:f.id,d:Math.hypot(f.x-position.x,f.y-position.y,f.z-position.z)})).filter(f=>f.d<24).sort((a,b)=>a.d-b.d).slice(0,2);
+    for(const [id,voice]of this.fireVoices)if(!near.some(f=>f.id===id)||voice.released){this.stopVoice(voice);this.fireVoices.delete(id);}
+    for(const f of near){let voice=this.fireVoices.get(f.id);if(!voice){voice=this.play('fireLoop',{level:.15/(1+f.d*.12),distance:f.d,loop:true,channel:'fire'});if(voice)this.fireVoices.set(f.id,voice);}if(voice)voice.nodes[1].gain.setTargetAtTime(.15/(1+f.d*.12),this.ctx.currentTime,.1);}
+  }
+  cancelDraw(){for(const voice of [...this.voices])if(voice.channel==='draw')this.stopVoice(voice);}
   releaseVoice(voice) {
     if (!voice || voice.released) return;
     voice.released = true;this.voices.delete(voice);voice.source.onended = null;

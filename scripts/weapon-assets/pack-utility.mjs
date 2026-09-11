@@ -7,7 +7,7 @@ const require=createRequire('C:/Users/Administrator/.cache/codex-runtimes/codex-
 const sharp=require('sharp');
 const root=path.resolve(import.meta.dirname,'../..'),out=path.join(root,'public/assets/weapons/cs2-utility');fs.mkdirSync(out,{recursive:true});
 const models=[];
-for(const id of ['hegrenade','flashbang','smokegrenade']){
+for(const id of ['hegrenade','flashbang','smokegrenade','decoy','molotov','incgrenade','defusekit']){
  const raw=path.join(root,'artifacts/weapon-expansion/raw',id,id+'.glb'),b=fs.readFileSync(raw),n=b.readUInt32LE(12),doc=JSON.parse(b.toString('utf8',20,20+n));
  const chunks=[b.subarray(28+n,28+n+b.readUInt32LE(20+n))];let total=chunks[0].length;
  for(const image of doc.images){
@@ -24,7 +24,9 @@ for(const id of ['hegrenade','flashbang','smokegrenade']){
  const text=Buffer.from(JSON.stringify(doc)),json=Buffer.alloc(Math.ceil(text.length/4)*4,32);text.copy(json);const bin=Buffer.concat(chunks),result=Buffer.alloc(28+json.length+bin.length);
  result.writeUInt32LE(0x46546c67);result.writeUInt32LE(2,4);result.writeUInt32LE(result.length,8);result.writeUInt32LE(json.length,12);result.writeUInt32LE(0x4e4f534a,16);json.copy(result,20);result.writeUInt32LE(bin.length,20+json.length);result.writeUInt32LE(0x004e4942,24+json.length);bin.copy(result,28+json.length);
  fs.writeFileSync(path.join(out,id+'.glb'),result);
- models.push({id,file:id+'.glb',bytes:result.length,sha256:crypto.createHash('sha256').update(result).digest('hex'),triangles,sizeMetres:min.map((v,i)=>max[i]-v),source:`weapons/models/grenade/${id}/weapon_${id}.vmdl_c`,animations:['draw','idle','inspect','pullpin','throw','throwUnderhand'].map(action=>id+'/'+action)});
+ models.push({id,file:id+'.glb',bytes:result.length,sha256:crypto.createHash('sha256').update(result).digest('hex'),triangles,sizeMetres:min.map((v,i)=>max[i]-v),source:id==='defusekit'?'weapons/models/defuser/defuser.vmdl_c':id==='incgrenade'?'weapons/models/grenade/incendiary/weapon_incendiarygrenade.vmdl_c':`weapons/models/grenade/${id}/weapon_${id}.vmdl_c`,animations:['draw','idle','inspect','pullpin','throw','throwUnderhand'].map(action=>id+'/'+action)});
 }
 fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify({source:'Original installed Counter-Strike 2 VPK; Valve retains rights',models},null,2)+'\n');
 console.log(JSON.stringify(models.map(({id,bytes,triangles})=>({id,bytes,triangles}))));
+
+fs.writeFileSync(path.join(root,'shared/utility-assets.js'),"import {C4_ASSET} from './c4-asset.js';\n// Original Valve models, fetched on demand.\nexport const UTILITY_ASSETS=Object.freeze({c4:C4_ASSET,..."+JSON.stringify(Object.fromEntries(models.map(m=>[m.id,{...m,model:'assets/weapons/cs2-utility/'+m.file}])),null,2)+"});\n");

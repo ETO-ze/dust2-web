@@ -1,0 +1,369 @@
+{
+  "date": "2026-09-11",
+  "tests": {
+    "fullPassed": 207,
+    "fullFailed": 0,
+    "finalFocusedPassed": 15
+  },
+  "combatBrowser": {
+    "knife": {
+      "shot": {
+        "weapon": "knife",
+        "shotId": 0,
+        "heavy": true,
+        "backstab": false,
+        "zoomLevel": 0,
+        "accuracy": 0,
+        "rewindMs": 113,
+        "aim": {
+          "yaw": 0,
+          "pitch": 0
+        },
+        "origin": {
+          "x": 7.039283588913236,
+          "y": 1.610403892293059,
+          "z": 2.7260296366471164
+        },
+        "end": {
+          "x": 7.330482344353451,
+          "y": 1.610403892293059,
+          "z": 2.0049094458016334
+        },
+        "hitId": "b_1",
+        "at": 10734.299999999814
+      },
+      "audio": {
+        "drawCount": 7,
+        "lastDraw": {
+          "weapon": "knife",
+          "bank": "knifeDraw",
+          "at": 8.4
+        },
+        "heavySwingCount": 1,
+        "lastKnife": {
+          "kind": "heavyHit",
+          "bank": "knifeHeavyHit",
+          "at": 8.64
+        }
+      },
+      "viewModel": {
+        "id": "knife",
+        "skinId": "karambit-sapphire",
+        "waiting": false,
+        "visible": true,
+        "action": "heavy"
+      },
+      "target": [
+        {
+          "x": 7.612,
+          "z": 1.725,
+          "health": 45
+        }
+      ]
+    },
+    "cards": {
+      "count": "3",
+      "kinds": [
+        "headshot",
+        "knife",
+        "hegrenade"
+      ],
+      "roundKills": 3,
+      "time": 10820.899999999441
+    },
+    "stairs": {
+      "x": 7.200469931474562,
+      "y": 2.483744168290093,
+      "z": -47.529251766668466,
+      "jumpId": 0,
+      "movement": {
+        "pending": 4,
+        "unsent": 0,
+        "ack": 190,
+        "nextId": 194,
+        "corrections": 0,
+        "maxCorrection": 0,
+        "offset": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "stepMs": 16.666666666666668
+      }
+    },
+    "errors": [],
+    "failures": []
+  },
+  "utilityBrowser": {
+    "movingThrow": {
+      "before": 2.5770319364106227,
+      "release": -3.83986352495082,
+      "after": -7.490165476513217,
+      "speed": 5.461023476629823
+    },
+    "models": [
+      {
+        "id": "flashbang",
+        "viewModel": {
+          "id": "flashbang",
+          "skinId": "flashbang",
+          "waiting": false,
+          "visible": true,
+          "action": "holdLow"
+        },
+        "mode": "drop"
+      },
+      {
+        "id": "smokegrenade",
+        "viewModel": {
+          "id": "smokegrenade",
+          "skinId": "smokegrenade",
+          "waiting": false,
+          "visible": true,
+          "action": "holdLow"
+        },
+        "mode": "drop"
+      },
+      {
+        "id": "decoy",
+        "viewModel": {
+          "id": "decoy",
+          "skinId": "decoy",
+          "waiting": false,
+          "visible": true,
+          "action": "holdLow"
+        },
+        "mode": "drop"
+      },
+      {
+        "id": "incgrenade",
+        "viewModel": {
+          "id": "incgrenade",
+          "skinId": "incgrenade",
+          "waiting": false,
+          "visible": true,
+          "action": "holdLow"
+        },
+        "mode": "drop"
+      },
+      {
+        "id": "molotov",
+        "viewModel": {
+          "id": "molotov",
+          "skinId": "molotov",
+          "waiting": false,
+          "visible": true,
+          "action": "holdLow"
+        },
+        "mode": "drop"
+      }
+    ],
+    "fire": [
+      {
+        "weapon": "molotov",
+        "cells": 53,
+        "remaining": 6.955
+      }
+    ],
+    "plant": {
+      "start": {
+        "x": -39.73831055879785,
+        "y": 0.13194229436367705,
+        "z": -67.37285898025772
+      },
+      "mid": {
+        "x": -39.73831055879785,
+        "y": 0.13194229436367705,
+        "z": -67.37285898025772
+      },
+      "crouch": true,
+      "height": 0.95,
+      "progress": 0.46666666666666684,
+      "aim": {
+        "yaw": -0.0614355896702004,
+        "pitch": 0.034557519189487726
+      }
+    },
+    "defuse": {
+      "crouch": true,
+      "height": 0.95,
+      "progress": 0.45333333333333276,
+      "duration": 5,
+      "kit": true,
+      "aim": {
+        "yaw": -0.0921533845053006,
+        "pitch": 0.0460766922526503
+      }
+    },
+    "kit": {
+      "equipped": true,
+      "dropped": 0
+    },
+    "shop": [
+      {
+        "id": "hegrenade",
+        "name": "高爆手雷",
+        "price": "$300 · 免费"
+      },
+      {
+        "id": "flashbang",
+        "name": "闪光弹",
+        "price": "$200 · 免费"
+      },
+      {
+        "id": "smokegrenade",
+        "name": "烟雾弹",
+        "price": "$300 · 免费"
+      },
+      {
+        "id": "incgrenade",
+        "name": "燃烧弹",
+        "price": "$500 · 免费"
+      },
+      {
+        "id": "decoy",
+        "name": "诱饵弹",
+        "price": "$50 · 免费"
+      }
+    ],
+    "errors": [],
+    "failures": []
+  },
+  "stairs": {
+    "syntheticFixtures": 135,
+    "beforeStalled": 135,
+    "afterStalled": 0,
+    "realAShortLanes": 4
+  },
+  "audio": {
+    "ak47Draw": "Weapon_AK47.Draw",
+    "m4a1Draw": "Weapon_M4A1.Draw",
+    "awpDraw": "Weapon_AWP.Draw",
+    "glockDraw": "Weapon_Glock.Draw",
+    "uspDraw": "Weapon_USP.Draw",
+    "eliteDraw": "Weapon_ELITE.Draw",
+    "p250Draw": "Weapon_P250.Draw",
+    "fivesevenDraw": "Weapon_FiveSeven.Draw",
+    "deagleDraw": "Weapon_DEagle.Draw",
+    "novaDraw": "Weapon_Nova.Draw",
+    "mag7Draw": "Weapon_Mag7.Draw",
+    "mp9Draw": "Weapon_MP9.Draw",
+    "mp7Draw": "Weapon_MP7.Draw",
+    "bizonDraw": "Weapon_bizon.Draw",
+    "scar20Draw": "Weapon_SCAR20.Draw",
+    "m4a4Draw": "Weapon_M4A1.Draw",
+    "ssg08Draw": "Weapon_SSG08.Draw",
+    "tec9Draw": "Weapon_tec9.Draw",
+    "xm1014Draw": "Weapon_XM1014.Draw",
+    "sawedoffDraw": "Weapon_Sawedoff.Draw",
+    "mac10Draw": "Weapon_MAC10.Draw",
+    "galilarDraw": "Weapon_GalilAR.Draw",
+    "sg553Draw": "Weapon_SG556.Draw",
+    "molotovDraw": "Molotov.Draw",
+    "incgrenadeDraw": "IncGrenade.Draw",
+    "decoyDraw": "Decoy.Draw",
+    "molotovThrow": "Molotov.Throw",
+    "incgrenadeThrow": "IncGrenade.Throw",
+    "decoyThrow": "Decoy.Throw",
+    "fireStart": "Molotov.Smash",
+    "fireLoop": "Molotov.Loop",
+    "fireExtinguish": "Molotov.Extinguish",
+    "knifeDraw": "Weapon_Knife.Draw.Small",
+    "knifeHeavySwing": "Weapon_Knife.Swish.Heavy",
+    "knifeHeavyHit": "Weapon_Knife.Hit.Heavy",
+    "hegrenadeDraw": "HEGrenade.Draw",
+    "flashbangDraw": "Flashbang.Draw",
+    "smokegrenadeDraw": "SmokeGrenade.Draw"
+  },
+  "assetVersion": "56537567932c2c63",
+  "screenshots": [
+    {
+      "file": "feedback-kill-cards.png",
+      "source": "output/playwright/feedback-kill-cards.png",
+      "sha256": "42d7b31cf1c9eccd0a1c67ff79f6936dc4c32a7907a3063c4a1e724d45f7a9b7",
+      "bytes": 1895494,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "feedback-stairs.png",
+      "source": "output/playwright/feedback-stairs.png",
+      "sha256": "002be0c4395f21f46436ab340364ea8e5b458b41312ad4f4aba848fff30f7735",
+      "bytes": 1475476,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-molotov.png",
+      "source": "output/playwright/utility-molotov.png",
+      "sha256": "6ffc6d4e565baede5ef0b7afaa617c6bbebec2cc5d6e5ddad1a49ef6d3d1f696",
+      "bytes": 1918101,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-fire-final.png",
+      "source": "output/playwright/utility-fire-final.png",
+      "sha256": "eca34d30f4926589ca87d86354d844d8f93ae41013d2e04708b7465ecdea2955",
+      "bytes": 1884471,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-plant.png",
+      "source": "output/playwright/utility-plant.png",
+      "sha256": "43ff3b19647cd24f95c38c147d1cdc3d04f9a082562f5fa229cd5a7ca4c5c7cf",
+      "bytes": 2217790,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-defuse.png",
+      "source": "output/playwright/utility-defuse.png",
+      "sha256": "8ad85d169c95bad40a90e7b8591d18a8fe23290007204e7c333eccea509e8823",
+      "bytes": 2274943,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-shop-ct.png",
+      "source": "output/playwright/utility-shop-ct.png",
+      "sha256": "c3e348eb712ba0051d724f3c71aee29f07e9d803e6e8fdc7f0df87b0591996a6",
+      "bytes": 1151253,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    }
+  ],
+  "notes": [
+    "Local QA creates controlled kills and positions through a loopback-only control interface that is excluded from all release packages.",
+    "Final flame material visually reviewed after utility browser run."
+  ]
+}

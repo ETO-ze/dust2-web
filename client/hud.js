@@ -6,6 +6,8 @@ import { AGENT_ASSETS } from '../shared/agent-assets.js';
 import { uiIcon } from './ui-icons.js';
 import { DeathScreen } from './death-screen.js';
 import './death-screen.css';
+import {KillCards} from './kill-cards.js';
+import './kill-cards.css';
 
 const TEAM_COLORS = { CT: '#6f9ce6', T: '#eabe54' };
 const LOCATION_NAMES = {
@@ -45,6 +47,7 @@ export class HUD {
     this.feed = [];
     this.myId = null;
     this.deathScreen = new DeathScreen(document.getElementById('hud'));
+    this.killCards = new KillCards(document.getElementById('hud'));
     this.snapshotTime = null;
     this.receivedAt = now();
     this.lastRadar = -Infinity;
@@ -82,6 +85,7 @@ export class HUD {
     this.lastSnapshot = snapshot;
     this.lastSelf = self;
     this.myId = self.id;
+    this.killCards.update(snapshot,self);
     const elapsed = Math.max(0, (time - this.receivedAt) / 1000);
     this.deathScreen.update(snapshot, self, { elapsed, spectating, scoreboardKey, menuKey, nextSpectatorKey, previousSpectatorKey });
     const round = snapshot.round || {};
@@ -115,7 +119,7 @@ export class HUD {
     const protection = Math.max(0, number(self.spawnProtectionRemaining) - elapsed);
     this.text('reload-label', reload > 0 ? `正在换弹 ${reload.toFixed(1)} s` :
       protection > 0 && self.alive ? `重生保护 ${protection.toFixed(1)} s` :
-        self.hasBomb ? '携带 C4 · 前往 A / B 包点' : weapon.slot === 4 ? '左键投掷 · 4 切换投掷物' : [3,5].includes(weapon.slot) ? '鼠标左键 近战 · B 购买' : 'R 换弹 · B 购买');
+        self.hasBomb ? '携带 C4 · 前往 A / B 包点' : weapon.slot === 4 ? '左键投掷 · 4 切换投掷物' : [3,5].includes(weapon.slot) ? '左键轻击 · 右键重击 · B 购买' : 'R 换弹 · B 购买');
 
     const closest = (MAP.labels || []).reduce((best, label) => {
       const gap = distanceXZ(self, label);
@@ -277,6 +281,7 @@ export class HUD {
     this.deathScreen.event(event, snapshot, myId);
     const players = snapshot?.players || [];
     const me = players.find(player => player.id === myId) || this.lastSelf;
+    this.killCards.update(snapshot,me);
     const find = id => players.find(player => player.id === id);
     if (event.type === 'shot') {
       const shooter = find(event.shooterId);
@@ -287,7 +292,7 @@ export class HUD {
       if (event.targetId === myId) this.damage();
     } else if (event.type === 'kill') {
       const killer = find(event.killerId), victim = find(event.victimId);
-      if (event.killerId === myId && event.victimId !== myId) this.confirmKill(event, victim);
+      if (event.killerId === myId && event.victimId !== myId&&event.credited!==false) this.confirmKill(event, victim,snapshot);
       if (event.victimId === myId) this.combo = 0;
       const node = document.createElement('div');
       node.className = `kill-entry${event.killerId === myId ? ' own killer' : ''}${event.victimId === myId?' victim':''}`;
@@ -342,6 +347,7 @@ export class HUD {
 
   reset() {
     this.deathScreen.reset();
+    this.killCards.reset();
     this.seenEvents.clear(); this.revealed.clear(); this.combo = 0; this.lastKillAt = -Infinity;
     for (const entry of this.feed) { clearTimeout(entry.timer); entry.node.remove(); }
     this.feed = []; this.lastSnapshot = null; this.snapshotTime = null;
@@ -349,9 +355,9 @@ export class HUD {
     clearTimeout(this.killTimer); this.elements['kill-confirm']?.classList.remove('visible', 'expire');
   }
 
-  confirmKill(event, victim) {
+  confirmKill(event, victim,snapshot) {
     const time = now();
-    this.combo = time - (this.lastKillAt ?? -Infinity) < 5000 ? (this.combo || 0) + 1 : 1;
+    this.combo = snapshot?.mode==='defuse'?event.killerRoundKills:event.killerLifeKills;
     this.lastKillAt = time;
     const weapon = EQUIPMENT[event.weapon]||getWeapon(event.weapon);
     this.text('kill-title', event.headshot ? '爆头击杀' : this.combo > 1 ? `${this.combo} 连杀` : '击杀确认');

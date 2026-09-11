@@ -6,7 +6,7 @@ const game=process.env.CS2_GAME_DIR||'E:/steam/steamapps/common/Counter-Strike G
 const temp=path.join(root,'artifacts/export-temp');fs.mkdirSync(temp,{recursive:true});
 const lockPath=path.join(root,'artifacts/s2v-export.lock'),lock=fs.openSync(lockPath,'wx');
 fs.writeFileSync(lock,JSON.stringify({pid:process.pid,task:'utility-assets',startedAt:new Date().toISOString()}));
-const specs=[['hegrenade','hegrenade'],['flashbang','flashbang'],['smokegrenade','smoke']];
+const specs=[['hegrenade','hegrenade'],['flashbang','flashbang'],['smokegrenade','smoke'],['decoy','flashbang'],['molotov','molotov'],['incgrenade','incendiary'],['defusekit',null]];
 const stage=path.join(root,'artifacts/weapon-expansion');
 function run(resource,file,model=false){
  if(fs.existsSync(file)){console.log('Existing '+file);return;}
@@ -19,7 +19,9 @@ function run(resource,file,model=false){
 }
 try{
  for(const [id,stem]of specs){
-  run(`weapons/models/grenade/${id}/weapon_${id}.vmdl_c`,path.join(stage,'raw',id,id+'.glb'),true);
-  for(const [action,clip]of Object.entries({draw:'draw',idle:'idle',inspect:'lookat01',pullpin:'pullpin',throw:'throw_overhand',throwUnderhand:'throw_underhand',holdHigh:'throwcharge_high',holdMid:'throwcharge_mid',holdLow:'throwcharge_low'}))run(`animation/anims/viewmodel/grenade/grenade_${id}/${clip}_${stem}.vnmclip_c`,path.join(stage,'animations',id+'-'+action+'.glb'));
+  const model=id==='defusekit'?'weapons/models/defuser/defuser.vmdl_c':id==='incgrenade'?'weapons/models/grenade/incendiary/weapon_incendiarygrenade.vmdl_c':`weapons/models/grenade/${id}/weapon_${id}.vmdl_c`;
+  run(model,path.join(stage,'raw',id,id+'.glb'),true);
+  if(!stem)continue;
+  for(const [action,clip]of Object.entries({draw:'draw',idle:'idle',inspect:'lookat01',pullpin:'pullpin',throw:'throw_overhand',throwUnderhand:'throw_underhand',holdHigh:'throwcharge_high',holdMid:'throwcharge_mid',holdLow:'throwcharge_low'}))run(`animation/anims/viewmodel/grenade/grenade_${id==='decoy'?'flashbang':id==='incgrenade'?'incendiary':id}/${clip}_${stem}.vnmclip_c`,path.join(stage,'animations',id+'-'+action+'.glb'));
  }
 }finally{fs.closeSync(lock);fs.unlinkSync(lockPath);}

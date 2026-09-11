@@ -25,6 +25,16 @@ const ray = new Ray();
 class MapCollision {
   constructor(geometry){this.bvh=new MeshBVH(geometry,{strategy:CENTER,targetLeafSize:16,maxDepth:32});this.geometry=geometry;this.contact=new HullContact();}
   rayIntersect(r){return this.bvh.raycastFirst(r,DoubleSide);}
+  sweepDown(c,maxDrop){
+    const bounds=c.clone();bounds.min.y-=maxDrop;let distance=Infinity,walkable=false;
+    this.bvh.shapecast({intersectsBounds:box=>box.intersectsBox(bounds),intersectsTriangle:tri=>{
+      const hit=this.contact.sweepDown(tri,c,maxDrop);if(!hit)return false;
+      if(hit.distance<distance-.00001){distance=hit.distance;walkable=hit.walkable;}
+      else if(Math.abs(hit.distance-distance)<=.00001)walkable||=hit.walkable;
+      return false;
+    }});
+    return Number.isFinite(distance)&&walkable?distance:null;
+  }
   hullIntersect(c){
     const resolved=c.clone(),bounds=c.clone().expandByScalar(.002),contacts=[],push=new Vector3();
     this.bvh.shapecast({
@@ -124,22 +134,20 @@ function collide(hull,p) {
 // Sweep the whole hull, including its leading edge, down onto a tread or
 // ramp. A centre ray misses support at the edge of the real Dust2 stairs.
 function sweepDown(hull,maxDrop){
-  let clear=0;
-  const samples=Math.max(1,Math.ceil(maxDrop/.052));
-  for(let sample=1;sample<=samples;sample++){
-    let blocked=maxDrop*sample/samples;
-    const probe=hull.clone().translate(new Vector3(0,-blocked,0)),hit=world.hullIntersect(probe);
-    if(hit){
-      if(!hit.walkable)return null;
-      for(let i=0;i<8;i++){
-        const mid=(clear+blocked)/2;
-        if(world.hullIntersect(hull.clone().translate(new Vector3(0,-mid,0))))blocked=mid;else clear=mid;
-      }
-      return hull.clone().translate(new Vector3(0,-clear,0));
-    }
-    clear=blocked;
-  }
-  return null;
+  // Test the continuous downward sweep before resolving any individual face.
+  // Previously a riser pushed the probe sideways before its tread was tested,
+  // hiding valid support and permanently blocking even a 12 cm step.
+  const distance=world.sweepDown(hull,maxDrop);
+  return distance===null?null:hull.clone().translate(new Vector3(0,-Math.max(0,distance-.0001),0));
+}
+
+/** First collision with an outward-facing surface normal for projectile reflection. */
+export function raycastWorldContact(origin,direction,maxDistance=300){
+  if(!world)return null;
+  ray.origin.set(origin.x,origin.y,origin.z);ray.direction.set(direction.x,direction.y,direction.z).normalize();
+  const hit=world.rayIntersect(ray);if(!hit||hit.distance>maxDistance)return null;
+  const normal=hit.face.normal.clone();if(normal.dot(ray.direction)>0)normal.negate();
+  return {distance:hit.distance,normal:{x:normal.x,y:normal.y,z:normal.z}};
 }
 
 function updateCrouch(p,wanted){
@@ -166,6 +174,10 @@ export function stepPlayer(p,input={},dt=1/60) {
   p.vx=Number.isFinite(p.vx)?p.vx:0;p.vy=Number.isFinite(p.vy)?p.vy:0;p.vz=Number.isFinite(p.vz)?p.vz:0;
   p.yaw=Number.isFinite(input.yaw)?input.yaw:p.yaw;
   p.pitch=Math.max(-1.48,Math.min(1.48,Number.isFinite(input.pitch)?input.pitch:p.pitch));
+  if(p.objectiveLocked){
+    p.vx=p.vy=p.vz=0;p.crouch=true;p.height=CROUCH_HEIGHT;p.jumpBufferRemaining=0;p.lastJump=!!input.jump;
+    p.lastJumpId=Math.max(p.lastJumpId||0,input.jumpId||0);return p;
+  }
   if(p.vy>.1)p.grounded=false;
   const jumpId=Number.isSafeInteger(input.jumpId)&&input.jumpId>=0?input.jumpId:null;
   const newId=jumpId!==null&&jumpId>(p.lastJumpId||0);

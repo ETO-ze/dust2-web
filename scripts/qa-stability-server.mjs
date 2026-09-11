@@ -2,9 +2,10 @@
 import { createServer } from 'node:http';
 import { startGameServer } from '../server/index.js';
 import {MAP} from '../shared/map-data.js';
-import {raycastWorld} from '../shared/physics.js';
+import {raycastWorld,floorHeight} from '../shared/physics.js';
 import {eyePosition} from '../shared/aim.js';
 import {getWeapon} from '../shared/weapons.js';
+import {UTILITY_IDS} from '../shared/equipment.js';
 import fs from 'node:fs';
 const movementLedges=JSON.parse(fs.readFileSync(new URL('../tests/fixtures/movement-ledges.json',import.meta.url),'utf8'));
 const movementFlat=JSON.parse(fs.readFileSync(new URL('../tests/fixtures/movement-flat.json',import.meta.url),'utf8'));
@@ -76,6 +77,53 @@ function matchCase(room,kind){
 const control=createServer((req,res)=>{
   if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress)){res.writeHead(403);res.end();return;}
   if(req.method!=='POST'){res.writeHead(405);res.end();return;}
+  if(/^\/qa\/utility\/(hegrenade|flashbang|smokegrenade|molotov|incgrenade|decoy|plant|defuse|kit)$/.test(req.url)){
+    const kind=req.url.split('/').at(-1),results=[];
+    for(const room of app.rooms.values()){
+      const p=[...room.players.values()].find(p=>!p.bot);if(!p)continue;
+      room.botInput=b=>({...b.input,forward:0,right:0,fire:false,fire2:false,jump:false,interact:false});room.match.status='live';room.pendingTransition=null;
+      room.grenades.clear();room.defuseKits=[];room.bomb=room.emptyBomb();room.mode=['plant','defuse'].includes(kind)?'defuse':'deathmatch';room.round.phase='live';room.round.number++;room.round.phaseEndsAt=Date.now()+120000;
+      p.team=['incgrenade','defuse','kit'].includes(kind)?'CT':'T';p.teamId=room.teamForSide(p.team);p.agentId=p.agents[p.team];room.respawn(p);p.objectiveLocked=false;p.nextShotAt=0;
+      const at=['plant','defuse'].includes(kind)?MAP.sites.B:movementFlat;
+      Object.assign(p,{x:at.x,y:floorHeight(at.x,at.z,at.y+2,5)??at.y,z:at.z,yaw:0,pitch:0,vx:0,vy:0,vz:0,grounded:true,protectionUntil:Infinity,fireQueue:[],money:16000});
+      for(const id of [...UTILITY_IDS,'c4'])delete p.inventory[id];p.grenadeRequireRelease=false;p.grenadeState=null;p.hasBomb=false;p.defuseKit=false;
+      if(UTILITY_IDS.includes(kind)){room.giveWeapon(p,kind);room.selectSlot(p,4,kind);}
+      if(kind==='plant'){p.hasBomb=true;room.giveWeapon(p,'c4');room.selectSlot(p,5);Object.assign(room.bomb,{state:'carried',carrierId:p.id});}
+      if(kind==='defuse'){p.defuseKit=true;Object.assign(room.bomb,{state:'planted',x:p.x+.5,y:p.y,z:p.z,site:'B',plantedAt:Date.now(),explodesAt:Date.now()+60000});room.selectSlot(p,3);}
+      if(kind==='kit'){room.defuseKits.push({id:'qa-kit',x:p.x,y:p.y,z:p.z-2});room.selectSlot(p,3);}
+      p.input={...p.input,forward:0,right:0,yaw:0,pitch:0,fire:false,fire2:false,interact:false,slot:p.slot,utilityId:kind};room.poseHistory.clear();room.recordPoses();
+      results.push({kind,player:p.id,lifeId:p.lifeId,position:{x:p.x,y:p.y,z:p.z}});
+      for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));
+    }
+    res.setHeader('content-type','application/json');res.end(JSON.stringify({ok:true,results}));return;
+  }
+  if(/^\/qa\/feedback\/(knife|cards|reset|stairs)$/.test(req.url)){
+    const kind=req.url.split('/').at(-1),results=[];
+    for(const room of app.rooms.values()){
+      const p=[...room.players.values()].find(p=>!p.bot);if(!p)continue;
+      room.botInput=b=>({...b.input,forward:0,right:0,fire:false,fire2:false,jump:false,interact:false});room.match.status='live';room.pendingTransition=null;
+      room.mode=kind==='cards'||kind==='reset'?'defuse':'deathmatch';room.round.phase='live';room.round.phaseEndsAt=Date.now()+120000;
+      if(kind==='reset'){room.startRound();results.push({kind});continue;}
+      if(kind==='stairs'){
+        room.respawn(p);Object.assign(p,{x:7.2,y:.2,z:-40,vx:0,vy:0,vz:0,yaw:0,pitch:0,protectionUntil:Infinity});
+      }else{
+        room.setBots(p.id,1);const b=[...room.players.values()].find(p=>p.bot);
+        if(kind==='knife'){
+          room.respawn(p);room.respawn(b);const base=movementFlat;
+          Object.assign(p,base,{yaw:0,pitch:0,vx:0,vy:0,vz:0,protectionUntil:Infinity,nextShotAt:0,fireQueue:[]});room.selectSlot(p,3);
+          Object.assign(b,{x:base.x+.57,y:base.y,z:base.z-1,yaw:Math.PI,pitch:0,team:p.team==='T'?'CT':'T',health:100,armor:100,protectionUntil:0,vx:0,vy:0,vz:0,alive:true});b.input.yaw=Math.PI;
+        }else{
+          p.roundKills=0;p.killCards=[];p.lifeKills=0;
+          for(const [weapon,headshot] of [['ak47',true],['knife',false],['hegrenade',false]]){room.respawn(b);b.team=p.team==='T'?'CT':'T';room.kill(b,p,weapon,headshot);}
+          // Keep a live opponent so the round can exercise feedback persistence.
+          room.respawn(b);b.team=p.team==='T'?'CT':'T';room.round.phase='live';
+        }
+      }
+      p.input={...p.input,yaw:p.yaw,pitch:p.pitch,fire:false,fire2:false,forward:0,right:0};room.poseHistory.clear();room.recordPoses();
+      for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));results.push({kind,id:p.id,weapon:p.weapon,position:{x:p.x,y:p.y,z:p.z}});
+    }
+    res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(results));return;
+  }
   if(req.url==='/qa/reload'||req.url==='/qa/c4'){
     const results=[];
     for(const room of app.rooms.values()){

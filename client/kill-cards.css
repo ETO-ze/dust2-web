@@ -1,0 +1,13 @@
+#kill-cards{position:absolute;bottom:53px;left:50%;transform:translateX(-50%);width:240px;color:#efc768;text-align:center;filter:drop-shadow(0 2px 5px #0009);--card-color:#efc768}
+#kill-cards[data-team=CT]{--card-color:#a9d7ff;color:var(--card-color)}
+.kill-card-fan{height:62px;display:flex;align-items:end;justify-content:center;padding:0 12px 8px}
+.kill-card{position:relative;flex:0 0 38px;height:49px;margin-left:-7px;border:1px solid color-mix(in srgb,var(--card-color) 70%,transparent);border-radius:4px;background:linear-gradient(155deg,#fdf9e8,#cdc6b3);color:#172229;text-shadow:none;box-shadow:0 2px 9px #0006;transform:translateY(var(--lift)) rotate(var(--angle));transform-origin:50% 100%}
+.kill-card:first-child{margin-left:0}.kill-card>b{position:absolute;top:2px;left:4px;font:700 11px Arial,sans-serif}.kill-card>small{position:absolute;right:4px;bottom:2px;font-size:11px}.kill-card .cs2-icon{position:absolute;width:25px;height:25px;top:13px;left:6px;filter:brightness(0);opacity:.88}
+.kill-card[data-kind=headshot]{background:linear-gradient(155deg,#fff5cc,#e9c77a)}.kill-card[data-kind=knife]{background:linear-gradient(155deg,#e4f4ff,#adc1d0)}
+.kill-card-total{display:flex;justify-content:center;gap:9px;align-items:center;height:25px;font-size:11px;letter-spacing:2px}.kill-card-total b{font:700 24px Arial,sans-serif;letter-spacing:0;color:#fff7df}
+#kill-cards[data-count="0"] .kill-card-fan{height:0}#kill-cards[data-count="0"] .kill-card-total{opacity:.6}
+.kill-card.earned{animation:kill-card-arrive .38s cubic-bezier(.2,.8,.25,1) both}
+@keyframes kill-card-arrive{0%{opacity:0;transform:translateY(22px) rotate(24deg) scale(.68)}60%{opacity:1;filter:brightness(1.5)}100%{opacity:1;transform:translateY(var(--lift)) rotate(var(--angle)) scale(1)}}
+#hud #kill-confirm{bottom:157px;min-width:160px;gap:2px}#kill-confirm .kill-medal,#kill-confirm #kill-weapon{display:none}#hud #kill-confirm>b{font-size:11px;letter-spacing:2px}#kill-confirm #kill-victim{font-size:12px}
+@media(max-height:640px){#kill-cards{bottom:39px;transform:translateX(-50%) scale(.84);transform-origin:50% 100%}#hud #kill-confirm{bottom:127px}}
+@media(prefers-reduced-motion:reduce){.kill-card.earned{animation:none}}

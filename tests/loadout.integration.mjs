@@ -193,10 +193,10 @@ test('new loadouts and combat feedback contracts on the authoritative server', {
     room.selectSlot(shooter, 3);
     room.fire(shooter, place(2.8, 100));
     assert.equal(target.health, 100); assert.equal(room.events.filter(event => event.type === 'hit').length, 0);
-    advance(501); const aim = place(1.6, 100); room.fire(shooter, aim);
-    assert.equal(target.health, 45); assert.equal(target.armor, 100);
+    advance(501); const aim = place(1.6, 100);target.yaw=aim.yaw+Math.PI;room.fire(shooter, aim);
+    assert.equal(target.health, 79); assert.equal(target.armor, 100);
     const hit = room.events.find(event => event.type === 'hit');
-    assert.equal(hit.weapon, 'knife'); assert.equal(hit.armor, false); assert.equal(hit.headshot, false);
+    assert.equal(hit.weapon, 'knife'); assert.equal(hit.armor, true); assert.equal(hit.headshot, false);
     assert.equal(shooter.inventory.awp.ammo, 5); assert.equal(shooter.inventory.knife.ammo, 0);
   });
 });

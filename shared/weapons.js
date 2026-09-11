@@ -1,3 +1,4 @@
+import {KNIFE} from './melee.js';
 import {DEFAULT_SKINS,getSkin} from './skins.js';
 import { getEquipment, normalizeEquipment } from './equipment.js';
 // Valve local scripts/weapons.vdata_c, extracted 2026-09-08. Core prices,
@@ -7,7 +8,7 @@ import { getEquipment, normalizeEquipment } from './equipment.js';
 // per inserted shell. Source units convert to metres at 0.0254.
 export const WEAPON_DATA_SOURCE = Object.freeze({path:'scripts/weapons.vdata_c',extracted:'2026-09-08',decompiledSha256:'fbd0d6f754c234efb24ec5c6b8c335f190e67f17ac7ec98dc2cd2ea2ddb4037e',m4a4Price:'User screenshot: 2900 (also matches this local build)'});
 const CLIP_RESERVE_WEAPONS = new Set(["ak47", "m4a1", "awp", "pistol", "usp", "elite", "p250", "fiveseven", "deagle", "mag7", "mp9", "mp7", "bizon", "scar20", "m4a4", "ssg08", "tec9", "mac10", "galilar", "sg553"]);
-const freezeWeapon = data => Object.freeze({reserveAmmoAsClips:CLIP_RESERVE_WEAPONS.has(data.id),...data,teams:Object.freeze(data.teams),zoomFovs:Object.freeze(data.zoomFovs)});
+const freezeWeapon = data => Object.freeze({reserveAmmoAsClips:CLIP_RESERVE_WEAPONS.has(data.id),...data,...(data.id==='knife'?{damage:KNIFE.firstSlash,range:KNIFE.slashRange,automatic:true,secondaryDamage:KNIFE.stabDamage,secondaryRange:KNIFE.stabRange}:{}),teams:Object.freeze(data.teams),zoomFovs:Object.freeze(data.zoomFovs)});
 export const WEAPONS = Object.freeze(Object.fromEntries([
   {"id":"ak47","name":"AK-47","skin":"野荷","category":"rifles","teams":["T"],"slot":1,"price":2700,"damage":36,"headMultiplier":4,"armorRatio":1.55,"fireInterval":0.1,"magazine":30,"reserve":90,"reloadTime":2.466667,"reloadStyle":"magazine","range":208.0768,"rangeModifier":0.98,"pellets":1,"spread":0.00701,"scopedSpread":0.00701,"crouchingSpread":0.00541,"movingSpread":0.17506,"recoil":0.021,"automatic":true,"zoomFovs":[90],"zoomStyle":null,"unzoomsAfterShot":false,"maxSpeed":5.460999999999999,"scopedMaxSpeed":5.460999999999999,"color":"#be7a48"},
   {"id":"m4a1","name":"M4A1-S","skin":"澜磷","category":"rifles","teams":["CT"],"slot":1,"price":2900,"damage":38,"headMultiplier":3.475,"armorRatio":1.4,"fireInterval":0.1,"magazine":20,"reserve":60,"reloadTime":3.066667,"reloadStyle":"magazine","range":208.0768,"rangeModifier":0.94,"pellets":1,"spread":0.0055,"scopedSpread":0.0054,"crouchingSpread":0.0047,"movingSpread":0.09288,"recoil":0.017499999999999998,"automatic":true,"zoomFovs":[90],"zoomStyle":null,"unzoomsAfterShot":false,"maxSpeed":5.715,"scopedMaxSpeed":5.715,"color":"#889aa0"},

@@ -29,7 +29,7 @@ function clearLane(){
   throw Error('No unobstructed real-map lane');
 }
 
-test('team armory, armor, scopes and three server-owned utilities',{timeout:20000},async t=>{
+test('team armory, armor, scopes and server-owned utilities',{timeout:20000},async t=>{
   const app=await startGameServer({port:0,host:'127.0.0.1'});t.after(()=>app.close());
   const lane=clearLane();
 
@@ -103,7 +103,7 @@ test('team armory, armor, scopes and three server-owned utilities',{timeout:2000
       const {room,t:terrorist,ct}=fixture('defuse');room.round.phase='live';ct.defuseKit=kit;
       const site=MAP.sites.B;
       Object.assign(room.bomb,site,{state:'planted',explodesAt:2000000});
-      Object.assign(ct,{x:site.x+.6,y:site.y,z:site.z,vx:0,vz:0,effectiveInput:{interact:true}});
+      Object.assign(ct,{x:site.x+.6,y:site.y,z:site.z,vx:0,vz:0,grounded:true,effectiveInput:{interact:true}});
       room.stepBomb(2);assert.ok(Math.abs(room.bomb.progress-(kit?.4:.2))<1e-8);
       ct.effectiveInput.interact=false;room.stepBomb(.1);assert.equal(room.bomb.progress,0);
       ct.effectiveInput.interact=true;room.stepBomb(kit?4.9:9.9);assert.equal(room.bomb.state,'planted');
@@ -158,7 +158,7 @@ test('team armory, armor, scopes and three server-owned utilities',{timeout:2000
     advance(210);room.receiveInput(terrorist.id,input(3,{slot:4,utilityId:'hegrenade',fire:false}));room.tick();
     assert.equal(terrorist.inventory.hegrenade,undefined);assert.equal(terrorist.weapon,'ak47');
     let snapshot=room.snapshot();assert.equal(snapshot.grenades.length,1);assert.equal(snapshot.grenades[0].weapon,'hegrenade');
-    assert.deepEqual(snapshot.players.find(p=>p.id===terrorist.id).utilityCounts,{hegrenade:0,flashbang:2,smokegrenade:1});
+    assert.deepEqual(snapshot.players.find(p=>p.id===terrorist.id).utilityCounts,{hegrenade:0,flashbang:2,smokegrenade:1,molotov:0,incgrenade:0,decoy:0});
     room.selectSlot(terrorist,4,'hegrenade');assert.equal(terrorist.weapon,'ak47');
     const grenade=room.grenades.projectiles[0];room.grenades.detonate({...grenade,weapon:'smokegrenade'});
     snapshot=room.snapshot();assert.equal(snapshot.smokes.length,1);assert.equal(snapshot.smokes[0].remaining,18);

@@ -15,8 +15,12 @@ export const EQUIPMENT = Object.freeze({
   hegrenade: grenade({ id: 'hegrenade', name: '高爆手雷', price: 300, damage: 99, radius: 8.9, color: '#929c49' }),
   flashbang: grenade({ id: 'flashbang', name: '闪光弹', price: 200, maxCount: 2, radius: 30, duration: 4.5, color: '#ece3c4' }),
   smokegrenade: grenade({ id: 'smokegrenade', name: '烟雾弹', price: 300, fuse: 2, radius: 4.5, duration: 18, color: '#a7b4a6' }),
+  molotov: grenade({id:'molotov',name:'燃烧瓶',price:400,teams:Object.freeze(['T']),effect:'fire',fuse:3.5,radius:3.4,duration:7,damage:8,color:'#88532b'}),
+  incgrenade: grenade({id:'incgrenade',name:'燃烧弹',price:500,teams:Object.freeze(['CT']),effect:'fire',fuse:3.5,radius:2.8,duration:5.5,damage:8,color:'#c63832'}),
+  decoy: grenade({id:'decoy',name:'诱饵弹',price:50,effect:'decoy',fuse:2,radius:2,damage:5,duration:15,color:'#527947'}),
 });
-export const UTILITY_IDS = Object.freeze(['hegrenade', 'flashbang', 'smokegrenade']);
+export const UTILITY_IDS = Object.freeze(['hegrenade', 'flashbang', 'smokegrenade','molotov','incgrenade','decoy']);
+export const teamUtilities = team => UTILITY_IDS.filter(id=>EQUIPMENT[id].teams.includes(team));
 export const MAX_GRENADES = 4;
 const aliases = Object.freeze({ kevlar: 'armor', vest: 'armor', vesthelm: 'helmet', armorhelmet: 'helmet', kit: 'defusekit', defuser: 'defusekit', he: 'hegrenade', flash: 'flashbang', smoke: 'smokegrenade' });
 export function normalizeEquipment(id) { return typeof id === 'string' ? aliases[id.toLowerCase()] || id.toLowerCase() : ''; }

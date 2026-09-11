@@ -400,7 +400,91 @@
       "modified": false,
       "capturedOn": "2026-09-09",
       "url": "https://cs2.duskrain.cn/"
+    },
+    {
+      "file": "feedback-kill-cards.png",
+      "source": "output/playwright/feedback-kill-cards.png",
+      "sha256": "42d7b31cf1c9eccd0a1c67ff79f6936dc4c32a7907a3063c4a1e724d45f7a9b7",
+      "bytes": 1895494,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "feedback-stairs.png",
+      "source": "output/playwright/feedback-stairs.png",
+      "sha256": "002be0c4395f21f46436ab340364ea8e5b458b41312ad4f4aba848fff30f7735",
+      "bytes": 1475476,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-molotov.png",
+      "source": "output/playwright/utility-molotov.png",
+      "sha256": "6ffc6d4e565baede5ef0b7afaa617c6bbebec2cc5d6e5ddad1a49ef6d3d1f696",
+      "bytes": 1918101,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-fire-final.png",
+      "source": "output/playwright/utility-fire-final.png",
+      "sha256": "eca34d30f4926589ca87d86354d844d8f93ae41013d2e04708b7465ecdea2955",
+      "bytes": 1884471,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-plant.png",
+      "source": "output/playwright/utility-plant.png",
+      "sha256": "43ff3b19647cd24f95c38c147d1cdc3d04f9a082562f5fa229cd5a7ca4c5c7cf",
+      "bytes": 2217790,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-defuse.png",
+      "source": "output/playwright/utility-defuse.png",
+      "sha256": "8ad85d169c95bad40a90e7b8591d18a8fe23290007204e7c333eccea509e8823",
+      "bytes": 2274943,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "utility-shop-ct.png",
+      "source": "output/playwright/utility-shop-ct.png",
+      "sha256": "c3e348eb712ba0051d724f3c71aee29f07e9d803e6e8fdc7f0df87b0591996a6",
+      "bytes": 1151253,
+      "width": 1245,
+      "height": 1239,
+      "modified": false,
+      "capturedOn": "2026-09-11",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
     }
   ],
-  "updatedOn": "2026-09-09"
+  "updatedOn": "2026-09-11"
 }
