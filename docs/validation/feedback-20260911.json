@@ -365,5 +365,301 @@
   "notes": [
     "Local QA creates controlled kills and positions through a loopback-only control interface that is excluded from all release packages.",
     "Final flame material visually reviewed after utility browser run."
-  ]
+  ],
+  "deployment": {
+    "release": "20260911T034210Z",
+    "previousRelease": "20260909T104043Z",
+    "archiveSha256": "63e05e409ff1ea5e1b1ba4d1aca125fd504ec2296bb8b6b0b28086cc77441201",
+    "backup": "/opt/dust2-web/backups/activate-20260911T034210Z",
+    "siteConfigurationUnchanged": true,
+    "humansBeforeActivation": 0
+  },
+  "publicGameplay": {
+    "startedAt": "2026-09-11T03:52:07.882Z",
+    "base": "https://cs2.duskrain.cn/",
+    "release": "20260911T034210Z",
+    "mode": "public",
+    "checks": [
+      {
+        "name": "Two ordinary WebSocket players create an isolated DM room with zero bots"
+      },
+      {
+        "name": "Owner changes bots 0→2→0; non-owner request is rejected and snapshots agree"
+      },
+      {
+        "name": "Held full throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ067C6A33:9",
+        "strength": 1
+      },
+      {
+        "name": "Held drop throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ067C6A33:14",
+        "strength": 0
+      },
+      {
+        "name": "Held lob throw preserves ammo, then release consumes exactly one",
+        "eventId": "GQ067C6A33:18",
+        "strength": 0.5
+      },
+      {
+        "name": "Menu/blur-style cancellation releases a held grenade without throwing or consuming it"
+      },
+      {
+        "name": "Scoped shot retains click aim and zoom when unzoom/turn/switch arrive immediately afterwards",
+        "shotId": 1,
+        "zoomLevel": 2,
+        "accuracy": 0.0022,
+        "aim": {
+          "yaw": 0.3000000000000007,
+          "pitch": 1.45
+        }
+      },
+      {
+        "name": "Dropped AWP preserves exact skin, magazine and reserve in observer snapshot",
+        "weapon": "awp",
+        "skin": "awp-dragon-lore",
+        "ammo": 4,
+        "reserve": 10
+      },
+      {
+        "name": "Both sockets close cleanly; first departure is observed before final disconnect"
+      }
+    ],
+    "peers": [
+      {
+        "id": "p_50ab384546d5",
+        "team": "CT",
+        "close": {
+          "code": 1000,
+          "reason": "Gameplay verification complete"
+        }
+      },
+      {
+        "id": "p_78059dd67da8",
+        "team": "T",
+        "close": {
+          "code": 1000,
+          "reason": "Gameplay verification complete"
+        }
+      }
+    ],
+    "healthBefore": {
+      "ok": true,
+      "service": "dust2-web",
+      "release": "20260911T034210Z",
+      "protocol": 1,
+      "tickRate": 30,
+      "uptime": 24,
+      "rooms": 0,
+      "humans": 0,
+      "players": 0,
+      "memory": {
+        "rssMiB": 110,
+        "heapMiB": 15
+      },
+      "performance": {
+        "windowSamples": 731,
+        "tickBudgetMs": 33.33,
+        "tickP50Ms": 0.01,
+        "tickP95Ms": 0.04,
+        "tickMaxMs": 0.14,
+        "maxSchedulingDelayMs": 4.28,
+        "lateTicks": 0,
+        "totalTicks": 731
+      }
+    },
+    "room": "GQ067C6A33",
+    "ok": true,
+    "finishedAt": "2026-09-11T03:52:14.145Z"
+  },
+  "publicRoom": {
+    "ok": true,
+    "release": "20260911T034210Z",
+    "room": "RQ77B7FB3B",
+    "checks": [
+      "Five seats on each side; exact bot seat broadcasts",
+      "Non-host cannot remove bot",
+      "Bot removed, owner joins the vacated seat",
+      "Full room remains exactly five versus five",
+      "Host ownership transfers on departure"
+    ],
+    "at": "2026-09-11T03:53:16.528Z"
+  },
+  "publicUtility": {
+    "ok": true,
+    "release": "20260911T034210Z",
+    "checks": [
+      "Both peers receive authoritative kill, objective and utility fields",
+      "CT kit purchase is replicated",
+      "T cannot buy a kit",
+      "molotov buy, right hold and release replicated to other peer",
+      "incgrenade buy, right hold and release replicated to other peer",
+      "decoy buy, right hold and release replicated to other peer",
+      "Right-click heavy knife broadcast is authoritative"
+    ],
+    "room": "UQMTWFJ3Y6",
+    "at": "2026-09-11T04:01:47.003Z",
+    "healthBefore": {
+      "ok": true,
+      "service": "dust2-web",
+      "release": "20260911T034210Z",
+      "protocol": 1,
+      "tickRate": 30,
+      "uptime": 598,
+      "rooms": 1,
+      "humans": 1,
+      "players": 1,
+      "memory": {
+        "rssMiB": 156,
+        "heapMiB": 25
+      },
+      "performance": {
+        "windowSamples": 1800,
+        "tickBudgetMs": 33.33,
+        "tickP50Ms": 0.74,
+        "tickP95Ms": 4.63,
+        "tickMaxMs": 25.1,
+        "maxSchedulingDelayMs": 109.94,
+        "lateTicks": 8,
+        "totalTicks": 17878
+      }
+    }
+  },
+  "publicAssets": {
+    "release": "20260911T034210Z",
+    "ok": true,
+    "hashes": [
+      {
+        "path": "assets/index-B4PviWEW.js",
+        "bytes": 1095104,
+        "sha256": "572fa85dfd722ff134239f9db2af22ae75abb4983065fbe6fb67344c0a473e43"
+      },
+      {
+        "path": "assets/index-DgztE_xy.css",
+        "bytes": 78951,
+        "sha256": "ea81a64f25742a3166fa9d79f9246a847f4e7fa8152854d6720945772739f05c"
+      },
+      {
+        "path": "assets/asset-manifest.json",
+        "bytes": 150249,
+        "sha256": "eb1573b8532a0094a73a2398eea6b2d7e0f8804206fa076cb125053f4b01ff49"
+      },
+      {
+        "path": "assets/weapons/cs2-utility/molotov.glb",
+        "bytes": 6518968,
+        "sha256": "6b1d756daa02378c98d1e8ec995d0803d91526627497be0288a4bc536b2b360f"
+      },
+      {
+        "path": "assets/weapons/cs2-utility/incgrenade.glb",
+        "bytes": 3290116,
+        "sha256": "a599c9bc30fe017a2f12ef3e42873d9bc6e7ff58a5930d7b2ae85f2ef4b03879"
+      },
+      {
+        "path": "assets/weapons/cs2-utility/decoy.glb",
+        "bytes": 3724440,
+        "sha256": "304c08838273c3eeef28bea55bd931b2998fc120997f7dd0a057b7d27fafe1aa"
+      },
+      {
+        "path": "assets/weapons/cs2-utility/defusekit.glb",
+        "bytes": 800884,
+        "sha256": "ebf561d25e72f2e7416aeeef9313d995d1cd09a360ecedd024deca6148cdc14b"
+      },
+      {
+        "path": "assets/ui-cs2/molotov.svg",
+        "bytes": 3012,
+        "sha256": "141797d4f65368ff48f971f52859ddf905946dbefb8f413109def54c8467d6da"
+      },
+      {
+        "path": "assets/ui-cs2/incgrenade.svg",
+        "bytes": 13523,
+        "sha256": "81b74b9af559ca2cc0e1b936ace1307fb152be0366467393da3c18baa937075d"
+      },
+      {
+        "path": "assets/ui-cs2/decoy.svg",
+        "bytes": 1987,
+        "sha256": "57aa96423dd5155a22608e99423082df557984974f66e19c4a04e5ab9af69e8b"
+      },
+      {
+        "path": "assets/audio/cs2/manifest.json",
+        "bytes": 136871,
+        "sha256": "a4d35f319ffabab90880aa55a3534e41dd0921aa4e3e5cc1d10750c609f1114f"
+      }
+    ],
+    "at": "2026-09-11T03:53:33.237Z"
+  },
+  "portable": {
+    "archive": "H:\\playfround\\dust2-web\\artifacts\\portable\\DustII-Windows-x64-20260911-034243.zip",
+    "sha256": "3a33a6de940815ab1746fbacfd1716659ff04762d9858a30f638b6562b68d997",
+    "zipCRC": true,
+    "zipEntries": 2402,
+    "verifiedFiles": 2401,
+    "sourceCommit": "848ac763a47bd5de074c1da821ae14858d421f5f",
+    "sourceDirty": false,
+    "extractedRoot": "H:\\playfround\\dust2-web\\artifacts\\portable\\验证目录 新包 20260911\\DustII-Windows-x64-20260911-034243",
+    "browser": {
+      "mode": "offline",
+      "players": 4,
+      "bots": 3,
+      "viewModel": {
+        "id": "molotov",
+        "skinId": "molotov",
+        "waiting": false,
+        "visible": true,
+        "action": "draw"
+      },
+      "settings": {
+        "sensitivity": 1,
+        "zoomSensitivity": 1,
+        "crosshair": {
+          "style": 4,
+          "size": 1,
+          "thickness": 1.5,
+          "gap": -4,
+          "color": 5,
+          "red": 0,
+          "green": 255,
+          "blue": 165,
+          "alpha": 255,
+          "outlineThickness": 0,
+          "fixedCrosshairGap": 0,
+          "splitDistance": 3,
+          "innerSplitAlpha": 0,
+          "outerSplitAlpha": 1,
+          "splitSizeRatio": 1,
+          "useAlpha": true,
+          "dot": false,
+          "outline": false,
+          "tStyle": false,
+          "followRecoil": false,
+          "gapUseWeaponValue": false
+        },
+        "quality": "low",
+        "brightness": 100
+      },
+      "nonLocalRequests": [],
+      "errors": [],
+      "requestCount": 923
+    },
+    "onlineBrowser": {
+      "room": "DB44FF",
+      "team": "T",
+      "utility": "molotov",
+      "counts": {
+        "hegrenade": 0,
+        "flashbang": 0,
+        "smokegrenade": 0,
+        "molotov": 0,
+        "incgrenade": 0,
+        "decoy": 0
+      },
+      "roundKills": 0,
+      "resourcesLocal": true,
+      "connection": {
+        "mode": "online",
+        "socketURL": "wss://cs2.duskrain.cn/ws"
+      },
+      "errors": [],
+      "failures": []
+    }
+  }
 }
