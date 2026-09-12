@@ -1,0 +1,5 @@
+.public-lobby{margin-top:20px;border-top:1px solid #ffffff28;padding-top:16px}.public-lobby header{display:flex;align-items:center;justify-content:space-between}.public-lobby h3{margin:4px 0;font-size:20px}.public-lobby p{font-size:12px;color:#acb8bd;line-height:1.6}.public-rooms{max-height:210px;overflow:auto;display:grid;gap:7px}.public-room{display:flex;flex-direction:column;text-align:left;gap:6px;padding:13px;background:#161f25}.public-room span{font-size:12px;color:#abb6bd}.public-room:hover{background:#334450}.public-lobby [data-recover]{margin-top:8px;color:#e8bd68}
+body{background:#000}#game-canvas{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%)}
+body.playing #hud{position:fixed;inset:auto;left:50%;top:50%;width:var(--game-width,100vw);height:var(--game-height,100vh);transform:translate(-50%,-50%) scale(var(--game-scale-x,1),var(--game-scale-y,1));transform-origin:center;overflow:hidden}
+html body.playing{background:#000}.config-row select{flex:0 1 65%;width:65%;min-width:0}.shop-refunds{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.shop-refunds button{color:#d4bd82}
+.match-card .public-room b{color:#edf1f2}

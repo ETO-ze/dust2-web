@@ -6,7 +6,7 @@ import { AGENT_ASSETS } from '../shared/agent-assets.js';
 import { AGENT_ARM_ASSETS } from '../shared/agent-arm-assets.js';
 const base=JSON.parse(await readFile('public/assets/asset-manifest.json','utf8'));
 const names=new Map(base.files.map(f=>[f.path,f.group]));
-for(const skin of SKINS){names.set(skin.model,'skin');names.set(skin.preview,'preview');}
+for(const skin of SKINS){names.set(skin.model,'skin');if(skin.animation)names.set(skin.animation.model,'skin');names.set(skin.preview,'preview');}
 for(const item of Object.values(UTILITY_ASSETS))names.set(item.model,'utility');
 for(const agent of Object.values(AGENT_ASSETS)){names.set(agent.model,'agent');if(agent.preview)names.set(typeof agent.preview==='string'?agent.preview:agent.preview.file,'preview');}
 for(const arms of Object.values(AGENT_ARM_ASSETS))names.set(arms.model,'agent');

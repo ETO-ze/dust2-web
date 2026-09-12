@@ -8,6 +8,7 @@ export class GameAudio {
   constructor() {
     this.ctx = null; this.volume = 0.6; this.ready = false; this.buffers = [];
     this.banks = new Map(); this.voices = new Set(); this.loading = null;
+    this.channelEpochs=new Map();this.playEpoch=0;
     this.lastWeapon = 'ak47'; this.lastTeam = 'T'; this.lastHitAt = -Infinity; this.lastKillAt = -Infinity;
   }
 
@@ -37,14 +38,9 @@ export class GameAudio {
     const response = await fetchCachedAsset(new URL('manifest.json', base));
     if (!response.ok) throw new Error(`CS2 音效清单加载失败 (${response.status})`);
     const manifest = await response.json();
-    const names = [...new Set(Object.values(manifest.banks).flat())], decoded = new Map();
-    let cursor=0;
-    await Promise.all(Array.from({length:4},async()=>{while(cursor<names.length){const name=names[cursor++];
-      const result = await fetchCachedAsset(new URL(name, base));
-      if (!result.ok) throw new Error(`CS2 音效加载失败：${name}`);
-      decoded.set(name, await this.ctx.decodeAudioData(await result.arrayBuffer()));
-    }}));
-    for (const [bank, files] of Object.entries(manifest.banks)) this.banks.set(bank, files.map(file => decoded.get(file)));
+    this.sampleManifest=manifest;this.sampleBase=base;this.decoded=new Map();this.decodePending=new Map();this.bankFiles=new Map();this.decodeJobs=[];this.activeDecoders=0;
+    const core=Object.keys(manifest.banks).filter(bank=>/^(ak47|glock|usp|knife|bomb|announce|hit|kill|headshot)/i.test(bank));
+    await Promise.all(core.map(bank=>this.loadBank(bank)));
     // Preserve the existing CC0 footstep samples; firing never falls back to synthesis.
     this.buffers = (await Promise.all(Array.from({ length: 5 }, async (_, i) => {
       try {
@@ -52,8 +48,25 @@ export class GameAudio {
         return response.ok ? await this.ctx.decodeAudioData(await response.arrayBuffer()) : null;
       } catch { return null; }
     }))).filter(Boolean);
-    this.sampleCount = decoded.size;
+    this.sampleCount = this.decoded.size;
   }
+
+  async loadBank(bank){
+    const file=this.sampleManifest?.banks[bank]?.[0];if(!file)return false;
+    let buffer=this.decoded.get(file);
+    if(!buffer){
+      let task=this.decodePending.get(file);
+      if(!task){task=new Promise((resolve,reject)=>{this.decodeJobs.push(async()=>{try{const r=await fetchCachedAsset(new URL(file,this.sampleBase));const value=await this.ctx.decodeAudioData(await r.arrayBuffer());this.decoded.set(file,value);resolve(value);}catch(e){reject(e);}});this.pumpDecoders();});this.decodePending.set(file,task);task.finally(()=>this.decodePending.delete(file)).catch(()=>{});}
+      buffer=await task;
+    }
+    this.decoded.delete(file);this.decoded.set(file,buffer);this.banks.set(bank,[buffer]);this.bankFiles.set(bank,file);
+    // Cap idle PCM buffers; active voices retain their own buffer until stopped.
+    let bytes=[...this.decoded.values()].reduce((n,b)=>n+b.length*b.numberOfChannels*4,0);
+    for(const [old,b]of this.decoded){if(bytes<=32*1048576&&this.decoded.size<=80)break;if(old===file)continue;this.decoded.delete(old);bytes-=b.length*b.numberOfChannels*4;for(const [name,f]of this.bankFiles)if(f===old){this.banks.delete(name);this.bankFiles.delete(name);}}
+    this.sampleCount=this.decoded.size;this.decodedBytes=bytes;return true;
+  }
+  pumpDecoders(){while(this.activeDecoders<2&&this.decodeJobs.length){this.activeDecoders++;this.decodeJobs.shift()().finally(()=>{this.activeDecoders--;this.pumpDecoders();});}}
+  prepareWeapon(id){const prefix=this.weaponId(id);for(const bank of Object.keys(this.sampleManifest?.banks||{}))if(bank.toLowerCase().startsWith(prefix.toLowerCase()))this.loadBank(bank).catch(()=>{});}
 
   setVolume(value) {
     this.volume = clamp(value, 0, 1);
@@ -69,7 +82,10 @@ export class GameAudio {
   play(bank, { level = 0.5, pan = 0, distance = 0, delay = 0, rate = 1, channel = 'effect', loop=false } = {}) {
     if (!this.ready) return null;
     const samples = this.banks.get(bank);
-    if (!samples?.length) return null;
+    if (!samples?.length){
+      if(this.sampleManifest?.banks[bank]){const requested=performance.now(),epoch=this.playEpoch,channelEpoch=this.channelEpochs.get(channel)||0;this.loadBank(bank).then(ok=>{const elapsed=(performance.now()-requested)/1000;if(ok&&!loop&&epoch===this.playEpoch&&channelEpoch===(this.channelEpochs.get(channel)||0)&&elapsed<Math.max(.35,delay+.2))this.play(bank,{level,pan,distance,delay:Math.max(0,delay-elapsed),rate,channel,loop});}).catch(()=>{});}
+      return null;
+    }
     if (channel === 'remote' && [...this.voices].filter(voice => voice.channel === channel).length >= 20) return null;
     if (this.voices.size >= 64) this.stopVoice(this.voices.values().next().value);
     const c = this.ctx, source = c.createBufferSource(), gain = c.createGain(), panner = c.createStereoPanner();
@@ -152,7 +168,8 @@ export class GameAudio {
     for(const [id,voice]of this.fireVoices)if(!near.some(f=>f.id===id)||voice.released){this.stopVoice(voice);this.fireVoices.delete(id);}
     for(const f of near){let voice=this.fireVoices.get(f.id);if(!voice){voice=this.play('fireLoop',{level:.15/(1+f.d*.12),distance:f.d,loop:true,channel:'fire'});if(voice)this.fireVoices.set(f.id,voice);}if(voice)voice.nodes[1].gain.setTargetAtTime(.15/(1+f.d*.12),this.ctx.currentTime,.1);}
   }
-  cancelDraw(){for(const voice of [...this.voices])if(voice.channel==='draw')this.stopVoice(voice);}
+  cancelChannel(channel){this.channelEpochs.set(channel,(this.channelEpochs.get(channel)||0)+1);for(const voice of [...this.voices])if(voice.channel===channel)this.stopVoice(voice);}
+  cancelDraw(){this.cancelChannel('draw');}
   releaseVoice(voice) {
     if (!voice || voice.released) return;
     voice.released = true;this.voices.delete(voice);voice.source.onended = null;
@@ -165,8 +182,8 @@ export class GameAudio {
     // cancelled voices now, so leaving/reloading cannot retain their graphs.
     this.releaseVoice(voice);
   }
-  cancelReload() { for (const voice of [...this.voices]) if (voice.channel === 'reload' || voice.channel === 'bolt') this.stopVoice(voice); }
-  stopAll() { for (const voice of [...this.voices]) this.stopVoice(voice); this.lastHitAt = this.lastKillAt = -Infinity; }
+  cancelReload() {this.cancelChannel('reload');this.cancelChannel('bolt');}
+  stopAll() {this.playEpoch++;for (const voice of [...this.voices]) this.stopVoice(voice); this.lastHitAt = this.lastKillAt = -Infinity; }
 
   step() {
     if (!this.ready || !this.buffers.length) return;

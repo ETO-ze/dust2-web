@@ -13,6 +13,7 @@ async function stores(){try{if(!globalThis.caches)return null;const n=cacheNames
 export function assetURL(value){return blobs.get(canonical(value))||value;}
 export function releaseDownloads(){for(const b of blobs.values())URL.revokeObjectURL(b);blobs.clear();}
 export function useDownloadedAssets(manager=DefaultLoadingManager){manager.setURLModifier(assetURL);}
+export async function isAssetSaved(sha256,bytes){const cache=await stores();if(!cache||!sha256)return false;const hit=await cache.assets.match(hashKey(sha256));return !!hit&&Number(hit.headers.get('x-dust2-bytes'))===bytes;}
 
 /** SHA-keyed immutable assets. Without a supplied hash, the computed SHA is
  * indexed by URL; use sha256 or a versioned URL when optional content changes.
@@ -80,14 +81,19 @@ async function collectAssets({signal,onProgress,makeBlobs=false}={}){
   try{const manifest=await loadManifest({signal}),total=manifest.files.reduce((n,f)=>n+f.bytes,0);
     let next=0,complete=0,bytes=0,lastBytes=0,lastTime=performance.now(),rate=0,cachedFiles=0;
     const tick=current=>{const now=performance.now(),elapsed=(now-lastTime)/1000;if(elapsed>.35){rate=(bytes-lastBytes)/elapsed;lastTime=now;lastBytes=bytes;}onProgress?.({bytes,total,complete,count:manifest.files.length,rate,current,cachedFiles});};tick('准备地图资源');
-    workers=Array.from({length:4},async()=>{while(next<manifest.files.length){check(signal);const file=manifest.files[next++],url=absolute(file.path);url.searchParams.set('v',file.sha256.slice(0,12));let seen=0,fromCache=false;
+    workers=Array.from({length:2},async()=>{while(next<manifest.files.length){check(signal);const file=manifest.files[next++],url=absolute(file.path);url.searchParams.set('v',file.sha256.slice(0,12));let seen=0,fromCache=false;
       const response=await fetchCachedAsset(url,{sha256:file.sha256,bytes:file.bytes,signal,onProgress:p=>{bytes+=p.loaded-seen;seen=p.loaded;fromCache=p.fromCache;tick(file.group);}});
       if(makeBlobs)blobs.set(canonical(url),URL.createObjectURL(await response.blob()));if(fromCache)cachedFiles++;complete++;tick(file.group);
     }});await Promise.all(workers);if(makeBlobs)useDownloadedAssets();return manifest;
   }catch(error){controller.abort();await Promise.allSettled(workers);if(makeBlobs)releaseDownloads();throw error;}
   finally{parent?.removeEventListener('abort',abort);}
 }
-export async function downloadAssets(options={}){return collectAssets({...options,makeBlobs:true});}
+export async function downloadAssets(options={}){
+  // A controlling worker can serve verified cache entries directly. Retaining
+  // every compressed file as a second set of Blob URLs only increases the peak.
+  const controlled=!!globalThis.navigator?.serviceWorker?.controller;
+  return collectAssets({...options,makeBlobs:!controlled});
+}
 export async function saveBaseAssets(options={}){
   if(!await stores())throw new Error('此浏览器无法使用离线缓存，请使用 HTTPS 或本机地址');await collectAssets({...options,makeBlobs:false});
   const stats=await getAssetCacheStats();if(!stats.complete)throw new Error('浏览器存储空间不足或缓存未能保存，请释放空间后重试');return stats;

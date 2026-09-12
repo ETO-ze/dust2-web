@@ -1,3 +1,4 @@
+import {tacticalGoal,shareSighting,botUtility,separateTeammates} from './bot-tactics.js';
 import { randomBytes } from 'node:crypto';
 import { MAP } from '../shared/map-data.js';
 import { createPlayerState, stepPlayer, raycastWorld, raycastWorldContact } from '../shared/physics.js';
@@ -332,9 +333,22 @@ export class GameRoom {
     else if(weapon==='helmet'){p.armor=100;p.helmet=true;}
     else if(weapon==='defusekit')p.defuseKit=true;
     else if(equipment?.slot===4){p.inventory[weapon]||={ammo:0,reserve:0};p.inventory[weapon].ammo++;}
-    else { for (const id of Object.keys(p.inventory)) if (getWeapon(id).slot === gun.slot){const ammo=p.inventory[id],drop=this.droppedWeapons.drop(p,{weaponId:id,skinId:this.heldSkin(p,id),ammo:ammo.ammo,reserve:ammo.reserve,...(ammo.reloadReadyAt?{reloadReadyAt:ammo.reloadReadyAt}:{})});delete p.inventory[id];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:id,skinId:drop.skinId,death:false});} this.giveWeapon(p, weapon);if(gun.slot===1)p.loadoutPrimary=weapon;p.reloadEndsAt=0;p.zoomLevel=0;this.selectSlot(p, gun.slot); }
+    else { for (const id of Object.keys(p.inventory)) if (getWeapon(id).slot === gun.slot){const ammo=p.inventory[id],drop=this.droppedWeapons.drop(p,{weaponId:id,skinId:this.heldSkin(p,id),ammo:ammo.ammo,reserve:ammo.reserve,...(ammo.reloadReadyAt?{reloadReadyAt:ammo.reloadReadyAt}:{})});delete p.inventory[id];if(p.purchases)delete p.purchases[id];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:id,skinId:drop.skinId,death:false});} this.giveWeapon(p, weapon);if(gun.slot===1)p.loadoutPrimary=weapon;p.reloadEndsAt=0;p.zoomLevel=0;this.selectSlot(p, gun.slot); }
+    if(gun&&price>0)(p.purchases||={})[weapon]={price,round:this.round.number,life:p.lifeId};
     this.emit('buy', { playerId: id, weapon, money: p.money });
     return { ok: true, weapon, slot:gun?.slot??equipment?.slot??0, money: p.money };
+  }
+
+  refundable(p){
+    if(!this.buyStatus(p).buyAllowed)return [];
+    return Object.entries(p.purchases||{}).filter(([id,r])=>p.inventory[id]&&r.round===this.round.number&&r.life===p.lifeId).map(([weapon,r])=>({weapon,price:r.price}));
+  }
+  refund(id,weapon){
+    const p=this.players.get(id),receipt=p&&this.refundable(p).find(r=>r.weapon===weapon);
+    if(!receipt)return {ok:false,message:'只能退还本回合在购买区购买且尚未使用、未丢弃的枪械。'};
+    this.cancelReload(p);delete p.inventory[weapon];delete p.purchases[weapon];p.money=Math.min(16000,p.money+receipt.price);
+    if(p.weapon===weapon)this.selectSlot(p,Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3);
+    this.emit('refund',{playerId:id,weapon,money:p.money});return {ok:true,weapon,money:p.money,refunded:true};
   }
 
   maybeStart() {
@@ -359,7 +373,7 @@ export class GameRoom {
       }
     }
     this.round = { number: this.round.number + 1, phase: 'freeze', phaseEndsAt: now + this.rules.freezeSeconds * 1000, buyEndsAt: now + (this.rules.freezeSeconds + this.rules.buySeconds) * 1000, winner: null, reason: '' };
-    this.bomb = this.emptyBomb();
+    this.bomb = this.emptyBomb();this.teamIntel={};this.botAttackSite=null;
     this.grenades.clear();this.defuseKits=[];
     this.droppedWeapons.clear();
     this.poseHistory.clear();
@@ -371,7 +385,7 @@ export class GameRoom {
   }
 
   respawn(p, newRound = false) {
-    p.lifeKills=0;p.killCards=[];p.lastKnifeAt=-Infinity;
+    p.purchases={};p.lifeKills=0;p.killCards=[];p.lastKnifeAt=-Infinity;
     delete p.inventory.c4;
     const spawn = this.pickSpawn(p.team);
     if (newRound && !p.alive) { p.inventory = {}; p.armor = 0;p.helmet=false;p.defuseKit=false; this.giveWeapon(p, p.team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(p, 'knife'); }
@@ -388,6 +402,8 @@ export class GameRoom {
       if (p.money >= WEAPONS[preferred].price) { p.money -= WEAPONS[preferred].price; this.giveWeapon(p, preferred); }
     }
     for (const id of Object.keys(p.inventory)) if(!UTILITY_IDS.includes(id)){const skinId=p.inventory[id].skinId;this.giveWeapon(p,id);if(skinId)p.inventory[id].skinId=skinId;}
+    p.botAI.utility=null;p.botAI.utilityAfter=this.clock()+6000+(p.seat||0)*400;p.botAI.lastKnown=null;p.botAI.lastSeenAt=0;p.botAI.routeKey=null;
+    if(newRound&&p.bot){for(const id of ['armor',...(p.team==='CT'?['defusekit']:[]),'smokegrenade','hegrenade','flashbang',p.team==='T'?'molotov':'incgrenade'])this.buy(p.id,id);}
     p.botAI.path = []; p.botAI.goal = null; p.botAI.targetId = null; p.botAI.nextThinkAt = 0;
     this.selectSlot(p, Object.keys(p.inventory).some(id => getWeapon(id).slot === 1) ? 1 : 2);
     this.emit('spawn', { playerId: p.id, x: p.x, y: p.y, z: p.z });
@@ -493,22 +509,22 @@ export class GameRoom {
     if(!p?.alive||this.match.status==='ended'||(!death&&!['live','freeze'].includes(this.round.phase))||!w||![1,2].includes(w.slot)||!p.inventory[w.id])return {ok:false,message:'当前没有可丢弃的枪械。'};
     this.cancelReload(p);
     const ammo=p.inventory[w.id],drop=this.droppedWeapons.drop(p,{weaponId:w.id,skinId:this.heldSkin(p,w.id),ammo:ammo.ammo,reserve:ammo.reserve,...(ammo.reloadReadyAt?{reloadReadyAt:ammo.reloadReadyAt}:{})});
-    delete p.inventory[w.id];p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'drop');
+    delete p.inventory[w.id];if(p.purchases)delete p.purchases[w.id];p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'drop');
     this.selectSlot(p,Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3);
     this.emit('weapon_dropped',{playerId:id,droppedId:drop.id,weaponId:w.id,skinId:drop.skinId,death});
     return {ok:true,id:drop.id,weaponId:w.id};
   }
-  pickupWeapon(p){
+  pickupWeapon(p,automatic=false){
     if(!p.alive||this.match.status==='ended')return false;
     const bombPriority=this.mode==='defuse'&&((p.hasBomb&&this.siteAt(p))||(p.team==='CT'&&this.bomb.state==='planted'&&dist(p,this.bomb)<2.8));
     if(bombPriority)return false;
-    const candidate=this.droppedWeapons.candidate(p);if(!candidate)return false;
+    const candidate=automatic?this.droppedWeapons.autoCandidate(p,slot=>Object.keys(p.inventory).some(id=>getWeapon(id).slot===slot),id=>getWeapon(id).slot):this.droppedWeapons.candidate(p);if(!candidate)return false;
     const w=getWeapon(candidate.weaponId),old=Object.keys(p.inventory).find(id=>getWeapon(id).slot===w.slot);
     const item=this.droppedWeapons.take(candidate.id);if(!item)return false;
-    this.cancelReload(p);
-    if(old){const ammo=p.inventory[old],drop=this.droppedWeapons.drop(p,{weaponId:old,skinId:this.heldSkin(p,old),ammo:ammo.ammo,reserve:ammo.reserve,...(ammo.reloadReadyAt?{reloadReadyAt:ammo.reloadReadyAt}:{})});delete p.inventory[old];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:old,skinId:drop.skinId,death:false});}
-    p.inventory[w.id]={ammo:item.ammo,reserve:item.reserve,skinId:item.skinId,...(item.reloadReadyAt?{reloadReadyAt:item.reloadReadyAt}:{})};p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'pickup');
-    this.selectSlot(p,w.slot);p.nextShotAt=Math.max(p.nextShotAt,this.clock()+250);
+    if(!automatic)this.cancelReload(p);
+    if(old){const ammo=p.inventory[old],drop=this.droppedWeapons.drop(p,{weaponId:old,skinId:this.heldSkin(p,old),ammo:ammo.ammo,reserve:ammo.reserve,...(ammo.reloadReadyAt?{reloadReadyAt:ammo.reloadReadyAt}:{})});delete p.inventory[old];if(p.purchases)delete p.purchases[old];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:old,skinId:drop.skinId,death:false});}
+    p.inventory[w.id]={ammo:item.ammo,reserve:item.reserve,skinId:item.skinId,...(item.reloadReadyAt?{reloadReadyAt:item.reloadReadyAt}:{})};if(!automatic){p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'pickup');}
+    if(!automatic){this.selectSlot(p,w.slot);p.nextShotAt=Math.max(p.nextShotAt,this.clock()+250);}
     this.emit('weapon_picked_up',{playerId:p.id,droppedId:item.id,weaponId:w.id,skinId:item.skinId});return true;
   }
 
@@ -534,7 +550,7 @@ export class GameRoom {
     }
     if(state.releaseInput)return;
     if(held){state.mode=grenadeMode(input.fire,input.fire2);if(input.fire&&input.fire2)state.lastChordAt=now;}
-    else {if(now-state.lastChordAt<=60)state.mode='lob';state.releaseInput={yaw:input.yaw,pitch:input.pitch};}
+    else {if(now-state.lastChordAt<=60)state.mode='lob';state.releaseInput={yaw:input.yaw,pitch:input.pitch,moveId:input.moveId||0,jumpId:input.jumpId||0};}
   }
 
   stepGrenade(p){
@@ -542,6 +558,7 @@ export class GameRoom {
     const now=this.clock();
     if(!p.alive||this.round.phase!=='live'||p.weapon!==state.weapon||now-p.inputAt>=300){this.cancelGrenade(p,'inactive');return;}
     if(!state.releaseInput||now<state.readyAt||now<p.nextShotAt)return;
+    if(p.movementStream&&(p.movementStream.ack<state.releaseInput.moveId||(p.lastJumpId||0)<state.releaseInput.jumpId))return;
     const ammo=p.inventory[state.weapon],w=getWeapon(state.weapon);
     if(!ammo?.ammo||!this.grenades.throwGrenade(p,state.weapon,{...state.releaseInput,throwMode:state.mode,throwStrength:grenadeStrength(state.mode)})){this.cancelGrenade(p,'unavailable');return;}
     ammo.ammo--;if(ammo.ammo===0)delete p.inventory[state.weapon];
@@ -560,7 +577,7 @@ export class GameRoom {
     // A loaded shell can be fired to interrupt a shell-by-shell reload.
     if(p.reloadEndsAt){if(w.reloadStyle==='shell'&&ammo.ammo>0)p.reloadEndsAt=0;else return;}
     if(now<(ammo.reloadReadyAt||0)||w.magazine&&ammo.ammo<=0)return;
-    if(w.magazine)ammo.ammo--;
+    if(w.magazine){ammo.ammo--;if(p.purchases)delete p.purchases[w.id];}
     p.lastShotTime=now;p.nextShotAt=(command?Math.max(command.receivedAt,p.nextShotAt):now)+w.fireInterval*1000;p.protectionUntil=0;
     const zoomLevel=clamp(command?input.zoomLevel:p.zoomLevel||0,0,w.zoomFovs.length-1),scoped=zoomLevel>0;
     const accuracy=accuracyForShot(w,p,zoomLevel),targets=this.shotTargets(command?.input.viewTime,command?.receivedAt??now);
@@ -744,6 +761,7 @@ export class GameRoom {
 
   chooseBotGoal(p) {
     const ai = p.botAI, bomb = this.bomb;
+    if(this.mode==='defuse')return tacticalGoal(this,p);
     if (this.mode === 'defuse') {
       if (bomb.state === 'planted') return copyPoint(bomb);
       if (p.team === 'T' && bomb.state === 'dropped') return copyPoint(bomb);
@@ -772,14 +790,14 @@ export class GameRoom {
       if(enemy&&enemy.id===ai.targetId&&visible[0]!==enemy&&now-(ai.targetChangedAt||0)>1200&&dist(p,visible[0])<dist(p,enemy)*.65)enemy=visible[0];
       if(enemy){
         if(ai.targetId!==enemy.id){ai.reactionAt=now+420+Math.random()*240;ai.targetChangedAt=now;ai.alignedFor=0;}
-        ai.targetId=enemy.id;ai.lastKnown=copyPoint(enemy);ai.lastSeenAt=now;
+        ai.targetId=enemy.id;ai.lastKnown=copyPoint(enemy);ai.lastSeenAt=now;shareSighting(this,p,enemy);
         if(p.health<40&&Math.random()<.25){
           const node=this.nearestNav(p);
           const cover=(node?.neighbors||[]).map(id=>this.navMap.get(String(id))).find(n=>n&&!clearSight(eye(enemy),{x:n.x,y:n.y+1.3,z:n.z}));
           if(cover){ai.goal=copyPoint(cover);ai.path=this.planPath(p,cover);}
         }
       }else if(blind||!current?.alive||now-ai.lastSeenAt>600){ai.targetId=null;ai.alignedFor=0;}
-      if(!ai.goal||!ai.path.length||lengthXZ(p,ai.goal)<1.6||now>ai.wanderAt){ai.goal=this.chooseBotGoal(p);ai.path=this.planPath(p,ai.goal);ai.wanderAt=now+5500+Math.random()*3000;}
+      if(!ai.goal||(!ai.path.length&&lengthXZ(p,ai.goal)>2)||now>ai.wanderAt){ai.goal=this.chooseBotGoal(p);ai.path=this.planPath(p,ai.goal);ai.wanderAt=now+(this.mode==='defuse'?1600:5500)+Math.random()*400;}
       if(!ai.previous||lengthXZ(ai.previous,p)>.55){ai.previous=copyPoint(p);ai.stuckAt=now;}
       else if(now-ai.stuckAt>2500){ai.goal=null;ai.path=[];ai.stuckAt=now;}
     }
@@ -805,10 +823,11 @@ export class GameRoom {
     }
     const ammo=p.inventory[p.weapon];if(ammo&&ammo.ammo<3)input.reload=true;
     if(this.mode==='defuse'){
-      const plant=p.hasBomb&&this.siteAt(p),defuse=p.team==='CT'&&this.bomb.state==='planted'&&dist(p,this.bomb)<2.6;
+      const plant=p.hasBomb&&this.siteAt(p),defuse=p.team==='CT'&&p.botAI.role==='defuser'&&this.bomb.state==='planted'&&dist(p,this.bomb)<2.6;
       if(plant||defuse){input.forward=input.right=0;input.fire=input.jump=false;input.interact=true;}
     }
-    return input;
+    separateTeammates(this,p,input);
+    return botUtility(this,p,input,dt);
   }
 
   tick(dt = 1 / TICK_RATE) {
@@ -820,24 +839,26 @@ export class GameRoom {
       if (this.round.phase === 'freeze' && now >= this.round.phaseEndsAt) { this.round.phase = 'live'; this.round.phaseEndsAt = now + this.rules.roundSeconds * 1000; }
       else if (this.round.phase === 'ended' && now >= this.round.phaseEndsAt) { if (this.count('T') && this.count('CT')) this.startRound(); else { this.round.phase = 'waiting'; this.round.phaseEndsAt = 0; } }
     }
-    const canAct = this.round.phase === 'live';
+    const canAct = this.round.phase === 'live', canMove=canAct||this.round.phase==='ended';
     for (const p of this.players.values()) {
       if(this.match.status==='ended')break;
       if (!p.alive) { if (p.respawnAt && now >= p.respawnAt) this.respawn(p); continue; }
       const input = p.bot ? this.botInput(p, dt) : now - p.inputAt < 300 ? { ...p.input } : { ...neutralInput(), yaw: p.yaw || 0, pitch: p.pitch || 0 };
+      if(p.bot){this.captureGrenadeInput(p,input);p.input={...input};p.inputAt=now;}
       p.pendingFire = false;
       if(!p.bot){
         const fresh=now-p.inputAt<300;
         if(fresh&&(input.reloadId||0)>(p.lastReloadId||0))input.reload=true;
         p.lastReloadId=Math.max(p.lastReloadId||0,p.input.reloadId||0);
-        if(!fresh||(!canAct&&this.mode==='defuse')){p.lastJumpId=Math.max(p.lastJumpId||0,p.input.jumpId||0);p.jumpBufferRemaining=0;}
+        if(!fresh||(!canMove&&this.mode==='defuse')){p.lastJumpId=Math.max(p.lastJumpId||0,p.input.jumpId||0);p.jumpBufferRemaining=0;}
       }
       p.seq = Math.max(p.seq, p.input.seq ?? -1);
       this.commitReload(p);
-      if (!canAct && this.mode === 'defuse') Object.assign(input, { forward: 0, right: 0, jump: false, fire: false, interact: false });
+      if(!canMove)Object.assign(input,{forward:0,right:0,jump:false});
+      if(!canAct)Object.assign(input,{fire:false,fire2:false,interact:false});
       p.objectiveLocked=canAct&&!!this.bombIntent(p,input);
       if(p.objectiveLocked){input.crouch=true;input.forward=input.right=0;input.jump=input.reload=false;p.vx=p.vy=p.vz=0;p.jumpBufferRemaining=0;if(this.bombIntent(p,input)==='plant')input.slot=5;}
-      const movementOptions={canMove:canAct,speedLimit:weaponSpeedScale(p.weapon,p.zoomLevel)};
+      const movementOptions={canMove,speedLimit:weaponSpeedScale(p.weapon,p.zoomLevel)};
       const shotMove=p.fireQueue?.[0]?.input.moveId;
       if(p.movementStream){
         // Timer callbacks can arrive late. Accrue real server time, then run
@@ -858,7 +879,7 @@ export class GameRoom {
       p.effectiveInput = input;
       p.yaw = input.yaw; p.pitch = input.pitch;
       if(p.movementStream){
-        p.movementStream.advance(p,0,{canMove:canAct,speedLimit:input.speedScale},awaitingShotMove?shotMove:Infinity);
+        p.movementStream.advance(p,0,{canMove,speedLimit:input.speedScale},awaitingShotMove?shotMove:Infinity);
         // View/fire input remains immediate; queued movement never rewinds aim.
         p.yaw=input.yaw;p.pitch=input.pitch;
       }else stepPlayer(p, input, dt);
@@ -869,6 +890,7 @@ export class GameRoom {
       if(canAct&&!input.fire&&!input.cancelGrenade&&now-p.inputAt<300&&now>=p.nextShotAt&&!p.fireQueue?.length&&getWeapon(p.weapon).magazine&&heldAmmo?.ammo===0)this.reload(p);
       if((canAct||this.round.phase==='freeze')&&!p.bot&&p.pendingInteract&&now-p.inputAt<300)this.pickupWeapon(p);
       p.pendingInteract=false;
+      if(canMove||this.round.phase==='freeze')this.pickupWeapon(p,true);
       if (canAct&&!p.objectiveLocked) {this.stepGrenade(p);if(!p.shotCommands&&!queuedShot)this.fire(p,input);}
     }
     if(canAct)this.grenades.tick(dt);
@@ -893,7 +915,7 @@ export class GameRoom {
       reserveAmmoAsClips:!!getWeapon(p.weapon).reserveAmmoAsClips,reserveClips:getWeapon(p.weapon).reserveAmmoAsClips?Math.ceil((p.inventory[p.weapon]?.reserve||0)/getWeapon(p.weapon).magazine):0,
       grenadeState:p.grenadeState?{state:'primed',weapon:p.grenadeState.weapon,mode:p.grenadeState.mode,strength:grenadeStrength(p.grenadeState.mode),primedAt:p.grenadeState.primedAt}:{state:'idle',weapon:null,mode:'full',strength:1,primedAt:0},
       reloadRemaining: Math.max(0, (p.reloadEndsAt - now) / 1000),reloadDuration:p.reloadEndsAt?getWeapon(p.weapon).reloadTime:0,reloadElapsed:p.reloadEndsAt?Math.max(0,(now-p.reloadStartedAt)/1000):0,reloadEmpty:!!p.reloadEmpty,reloadCommitted:!!p.reloadEndsAt&&!!p.reloadCommitted,fireReadyRemaining:Math.max(0,((p.inventory[p.weapon]?.reloadReadyAt||0)-now)/1000), money: p.money, kills: p.kills, deaths: p.deaths, assists: p.assists, seq: p.seq,
-      ...this.buyStatus(p), inventory: Object.keys(p.inventory), hasBomb: p.hasBomb,bombAction:this.bomb.actorId===p.id?this.bomb.action:null,bombProgress:this.bomb.actorId===p.id?this.bomb.progress:0,bombActionDuration:this.bomb.action==='plant'?this.rules.plantSeconds:p.defuseKit?this.rules.defuseKitSeconds:this.rules.defuseSeconds, spawnProtectionRemaining: Math.max(0, (p.protectionUntil - now) / 1000),
+      ...this.buyStatus(p), refundable:this.refundable(p), inventory: Object.keys(p.inventory), hasBomb: p.hasBomb,bombAction:this.bomb.actorId===p.id?this.bomb.action:null,bombProgress:this.bomb.actorId===p.id?this.bomb.progress:0,bombActionDuration:this.bomb.action==='plant'?this.rules.plantSeconds:p.defuseKit?this.rules.defuseKitSeconds:this.rules.defuseSeconds, spawnProtectionRemaining: Math.max(0, (p.protectionUntil - now) / 1000),
       roundKills:p.roundKills||0,lifeKills:p.lifeKills||0,killCards:p.killCards||[],
       respawnIn: p.respawnAt ? Math.max(0, (p.respawnAt - now) / 1000) : 0, lastShotTime: p.lastShotTime }));
     const events = drainEvents ? this.events.splice(0) : [...this.events];

@@ -484,7 +484,67 @@
       "capturedOn": "2026-09-11",
       "url": "http://127.0.0.1:3003/",
       "note": "Controlled local game QA"
+    },
+    {
+      "file": "extras-butterfly-game.png",
+      "source": "output/playwright/extras-butterfly-game.png",
+      "sha256": "2fd26b4478be6fcbfae359d0f4ae60af7c409366a63f0bcfc63c06bc0207f66c",
+      "bytes": 1277358,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-13",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "extras-m9-final.png",
+      "source": "output/playwright/extras-m9-final.png",
+      "sha256": "d1255bc94095acd7dd22fb6f384429fe7a5c7a22d921ad76b1459d7b268af812",
+      "bytes": 1399563,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-13",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "extras-settings.png",
+      "source": "output/playwright/extras-settings.png",
+      "sha256": "7dc6f56f80ab8169dc55ea8472bb1c893a7cccd10980e4346bef57b5fd4d0e78",
+      "bytes": 264863,
+      "width": 1440,
+      "height": 1000,
+      "modified": false,
+      "capturedOn": "2026-09-13",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "extras-lobby.png",
+      "source": "output/playwright/extras-lobby.png",
+      "sha256": "49245ecc7123f8034f7d30e53b149fe50bee5bab76427113d93286a12cfb65b5",
+      "bytes": 1299040,
+      "width": 1440,
+      "height": 1000,
+      "modified": false,
+      "capturedOn": "2026-09-13",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
+    },
+    {
+      "file": "extras-music.png",
+      "source": "output/playwright/extras-music.png",
+      "sha256": "75bd2b02ead28cf4bf199555db05aaa9928edbf86eac1bb6d116d0d9f3c879b0",
+      "bytes": 229743,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-13",
+      "url": "http://127.0.0.1:3003/",
+      "note": "Controlled local game QA"
     }
   ],
-  "updatedOn": "2026-09-11"
+  "updatedOn": "2026-09-13"
 }

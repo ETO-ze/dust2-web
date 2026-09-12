@@ -1,3 +1,6 @@
+import {normalizeVideo,viewportSize} from '../shared/video-settings.js';
+import {mountLobby} from './lobby.js';
+import {preferences} from './persistence.js';
 import {MatchAudio,mountMusicSettings} from './match-audio.js';
 import {BombView} from './bomb-view.js';
 import {RoomMenu} from './room-menu.js';
@@ -74,6 +77,7 @@ const frameSamples=[];
 function frameStats(){const percentile=key=>{const values=frameSamples.map(s=>s[key]).sort((a,b)=>a-b);return Math.round((values[Math.floor(values.length*.95)]||0)*100)/100;};return {samples:frameSamples.length,frameP95Ms:percentile('frame'),cpuP95Ms:percentile('cpu'),actorsP95Ms:percentile('actors'),renderSubmitP95Ms:percentile('render')};}
 let diagnosticStorage=null;try{diagnosticStorage=localStorage;}catch{}
 const diagnostics=new RuntimeDiagnostics(diagnosticStorage);
+if(document.wasDiscarded)diagnostics.event('browser-discard-restored');
 let contextLost=false,spectating=null;
 
 let viewWeapon=null, socket=null,myId=null,room=null,mode='defuse',snapshot=null,self=null;
@@ -86,16 +90,17 @@ const handledEvents=new Set();
 let previousWeapon=null,previousReload=0;
 let modelsReady=false,mapResultCache=null;
 let serverAmmo=0,pendingShots=[],lastSentInputSeq=-1,shotId=0,lastShotEvidence=null;
-let storedSettings={};try{storedSettings=JSON.parse(localStorage.getItem('dust2.cs-settings.v1')||'{}');}catch{}
+let storedSettings=preferences.readJSON('dust2.cs-settings.v1');
+let video=normalizeVideo(storedSettings),viewport=viewportSize(innerWidth,innerHeight,video);
 let sensitivity=Math.max(.05,Math.min(20,Number(storedSettings.sensitivity)||1));
 let zoomSensitivity=Math.max(.05,Math.min(5,Number(storedSettings.zoomSensitivity)||1));
 let crosshairSettings=normalizeCrosshair(storedSettings.crosshair||DEFAULT_CROSSHAIR);
-let quality=localStorage.getItem('dust2.quality.v2')||'low';
-let brightness=Math.max(60,Math.min(160,Number(localStorage.getItem('dust2.brightness'))||100));
+let quality=preferences.getItem('dust2.quality.v2')||'low';
+let brightness=Math.max(60,Math.min(160,Number(preferences.getItem('dust2.brightness'))||100));
 let utilityId='hegrenade';
 let zoomLevel=0, resumeZoom=0, zoomResumeAt=0, lastSlot=2, jumpId=0, reloadId=0;
 const crosshair=new Crosshair($('crosshair'),{settings:crosshairSettings});
-const controls=new GameControls({target:window,enabled:(action)=>{
+const controls=new GameControls({target:window,storage:preferences,enabled:(action)=>{
   if(!connected||snapshot?.match?.status==='ended'||$('settings-menu')?.hidden===false||$('skin-menu')?.hidden===false||$('offline-menu')?.hidden===false||$('agent-menu')?.hidden===false||$('room-menu')?.hidden===false)return false;
   if(['buy','menu'].includes(action))return true;
   if(action==='scoreboard')return document.pointerLockElement===canvas&&$('buy-menu').hidden&&$('pause-menu').hidden;
@@ -107,14 +112,15 @@ const shop=new WeaponShop($('buy-menu'),{buy:async weapon=>{
   if(wait)await new Promise(resolve=>setTimeout(resolve,wait));
   if(!connected||socket!==connection){shop.result({ok:false,message:'连接已断开，请重新加入。'});return;}
   send({type:'buy',weapon});
-},close:()=>toggleBuy()});
-const settingsUI=mountSettings({controls,crosshair,getSettings:()=>({sensitivity,zoomSensitivity,crosshair:crosshairSettings,quality,brightness}),onSettings:values=>{
+},refund:weapon=>send({type:'refund',weapon}),close:()=>toggleBuy()});
+const settingsUI=mountSettings({controls,crosshair,getSettings:()=>({sensitivity,zoomSensitivity,crosshair:crosshairSettings,quality,brightness,...video}),onSettings:values=>{
+  if(values.aspect!==undefined||values.display!==undefined){video=normalizeVideo({...video,...values});resizeViewport();}
   if(values.sensitivity!==undefined)sensitivity=values.sensitivity;
   if(values.zoomSensitivity!==undefined)zoomSensitivity=values.zoomSensitivity;
   if(values.crosshair)crosshairSettings=values.crosshair;
   if(values.quality!==undefined)setQuality(values.quality);
   if(values.brightness!==undefined)setBrightness(values.brightness);
-  localStorage.setItem('dust2.cs-settings.v1',JSON.stringify({sensitivity,zoomSensitivity,crosshair:crosshairSettings,quality,brightness}));
+  preferences.setItem('dust2.cs-settings.v1',JSON.stringify({sensitivity,zoomSensitivity,crosshair:crosshairSettings,quality,brightness,...video}));
   $('sensitivity').value=sensitivity;$('sens-value').textContent=sensitivity.toFixed(2);
 }});
 mountMusicSettings(settingsUI,matchAudio,audio);
@@ -133,10 +139,10 @@ const agentsUI=new AgentMenu({onEquip:async agent=>{
 }});
 const roomMenu=new RoomMenu({send,invite,onClose:resume=>{controls.clear();if(resume)lockPointer();else $('pause-menu').hidden=false;}});
 const offlineMenu=mountOfflineMenu();
-let volume=Number(localStorage.getItem('dust2.volume')??.6);
+let volume=Number(preferences.getItem('dust2.volume')??.6);
 
 audio.setVolume(volume);$('volume').value=volume;$('vol-value').textContent=`${Math.round(volume*100)}%`;$('sensitivity').value=sensitivity;$('sens-value').textContent=sensitivity.toFixed(2);$('quality').value=quality;
-$('nickname').value=localStorage.getItem('dust2.name')||'Player';
+$('nickname').value=preferences.getItem('dust2.name')||'Player';
 const initialQuery=new URLSearchParams(location.search);if(initialQuery.has('room')){$('room-code').value=initialQuery.get('room').replace(/[^A-Za-z0-9]/g,'').slice(0,12);$('menu-status').textContent='好友邀请已就绪，输入呼号后点击加入房间。';}
 
 function setLoadStage(stage,label){
@@ -166,17 +172,18 @@ const paint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationF
 function send(data){if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify(data));}
 function sendInput(input){if(input.seq<=lastSentInputSeq)return;lastSentInputSeq=input.seq;send({type:'input',...input,...(movementSupported?{moves:movementPrediction.packet(),moveId:movementPrediction.nextId}: {})});}
 function controlsEnabled(){return connected&&document.pointerLockElement===canvas&&$('buy-menu').hidden&&$('pause-menu').hidden&&self?.alive&&snapshot?.round?.phase==='live';}
+function movementControlsEnabled(){return connected&&document.pointerLockElement===canvas&&$('buy-menu').hidden&&$('pause-menu').hidden&&self?.alive&&['live','ended'].includes(snapshot?.round?.phase);}
 function equipmentControlsEnabled(){return connected&&document.pointerLockElement===canvas&&$('buy-menu').hidden&&$('pause-menu').hidden&&self?.alive&&['live','freeze'].includes(snapshot?.round?.phase);}
 function currentInput(){
-  const enabled=controlsEnabled();
-  if(controls.consume('jump')&&enabled)jumpId++;
+  const enabled=controlsEnabled(),moving=movementControlsEnabled();
+  if(controls.consume('jump')&&moving)jumpId++;
   if(controls.consume('reload')&&enabled)reloadId++;
   const firePressed=controls.consume('fire');
   // A render frame can occur without a 60 Hz simulation step. Retain a short click
   // until simulation consumes it, just as jump/reload IDs survive between ticks.
   const utility=slot===4;
   if(!enabled||utility)pendingFirePress=false;else if(firePressed)pendingFirePress=true;
-  return {seq:++seq,forward:enabled?(Number(controls.down('forward'))-Number(controls.down('back'))):0,right:enabled?(Number(controls.down('right'))-Number(controls.down('left'))):0,yaw:lookYaw,pitch:aimPitch(lookPitch,recoil),jump:enabled&&controls.down('jump'),jumpId,crouch:enabled&&controls.down('crouch'),walk:enabled&&controls.down('walk'),fire:enabled&&(utility?controls.down('fire'):(mouseFire||pendingFirePress)),fire2:enabled&&(utility||self?.weapon==='knife')&&(controls.down('altFire')||pendingAltFirePress),cancelGrenade:!enabled,reload:enabled&&controls.down('reload'),reloadId,slot,utilityId,zoomLevel,speedScale:weaponSpeedScale(self?.weapon,zoomLevel),interact:equipmentControlsEnabled()&&controls.down('interact'),viewTime:remotePlayers.viewTime||null};
+  return {seq:++seq,forward:moving?(Number(controls.down('forward'))-Number(controls.down('back'))):0,right:moving?(Number(controls.down('right'))-Number(controls.down('left'))):0,yaw:lookYaw,pitch:aimPitch(lookPitch,recoil),jump:moving&&controls.down('jump'),jumpId,crouch:moving&&controls.down('crouch'),walk:moving&&controls.down('walk'),fire:enabled&&(utility?controls.down('fire'):(mouseFire||pendingFirePress)),fire2:enabled&&(utility||self?.weapon==='knife')&&(controls.down('altFire')||pendingAltFirePress),cancelGrenade:!enabled,reload:enabled&&controls.down('reload'),reloadId,slot,utilityId,zoomLevel,speedScale:weaponSpeedScale(self?.weapon,zoomLevel),interact:equipmentControlsEnabled()&&controls.down('interact'),viewTime:remotePlayers.viewTime||null};
 }
 function resetScope(){zoomLevel=0;scoped=false;resumeZoom=0;zoomResumeAt=0;}
 function zoomFov(){return getWeapon(self?.weapon).zoomFovs?.[zoomLevel]||CS2_BASE_FOV;}
@@ -264,9 +271,10 @@ function connect(joinExisting){
   const url=connection.socketURL;
   socket=new WebSocket(url);const activeSocket=socket;
   const timeout=setTimeout(()=>{if(!connected&&socket===activeSocket){$('menu-status').textContent='服务器连接超时，请确认游戏服务已启动。';socket.close();}},15000);
-  socket.addEventListener('open',()=>{if(socket!==activeSocket)return;const name=$('nickname').value.trim()||'Player';localStorage.setItem('dust2.name',name);activeSocket.send(JSON.stringify({type:'join',name,movementProtocol:1,room:joinExisting?$('room-code').value.trim().toUpperCase():undefined,mode:$('mode').value,team:$('team').value,primary,skins:skins.loadout,agents:agentsUI.loadout,bots:Number($('bots').value)}));});
+  socket.addEventListener('open',()=>{if(socket!==activeSocket)return;const name=$('nickname').value.trim()||'Player';preferences.setItem('dust2.name',name);activeSocket.send(JSON.stringify({type:'join',existing:joinExisting,name,movementProtocol:1,room:joinExisting?$('room-code').value.trim().toUpperCase():undefined,mode:$('mode').value,team:$('team').value,primary,skins:skins.loadout,agents:agentsUI.loadout,bots:Number($('bots').value)}));});
   socket.addEventListener('message',e=>{if(socket!==activeSocket)return;let data;try{data=JSON.parse(e.data);}catch{return;}
     if(data.type==='welcome'){
+      preferences.setItem('dust2.last-session',JSON.stringify({room:data.room,mode:data.mode,at:Date.now()}));
       movementSupported=data.movementProtocol===1;movementPrediction.reset();fixed=0;networkAcc=0;
       clearTimeout(timeout);displayedHostBots=null;matchPresentation.reset();myId=data.id;room=data.room;mode=data.mode;connected=true;seq=0;shotId=0;lastShotEvidence=null;remotePlayers.clear();frameSamples.length=0;jumpId=0;reloadId=0;resetScope();controls.clear();lastSentInputSeq=-1;pendingShots=[];self=null;lastSnapshotAlive=false;previousHealth=100;handledEvents.clear();previousWeapon=null;previousReload=0;hud.reset();matchView.reset();spectating=null;diagnostics.event('connected');
       document.exitPointerLock?.();document.body.classList.remove('mouse-captured');$('loading-screen').hidden=true;
@@ -278,6 +286,7 @@ function connect(joinExisting){
     } else if(data.type==='snapshot'){handleSnapshot(data);}
     else if(data.type==='agentEquipped'){if(pendingAgentEquip?.id===data.agent)pendingAgentEquip.resolve();hud.toast(`已装备 ${getAgent(data.agent)?.name||'探员'}`);}
     else if(data.type==='skinEquipped'){if(pendingSkinEquip?.skin===data.skin)pendingSkinEquip.resolve();hud.toast(`已装备 ${getSkin(data.skin)?.name||'新皮肤'}`);}
+    else if(data.type==='refund'){lastBuyAckAt=performance.now();shop.result(data);hud.toast('已退还 '+getWeapon(data.weapon).name);}
     else if(data.type==='purchase'){lastBuyAckAt=performance.now();shop.result(data);if(data.slot>0){lastSlot=slot;slot=data.slot;if(data.slot===4)utilityId=data.weapon;resetScope();}hud.toast(`已购买 ${(EQUIPMENT[data.weapon]||getWeapon(data.weapon)).name}`);}
     else if(data.type==='pong'){ping=Math.round(performance.now()-data.time);}
     else if(data.type==='botsUpdated'){hud.toast(data.ok?'机器人数量已更新':data.message||'更新未完成');}
@@ -300,9 +309,10 @@ function handleSnapshot(data){
   if(previousWeapon!==p.weapon||!p.alive||!lastSnapshotAlive||p.ammo>serverAmmo)pendingShots=[];
   else if(p.ammo<serverAmmo)pendingShots.splice(0,serverAmmo-p.ammo);
   serverAmmo=p.ammo;
-  if(previousWeapon!==p.weapon||!p.alive){audio.cancelReload();audio.cancelDraw();if(p.alive)audio.draw(p.weapon);resetScope();}
+  if(previousWeapon!==p.weapon||!p.alive){audio.cancelReload();audio.cancelDraw();if(p.alive){audio.prepareWeapon(p.weapon);audio.draw(p.weapon);}resetScope();}
   if(p.alive&&p.reloadRemaining>0&&(previousReload<=0||previousWeapon!==p.weapon||getWeapon(p.weapon).reloadStyle==='shell'&&p.reloadRemaining>previousReload+.05))audio.weaponReload(p.weapon,{team:p.team,duration:p.reloadDuration||p.reloadRemaining,elapsed:p.reloadElapsed,empty:p.reloadEmpty});
   if(previousWeapon&&getWeapon(previousWeapon).slot>=4&&getWeapon(p.weapon).slot<4){slot=p.slot;mouseFire=false;pendingFirePress=false;pendingAltFirePress=false;}
+  if(!p.inventory.some(id=>getWeapon(id).slot===slot))slot=p.slot;
   if(previousWeapon!==p.weapon&&p.slot===4)utilityId=p.weapon;
   if(p.weapon==='c4'&&p.bombAction==='plant')slot=5;
   previousWeapon=p.weapon;previousReload=p.reloadRemaining;
@@ -381,9 +391,9 @@ function showMenu(){matchAudio.stop();bombView.clear();roomMenu.element.hidden=t
 function toggleBuy(){if(!connected)return;if(!self?.alive&&$('buy-menu').hidden){hud.toast('阵亡时无法购买，重生或下一回合后可打开商店。');return;}if($('buy-menu').hidden){$('buy-menu').hidden=false;$('pause-menu').hidden=true;mouseFire=false;resetScope();controls.clear();shop.update({player:{...self,skins:skins.loadout},mode,round:snapshot?.round,time:snapshot?.time});document.exitPointerLock();$('close-buy').focus();}else{$('buy-menu').hidden=true;lockPointer();}}
 
 async function invite(){if(!room)return;if(connection.offline){hud.toast('当前是本机练习；与朋友对战请使用“在线联机”启动入口');return;}let url=new URL(location.href);url.searchParams.set('room',room);if(inviteBase){url=new URL(inviteBase);url.searchParams.set('room',room);}try{await navigator.clipboard.writeText(url.href);hud.toast('邀请链接已复制，发送给朋友即可加入');}catch{hud.toast(`房间 ${room} · ${url.href}`);}}
-function setQuality(value){quality=value==='high'?'high':'low';localStorage.setItem('dust2.quality.v2',quality);$('quality').value=quality;applyQuality();}
-function setBrightness(value){brightness=Math.max(60,Math.min(160,Number(value)||100));localStorage.setItem('dust2.brightness',brightness);renderer.toneMappingExposure=1.03*brightness/100;}
-function applyQuality(){renderer.toneMappingExposure=1.03*brightness/100;renderer.setPixelRatio(quality==='low'?Math.min(1,devicePixelRatio):Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=quality!=='low';renderer.setSize(innerWidth,innerHeight);scene.traverse(o=>{if(o.isLight&&o.shadow)o.shadow.needsUpdate=true;});}
+function setQuality(value){quality=value==='high'?'high':'low';preferences.setItem('dust2.quality.v2',quality);$('quality').value=quality;applyQuality();}
+function setBrightness(value){brightness=Math.max(60,Math.min(160,Number(value)||100));preferences.setItem('dust2.brightness',brightness);renderer.toneMappingExposure=1.03*brightness/100;}
+function applyQuality(){renderer.toneMappingExposure=1.03*brightness/100;renderer.setPixelRatio(quality==='low'?Math.min(1,devicePixelRatio):Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=quality!=='low';resizeViewport();scene.traverse(o=>{if(o.isLight&&o.shadow)o.shadow.needsUpdate=true;});}
 
 function choosePrimary(id,explicit=true){
   primary=id;if(explicit)primaryExplicit=true;
@@ -415,8 +425,8 @@ $('resume-button').addEventListener('click',lockPointer);
 $('invite-button').addEventListener('click',invite);$('pause-invite').addEventListener('click',invite);
 $('leave-button').addEventListener('click',()=>{connected=false;socket?.close();socket=null;showMenu();const q=new URL(location.href);q.searchParams.delete('room');history.replaceState(null,'',q);$('menu-status').textContent='已退出房间，可以开始新的对局。';});
 $('credits-button').addEventListener('click',()=>$('credits').hidden=false);$('close-credits').addEventListener('click',()=>$('credits').hidden=true);
-$('sensitivity').addEventListener('change',e=>{const n=Number(e.target.value);if(!Number.isFinite(n)||n<.05||n>20){e.target.value=sensitivity;return;}sensitivity=n;$('sens-value').textContent=sensitivity.toFixed(2);localStorage.setItem('dust2.cs-settings.v1',JSON.stringify({sensitivity,zoomSensitivity,crosshair:crosshairSettings,quality,brightness}));document.getElementById('cs-sensitivity').value=sensitivity;});
-$('volume').addEventListener('input',e=>{volume=Number(e.target.value);audio.setVolume(volume);$('vol-value').textContent=`${Math.round(volume*100)}%`;localStorage.setItem('dust2.volume',volume);});
+$('sensitivity').addEventListener('change',e=>{const n=Number(e.target.value);if(!Number.isFinite(n)||n<.05||n>20){e.target.value=sensitivity;return;}sensitivity=n;$('sens-value').textContent=sensitivity.toFixed(2);preferences.setItem('dust2.cs-settings.v1',JSON.stringify({sensitivity,zoomSensitivity,crosshair:crosshairSettings,quality,brightness,...video}));document.getElementById('cs-sensitivity').value=sensitivity;});
+$('volume').addEventListener('input',e=>{volume=Number(e.target.value);audio.setVolume(volume);$('vol-value').textContent=`${Math.round(volume*100)}%`;preferences.setItem('dust2.volume',volume);});
 $('quality').addEventListener('change',e=>setQuality(e.target.value));
 document.addEventListener('pointerlockchange',()=>{document.body.classList.toggle('mouse-captured',document.pointerLockElement===canvas);if(document.pointerLockElement!==canvas){controls.clear();mouseFire=false;resetScope();if(connected&&$('buy-menu').hidden&&snapshot?.match?.status!=='ended')$('pause-menu').hidden=false;}else $('pause-menu').hidden=true;});
 const pointerMenus=[roomMenu.element,agentsUI.element,$('menu'),$('pause-menu'),$('buy-menu'),settingsUI.element,skins.element,offlineMenu.element];
@@ -425,16 +435,23 @@ pointerMenus.forEach(menu=>pointerGuard.observe(menu,{attributes:true,attributeF
 document.addEventListener('mousemove',e=>{if(document.pointerLockElement!==canvas||!self?.alive)return;const fov=zoomFov();lookYaw-=e.movementX*mouseRadiansPerCount(sensitivity,'yaw',fov,zoomSensitivity);lookPitch=THREE.MathUtils.clamp(lookPitch-e.movementY*mouseRadiansPerCount(sensitivity,'pitch',fov,zoomSensitivity),-1.48,1.48);});
 document.addEventListener('contextmenu',e=>{if(document.pointerLockElement===canvas)e.preventDefault();});
 window.addEventListener('blur',()=>{controls.clear();mouseFire=false;resetScope();document.exitPointerLock?.();document.body.classList.remove('mouse-captured');});
-window.addEventListener('resize',()=>{camera.aspect=gunCamera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();gunCamera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+function resizeViewport(){
+ viewport=viewportSize(innerWidth,innerHeight,video);camera.aspect=gunCamera.aspect=viewport.aspect;camera.updateProjectionMatrix();gunCamera.updateProjectionMatrix();
+ renderer.setPixelRatio(Math.min(quality==='low'?1:1.5,devicePixelRatio,Math.sqrt((quality==='low'?1440000:2073600)/(viewport.width*viewport.height))));
+ renderer.setSize(viewport.width,viewport.height,false);canvas.style.inset='auto';canvas.style.left='50%';canvas.style.top='50%';canvas.style.width=viewport.displayWidth+'px';canvas.style.height=viewport.displayHeight+'px';
+ for(const [key,value]of Object.entries({'--game-width':viewport.width+'px','--game-height':viewport.height+'px','--game-scale-x':viewport.displayWidth/viewport.width,'--game-scale-y':viewport.displayHeight/viewport.height}))document.body.style.setProperty(key,String(value));
+}
+window.addEventListener('resize',resizeViewport);resizeViewport();
+const lobby=mountLobby({connection,onJoin:()=>{$('team').value='auto';$('join-button').click();}});
 
 function frame(now){
   requestAnimationFrame(frame);const frameSeconds=(now-lastTime)/1000,dt=Math.min(.05,Math.max(0,frameSeconds));lastTime=now;fps=THREE.MathUtils.lerp(fps,1/Math.max(.001,frameSeconds),.025);
-  if(!loaded||!connected||!self||contextLost)return;
+  if(!loaded||!connected||!self||contextLost||document.hidden)return;
   const cpuStart=performance.now(),renderPlayers=remotePlayers.sample(now);
   fixed+=dt;networkAcc+=dt;hudAcc+=dt;pingAcc+=dt;
   recoil=Math.max(0,recoil-dt*.15);
   const input=currentInput();
-  while(fixed>=1/60){if(self.alive){if(movementSupported)movementPrediction.step(self,input,snapshot.round.phase==='live');else if(snapshot.round.phase==='live')stepPlayer(self,input,1/60);}localShoot(input,1/60);fixed-=1/60;}
+  while(fixed>=1/60){if(self.alive){if(movementSupported)movementPrediction.step(self,input,['live','ended'].includes(snapshot.round.phase));else if(['live','ended'].includes(snapshot.round.phase))stepPlayer(self,input,1/60);}localShoot(input,1/60);fixed-=1/60;}
   if(networkAcc>=1/30){networkAcc%=1/30;sendInput(input);}
   if(pingAcc>=2){pingAcc=0;send({type:'ping',time:performance.now()});}
   if(self.grounded&&controlsEnabled()&&Math.hypot(self.vx,self.vz)>.8&&(self.stepDistance||0)-lastStep>(self.crouch?2.6:1.8)){audio.step();lastStep=self.stepDistance;}
@@ -450,7 +467,7 @@ function frame(now){
   const viewed=spectating||self,renderZoom=spectating?(spectating.zoomLevel||0):zoomLevel,renderFov=getWeapon(viewed.weapon).zoomFovs?.[renderZoom]||CS2_BASE_FOV;
   const targetFov=cs2FovToVertical(renderFov);if(camera.fov!==targetFov){camera.fov=Math.abs(camera.fov-targetFov)<.1?targetFov:THREE.MathUtils.lerp(camera.fov,targetFov,Math.min(1,dt/.05));camera.updateProjectionMatrix();}
   const renderWeapon=getWeapon(viewed.weapon),fullScope=renderZoom>0&&renderWeapon.zoomStyle==='scope',optic=renderZoom>0&&renderWeapon.zoomStyle==='optic';
-  scopeOverlay.update({weapon:renderWeapon,zoomLevel:renderZoom,accuracy:accuracyForShot(renderWeapon,viewed,renderZoom).total,verticalFov:camera.fov});
+  scopeOverlay.update({width:viewport.width,height:viewport.height,weapon:renderWeapon,zoomLevel:renderZoom,accuracy:accuracyForShot(renderWeapon,viewed,renderZoom).total,verticalFov:camera.fov});
   crosshair.update({scoped:fullScope||optic,alive:self.alive,spread:Math.hypot(self.vx,self.vz),recoilY:0});
 
   const actorStart=performance.now();camera.updateMatrixWorld();visibilityFrustum.setFromProjectionMatrix(visibilityMatrix.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));
@@ -466,7 +483,7 @@ function frame(now){
   frameSamples.push({frame:frameSeconds*1000,cpu:performance.now()-cpuStart,actors:actorMs,render:performance.now()-renderStart});if(frameSamples.length>300)frameSamples.shift();
 }
 requestAnimationFrame(frame);
-function resourceMetrics(){return {fps:Math.round(fps),ping,connected,contextLost,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs?.length||0,actors:actors.size,effects:effects.items.length,audioVoices:audio.voices.size,viewWeapons:viewWeapon?.cache.size||0,heapMiB:performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):null,timing:frameStats()};}
+function resourceMetrics(){return {fps:Math.round(fps),ping,connected,contextLost,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs?.length||0,actors:actors.size,effects:effects.items.length,audioVoices:audio.voices.size,audioDecodedMiB:Math.round((audio.decodedBytes||0)/1048576),viewWeapons:viewWeapon?.cache.size||0,heapMiB:performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):null,timing:frameStats()};}
 setInterval(()=>{if(loaded)diagnostics.sample(resourceMetrics());},10000);
 window.addEventListener('error',event=>diagnostics.event('javascript-error',{message:String(event.message).slice(0,300)}));
 window.addEventListener('unhandledrejection',event=>diagnostics.event('unhandled-rejection',{message:String(event.reason?.message||event.reason).slice(0,300)}));
@@ -476,4 +493,4 @@ const recovery=document.createElement('div');recovery.id='graphics-recovery';rec
 $('reload-graphics').onclick=()=>location.reload();$('graphics-report').onclick=()=>diagnostics.download();
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;diagnostics.event('webgl-context-lost',resourceMetrics());controls.clear();mouseFire=false;resetScope();document.exitPointerLock?.();recovery.hidden=false;});
 canvas.addEventListener('webglcontextrestored',()=>{try{rebuildWeaponEnvironment();applyQuality();contextLost=false;diagnostics.event('webgl-context-restored');recovery.hidden=true;if(connected)$('pause-menu').hidden=false;}catch(error){diagnostics.event('graphics-recovery-failed',{message:String(error.message).slice(0,300)});}});
-window.__dust2={getDiagnostics:()=>diagnostics.report(),getStatus:()=>({audio:{drawCount:audio.drawCount||0,lastDraw:audio.lastDraw,heavySwingCount:audio.heavySwingCount||0,lastKnife:audio.lastKnife},viewModel:{id:viewWeapon?.id,skinId:viewWeapon?.skinId,waiting:viewWeapon?.waiting||false,visible:viewWeapon?.group.visible||false,action:viewWeapon?.active?.actionName},music:matchAudio.status(),loaded,connected,contextLost,spectatingId:spectating?.id||null,resources:resourceMetrics(),room,mode,myId,fps:Math.round(fps),ping,player:self?{...self}:null,players:snapshot?.players||[],round:snapshot?.round,match:snapshot?.match,hostId:snapshot?.hostId,desiredBots:snapshot?.desiredBots,seats:snapshot?.seats,droppedWeapons:snapshot?.droppedWeapons||[],bomb:snapshot?.bomb,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,mapVersion:MAP.version,sky:scene.userData.sky,zoomLevel,zoomFov:zoomFov(),cameraFov:camera.fov,cameraPosition:{x:camera.position.x,y:camera.position.y,z:camera.position.z},cameraAim:{yaw:camera.rotation.y,pitch:camera.rotation.x},lastShot:lastShotEvidence,renderPlayers:remotePlayers.sample(performance.now()),viewTime:remotePlayers.viewTime,movement:movementPrediction.status(),settings:{sensitivity,zoomSensitivity,crosshair:crosshairSettings,quality,brightness},bindings:controls.getBindings(),jumpId,reloadId,utilityId,agentLoadout:{...agentsUI.loadout},grenades:snapshot?.grenades||[],smokes:snapshot?.smokes||[],fires:snapshot?.fires||[],decoys:snapshot?.decoys||[],defuseKits:snapshot?.defuseKits||[]})};
+window.__dust2={getDiagnostics:()=>diagnostics.report(),getStatus:()=>({audio:{drawCount:audio.drawCount||0,lastDraw:audio.lastDraw,heavySwingCount:audio.heavySwingCount||0,lastKnife:audio.lastKnife},viewModel:{id:viewWeapon?.id,skinId:viewWeapon?.skinId,waiting:viewWeapon?.waiting||false,visible:viewWeapon?.group.visible||false,action:viewWeapon?.active?.actionName},music:matchAudio.status(),loaded,connected,contextLost,spectatingId:spectating?.id||null,resources:resourceMetrics(),room,mode,myId,fps:Math.round(fps),ping,player:self?{...self}:null,players:snapshot?.players||[],round:snapshot?.round,match:snapshot?.match,hostId:snapshot?.hostId,desiredBots:snapshot?.desiredBots,seats:snapshot?.seats,droppedWeapons:snapshot?.droppedWeapons||[],bomb:snapshot?.bomb,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,mapVersion:MAP.version,sky:scene.userData.sky,zoomLevel,zoomFov:zoomFov(),cameraFov:camera.fov,cameraPosition:{x:camera.position.x,y:camera.position.y,z:camera.position.z},cameraAim:{yaw:camera.rotation.y,pitch:camera.rotation.x},lastShot:lastShotEvidence,renderPlayers:remotePlayers.sample(performance.now()),viewTime:remotePlayers.viewTime,movement:movementPrediction.status(),settings:{sensitivity,zoomSensitivity,crosshair:crosshairSettings,quality,brightness,...video},bindings:controls.getBindings(),jumpId,reloadId,utilityId,agentLoadout:{...agentsUI.loadout},grenades:snapshot?.grenades||[],smokes:snapshot?.smokes||[],fires:snapshot?.fires||[],decoys:snapshot?.decoys||[],defuseKits:snapshot?.defuseKits||[]})};

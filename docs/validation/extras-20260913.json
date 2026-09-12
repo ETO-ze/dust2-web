@@ -1,0 +1,921 @@
+{
+  "date": "2026-09-13",
+  "automated": {
+    "passed": 216,
+    "failed": 0
+  },
+  "build": "passed",
+  "tactics": {
+    "seconds": 180,
+    "counts": {
+      "join": 1,
+      "spawn": 40,
+      "buy": 126,
+      "round_start": 4,
+      "grenade_primed": 38,
+      "grenade_thrown": 36,
+      "grenade_bounce": 101,
+      "smoke": 25,
+      "shot": 175,
+      "hit": 53,
+      "weapon_dropped": 17,
+      "kill": 17,
+      "explosion": 10,
+      "bomb_action": 4,
+      "bomb_planted": 3,
+      "fire_started": 1,
+      "round_end": 2,
+      "grenade_cancelled": 2,
+      "bomb_defused": 1
+    },
+    "roles": [
+      "carrier",
+      "entry",
+      "anchor-b",
+      "split",
+      "anchor-a",
+      "short",
+      "mid",
+      "postplant",
+      "defuser",
+      "retake-cover"
+    ],
+    "tickP95": 2.077900000000227,
+    "tickMax": 21.182500000000005,
+    "round": 4,
+    "players": [
+      {
+        "team": "CT",
+        "bot": false,
+        "x": 4.5091573086965955,
+        "y": -3.162096910603581,
+        "z": -55.085678222563565,
+        "kills": 0
+      },
+      {
+        "team": "T",
+        "bot": true,
+        "role": "postplant",
+        "x": 29.60324706696269,
+        "y": 2.4362070539852896,
+        "z": -62.0312266893429,
+        "kills": 2
+      },
+      {
+        "team": "T",
+        "bot": true,
+        "role": "postplant",
+        "x": 23.908333878605056,
+        "y": 2.444739932715857,
+        "z": -63.580952356080786,
+        "kills": 1
+      },
+      {
+        "team": "CT",
+        "bot": true,
+        "role": "defuser",
+        "x": 12.62497674895086,
+        "y": -3.17590946103858,
+        "z": -53.03544817762195,
+        "kills": 0
+      },
+      {
+        "team": "T",
+        "bot": true,
+        "role": "postplant",
+        "x": 25.52930837038364,
+        "y": 2.4427689618652835,
+        "z": -68.78768389864678,
+        "kills": 3
+      },
+      {
+        "team": "CT",
+        "bot": true,
+        "role": "anchor-a",
+        "x": 29.951832708907297,
+        "y": 2.4391278328216477,
+        "z": -67.27607681849126,
+        "kills": 1
+      },
+      {
+        "team": "T",
+        "bot": true,
+        "role": "postplant",
+        "x": 32.1133217395039,
+        "y": 3.1900402004233683,
+        "z": -71.12898134719998,
+        "kills": 5
+      },
+      {
+        "team": "CT",
+        "bot": true,
+        "role": "anchor-a",
+        "x": 8.366263733716817,
+        "y": 2.447153198404561,
+        "z": -51.12873996411819,
+        "kills": 1
+      },
+      {
+        "team": "T",
+        "bot": true,
+        "role": "postplant",
+        "x": 35.64254411845252,
+        "y": 2.1158980893135775,
+        "z": -67.05711438064756,
+        "kills": 1
+      },
+      {
+        "team": "CT",
+        "bot": true,
+        "role": "mid",
+        "x": -11.196657237159977,
+        "y": -3.2110398186070586,
+        "z": -48.79415571478375,
+        "kills": 3
+      }
+    ]
+  },
+  "browser": {
+    "ratios": [
+      {
+        "width": 1440,
+        "height": 810,
+        "displayWidth": 1440,
+        "displayHeight": 810,
+        "settings": {
+          "sensitivity": 1,
+          "zoomSensitivity": 1,
+          "crosshair": {
+            "style": 4,
+            "size": 1,
+            "thickness": 1.5,
+            "gap": -4,
+            "color": 5,
+            "red": 0,
+            "green": 255,
+            "blue": 165,
+            "alpha": 255,
+            "outlineThickness": 0,
+            "fixedCrosshairGap": 0,
+            "splitDistance": 3,
+            "innerSplitAlpha": 0,
+            "outerSplitAlpha": 1,
+            "splitSizeRatio": 1,
+            "useAlpha": true,
+            "dot": false,
+            "outline": false,
+            "tStyle": false,
+            "followRecoil": false,
+            "gapUseWeaponValue": false
+          },
+          "quality": "low",
+          "brightness": 100,
+          "aspect": "16:9",
+          "display": "bars"
+        }
+      },
+      {
+        "width": 1440,
+        "height": 810,
+        "displayWidth": 1440,
+        "displayHeight": 900,
+        "settings": {
+          "sensitivity": 1,
+          "zoomSensitivity": 1,
+          "crosshair": {
+            "style": 4,
+            "size": 1,
+            "thickness": 1.5,
+            "gap": -4,
+            "color": 5,
+            "red": 0,
+            "green": 255,
+            "blue": 165,
+            "alpha": 255,
+            "outlineThickness": 0,
+            "fixedCrosshairGap": 0,
+            "splitDistance": 3,
+            "innerSplitAlpha": 0,
+            "outerSplitAlpha": 1,
+            "splitSizeRatio": 1,
+            "useAlpha": true,
+            "dot": false,
+            "outline": false,
+            "tStyle": false,
+            "followRecoil": false,
+            "gapUseWeaponValue": false
+          },
+          "quality": "low",
+          "brightness": 100,
+          "aspect": "16:9",
+          "display": "stretch"
+        }
+      },
+      {
+        "width": 1200,
+        "height": 900,
+        "displayWidth": 1200,
+        "displayHeight": 900,
+        "settings": {
+          "sensitivity": 1,
+          "zoomSensitivity": 1,
+          "crosshair": {
+            "style": 4,
+            "size": 1,
+            "thickness": 1.5,
+            "gap": -4,
+            "color": 5,
+            "red": 0,
+            "green": 255,
+            "blue": 165,
+            "alpha": 255,
+            "outlineThickness": 0,
+            "fixedCrosshairGap": 0,
+            "splitDistance": 3,
+            "innerSplitAlpha": 0,
+            "outerSplitAlpha": 1,
+            "splitSizeRatio": 1,
+            "useAlpha": true,
+            "dot": false,
+            "outline": false,
+            "tStyle": false,
+            "followRecoil": false,
+            "gapUseWeaponValue": false
+          },
+          "quality": "low",
+          "brightness": 100,
+          "aspect": "4:3",
+          "display": "bars"
+        }
+      },
+      {
+        "width": 1200,
+        "height": 900,
+        "displayWidth": 1440,
+        "displayHeight": 900,
+        "settings": {
+          "sensitivity": 1,
+          "zoomSensitivity": 1,
+          "crosshair": {
+            "style": 4,
+            "size": 1,
+            "thickness": 1.5,
+            "gap": -4,
+            "color": 5,
+            "red": 0,
+            "green": 255,
+            "blue": 165,
+            "alpha": 255,
+            "outlineThickness": 0,
+            "fixedCrosshairGap": 0,
+            "splitDistance": 3,
+            "innerSplitAlpha": 0,
+            "outerSplitAlpha": 1,
+            "splitSizeRatio": 1,
+            "useAlpha": true,
+            "dot": false,
+            "outline": false,
+            "tStyle": false,
+            "followRecoil": false,
+            "gapUseWeaponValue": false
+          },
+          "quality": "low",
+          "brightness": 100,
+          "aspect": "4:3",
+          "display": "stretch"
+        }
+      }
+    ],
+    "knives": [
+      {
+        "name": "M9 刺刀 · 原厂涂装",
+        "downloadThenEquip": true
+      },
+      {
+        "name": "蝴蝶刀 · 原厂涂装",
+        "downloadThenEquip": true
+      }
+    ],
+    "music": [
+      {
+        "kit": "blitzkids_01",
+        "volume": 0.22,
+        "cue": "mvp",
+        "playing": true,
+        "cachedClips": 1,
+        "cachedBytes": 146159,
+        "played": [
+          {
+            "kit": "blitzkids_01",
+            "cue": "mvp",
+            "at": 43165.199999999255
+          }
+        ]
+      },
+      {
+        "kit": "neckdeep_02",
+        "volume": 0.22,
+        "cue": "mvp",
+        "playing": true,
+        "cachedClips": 2,
+        "cachedBytes": 378331,
+        "played": [
+          {
+            "kit": "blitzkids_01",
+            "cue": "mvp",
+            "at": 43165.199999999255
+          },
+          {
+            "kit": "neckdeep_02",
+            "cue": "mvp",
+            "at": 43418.199999999255
+          }
+        ]
+      },
+      {
+        "kit": "isoxo_01",
+        "volume": 0.22,
+        "cue": "mvp",
+        "playing": true,
+        "cachedClips": 3,
+        "cachedBytes": 590690,
+        "played": [
+          {
+            "kit": "blitzkids_01",
+            "cue": "mvp",
+            "at": 43165.199999999255
+          },
+          {
+            "kit": "neckdeep_02",
+            "cue": "mvp",
+            "at": 43418.199999999255
+          },
+          {
+            "kit": "isoxo_01",
+            "cue": "mvp",
+            "at": 43664.199999999255
+          }
+        ]
+      }
+    ],
+    "roomButtons": [
+      "×",
+      "移除",
+      "移除",
+      "移除",
+      "加入",
+      "+ 人机",
+      "加入",
+      "+ 人机",
+      "移除",
+      "移除",
+      "移除",
+      "加入",
+      "+ 人机",
+      "复制邀请链接",
+      "返回游戏"
+    ],
+    "errors": []
+  },
+  "inGame": {
+    "knives": [
+      {
+        "id": "knife",
+        "skinId": "m9-vanilla",
+        "waiting": false,
+        "visible": true,
+        "action": "inspect"
+      },
+      {
+        "id": "knife",
+        "skinId": "butterfly-vanilla",
+        "waiting": false,
+        "visible": true,
+        "action": "inspect"
+      }
+    ],
+    "viewport": {
+      "x": 120,
+      "y": 0,
+      "width": 1200,
+      "height": 900,
+      "bufferWidth": 1200,
+      "bufferHeight": 900
+    },
+    "start": {
+      "fps": 139,
+      "ping": 0,
+      "connected": true,
+      "contextLost": false,
+      "geometries": 646,
+      "textures": 398,
+      "programs": 26,
+      "actors": 6,
+      "effects": 0,
+      "audioVoices": 0,
+      "audioDecodedMiB": 13,
+      "viewWeapons": 3,
+      "heapMiB": 391,
+      "timing": {
+        "samples": 183,
+        "frameP95Ms": 20.4,
+        "cpuP95Ms": 8.6,
+        "actorsP95Ms": 0.8,
+        "renderSubmitP95Ms": 7.3
+      }
+    }
+  },
+  "warmChurn": {
+    "before": {
+      "fps": 135,
+      "ping": 10,
+      "connected": true,
+      "contextLost": false,
+      "geometries": 1928,
+      "textures": 600,
+      "programs": 27,
+      "actors": 6,
+      "effects": 0,
+      "audioVoices": 0,
+      "audioDecodedMiB": 13,
+      "viewWeapons": 4,
+      "heapMiB": 369,
+      "timing": {
+        "samples": 300,
+        "frameP95Ms": 13.5,
+        "cpuP95Ms": 9.1,
+        "actorsP95Ms": 0.3,
+        "renderSubmitP95Ms": 8.6
+      }
+    },
+    "after": {
+      "fps": 146,
+      "ping": 30,
+      "connected": true,
+      "contextLost": false,
+      "geometries": 1927,
+      "textures": 600,
+      "programs": 25,
+      "actors": 6,
+      "effects": 0,
+      "audioVoices": 0,
+      "audioDecodedMiB": 13,
+      "viewWeapons": 4,
+      "heapMiB": 392,
+      "timing": {
+        "samples": 300,
+        "frameP95Ms": 13.8,
+        "cpuP95Ms": 11,
+        "actorsP95Ms": 0.4,
+        "renderSubmitP95Ms": 10.7
+      }
+    },
+    "points": [
+      {
+        "fps": 147,
+        "ping": 10,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 600,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 368,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.3,
+          "cpuP95Ms": 9.5,
+          "actorsP95Ms": 0.5,
+          "renderSubmitP95Ms": 8.9
+        }
+      },
+      {
+        "fps": 138,
+        "ping": 4,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 380,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.2,
+          "cpuP95Ms": 9.3,
+          "actorsP95Ms": 0.5,
+          "renderSubmitP95Ms": 9.1
+        }
+      },
+      {
+        "fps": 142,
+        "ping": 10,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1929,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 393,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.6,
+          "cpuP95Ms": 10.3,
+          "actorsP95Ms": 0.5,
+          "renderSubmitP95Ms": 9.1
+        }
+      },
+      {
+        "fps": 149,
+        "ping": 5,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1927,
+        "textures": 600,
+        "programs": 25,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 399,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 12.9,
+          "cpuP95Ms": 8.3,
+          "actorsP95Ms": 0.4,
+          "renderSubmitP95Ms": 7.8
+        }
+      },
+      {
+        "fps": 146,
+        "ping": 6,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 600,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 364,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.1,
+          "cpuP95Ms": 8.6,
+          "actorsP95Ms": 0.4,
+          "renderSubmitP95Ms": 8.2
+        }
+      },
+      {
+        "fps": 116,
+        "ping": 10,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1929,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 371,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.9,
+          "cpuP95Ms": 11.5,
+          "actorsP95Ms": 0.9,
+          "renderSubmitP95Ms": 10.5
+        }
+      },
+      {
+        "fps": 53,
+        "ping": 25,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 373,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 34.7,
+          "cpuP95Ms": 31.9,
+          "actorsP95Ms": 1.9,
+          "renderSubmitP95Ms": 29.1
+        }
+      },
+      {
+        "fps": 105,
+        "ping": 20,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 600,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 406,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 35,
+          "cpuP95Ms": 31.9,
+          "actorsP95Ms": 1.9,
+          "renderSubmitP95Ms": 29.1
+        }
+      },
+      {
+        "fps": 149,
+        "ping": 5,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 600,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 382,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.3,
+          "cpuP95Ms": 10.3,
+          "actorsP95Ms": 0.5,
+          "renderSubmitP95Ms": 9.8
+        }
+      },
+      {
+        "fps": 137,
+        "ping": 5,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 383,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.4,
+          "cpuP95Ms": 10.2,
+          "actorsP95Ms": 0.6,
+          "renderSubmitP95Ms": 9.6
+        }
+      },
+      {
+        "fps": 143,
+        "ping": 5,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1929,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 394,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.3,
+          "cpuP95Ms": 9.8,
+          "actorsP95Ms": 0.4,
+          "renderSubmitP95Ms": 9.1
+        }
+      },
+      {
+        "fps": 149,
+        "ping": 8,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1927,
+        "textures": 600,
+        "programs": 25,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 400,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.4,
+          "cpuP95Ms": 8.7,
+          "actorsP95Ms": 0.3,
+          "renderSubmitP95Ms": 7.8
+        }
+      },
+      {
+        "fps": 145,
+        "ping": 4,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 600,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 369,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 12.8,
+          "cpuP95Ms": 8.3,
+          "actorsP95Ms": 0.3,
+          "renderSubmitP95Ms": 7.8
+        }
+      },
+      {
+        "fps": 146,
+        "ping": 7,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1929,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 386,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13,
+          "cpuP95Ms": 8.4,
+          "actorsP95Ms": 0.6,
+          "renderSubmitP95Ms": 7.8
+        }
+      },
+      {
+        "fps": 137,
+        "ping": 6,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 394,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.2,
+          "cpuP95Ms": 10.4,
+          "actorsP95Ms": 0.5,
+          "renderSubmitP95Ms": 9.5
+        }
+      },
+      {
+        "fps": 150,
+        "ping": 8,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 600,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 404,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 12.8,
+          "cpuP95Ms": 9.4,
+          "actorsP95Ms": 0.4,
+          "renderSubmitP95Ms": 8.7
+        }
+      },
+      {
+        "fps": 130,
+        "ping": 8,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 600,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 367,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.3,
+          "cpuP95Ms": 9.9,
+          "actorsP95Ms": 0.4,
+          "renderSubmitP95Ms": 9.3
+        }
+      },
+      {
+        "fps": 133,
+        "ping": 8,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1928,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 377,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.6,
+          "cpuP95Ms": 11.6,
+          "actorsP95Ms": 0.6,
+          "renderSubmitP95Ms": 11.1
+        }
+      },
+      {
+        "fps": 133,
+        "ping": 8,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1929,
+        "textures": 606,
+        "programs": 27,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 385,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.9,
+          "cpuP95Ms": 11.6,
+          "actorsP95Ms": 0.5,
+          "renderSubmitP95Ms": 11.1
+        }
+      },
+      {
+        "fps": 146,
+        "ping": 30,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 1927,
+        "textures": 600,
+        "programs": 25,
+        "actors": 6,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 4,
+        "heapMiB": 392,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 13.8,
+          "cpuP95Ms": 11,
+          "actorsP95Ms": 0.4,
+          "renderSubmitP95Ms": 10.7
+        }
+      }
+    ]
+  },
+  "resourceAnalysis": {
+    "mapMeshes": 1905,
+    "mapPrimitives": 1910,
+    "note": "Initial growth during first views of map geometry. After warmup, 20 cycles of replacing 6 bots showed no sustained GPU resource growth. Browser process termination was not reproduced; this is not a guarantee on other GPUs."
+  }
+}

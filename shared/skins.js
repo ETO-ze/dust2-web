@@ -589,6 +589,50 @@ export const SKINS = Object.freeze([
     "paintkit": 417,
     "previewBytes": 16596,
     "previewSha256": "a3c6f48bb2ac4ed84c514dbd7601760e979fca35449fb9ad0e0a71a892f2f14e"
+  },
+  {
+    "id": "m9-vanilla",
+    "weapon": "knife",
+    "name": "M9 刺刀 · 原厂涂装",
+    "englishName": "M9 刺刀",
+    "model": "assets/weapons/optional/m9.glb",
+    "preview": "assets/weapons/optional/m9.webp",
+    "bytes": 3092496,
+    "sha256": "8bdf0f2ced6301b63bfb011cdd3c824c4fa59cf8e7d93b4408b0bf88b00b5910",
+    "isDefault": false,
+    "animation": {
+      "bytes": 835924,
+      "sha256": "0c0441f79e040d29e12690f0c0f812a1c98c922649d9fd0dde57bdf66169b3fe",
+      "model": "assets/weapons/optional/m9-animations.glb"
+    },
+    "animationFamily": "m9",
+    "downloadRequired": true,
+    "condition": "Vanilla",
+    "wear": 0,
+    "previewBytes": 12924,
+    "previewSha256": "90cbc912fcf526b9c06f498b211dcbbc4e28e8be4c361191cf2e986899358883"
+  },
+  {
+    "id": "butterfly-vanilla",
+    "weapon": "knife",
+    "name": "蝴蝶刀 · 原厂涂装",
+    "englishName": "蝴蝶刀",
+    "model": "assets/weapons/optional/butterfly.glb",
+    "preview": "assets/weapons/optional/butterfly.webp",
+    "bytes": 2464360,
+    "sha256": "2bf611f75fbfa18a5054e8cfa5a2829f32c1a75351beeff3852b6ba93da4d776",
+    "isDefault": false,
+    "animation": {
+      "bytes": 770760,
+      "sha256": "bcf083fb9405ec2ae8bf4d371752c39d59a7649b53041c93479730b62561a82c",
+      "model": "assets/weapons/optional/butterfly-animations.glb"
+    },
+    "animationFamily": "butterfly",
+    "downloadRequired": true,
+    "condition": "Vanilla",
+    "wear": 0,
+    "previewBytes": 11268,
+    "previewSha256": "d378f323ab9c8ac498adc33f92210a8a7bca2281d759972464708c6b4cc87155"
   }
 ].map(skin => Object.freeze(skin)));
 export const DEFAULT_SKINS = Object.freeze(Object.fromEntries(SKINS.filter(skin => skin.isDefault).map(skin => [skin.weapon, skin.id])));

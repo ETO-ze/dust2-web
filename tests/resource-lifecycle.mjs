@@ -211,3 +211,14 @@ test('real multi-primitive character, AWP and arm clones release every independe
     assert.equal(released, allocated, file);
   }
 });
+
+test('cancelled lazy audio cannot restart when its decode completes', async () => {
+  for(const cancel of ['cancelReload','cancelDraw','stopAll']){
+    const audio=new GameAudio();audio.ready=true;audio.sampleManifest={banks:{fixture:['fixture']}};
+    let complete;audio.loadBank=()=>new Promise(resolve=>{complete=resolve;});
+    audio.play('fixture',{channel:cancel==='cancelDraw'?'draw':'reload',delay:2});
+    audio[cancel]();let replayed=false;audio.play=()=>{replayed=true;};
+    complete(true);await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(replayed,false,cancel);
+  }
+});

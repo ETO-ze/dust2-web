@@ -82,8 +82,9 @@ export class ViewWeapon {
       }
     });
     const mixer = new THREE.AnimationMixer(root), actions = {};
-    for (const original of animationSource.animations) {
-      if (!original.name.startsWith(`${id}/`)) continue;
+    const family=getSkin(skinId)?.animationFamily||id;
+    for (const original of (family===id?animationSource:source).animations) {
+      if (!original.name.startsWith(`${family}/`)) continue;
       const clip = original.clone();
       clip.tracks = clip.tracks.filter(track => names.has(THREE.PropertyBinding.parseTrackName(track.name).nodeName));
       // Authored static idle poses have a single frame; Three's repeat loop

@@ -103,12 +103,18 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       try { if (binary) throw new Error('binary'); msg = JSON.parse(data.toString()); if (!msg || typeof msg !== 'object' || Array.isArray(msg)) throw new Error('object'); }
       catch { error(socket, 'BAD_MESSAGE', '消息格式无效。'); if (++socket.strikes > 5) socket.close(1008, 'Bad messages'); return; }
       if (msg.type === 'ping') { send(socket, { type: 'pong', time: typeof msg.time === 'number' ? msg.time : null, serverTime: now }); return; }
+      if(msg.type==='listRooms'){
+        if(now-(socket.listRoomsAt||0)<1000)return;
+        socket.listRoomsAt=now;
+        send(socket,{type:'rooms',rooms:[...rooms.values()].filter(r=>r.humanCount>0).map(r=>({code:r.code,mode:r.mode,humans:r.humanCount,bots:r.botCount,scores:r.scores,phase:r.round.phase,joinable:r.humanCount<10&&r.match.status!=='ended'})).sort((a,b)=>Number(b.joinable)-Number(a.joinable)||b.humans-a.humans)});return;
+      }
       if (msg.type === 'join') {
         if (socket.playerId) { error(socket, 'ALREADY_JOINED', '当前连接已经加入房间。'); return; }
         const settings = joinSettings(msg);
         if (settings.error) { error(socket, 'BAD_JOIN', settings.error); return; }
         if (!settings.room) { do { settings.room = randomBytes(3).toString('hex').toUpperCase(); } while (rooms.has(settings.room)); }
         let room = rooms.get(settings.room), created = false;
+        if(msg.existing===true&&!room){error(socket,'ROOM_GONE','房间已经关闭，请在大厅选择有玩家的房间。');return;}
         if (!room) {
           if (rooms.size >= maxRooms) { error(socket, 'SERVER_FULL', '服务器当前房间数量已达上限。'); return; }
           room = new GameRoom(settings.room, { mode: settings.mode, bots: settings.bots, rules }); rooms.set(settings.room, room); created = true;
@@ -144,6 +150,10 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         if(now-(socket.equipAgentAt||0)<250){error(socket,'AGENT_RATE','更换过于频繁，请稍后重试。');return;}
         socket.equipAgentAt=now;const result=room.equipAgent(socket.playerId,msg.agent);
         if(!result.ok)error(socket,'AGENT_REJECTED',result.message);else send(socket,{type:'agentEquipped',...result});
+      } else if(msg.type==='refund'){
+        if(now-socket.buyAt<250){error(socket,'BUY_RATE','请稍后再退还。');return;}
+        socket.buyAt=now;const result=room.refund(socket.playerId,msg.weapon);
+        if(!result.ok)error(socket,'BUY_REJECTED',result.message);else send(socket,{type:'refund',...result});
       } else if (msg.type === 'buy') {
         if (now - socket.buyAt < 250) { error(socket, 'BUY_RATE', '购买操作过于频繁。'); return; }
         socket.buyAt = now;

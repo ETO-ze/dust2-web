@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "version": "56537567932c2c63",
+  "version": "419e7d9d28f7875e",
   "baseURL": "https://cs2.duskrain.cn/",
-  "baseManifestVersion": "196389f5ca7be8b0",
-  "totalBytes": 425888281,
+  "baseManifestVersion": "c14e41201dcbe3f9",
+  "totalBytes": 442439042,
   "files": [
     {
       "path": "assets/asset-manifest.json",
-      "bytes": 150249,
-      "sha256": "eb1573b8532a0094a73a2398eea6b2d7e0f8804206fa076cb125053f4b01ff49",
+      "bytes": 150250,
+      "sha256": "4b0c45c8afd214f6355bc55f0c84ae62c61fde54b5d1534ecd42d3dd0fb01f51",
       "group": "metadata"
     },
     {
@@ -1963,9 +1963,117 @@
     },
     {
       "path": "assets/audio/music/manifest.json",
-      "bytes": 7077,
-      "sha256": "1fd7fce0b117076e89be885ab6420f6bcec6c77504a95a6f6226162fddaf48db",
+      "bytes": 15580,
+      "sha256": "4b725a7b07eb84ad212e465139d406d6ac7184e36bfd27d915ffa5926ca550e9",
       "group": "audio"
+    },
+    {
+      "path": "assets/audio/music/optional/blitzkids_01/bombplanted.mp3",
+      "bytes": 644040,
+      "sha256": "97b9974cabb2fba6adf85df24aac0d833d7f693f4274359e196bdc95189a3d63",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/blitzkids_01/bombtenseccount.mp3",
+      "bytes": 195501,
+      "sha256": "687ffd8c59a5a34ef8dec870ef7d592a1644ef891419975b9c4e6f33c6f5c7e4",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/blitzkids_01/deathcam.mp3",
+      "bytes": 73883,
+      "sha256": "430a51990ecacb8352b6bcfb6e40be7868698ec6c63e3112822dbdf9f672943c",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/blitzkids_01/endofmatch.mp3",
+      "bytes": 971579,
+      "sha256": "947e5044c468d014c68c654bf1a8e92c7b437ba5a3b590fbe1661097dbba8d9f",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/blitzkids_01/lostround.mp3",
+      "bytes": 151079,
+      "sha256": "9ddc3065a93af9948f7aa0ffb04d521f4d91cea78656a5d41529d18b930ad04b",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/blitzkids_01/roundmvpanthem_01.mp3",
+      "bytes": 146159,
+      "sha256": "3f1312d1225c1ac6544f5246c8e75391010f6feee6f9c4333ef6c81ce490b422",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/blitzkids_01/roundtenseccount.mp3",
+      "bytes": 196423,
+      "sha256": "4387a05ee7265c41a6808385cc2e50648dd8ca9796c20494185deecd34db44a2",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/blitzkids_01/startround_01.mp3",
+      "bytes": 252640,
+      "sha256": "57625c5640854dfa735910aa9c0fc9d4bc2fd13d35f58f6d697e9ed7d75fc13a",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/blitzkids_01/wonround.mp3",
+      "bytes": 157033,
+      "sha256": "f32cd30874deb0840cfd0495f65e85ff05f1a6f0c18653824c7f5553ac924ebf",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/isoxo_01/bombplanted.mp3",
+      "bytes": 855357,
+      "sha256": "e7e59fa1e8c89d6566a70bc1d9d0a931d928cb160e7c62b8f4927d09b84c12f9",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/isoxo_01/bombtenseccount.mp3",
+      "bytes": 185288,
+      "sha256": "a2a947ece3db040807c293e875cf01d2932abd2aadf9917923b071b8152f7663",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/isoxo_01/deathcam.mp3",
+      "bytes": 144033,
+      "sha256": "d7312cbf6fcb77a3edb7629eee15c256288003c0d89783ea01af8099198d9c85",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/isoxo_01/endofmatch.mp3",
+      "bytes": 817462,
+      "sha256": "eae02fe88e0f400a22286d8547e3e9e92003a32deea3d42673db697d2335950b",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/isoxo_01/lostround.mp3",
+      "bytes": 284063,
+      "sha256": "2d0ed2c191285e9af3c9e66ed33c5d9964cf45008929b7b349513034474f5468",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/isoxo_01/roundmvpanthem_01.mp3",
+      "bytes": 212359,
+      "sha256": "987930ca41d2b26841783426ec34ec43fccd43815efc01408932e620a09d8524",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/isoxo_01/roundtenseccount.mp3",
+      "bytes": 319851,
+      "sha256": "e768521241ec1164b5988640b665d2168a6f74afdf4657d0ff03154b8e84b78c",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/isoxo_01/startround_01.mp3",
+      "bytes": 550582,
+      "sha256": "7f3f08d4e446b064d82d3607d04fe4cfd42afb188954727f49ae2881f5d743f5",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/isoxo_01/wonround.mp3",
+      "bytes": 295578,
+      "sha256": "f868f54c3371631e8157537593c0fd8f032403066dc82be0487ef852d1fca025",
+      "group": "music"
     },
     {
       "path": "assets/audio/music/optional/neckdeep_01/bombplanted.mp3",
@@ -2025,6 +2133,60 @@
       "path": "assets/audio/music/optional/neckdeep_01/wonround.mp3",
       "bytes": 204787,
       "sha256": "04d1e1441a249670f46bd57a1d1dbd2dde5e4a0e9d5e1c134331c0d0f9f4c5a7",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/neckdeep_02/bombplanted.mp3",
+      "bytes": 715002,
+      "sha256": "d239f49f82c7c1c75f576fcd05db0bb89541815514e1eb5545e9118458201d60",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/neckdeep_02/bombtenseccount.mp3",
+      "bytes": 212505,
+      "sha256": "388567543584a655656cb7cb13680d8fc9a8988f811dcf1d2b010106864c4a2a",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/neckdeep_02/deathcam.mp3",
+      "bytes": 129652,
+      "sha256": "06344236c8087de52f05347dd6354a6df74fc316ea8a4e737ffced61fae554ae",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/neckdeep_02/endofmatch.mp3",
+      "bytes": 855082,
+      "sha256": "bfa9bdab0b385723b62e52bcb65ea1c663ede62a877ae123bf14b377bacf9aa5",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/neckdeep_02/lostround.mp3",
+      "bytes": 105732,
+      "sha256": "ee3fb77f8a4da396ea4385692e4db707e31bf1e5b137fcc13ef35e263bf14072",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/neckdeep_02/roundmvpanthem_01.mp3",
+      "bytes": 232172,
+      "sha256": "5cb28ab223d574f8c264366c67fb554717d468847cd5757850231649d9ce2e74",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/neckdeep_02/roundtenseccount.mp3",
+      "bytes": 196767,
+      "sha256": "4548adda2317299f62f3c4dbeb6e06f97164d3a2932d4b215f273bc177ab855e",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/neckdeep_02/startround_01.mp3",
+      "bytes": 306272,
+      "sha256": "ea773d8e133945f705c7f623ef91d464ab4b43fe629b9ab71c82113cdcf865d3",
+      "group": "music"
+    },
+    {
+      "path": "assets/audio/music/optional/neckdeep_02/wonround.mp3",
+      "bytes": 148431,
+      "sha256": "3538c5063de41341e8453e3c9ca1e3a728feea9d866764ebeb5a4fa5d1bb9486",
       "group": "music"
     },
     {
@@ -6148,6 +6310,42 @@
       "bytes": 2846404,
       "sha256": "ca18dd9052c58dedc05d50690a836e9719568686416b5845ebe0537b591636ee",
       "group": "utility"
+    },
+    {
+      "path": "assets/weapons/optional/butterfly-animations.glb",
+      "bytes": 770760,
+      "sha256": "bcf083fb9405ec2ae8bf4d371752c39d59a7649b53041c93479730b62561a82c",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/optional/butterfly.glb",
+      "bytes": 2464360,
+      "sha256": "2bf611f75fbfa18a5054e8cfa5a2829f32c1a75351beeff3852b6ba93da4d776",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/optional/butterfly.webp",
+      "bytes": 11268,
+      "sha256": "d378f323ab9c8ac498adc33f92210a8a7bca2281d759972464708c6b4cc87155",
+      "group": "preview"
+    },
+    {
+      "path": "assets/weapons/optional/m9-animations.glb",
+      "bytes": 835924,
+      "sha256": "0c0441f79e040d29e12690f0c0f812a1c98c922649d9fd0dde57bdf66169b3fe",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/optional/m9.glb",
+      "bytes": 3092496,
+      "sha256": "8bdf0f2ced6301b63bfb011cdd3c824c4fa59cf8e7d93b4408b0bf88b00b5910",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/optional/m9.webp",
+      "bytes": 12924,
+      "sha256": "90cbc912fcf526b9c06f498b211dcbbc4e28e8be4c361191cf2e986899358883",
+      "group": "preview"
     }
   ]
 }

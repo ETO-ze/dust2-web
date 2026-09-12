@@ -1,3 +1,4 @@
+import {preferences} from './persistence.js';
 import { AGENT_CATALOG, DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } from '../shared/agents.js';
 import { AGENT_ASSETS } from '../shared/agent-assets.js';
 import { loadAgent as loadAgentAsset } from './player-assets.js';
@@ -7,7 +8,7 @@ const STORAGE_KEY='dust2.agents.v1';
 const TEAMS=[['CT','反恐精英'],['T','恐怖分子']];
 
 export function readAgentLoadout(){
-  try{return normalizeAgentLoadout(JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'));}
+  try{return normalizeAgentLoadout(JSON.parse(preferences.getItem(STORAGE_KEY)||'{}'));}
   catch{return {...DEFAULT_AGENT_IDS};}
 }
 
@@ -111,7 +112,7 @@ export class AgentMenu {
       await this.onEquip(agent,next);
       if(this.destroyed)return;
       this.loadout=next;
-      let saved=true;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}catch{saved=false;}
+      let saved=true;try{preferences.setItem(STORAGE_KEY,JSON.stringify(next));}catch{saved=false;}
       this.status(saved?`已装备 ${agent.name}。下次进入继续使用。`:`已装备 ${agent.name}。浏览器未能保存选择，下次进入需重新选择。`);
     }catch(error){
       if(!this.destroyed)this.status(`未能装备：${error?.message||'下载或连接失败'}。点击探员可重试。`);
