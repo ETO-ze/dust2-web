@@ -544,6 +544,30 @@
       "capturedOn": "2026-09-13",
       "url": "http://127.0.0.1:3003/",
       "note": "Controlled local game QA"
+    },
+    {
+      "file": "extras-portable-offline.png",
+      "source": "output/playwright/extras-portable-offline.png",
+      "sha256": "c0d482367462a86bc4c3f5382f70038f0c2d93b0d33187160307341eb5a61dd0",
+      "bytes": 1509654,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-13",
+      "url": "http://127.0.0.1:27195/",
+      "note": "Portable package browser QA"
+    },
+    {
+      "file": "extras-portable-online.png",
+      "source": "output/playwright/extras-portable-online.png",
+      "sha256": "80cae9f49381d35f9ea66767bcb3e33cb9b81afa0ee07ebdbcf65d8d3a37174d",
+      "bytes": 1543242,
+      "width": 1440,
+      "height": 900,
+      "modified": false,
+      "capturedOn": "2026-09-13",
+      "url": "http://127.0.0.1:27185/",
+      "note": "Portable package browser QA"
     }
   ],
   "updatedOn": "2026-09-13"

@@ -917,5 +917,178 @@
     "mapMeshes": 1905,
     "mapPrimitives": 1910,
     "note": "Initial growth during first views of map geometry. After warmup, 20 cycles of replacing 6 bots showed no sustained GPU resource growth. Browser process termination was not reproduced; this is not a guarantee on other GPUs."
+  },
+  "deployment": {
+    "release": "20260912T180419Z",
+    "url": "https://cs2.duskrain.cn/",
+    "archiveSha256": "5ce4e221fd6084cd618b423238f62d59e723c7b36236c122ae536e07a79eed73",
+    "siteSha256": "2a80a8db07363ffff6019b6dfdb46d1308fc805f8a409c88730089d9a11d2607",
+    "previousRelease": "/opt/dust2-web/releases/20260911T034210Z",
+    "health": {
+      "ok": true,
+      "service": "dust2-web",
+      "release": "20260912T180419Z",
+      "protocol": 1,
+      "tickRate": 30,
+      "uptime": 1,
+      "rooms": 0,
+      "humans": 0,
+      "players": 0,
+      "memory": {
+        "rssMiB": 181,
+        "heapMiB": 61
+      },
+      "performance": {
+        "windowSamples": 25,
+        "tickBudgetMs": 33.33,
+        "tickP50Ms": 0.01,
+        "tickP95Ms": 0.02,
+        "tickMaxMs": 0.03,
+        "maxSchedulingDelayMs": 0.42,
+        "lateTicks": 0,
+        "totalTicks": 25
+      }
+    },
+    "backup": "/opt/dust2-web/backups/activate-20260912T180419Z"
+  },
+  "public": {
+    "at": "2026-09-12T18:10:25.462Z",
+    "checks": [
+      {
+        "name": "HTTPS reports expected release",
+        "release": "20260912T180419Z"
+      },
+      {
+        "name": "Public room directory available before joining"
+      },
+      {
+        "name": "Occupied 5v5 room listed and guest joins by replacing a bot"
+      },
+      {
+        "name": "Purchased unused gun refunded once; duplicate refund rejected"
+      },
+      {
+        "name": "CT defuse kit purchase works"
+      },
+      {
+        "name": "Room released after last human disconnects"
+      },
+      {
+        "name": "All new knife models, animations, icons and music clips match asset hashes",
+        "files": 33,
+        "bytes": 16542257
+      }
+    ]
+  },
+  "publicGameplayChecks": 9,
+  "publicRoomChecks": 5,
+  "portable": {
+    "package": {
+      "archive": "H:\\playfround\\dust2-web\\artifacts\\portable\\DustII-Windows-x64-20260912-180750.zip",
+      "folder": "H:\\playfround\\dust2-web\\artifacts\\portable\\DustII-Windows-x64-20260912-180750",
+      "bytes": 369608233,
+      "unpackedBytes": 574271635,
+      "files": 2436,
+      "sha256": "2ce50f3ade52c2d734ff65e1c7b0428a97d6c35e9fc3a33e8e80aa82a250f5cd",
+      "node": "v22.23.2",
+      "assetFiles": 1057
+    },
+    "integrity": {
+      "zipCRC": "passed",
+      "verifiedFiles": 2436,
+      "sourceDirty": false,
+      "sourceCommit": "a84dd6be17607cda3f1e9f8710cfbf256143f741",
+      "folder": "H:\\playfround\\dust2-web\\artifacts\\portable\\DustII-Windows-x64-20260912-180750"
+    },
+    "offline": {
+      "url": "http://127.0.0.1:27195/?room=5504BD",
+      "blockedExternal": [],
+      "errors": [],
+      "players": 4,
+      "resources": {
+        "fps": 116,
+        "ping": 0,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 647,
+        "textures": 347,
+        "programs": 23,
+        "actors": 3,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 1,
+        "heapMiB": 368,
+        "timing": {
+          "samples": 89,
+          "frameP95Ms": 47.9,
+          "cpuP95Ms": 15.9,
+          "actorsP95Ms": 1.3,
+          "renderSubmitP95Ms": 13.3
+        }
+      },
+      "settings": {
+        "sensitivity": 1,
+        "zoomSensitivity": 1,
+        "crosshair": {
+          "style": 4,
+          "size": 1,
+          "thickness": 1.5,
+          "gap": -4,
+          "color": 5,
+          "red": 0,
+          "green": 255,
+          "blue": 165,
+          "alpha": 255,
+          "outlineThickness": 0,
+          "fixedCrosshairGap": 0,
+          "splitDistance": 3,
+          "innerSplitAlpha": 0,
+          "outerSplitAlpha": 1,
+          "splitSizeRatio": 1,
+          "useAlpha": true,
+          "dot": false,
+          "outline": false,
+          "tStyle": false,
+          "followRecoil": false,
+          "gapUseWeaponValue": false
+        },
+        "quality": "low",
+        "brightness": 100,
+        "aspect": "16:9",
+        "display": "bars"
+      }
+    },
+    "online": {
+      "room": "PXC4C055",
+      "url": "http://127.0.0.1:27185/?room=PXC4C055",
+      "humans": 2,
+      "assetOrigins": [
+        "http://127.0.0.1:27185"
+      ],
+      "errors": [],
+      "resources": {
+        "fps": 142,
+        "ping": 0,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 647,
+        "textures": 347,
+        "programs": 23,
+        "actors": 1,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 1,
+        "heapMiB": 384,
+        "timing": {
+          "samples": 210,
+          "frameP95Ms": 14.1,
+          "cpuP95Ms": 12.2,
+          "actorsP95Ms": 0.3,
+          "renderSubmitP95Ms": 11.2
+        }
+      }
+    }
   }
 }
