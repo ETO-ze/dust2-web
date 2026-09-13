@@ -6,7 +6,7 @@
 
 在浏览器里走进 Dust II：选阵营、买装备、检视皮肤，从中门的第一枪开始。
 
-[新主地址](https://cs2.duskrain.cn/) · [游戏实拍](docs/SHOWCASE.md) · [Windows 便携包](docs/PORTABLE.md) · [本地运行](#本地运行) · [当前边界](#当前边界)
+[新主地址](https://cs2.duskrain.cn/) · [安卓全屏 APK](docs/ANDROID.md) · [游戏实拍](docs/SHOWCASE.md) · [Windows 便携包](docs/PORTABLE.md) · [本地运行](#本地运行) · [当前边界](#当前边界)
 
 **Three.js / WebGL2 · Node.js / WebSocket · 多人房间 · 机器人 · PWA**
 
@@ -33,6 +33,8 @@
 **人机追加更新：** 修复掩体边缘瞄准错位，分开移动与观察；投掷前站稳并预演真实轨迹，交火时优先拿枪。加入有时限的进点集结和 9 个通过地图校准的候选投点。详见[人机重做与验证](docs/BOT-TACTICS-REWORK.md)。
 
 **触屏与协作更新：** 手机自动显示摇杆和战斗按钮，支持多指跳投；人机保持守点分工、就近补枪、改善经济，反应时间和误差仅小幅调整。详见[手机操作与验证](docs/MOBILE-BOT-BALANCE.md)。
+
+**安卓全屏更新：** 增加无地址栏的横屏客户端、手机网页自动全屏与安装入口，并接入原生设置备份文件选择器。详见[下载与使用说明](docs/ANDROID.md)。
 
 ## 已经可以玩什么
 

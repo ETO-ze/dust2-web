@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
+    <application android:label="尘雨 Dust II" android:icon="@drawable/game_icon"
+        android:theme="@style/GameTheme" android:hardwareAccelerated="true"
+        android:allowBackup="false" android:usesCleartextTraffic="false"
+        android:enableOnBackInvokedCallback="false" android:isGame="true">
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTask"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|uiMode"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="cs2.duskrain.cn" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

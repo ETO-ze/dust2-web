@@ -1,0 +1,31 @@
+plugins { id 'com.android.application' }
+def secret = rootProject.file('signing/release.json')
+def signing = secret.exists() ? new groovy.json.JsonSlurper().parse(secret) : null
+android {
+    namespace 'cn.duskrain.dustii'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'cn.duskrain.dustii'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    buildFeatures { buildConfig true }
+    signingConfigs {
+        release {
+            if (signing) {
+                storeFile rootProject.file('signing/dustii-release.p12')
+                storePassword signing.password
+                keyAlias 'dustii'
+                keyPassword signing.password
+            }
+        }
+    }
+    buildTypes {
+        release { minifyEnabled false; signingConfig signingConfigs.release }
+        debug { applicationIdSuffix '.debug'; versionNameSuffix '-debug' }
+    }
+}
+dependencies { implementation 'androidx.webkit:webkit:1.12.1' }

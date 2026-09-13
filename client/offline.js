@@ -4,7 +4,7 @@ const publish=()=>{for(const fn of listeners)fn({...state});};
 export async function initOffline({onStatus}={}){
   if(onStatus){listeners.add(onStatus);onStatus({...state});}if(started)return{...state};started=true;
   state.supported=Boolean('serviceWorker' in navigator&&globalThis.isSecureContext);state.online=navigator.onLine;
-  state.installed=globalThis.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone===true;
+  state.installed=globalThis.matchMedia?.('(display-mode: standalone)').matches||globalThis.matchMedia?.('(display-mode: fullscreen)').matches||navigator.standalone===true||/\bDustIIAndroid\//.test(navigator.userAgent);
   window.addEventListener('online',()=>{state.online=true;publish();});window.addEventListener('offline',()=>{state.online=false;publish();});
   window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;state.canInstall=true;publish();});
   window.addEventListener('appinstalled',()=>{installPrompt=null;state.canInstall=false;state.installed=true;publish();});

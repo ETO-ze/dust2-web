@@ -19,7 +19,7 @@ export class TouchControls {
    if(!this.active||!this.enabled||e.pointerType==='mouse'&&this.settings.mode!=='on')return;
    const target=e.target.closest('button,[data-touch-kind]');if(!target||target.disabled)return;
    e.preventDefault();e.stopPropagation();
-   if(target.dataset.touchCommand){const command=target.dataset.touchCommand;if(command==='cancel'){this.clear();this.onCancel();}if(command==='room')onRoom();if(command==='fullscreen')onFullscreen();return;}
+   if(target.dataset.touchCommand){const command=target.dataset.touchCommand;if(command==='cancel'){this.clear();this.onCancel();}if(command==='room')onRoom();return;}
    if(target.dataset.throw){this.clear();this.onCancel();this.throwMode=target.dataset.throw;this.drawThrow();return;}
    const action=target.dataset.action;
    if(target.hasAttribute('data-toggle')){controls.setVirtual(action,!controls.down(action),'toggle-'+action);target.classList.toggle('pressed',controls.down(action));return;}
@@ -32,6 +32,8 @@ export class TouchControls {
   this.element.addEventListener('pointermove',e=>{if(!this.input.pointers.has(e.pointerId))return;e.preventDefault();this.input.move(e.pointerId,e.clientX,e.clientY);this.drawStick();});
   this.element.addEventListener('pointerup',e=>{this.input.end(e.pointerId);this.drawHeld();this.drawStick();});
   for(const name of ['pointercancel','lostpointercapture'])this.element.addEventListener(name,e=>{this.input.end(e.pointerId,true);this.drawHeld();this.drawStick();});
+  // Click follows touch release, when transient user activation is available.
+  this.element.querySelector('[data-touch-command=fullscreen]').addEventListener('click',()=>{if(this.active&&this.enabled)onFullscreen();});
   this.element.addEventListener('contextmenu',e=>e.preventDefault());
   this.media.addEventListener('change',()=>this.refreshMode());
   this.refreshMode();this.drawThrow();

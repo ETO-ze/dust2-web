@@ -71,6 +71,9 @@ test('bot aim uses shortest arcs and bounded speeds, settling before any shot',(
   const dt=1/30,initial={yaw:Math.PI-.01,pitch:0};
   const wrapped=smoothBotAim(initial,{yaw:-Math.PI+.01,pitch:0},dt);assert.ok(Math.abs(angleDifference(wrapped.yaw,initial.yaw))<.02);
   const {room,a,b,advance}=fixture();a.bot=true;a.id='b_100';a.yaw=Math.PI;a.pitch=0;room.visibleToBot=()=>true;a.botAI.path=[];a.botAI.goal=null;
+  // Exercise turning toward an already spotted opponent. A fresh opponent
+  // directly behind the bot is correctly excluded by the acquisition FOV.
+  a.botAI.targetId=b.id;a.botAI.lastSeenAt=100000;
   let fired=false;
   for(let i=0;i<180;i++){
     advance(1000/30);const before={yaw:a.yaw,pitch:a.pitch},input=room.botInput(a,dt);

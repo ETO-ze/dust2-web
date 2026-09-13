@@ -21,3 +21,12 @@ __pycache__/
 *.p12
 .DS_Store
 Thumbs.db
+
+android/.gradle/
+android/**/build/
+android/local.properties
+android/signing/
+*.jks
+*.keystore
+public/downloads/*.apk
+public/downloads/android-latest.json

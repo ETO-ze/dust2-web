@@ -1,0 +1,10 @@
+<resources>
+    <style name="GameTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">#111715</item>
+        <item name="android:colorAccent">#E4C785</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+</resources>
