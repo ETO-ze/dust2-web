@@ -53,3 +53,14 @@
 触屏输入依据 [MDN Pointer Events](https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events/Using_Pointer_Events) 的独立指针和取消机制；游戏操作面使用 [touch-action](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/touch-action) 控制手势，菜单保持可滚动。[方向锁定](https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/lock)按可选能力处理。
 
 尚未在实际 Android / iOS 手机完成长时间性能验收。地图、角色和纹理仍有显著内存开销，不能承诺所有手机都不会被系统终止；本次没有把桌面模拟的帧率当成手机性能数据。
+
+## 发布验收
+
+- 公网版本：`20260913T035105Z`，功能提交 `e6ffa47ed76bc2726ee3c41588a203c3a6e7170b`。
+- HTTPS 普通联机协议 9 项检查和房间席位 5 项检查通过。生产 Nginx 配置 SHA-256 与发布前一致；回滚版本保留为 `20260913T024304Z`。
+- 发布前实际房间有 1 位真人、5 位人机时，服务器 tick P95 为 4.81 ms，30 Hz 预算为 33.33 ms，进程 RSS 148 MiB。该短时采样没有显示服务器算力瓶颈；不能排除其他时刻的网络或设备问题。
+- 完整服务端发布包 SHA-256：`c81e8c61cbd00dfaeecff33c68a13c59e653819f633a5e8cc3bb9456174b2e81`。
+- Windows 包：`DustII-Windows-x64-20260913-035203.zip`，369625726 字节，SHA-256：`a71e487f37f629d9f185e04fb4a944425d81ca7e8315def496153c26970e2a8d`。
+- 本地包清单来自干净的功能提交，2442 个文件逐项验证大小和 SHA-256、ZIP CRC 通过；包内 Node v22.23.2 成功启动离线服务器（3 人机 + 1 玩家）以及在线资源服务并连接公网。
+
+公网 Chrome 触屏模拟实际加载全部基础资源后，自动启用摇杆、开火扣弹和跳跃通过，没有运行错误；测试房间已退出。公网 HTML、JS、CSS 的 SHA-256 与本地构建逐项相同。验收结束时服务正常，进程 RSS 125 MiB。

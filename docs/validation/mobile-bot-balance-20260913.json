@@ -1,0 +1,240 @@
+{
+  "release": "20260913T035105Z",
+  "functionalCommit": "e6ffa47ed76bc2726ee3c41588a203c3a6e7170b",
+  "tests": 240,
+  "build": "passed",
+  "mobile": {
+    "input": {
+      "checks": [
+        {
+          "check": "Four trusted fingers move, aim, fire and jump",
+          "pointers": 4,
+          "jumpId": 1,
+          "y": 1.0719567442064128,
+          "yaw": -0.13595196278692673
+        },
+        {
+          "check": "Releasing aim and jump preserves movement and fire",
+          "pointers": 2,
+          "ammo": 24
+        },
+        {
+          "check": "Server accepts analog movement, aim and shots",
+          "distance": 2.9805457076405677,
+          "ammo": 24,
+          "yaw": -0.13595196278692673
+        },
+        {
+          "check": "Release resets inputs without pointer lock"
+        },
+        {
+          "check": "Crouch toggle holds"
+        },
+        {
+          "check": "Touch sidearm switch"
+        },
+        {
+          "check": "Knife secondary attack"
+        },
+        {
+          "check": "Touch grenade holds pin"
+        },
+        {
+          "check": "OS touch cancel preserves grenade",
+          "grenade": {
+            "state": "idle",
+            "weapon": null,
+            "mode": "full",
+            "strength": 1,
+            "primedAt": 0
+          }
+        },
+        {
+          "check": "Cancel emits no throw"
+        },
+        {
+          "check": "Menu cancels held grenade and touch surface"
+        },
+        {
+          "check": "Focus loss stops movement and cancels grenade"
+        }
+      ]
+    },
+    "utility": {
+      "checks": [
+        {
+          "check": "Hold and release full",
+          "mode": "full",
+          "strength": 1
+        },
+        {
+          "check": "Hold and release lob",
+          "mode": "lob",
+          "strength": 0.5
+        },
+        {
+          "check": "Hold and release drop",
+          "mode": "drop",
+          "strength": 0
+        },
+        {
+          "check": "Jump and release in same input interval",
+          "jumpId": 2,
+          "originY": 1.7943876674495411,
+          "playerRise": 1.1846489401381755
+        },
+        {
+          "check": "Touch reload refills magazine"
+        },
+        {
+          "check": "Touch AWP two zoom levels",
+          "zoom1": 1,
+          "zoom2": 2
+        },
+        {
+          "check": "Hold use defuses while turning",
+          "progress": 0.12666666666666668,
+          "locked": true
+        }
+      ]
+    },
+    "menu": {
+      "checks": [
+        {
+          "check": "Scrollable mobile shop buys kit and smoke"
+        },
+        {
+          "check": "Room opens ten seats and resumes",
+          "seats": 10
+        },
+        {
+          "check": "Touch settings adjustable",
+          "sensitivity": 0.5
+        },
+        {
+          "check": "390 x 844 portrait controls remain inside screen",
+          "buttons": 20
+        }
+      ],
+      "settings": {
+        "mode": "on",
+        "sensitivity": 0.5,
+        "size": 1
+      },
+      "errors": []
+    },
+    "errors": [],
+    "persistence": {
+      "mode": "on",
+      "sensitivity": 0.5,
+      "size": 1
+    }
+  },
+  "desktop": {
+    "ok": true,
+    "checks": [
+      "Desktop auto touch off",
+      "Pointer lock",
+      "WASD movement",
+      "Jump",
+      "Fire consumes ammo",
+      "Tab scoreboard",
+      "B shop releases mouse",
+      "Shop resumes pointer lock",
+      "Escape pauses"
+    ],
+    "errors": []
+  },
+  "publicMobile": {
+    "connected": true,
+    "room": "30DB66",
+    "touch": {
+      "enabled": true,
+      "active": true,
+      "axes": {
+        "forward": 0,
+        "right": 0
+      },
+      "pointers": 0,
+      "settings": {
+        "mode": "auto",
+        "sensitivity": 1,
+        "size": 1
+      },
+      "throwMode": "full"
+    },
+    "ammo": 29,
+    "jumpId": 1,
+    "pointerLock": false,
+    "errors": []
+  },
+  "publicIntegrity": {
+    "checks": [
+      {
+        "file": "index.html",
+        "sha256": "95534d621cc112ed7b6e4756b187a7c655bdddc77d6beb8b3d68f4548c054fff"
+      },
+      {
+        "file": "assets/index-Cqmx-LQy.js",
+        "sha256": "48cb494accc651f6b9baa669e743494e3638487811109ce7be377b010e465ea9"
+      },
+      {
+        "file": "assets/index-BHNW96PR.css",
+        "sha256": "8357032a710622d2d3044d6d023fd2d24536a66c353c752a1eb136cb7f6ed9e6"
+      }
+    ],
+    "health": {
+      "ok": true,
+      "service": "dust2-web",
+      "release": "20260913T035105Z",
+      "protocol": 1,
+      "tickRate": 30,
+      "uptime": 398,
+      "rooms": 0,
+      "humans": 0,
+      "players": 0,
+      "memory": {
+        "rssMiB": 125,
+        "heapMiB": 20
+      },
+      "performance": {
+        "windowSamples": 1800,
+        "tickBudgetMs": 33.33,
+        "tickP50Ms": 0.01,
+        "tickP95Ms": 0.02,
+        "tickMaxMs": 0.16,
+        "maxSchedulingDelayMs": 103.7,
+        "lateTicks": 4,
+        "totalTicks": 11950
+      }
+    }
+  },
+  "portable": {
+    "zipCrc": true,
+    "filesVerified": 2442,
+    "sourceCommit": "e6ffa47ed76bc2726ee3c41588a203c3a6e7170b",
+    "sourceDirty": false,
+    "archiveSha256": "a71e487f37f629d9f185e04fb4a944425d81ca7e8315def496153c26970e2a8d"
+  },
+  "portableRuntime": {
+    "ok": true,
+    "reports": [
+      {
+        "mode": "offline",
+        "room": "C2DA1D",
+        "players": 4,
+        "ready": true,
+        "mobileBundle": true,
+        "runtime": "v22.23.2"
+      },
+      {
+        "mode": "online",
+        "room": "1C0848",
+        "players": 1,
+        "ready": true,
+        "mobileBundle": true,
+        "runtime": "v22.23.2"
+      }
+    ]
+  }
+}
