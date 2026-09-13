@@ -1,0 +1,98 @@
+{
+  "date": "2026-09-13",
+  "apk": {
+    "minAndroid": "8.0",
+    "sourceCommit": "b571111e5d43b80a3eb2f0da22a4512754172e9a",
+    "sha256": "e90cda7f9e36b73f86f0366a73b74ac1d611c4d78c61686eecb40c87b8d838c8",
+    "url": "./DustII-Android-1.0.0.apk",
+    "version": "1.0.0",
+    "package": "cn.duskrain.dustii",
+    "versionCode": 1,
+    "bytes": 903105
+  },
+  "nativeChecks": [
+    {
+      "name": "Native landscape host and scoped settings bridge",
+      "ua": "Mozilla/5.0 (Linux; Android 15; sdk_gphone64_x86_64 Build/AE3A.240806.043; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.6367.219 Mobile Safari/537.36 DustIIAndroid/1.0",
+      "width": 854,
+      "height": 480,
+      "dpr": 1.5,
+      "native": true,
+      "bridge": "function",
+      "hidden": true
+    },
+    {
+      "name": "Real Android WebGL game, default low quality and touch controls",
+      "pointerLock": false,
+      "loaded": true,
+      "quality": "low",
+      "contextLost": false
+    },
+    {
+      "name": "Background and resume preserve room and release fire"
+    },
+    {
+      "name": "Settings and asset cache exist in app data",
+      "cacheNames": [
+        "dust2-shell-v1:/",
+        "dust2-assets-v1:/",
+        "dust2-meta-v1:/"
+      ]
+    },
+    {
+      "name": "Native settings export opens Android document picker"
+    },
+    {
+      "name": "Back key opens exit confirmation"
+    },
+    {
+      "name": "No uncaught WebView runtime errors"
+    }
+  ],
+  "runtimeErrors": [],
+  "releaseChecks": {
+    "installedRelease": true,
+    "publicURL": "https://cs2.duskrain.cn/",
+    "nativeFullscreen": true,
+    "rendererCrashHandled": true,
+    "nativePIDPreserved": true,
+    "preferencesSurviveRendererRestart": true,
+    "manifestDebuggable": false,
+    "emulatorBuildType": "userdebug"
+  },
+  "gameTests": {
+    "passed": 244,
+    "failed": 0
+  },
+  "clientPackageTests": {
+    "passed": 7,
+    "failed": 0
+  },
+  "deployment": {
+    "clientStamp": "20260913T050452Z",
+    "serverRelease": "20260913T035105Z",
+    "serverRestarted": false
+  },
+  "publicFiles": [
+    {
+      "path": "index.html",
+      "bytes": 15418,
+      "sha256": "a4536d2d363b91c9a844f65f31ec3f43f46ff1bee855739eb6b797937f3116e0"
+    },
+    {
+      "path": "manifest.webmanifest",
+      "bytes": 741,
+      "sha256": "d1483e39a235adba6bd1f163d90990c15545d29d41fb0962dfb4331a6eb1eef2"
+    },
+    {
+      "path": "assets/index-Bs2lGlGD.js",
+      "bytes": 1123047,
+      "sha256": "59ef76051921d177d71d599bcb9ce96f82beb46084310691ce0d278b8c9ce876"
+    },
+    {
+      "path": "assets/index-C1I1gLVY.css",
+      "bytes": 89183,
+      "sha256": "0e76e5e3431e92120517dcdf6a1af25ac6bfb1f16328c9a6605e32e416d2cc51"
+    }
+  ]
+}

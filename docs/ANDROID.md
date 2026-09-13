@@ -4,6 +4,10 @@
 
 下载并安装 APK，从桌面的「尘雨 Dust II」图标打开。客户端横屏运行，不显示浏览器地址栏，默认隐藏状态栏和导航栏；从屏幕边缘滑动仍可以临时唤出系统导航，这是 Android 保留的退出方式。
 
+![Android 15 模拟器中的实际全屏对局](screenshots/android-fullscreen.png)
+
+*安卓模拟器实拍，最低画质、亮度 112%，未编辑图像；左侧摇杆，右侧瞄准与战斗按钮。首次打开时，Android 可能显示全屏手势说明，点「知道了 / Got it」后继续。*
+
 客户端连接现有联机大厅，保留手机摇杆、滑动瞄准和战斗按钮。第一次进入仍需下载地图、探员和声音，额外武器、皮肤、音乐按需加载。安装包约 0.9 MB，不包含全部游戏资源，也不包含离线对局服务器。
 
 ## 使用与保存
@@ -38,6 +42,12 @@ Release 只加载 `https://cs2.duskrain.cn/`。原生设置导出桥只接受该
 
 浏览器验证覆盖真实触摸手势请求全屏、进入游戏自动全屏、游戏内全屏按钮、触屏控制激活和 APK 下载文件格式。单元测试覆盖权限拒绝、不支持、方向锁定失败和原生宿主分支。
 
-Android 构建与模拟器测试记录见随发布提交的验收文件。模拟器验证不代表所有品牌手机的帧率或发热表现；当前没有已连接的安卓真机。
+2026-09-13 验收：244 项游戏测试、7 项客户端发布校验测试通过；Android Lint 为 0 错误。Android 15 / WebView 124 模拟器通过实际 WebGL 对局、横屏触控、后台返回、设置缓存、文件选择器和返回键确认检查。Android 11 / WebView 83 验证了过旧组件提示。
+
+发布签名包已安装并打开公网大厅。在本地模拟器中主动终止其渲染进程后，原生进程保持存活，出现重试界面，重新进入后设置仍保留。模拟器是 `userdebug` 系统，会强制开放 WebView 调试；发布 APK 的应用清单没有 debuggable 标志，代码使用 `BuildConfig.DEBUG=false`。
+
+客户端已热更新到网站，服务器进程没有重启；网页 HTML、JS、CSS、manifest 和公网 APK 均与本地构建哈希一致。详细数据见 [ANDROID-ACCEPTANCE.json](ANDROID-ACCEPTANCE.json)。模拟器验证不代表所有品牌手机的帧率或发热表现；当前没有已连接的安卓真机。
+
+版本 1.0.0：903,105 字节；APK SHA-256：`e90cda7f9e36b73f86f0366a73b74ac1d611c4d78c61686eecb40c87b8d838c8`。
 
 实现依据：[Android 沉浸模式](https://developer.android.com/develop/ui/views/layout/immersive)、[WebView 宿主](https://developer.android.com/develop/ui/views/layout/webapps/webview)、[WebView 进程恢复](https://developer.android.com/develop/ui/views/layout/webapps/managing-webview)、[浏览器全屏与用户手势](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen)。
