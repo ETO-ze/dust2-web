@@ -1,5 +1,6 @@
+import {mobileDevice} from './device-profile.js';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import {gameGLTFLoader} from './gltf-loader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import { MAP } from '../shared/map-data.js';
@@ -19,9 +20,9 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
   manager.onProgress=(_url,loaded,total)=>{
     if(total>5)onProgress(`载入原版材质 ${Math.min(loaded,total)} / ${total}…`);
   };
-  const loader=new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
+  const loader=gameGLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
   const [gltf,response,sky]=await Promise.all([
-    loader.loadAsync(assetUrl('assets/map-cs2/dust2-web.gltf?v=e4f2b2d3903c')),
+    loader.loadAsync(assetUrl(mobileDevice()?'assets/map-mobile/dust2-mobile.gltf':'assets/map-cs2/dust2-web.gltf?v=e4f2b2d3903c')),
     fetch(assetURL(assetUrl(MAP.geometryUrl))),
     new HDRLoader(manager).loadAsync(assetUrl('assets/sky/daylight.hdr?v=5244534e9cf5')),
   ]);
@@ -64,7 +65,7 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
       }
     }
   });
-  for(const texture of textures)texture.anisotropy=4;
+  for(const texture of textures)texture.anisotropy=mobileDevice()?1:4;
 
   // Keep the exported sun direction. Web lighting approximates Source 2's
   // baked lighting; original surface textures and their UVs stay untouched.

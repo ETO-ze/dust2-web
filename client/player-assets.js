@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {gameGLTFLoader} from './gltf-loader.js';
 import {AGENT_ASSETS} from '../shared/agent-assets.js';
 import {fetchCachedAsset} from './loading.js';
 export {loadAgentArms,requestAgentArms,loadedAgentArms,agentArmsCacheStatus} from './agent-arms.js';
@@ -20,7 +20,7 @@ export function loadedPlayerAsset(id){return agents.get(id);}
 export async function loadAgent(id,{onProgress}={}){
  if(agents.has(id))return agents.get(id);if(pending.has(id))return pending.get(id);
  const asset=AGENT_ASSETS[id];if(!asset)throw Error('探员资源尚不可用');
- const task=(async()=>{const response=await fetchCachedAsset(new URL(asset.model,document.baseURI).href,{sha256:asset.sha256,bytes:asset.bytes,onProgress});if(!response.ok)throw Error('探员下载失败');const source=await new GLTFLoader().parseAsync(await response.arrayBuffer(),new URL('.',new URL(asset.model,document.baseURI)).href);prepare(source);agents.set(id,source);return source;})();pending.set(id,task);try{return await task;}finally{pending.delete(id);}
+ const task=(async()=>{const response=await fetchCachedAsset(new URL(asset.model,document.baseURI).href,{sha256:asset.sha256,bytes:asset.bytes,onProgress});if(!response.ok)throw Error('探员下载失败');const source=await gameGLTFLoader().parseAsync(await response.arrayBuffer(),new URL('.',new URL(asset.model,document.baseURI)).href);prepare(source);agents.set(id,source);return source;})();pending.set(id,task);try{return await task;}finally{pending.delete(id);}
 }
 export function requestAgent(id){if(!id||agents.has(id)||pending.has(id)||(retry.get(id)||0)>performance.now())return;retry.set(id,performance.now()+30000);loadAgent(id).catch(()=>{});}
 export async function loadPlayerAssets(loader){

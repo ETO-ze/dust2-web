@@ -68,6 +68,7 @@ class ReceiverTests(unittest.TestCase):
 
     def test_explicit_supported_paths(self):
         for name in ['dist/index.html','dist/index.html.gz','dist/sw.js','dist/manifest.webmanifest',
+                     'dist/downloads/DustII-Android-1.0.0.apk','dist/downloads/android-latest.json',
                      'dist/icons/icon-192.png','dist/assets/index-new.js','dist/assets/index-new.css.gz',
                      'dist/assets/ui-cs2/headshot.svg','dist/assets/optional/ct-ava.glb','dist/assets/sky/daylight.hdr',
                      'dist/assets/audio/cs2/ak47.ogg','dist/assets/source/Preview (Variation A).png',
@@ -76,7 +77,8 @@ class ReceiverTests(unittest.TestCase):
             with self.subTest(name=name):self.member(name)
 
     def test_reject_out_of_scope_and_secret_names(self):
-        for name in ['dist/.env','dist/config.toml','dist/private.key','dist/extra.html',
+        for name in ['dist/downloads/other.apk','dist/downloads/signing.p12','dist/downloads/private.json',
+                     'dist/.env','dist/config.toml','dist/private.key','dist/extra.html',
                      'dist/assets/.env','dist/assets/.private/data.json','dist/assets/helper.py',
                      'dist/assets/read.log','dist/icons/readme.txt','server/PROTOCOL.md',
                      'shared/secrets.env','node_modules/ws/index.js','deploy/dust2-web.service',

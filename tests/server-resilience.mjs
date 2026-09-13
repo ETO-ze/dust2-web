@@ -92,10 +92,11 @@ test('bad protocol input, disappearing assets and overflow handshakes cannot kil
     const welcome = await slow.waitFor(message => message.type === 'welcome');
     const serverSide = app.rooms.get('SAFE01').clients.get(welcome.id);
     const clientClosed = once(slow.socket, 'close'), serverClosed = once(serverSide, 'close');
-    // Keep an actual outbound write queued. This exercises ws.bufferedAmount
+    // Keep an actual uncompressed outbound write queued; a repeated string
+    // would otherwise shrink below the congestion threshold. This exercises ws.bufferedAmount
     // and the real close handshake without requiring a slow remote network.
     serverSide._socket.cork();
-    serverSide.send(JSON.stringify({ type: 'audit-congestion', payload: 'x'.repeat(1024 * 1024 + 1) }));
+    serverSide.send(JSON.stringify({ type: 'audit-congestion', payload: 'x'.repeat(1024 * 1024 + 1) }),{compress:false});
     assert.ok(serverSide.bufferedAmount > 1024 * 1024);
     for (let i = 0; i < 20 && serverSide.readyState === WebSocket.OPEN; i++) await delay(20);
     assert.equal(serverSide.readyState, WebSocket.CLOSING);

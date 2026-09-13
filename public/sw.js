@@ -44,12 +44,14 @@ async function cachedAsset(url){
   const meta=await caches.open(META),assets=await caches.open(ASSETS);
   // The manifest identifies the desired immutable content, independent of
   // cache age. Old SHA versions remain available for interrupted updates.
-  const manifestResponse=await meta.match(MANIFEST);
+  for(const manifestURL of [MANIFEST,new URL('assets/asset-manifest-mobile.json',SCOPE).href]){
+  const manifestResponse=await meta.match(manifestURL);
   if(manifestResponse){
     const manifest=await manifestResponse.json();
     const file=(manifest.files||[]).find(f=>new URL(f.path,SCOPE).pathname===url.pathname);
     const version=url.searchParams.get('v');
     if(file&&(!version||file.sha256.startsWith(version))){const response=await assets.match(hashKey(file.sha256.toLowerCase()));if(response)return response;}
+  }
   }
   const indexed=await meta.match(indexKey(url));
   if(indexed){const entry=await indexed.json();return assets.match(hashKey(entry.sha256));}
@@ -63,7 +65,7 @@ self.addEventListener('fetch',event=>{
   if(/^(?:api(?:\/|$)|ws(?:\/|$)|health(?:\/|$)|__asset_cache__\/)/.test(relative))return;
   // The page refreshes this small manifest and falls back to its metadata
   // copy itself. Serving an old asset index here would hide new releases.
-  if(url.pathname===new URL(MANIFEST).pathname)return;
+  if(/^assets\/asset-manifest(?:-mobile)?\.json$/.test(relative))return;
   if(request.mode==='navigate'){
     event.respondWith((async()=>{
       try{const response=await fetch(request);if(!response.ok)throw new Error('大厅暂时不可用');event.waitUntil(cacheShellResponse(response.clone()).catch(()=>{}));return response;}

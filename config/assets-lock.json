@@ -1,10 +1,16 @@
 {
   "schemaVersion": 1,
-  "version": "419e7d9d28f7875e",
+  "version": "6e6fbd9dabf5b687",
   "baseURL": "https://cs2.duskrain.cn/",
   "baseManifestVersion": "c14e41201dcbe3f9",
-  "totalBytes": 442439042,
+  "totalBytes": 452116795,
   "files": [
+    {
+      "path": "assets/asset-manifest-mobile.json",
+      "bytes": 151149,
+      "sha256": "2974e62a660f63e6476843c5c1f862a7c565394b571d70a703a907cd97b605ed",
+      "group": "metadata"
+    },
     {
       "path": "assets/asset-manifest.json",
       "bytes": 150250,
@@ -5409,6 +5415,3072 @@
       "path": "assets/map-cs2/textures/feed0d2bf3bdcb6bafa6.webp",
       "bytes": 17298,
       "sha256": "5fa0d0cc287912818bc219526b2731577a03b22eeebbf9fe32fa25c1bcd715de",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/dust2-mobile.gltf",
+      "bytes": 4581090,
+      "sha256": "1c8a50d30590db27d0906658a314f230391ea82e8bd66651b5dab5ef905bf786",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/00cea8c1eae4b127d71d.webp",
+      "bytes": 2662,
+      "sha256": "33574becf9dedf45d468cb13bb3368e737ef6a3a0d0ceac81f4663b952679f2a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/029f54161e43d37d5dfb.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/032a080d08c242bea94f.webp",
+      "bytes": 8112,
+      "sha256": "ede1ea27c6bc9f4784c81ba09006cf0d245338d89cafc0b39b8104d5f2ac3ebf",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/03d8770ed95cb7589c01.webp",
+      "bytes": 7874,
+      "sha256": "6fa68fa43b6587e9c1765950c6639b9706ad55568d06ab09885d1377d8bc499d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/03f90c0fdc60f5b07267.webp",
+      "bytes": 58750,
+      "sha256": "81ee398269d990e4ae280a5db38a732fa59d176ab0537cc0c999778c507e6c6d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/046026ada0ea508d5833.webp",
+      "bytes": 32784,
+      "sha256": "c3728b0348afb8c8a9e14c4e650275bc6a5f75b68ea87b2a98217fe672371a80",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/04988ee9414d03a488fe.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/04fed09fdb5cfe01fd33.webp",
+      "bytes": 6912,
+      "sha256": "fa2db4d693286db06d957c2033b6c0c3c46f642483172f591d4deb56a8c840aa",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0552f7002f8d16fdb0c4.webp",
+      "bytes": 12880,
+      "sha256": "90861573123591951f99e910fdc4580400f6eed1aa80685fa15cfcace1b38892",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0565653ab0a5dbea0fc6.webp",
+      "bytes": 3698,
+      "sha256": "1cf1aabdc7873b2be192ca89fa72f2d1e5fb60d07296bdb2a11dd613cd700c3d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/05e411b0840a5f2b2409.webp",
+      "bytes": 10574,
+      "sha256": "141e95aae3f5bcb4f7d6f1999d49a6f3488d99606990f9ccea87984ef7221b5d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/062310de082c6bec37f9.webp",
+      "bytes": 47580,
+      "sha256": "f45129108300d5965864a34859835c8e72139ac10972cb78323778a5b3981a18",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/06d0ef1c205251381abd.webp",
+      "bytes": 1380,
+      "sha256": "722b25824aa7c0d6da8c0cbfebef8be3e8e3c964f8051af53fd46c6e0c9599b6",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0778786f34dd8151e5c3.webp",
+      "bytes": 21624,
+      "sha256": "109be44182273f5fcb657af02bc00eff8dfe73ffa7cf6460c5e38c33e9dc436a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/09964d8cd17717a25eb5.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/09cbbd81535edfd5ba7b.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0ab7a6f0301010be07fc.webp",
+      "bytes": 28084,
+      "sha256": "5a86c615fd92c4de3b8d772e3da326da540d5185434ad151a6eefeb3fd00f429",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0b23a1f430dac3bf356d.webp",
+      "bytes": 1574,
+      "sha256": "a0410596760c34f437e12ee54ca966647726860c92e04f199a3d27af0dc77bae",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0c49431675db5e9cbcd0.webp",
+      "bytes": 9630,
+      "sha256": "ec304bdb9d2122086db07122d592abd8545aa4350beeaa61b834bad91a81ae2f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0cf4eb0d4ede1bfac5eb.webp",
+      "bytes": 12872,
+      "sha256": "049b4e8574b8e86064e6be044c5afe69f2aa3900da0a0c85285d62a057e8cade",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0db43eaf00f95dbebbf1.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0e3d4b819ebb674e6b38.webp",
+      "bytes": 204,
+      "sha256": "c294f9ee40020076ce31224fc0074d8b22e25e886fd9ad2ca2ff1523e98d3b84",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0e486969326552f32f24.webp",
+      "bytes": 15414,
+      "sha256": "1e0ce17453496def6bafe90abbb1aa37264d256c34055b20bece649df050c0b1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0e6d91f52d3e0cad9878.webp",
+      "bytes": 10188,
+      "sha256": "93b6ff5c54eee5b02b6090b0d08658e5e37d4f2ddabc31e7e60d306b8d7cf4c4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0e72876ab8ba3106cd78.webp",
+      "bytes": 196,
+      "sha256": "4350314050474fa4eb820afbf56386f5162cef1d5d2c0b0d2efc4f4d18ddebf9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/0f21f374d094152c4a54.webp",
+      "bytes": 2672,
+      "sha256": "8e631cd08911e20a1219db1ca372072937c6d0cf054fc9f0898d7f7f1e37b09d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/10ecdb9adc1eeac27987.webp",
+      "bytes": 204,
+      "sha256": "71de75cb153e3d18047100e1dde887f70062296e7f2a1b5be80f358b0ce6e7d0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/11d39cc3de6678ddca05.webp",
+      "bytes": 10652,
+      "sha256": "bdf8da72484f360bd4ada7df572c00088db91fe45c0bfc4d2c4c448fe4aff153",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1230e5393eb7552a7c73.webp",
+      "bytes": 15712,
+      "sha256": "a788746b6feb6dc6d603548ba55de9bcb28f1b577b6194085b6a0be26f3dd0f7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/12371b79567df352b710.webp",
+      "bytes": 22842,
+      "sha256": "551b6f6c209fdf9f123f7fc86f20685513f029c5979954f4ea65cf051c1c64f8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/12a4a85e3470825f8db2.webp",
+      "bytes": 7846,
+      "sha256": "63eb3c9047d06520dcc50e39bac78557832291cc3a8f3080921732c0361f699f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/12b49557dd7b0a9de345.webp",
+      "bytes": 5774,
+      "sha256": "402b221a014a46415ce091a7f25330670ec129086cc792cfee993e2f76003c97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/13910b0cf599815f7605.webp",
+      "bytes": 8758,
+      "sha256": "aa0870760aa325733a14c4dc3a1304333ab42665adb322f80434439ad607247b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/13aa51931b4788481040.webp",
+      "bytes": 11142,
+      "sha256": "2f24dbbb9090baa50fd985ca1bed91194421bbe19fa97ec422434c07797af979",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/14a635a9ce32567ae884.webp",
+      "bytes": 1546,
+      "sha256": "41180c3b1b9fa99d3b0f7590b901622a6c7930c096587f04cf579ba585f42ea2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/160ea3efcdd2ab671dac.webp",
+      "bytes": 11528,
+      "sha256": "db990cdd6718a99754a9a9701ef0f5612f53c3e348901d1d1bbb7f96a66441d3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/160f55273de6c4bb27a2.webp",
+      "bytes": 11918,
+      "sha256": "b5c5e3d87236d4b321697a4886ea4a2fcff0421c2232080a0c4010447ff439c8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1677ed2b54e29ebbd0f1.webp",
+      "bytes": 3384,
+      "sha256": "a8897afa2904e1e03b4545f24e60c5d2a613c7aee22db352d4f2139b9ce3f7c6",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/17b63fb3219df34faa96.webp",
+      "bytes": 12154,
+      "sha256": "1ad1ae9d7ca4b0faf4404f250f53aa0fbc2b2cbc6e5efc7fb7e3df8cecf74aa1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1943420a97978de84697.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1a8e5609e022d0c0b289.webp",
+      "bytes": 2610,
+      "sha256": "2479fd679bef0c2ea9dcbc2c9fe454653b2804f088d0a01e38475c3ec8b1d046",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1ada56876903c9287b03.webp",
+      "bytes": 3334,
+      "sha256": "e2046f758cefe8fc17cf3c01d74a04939c14094058bb19146067f8ad56957b71",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1ae38e6f37e6289359bd.webp",
+      "bytes": 2872,
+      "sha256": "1da4682bd32c8f5d96d398807a6ea78aed84c5d01bac87ca072932b957185731",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1bd77d4623c8f2c727ce.webp",
+      "bytes": 11202,
+      "sha256": "54f4f6a3aa27f4340694bd94790297486cd55c901fae0c7e50c41d1a423fbac9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1c3debd20c8d0f6753eb.webp",
+      "bytes": 8036,
+      "sha256": "f2f23e19d444e04b42ee7594700618e86d13f7b41e4f58ccc20b17046113b4ef",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1c6dabb0f875bfd3eac7.webp",
+      "bytes": 5024,
+      "sha256": "5c5ffd8028aeb456d7b1a526ccafbeb29d392ebc08de6af6929a7bac0645a84d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1c7084562eba539f5a80.webp",
+      "bytes": 3790,
+      "sha256": "73b6e27a620d51261e50bf828b106fa1c648c242ede0e14505faa0034eee521d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1c7f67e541ed19f7ea46.webp",
+      "bytes": 12026,
+      "sha256": "0906089464f43718d4b09b232eb5e32c1a6a35d5fd27a31ef333a696783df1eb",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1d8ad1adb85a35b6f0d1.webp",
+      "bytes": 5760,
+      "sha256": "36669d8c1c8a172983a1fe8bdc1b095190f41243a9540003ca7942f1a285ed80",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1d93ea899b46d965c876.webp",
+      "bytes": 3664,
+      "sha256": "f7bb06cdc94e09d3352c114322bc12bc8836522987f3025cede708d686cd873f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1dd09340a0fc6eeb25d8.webp",
+      "bytes": 5786,
+      "sha256": "92b6914e1b8c7a4dc9546005252ee0edce7a1435d74481d887c24f24cb023a1f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1ddbe0feccef92a25b12.webp",
+      "bytes": 9294,
+      "sha256": "49a60029762395ac0bc335553b57ec4eca296734c774ccc662d6297f559e322f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1f3859fcb34851e6c7b0.webp",
+      "bytes": 19710,
+      "sha256": "5f22f3bb88794f4d7225847fe4b61ed224cde7f42e99e4b83cb7e5e42cae0cc8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/1fa3fe4b549a816ffdb6.webp",
+      "bytes": 11398,
+      "sha256": "9e48b24f510b3678eec658b596ef641027a6dbf9f7b038c894a80874cca76918",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/20e01bb1e80f688ec901.webp",
+      "bytes": 9282,
+      "sha256": "0ba702dc93cf6b36adc93faea7c7a4c60f787db76210f084a0d590076fd797db",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2177bcb2d72aacba2c4a.webp",
+      "bytes": 9388,
+      "sha256": "cac4c426264eb4c81d8e0bdaf9220a2ebba8d31b8a0b7e1f240013b11ff7cc0c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/21ff6e5e811f4ba9f8cc.webp",
+      "bytes": 15526,
+      "sha256": "0614ff4c47dde9316e65f8045b730fac46cb463fde8db53b0db5ad9ac9a4b39c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/220bbf887c984f751d8f.webp",
+      "bytes": 196,
+      "sha256": "4350314050474fa4eb820afbf56386f5162cef1d5d2c0b0d2efc4f4d18ddebf9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/22e8d0c6edb3bd4e61c6.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/235b5b715308219884c0.webp",
+      "bytes": 8198,
+      "sha256": "c71d623ed4e08478635f65a6c4e981129df378411354aa14286870176e7d7b6d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/238d6c431b0cfe916199.webp",
+      "bytes": 7812,
+      "sha256": "5b9bd76f1f53ef394f90299cb7f59974bac714638f46cebda6ced6d6c8ce730d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/23edf320ff598faa0800.webp",
+      "bytes": 11456,
+      "sha256": "e24555381244631a5db0a94e7cd0a16d881160c786928a0c575740df66effde8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/24145c38e027f34d123d.webp",
+      "bytes": 5902,
+      "sha256": "8eead120f6220c6801303b3ec5ec490caaf9a8110b1e7dac666a700de4a6c1dd",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/243c1a464bce732fbee1.webp",
+      "bytes": 2104,
+      "sha256": "fc069b33c22410521e2e1edace143f0333febe49c5d6d6f2e406b2b8c20a586a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2728c835330e05b9c481.webp",
+      "bytes": 5980,
+      "sha256": "a485fb80050ca93e0e7ecd8c31fbb9332c8d64fcc62c6e0f7903456473d703bf",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/278b4c320c085728768d.webp",
+      "bytes": 5432,
+      "sha256": "652cdda416eefb239d6519ce75fb80397fd9851ef28cb7309e9ea19054566565",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/28e82eefca0f7b5e43fb.webp",
+      "bytes": 36490,
+      "sha256": "903057192a8155973624a1e53385b39addfd56bd6268ea1977caeb7e89d135e0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/293d9a3700537822ff95.webp",
+      "bytes": 10196,
+      "sha256": "295d246f16ff99a7b820d4184532df3a1eb3398b7a2bd5491948148853abed9d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/29b0091f597a90cc2142.webp",
+      "bytes": 10370,
+      "sha256": "eed1e99a05ce7e77a474546aaa40dc81ec765f90f17b1be261861fa82141854e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2a2d3a8324a1bf360991.webp",
+      "bytes": 5152,
+      "sha256": "94ec68c8127e88c532800db988266d9f6e97132be67f8c8a2c248c563dcb7623",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2aaacc71dea668a1e39d.webp",
+      "bytes": 24862,
+      "sha256": "15a5e3ffd3ec25635070f5f99a463f1d09175f26a348ad1ddd8793c33335e8ef",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2c0bfd475605a2bde7a4.webp",
+      "bytes": 2206,
+      "sha256": "5ea7ab6aed2fd85a5c5315be31097e390926cb19945dbb6af0b9ed7c0b4d6a47",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2c23a33cbb2e7110b086.webp",
+      "bytes": 4894,
+      "sha256": "aad6b6d4669b1f34cb5e2428bd4598cc625dce8a544637806d9bd072e3dde149",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2c789a9ab060afa34710.webp",
+      "bytes": 39766,
+      "sha256": "8002619410f3dd7913b2731ae26f74e3f078f0ec46cd161d0df9be467832236a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2cbefe75c28101c7bbaa.webp",
+      "bytes": 24122,
+      "sha256": "ac8e3260bcd79aacf02475a8ce6ab66814e5cb080bf75b9093b129eb6b007f28",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2cc83c2452025a1caeba.webp",
+      "bytes": 112,
+      "sha256": "6bb72d3c96104a0258398702c7b3412ff42bdb992da06fc641e5e514e7ede648",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2d0762d3687b77739b5b.webp",
+      "bytes": 9622,
+      "sha256": "f507cc35600db00ae4886ba66d349116b0445f6e4565b1519110fb297228e433",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2d542fde274da07b07ee.webp",
+      "bytes": 6706,
+      "sha256": "2ebcfa0a141d27e926bfa04bb3f86879b37951a7ac5dc27d19783fc2ae739663",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2d7343e6c8a5b634fc39.webp",
+      "bytes": 3220,
+      "sha256": "21995301abe959ace7ef8d16b969051263eb1d8ba6efb60dee95ad76a51a3c1b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2d9c7d6473e7b2e24556.webp",
+      "bytes": 12262,
+      "sha256": "f381ab9fde43687a6d2715885c5b54ad379b0089b492c73370b6dd3c70ce0aa1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2dacb546d489ba27926c.webp",
+      "bytes": 8764,
+      "sha256": "f0c717424620aae339fc6977f65c5c0cc0b8217d384c18e618f45db33baed92d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2ddbae32937ef3d5fd87.webp",
+      "bytes": 7928,
+      "sha256": "0a116f02f9dac3358cea5984794931cf666749bc76764e8594dacb7ceabd1714",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2e38a78eac91b54bc6b7.webp",
+      "bytes": 9390,
+      "sha256": "a53a1afe2a6b3175a7d5627ab963f256d7e60bb82dbd772e8d2991a4ade137b1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/2eb9cb5dbd8fa23993f0.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3069ddf3b47904b5953c.webp",
+      "bytes": 862,
+      "sha256": "4c91e21262488a262cdf4d7438748236b0b746f024ffb7c679fd658062b66f9d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/32b7f83a3234e5513f6d.webp",
+      "bytes": 274,
+      "sha256": "076582f748011c6d82c0179053a1dbc299adef1d62fc466cf35276f9268700d7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/333bfe6a6861655f9027.webp",
+      "bytes": 39878,
+      "sha256": "7f325b5dbe3fb0ea0cbc82531dffea77da66698e43fa6dfd7fb3b0ff0921e122",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3341fc9eedd405c56ca7.webp",
+      "bytes": 9122,
+      "sha256": "e0819cf78dbdbcad78a455359a4dac1be7af6c09b86be479cacdd6ba9e9cbacc",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3345170cd9f95946f6e5.webp",
+      "bytes": 18542,
+      "sha256": "4533f4eba4c60b550cbe632d9bc134443124e17e5e79e04432520e429bf0e51f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/344126bbd41925cd7b4e.webp",
+      "bytes": 8700,
+      "sha256": "8a3718f81016d9a1dc5a2ef027ba1f39a10f2146cdef45c1393400f94ac23f21",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3466bf01f01687a15766.webp",
+      "bytes": 13936,
+      "sha256": "6033dc350e0f01a7117a529776d17fe90ac515a123bdac6ba168778681bc174f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/34be98c5b3d190d067aa.webp",
+      "bytes": 8750,
+      "sha256": "4265a90d6db4512bc1382a0c76f2d05a6145e9eba8148fe1b608b749c3381615",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3536363735e69f9a7b42.webp",
+      "bytes": 204,
+      "sha256": "9caeeb343fe865b15fa28cb1fc3bb27c81b892a18cf16ed3f499f3bfaab3655c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/363676fb151db348e02f.webp",
+      "bytes": 14254,
+      "sha256": "bdc9ca7188d9ef041c0d3a1bd27505c5fa16e4eb1f1964125643d53a053fcfdb",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/36661907fe3e1e450e13.webp",
+      "bytes": 17692,
+      "sha256": "69f14ba1dcbb0ac2b688c585f39a52178d761a15cea656377f5c7b5de003d314",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/369c1b7a63b8ceda4ed9.webp",
+      "bytes": 5380,
+      "sha256": "9e1ab6652dbb25d4baafb1803cd265ff2dfaf68103a8c3e9357adc8779b5d7a5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/37007acd8b85c4cb1f99.webp",
+      "bytes": 11246,
+      "sha256": "4f03316181eec1d13d488945fc1c601315e3bdbffa85e42c577d2cf3af94611d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/37684073505d35d80adf.webp",
+      "bytes": 3196,
+      "sha256": "f39fcff3af2793691db9c26cd5974e24bcc674d601d3d5a46327fa5bb67ab66a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/377951873846d997da7a.webp",
+      "bytes": 5070,
+      "sha256": "bcc1b4973d89a1956a779cf228461da6fee0b8d5dec9ac42ea8b47c39eb0ca2e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/37d8113c6ee7246f0528.webp",
+      "bytes": 18978,
+      "sha256": "92d63dcb9dbd2142b5b4c75486c90a4e54a05b3dd1cc3ac87558971d20c0a13c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3ae20310b24d2ef6fda3.webp",
+      "bytes": 10862,
+      "sha256": "3532793ccd924d14a89962e6fe3bb0b57c81c2f80004c26a208142e13f9ba39e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3bbde09850c576bed183.webp",
+      "bytes": 12118,
+      "sha256": "9833f25fe8a3a5f330b0e2ef01c8a7d544bfbc7db506b198b1f68904ffb68bfe",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3bbf9bff8768be58aa98.webp",
+      "bytes": 1580,
+      "sha256": "a07be5ec0487339da39d04c488d3031a26d52006a66a7a99fcf10a480ff734b9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3bfb3fcdafa4adaea951.webp",
+      "bytes": 894,
+      "sha256": "f7580c13a2b08aa3902ee456e4faebfbfa5131f9bb1dbeed4fa753221748205b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3c62db5eacdc1cb7eeba.webp",
+      "bytes": 4362,
+      "sha256": "8796b13472c7dfd6dbf7a9d467d587dcba17cb51f45088e91bcf770a08d625b8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3d8f3e077bd429a78a2e.webp",
+      "bytes": 9760,
+      "sha256": "938343a7f29515ac112a7a4dbc26fa984991beec69400c997e742813117c9252",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3e1cf63c5e1399450c83.webp",
+      "bytes": 8120,
+      "sha256": "744fc9220b68bac0a90f5adcd0d210635dfc30d870fbe69f352b727a7bd039ff",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3e4be6694e9eff531eb3.webp",
+      "bytes": 204,
+      "sha256": "3e8ba1497ea3fa81ed882b781f26f2407dbf67d7ad53aa16b22579d9f5583fe7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3f3b7cbea09e66028dc3.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/3fd311f6a09c53d7e299.webp",
+      "bytes": 11864,
+      "sha256": "f06cb28af7143371a4a654c44d46d0819665f3caae1a7941ae3041632e0030e3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/40953a5e2fff0eafae09.webp",
+      "bytes": 1252,
+      "sha256": "2834fe1c5412e6366ea9d687d8c9ed9843abfa8f42eb1679c4bd4dd518f6a2c3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/410bdd77402d80e16151.webp",
+      "bytes": 10216,
+      "sha256": "02c00ce8c9b48d908d26d64d7c7f89e25a51fa18f7bb125ae311adfdc9e21c25",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/419a2a5ba2acfcaae0e9.webp",
+      "bytes": 32440,
+      "sha256": "298557cace00df8ae5101713e0d0586f73a159fc0ebb959341d17967eb9d26ba",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/430555b2b7bc1795a58d.webp",
+      "bytes": 20724,
+      "sha256": "adb4ede2a90f8816de4e50f4d7ad71deedc8da1fa472f888389402a771ee0992",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/43ec6b3bac4f38ebc8aa.webp",
+      "bytes": 6642,
+      "sha256": "fabee508026d683949ca0f19f9dc950997a8972c0d19318743cf9472e7ca13f4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/440f27b2e381734f93f8.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/442832da2444a5a2ce02.webp",
+      "bytes": 3662,
+      "sha256": "5566a2c62605a14741943e06195ed16b6a186c38e3287dd5bf2f53cc0f27cbd7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4497a7b2bbcba128d9e4.webp",
+      "bytes": 9328,
+      "sha256": "bb1843d7922ffe837d02c96e520c803759de6e4722a60bd17e80e6300055fef5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/44e3f974ebde6a5e7a60.webp",
+      "bytes": 13702,
+      "sha256": "8040356fb21a89d31061bcdc3e78718ea60f29c81b94e74d471e478d7c47c382",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/44e49b3ea5a57ca8e782.webp",
+      "bytes": 6484,
+      "sha256": "ba85844b7c28c349f891a9eed5121c7d3c2902ef5b36b40315a8cd2963751a1b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/46b52071da14904dfb2f.webp",
+      "bytes": 10818,
+      "sha256": "f80c8d0d2b346cec462ab1b223450e957e8e450338c8e4c465deb26df116bdd7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/479e4c61b7c6aebb4033.webp",
+      "bytes": 13344,
+      "sha256": "866b08b96e5c55957fc68e7645fd0c31337583edbff336e5d2ef69d3c5ba6f98",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/47d7729d340ebce0a792.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/482c5e26855aadf2bf38.webp",
+      "bytes": 3326,
+      "sha256": "27da9ee5244d3079ccc87ec7d3a2e0923f365b688c61c7b37b552cceeb5eacfd",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/492cf68d16847666a942.webp",
+      "bytes": 13438,
+      "sha256": "cf34618f25387ca92f3c3835d3564799c4d78a30bb9a58dc794784eb6281bfb4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/499a0209ba66da50da69.webp",
+      "bytes": 9022,
+      "sha256": "ebea30dccb4c7a1e8cd010c268f041e15d69563c7a9620e3fe6ecdda5de24885",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4b244fee7355864e2978.webp",
+      "bytes": 682,
+      "sha256": "c239a90402db40a9dced87a0281104af1fde02ba82d2ad77a21bff48964d09b3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4b77921edb4f58982220.webp",
+      "bytes": 14546,
+      "sha256": "d1e7ea3e41a2be4cc63f5783f6fa0ce6e969ae450ad8f866a5c33a3d8734152b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4ba4bc6136975a52c244.webp",
+      "bytes": 8982,
+      "sha256": "1e0a7463f5ff4f87f4f1726d3459205445bb65426f70d416f1079b7ff95e1bea",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4c26924371d9796af8b1.webp",
+      "bytes": 3982,
+      "sha256": "b7305d0d4cdaa0959b9343f530b62069aa83c91cf87d395dbafc4ba0edebb0d4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4c8c8847dd41c291239a.webp",
+      "bytes": 5360,
+      "sha256": "86593192c6a955418ab2ca29aa292c8e1ace3d4e4e3b86e6355fe7a59a2548cc",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4d6246260d74eebdc260.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4deff039ae7828aa686d.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4df93402efdd0356ffb4.webp",
+      "bytes": 9576,
+      "sha256": "8868f468bdf343f80daf35143f95dcd63e4f89a6e142281cf439b07d8bebaf58",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4e7e11c2fa2e8605fb79.webp",
+      "bytes": 6158,
+      "sha256": "b4b49b60eab9f14df25aed83012e8e7a8291caae87696e75c56413db6624990d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4ea1ce63110578f9d9cd.webp",
+      "bytes": 12058,
+      "sha256": "51ba7526bb9834b3b45ce9bfae200b75cd6eeb53afaf2f612c02045864f54c3a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4ea5ff6b614b5462450a.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/4f5e683b06fb9fecb2ce.webp",
+      "bytes": 196,
+      "sha256": "4350314050474fa4eb820afbf56386f5162cef1d5d2c0b0d2efc4f4d18ddebf9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/501dc43c68801e98e655.webp",
+      "bytes": 5834,
+      "sha256": "ffcb83d38047e3639e2eae64cd9ec9741b2004fca93f2581d58a5e647c14b8c0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/50d7b9395df633269045.webp",
+      "bytes": 138,
+      "sha256": "715ec13a75dbcccd2e9f18cf2b543b01b9a633a33bb46bd4ca603c6dca58e3e5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/50ddd43a776ef7679750.webp",
+      "bytes": 4862,
+      "sha256": "cbb1986e5c3d2d6df00d11c5c46af7cde2ed341c0903d46c4fc008f73965cf15",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/515cfdfc2b95160b7f3b.webp",
+      "bytes": 7092,
+      "sha256": "e30053199da348ddfcac324404fb11a0cb0248c8aa1a6b71fd8cefaaf365b849",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/520a52c8c04e5619b859.webp",
+      "bytes": 5824,
+      "sha256": "8ea85f0c593c0dd977b5c56eabd43591c6f829e26258632a56f2949246fbfd59",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/52a22c195f5e238ece70.webp",
+      "bytes": 3972,
+      "sha256": "4d79a61f3dcfc23f503bfc2d59d776b07c44ee1b59ce56a49eff8d95fa712a98",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/530f2f0d623798f7e44f.webp",
+      "bytes": 2656,
+      "sha256": "4389b3b10367855fe14a73deb8ea977ee6aa6e8e65b972e73afc9cf5d211de1d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/53b814ea9946b13c44d5.webp",
+      "bytes": 52132,
+      "sha256": "e6f338dccfe10768d43b4ccec9971b22b9327cae0b61e2cba8dabffd4c76f72e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/53caa90eaeb2ac428ac8.webp",
+      "bytes": 10702,
+      "sha256": "f50c9e3777fed757ddcea64cb5764e274a8570d6a02d3073b4089273d249d02d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/541401707ccea62a9a45.webp",
+      "bytes": 5414,
+      "sha256": "1c48c637147b8d7264c38ee9ce87603c4797c260cc166a6b2358a6dd7afe7d1c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/546b054e210eaf501d10.webp",
+      "bytes": 8930,
+      "sha256": "e65ab9278968d2df21094cae1c41edac0aa6bd85608abffc38c43638d81c1abd",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/54bfe4c3928b38b264f3.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/552e5e460ffc8d1c8ced.webp",
+      "bytes": 12058,
+      "sha256": "8896626d6b4c2ef8d36385b72168da1ec8fd71a3c26857da900ae28837ed549b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/553acddaa16c44082d7a.webp",
+      "bytes": 30848,
+      "sha256": "ac36c8fab75387cd8198aac87d7757c81175137b43ef4d07d8bd32a71f9c51ec",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/55e0fe1f755e08ece3e7.webp",
+      "bytes": 5870,
+      "sha256": "01be504bb1a3b3b6f45f04b245ad0c2203d6bf8149c590165bb6c47f9c865f82",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/56186ce6fd483403ac5b.webp",
+      "bytes": 1642,
+      "sha256": "2198c67fe7bb5b4d124991c1d1230d825fc81f2046b65873fbb65c9935160aec",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/56e19fa90b4b8c01b220.webp",
+      "bytes": 3660,
+      "sha256": "415f719a63b2271ef580035b1127a97c6ad7f8eb3578ebeafdc6425356b11747",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/57d1fd07e24bb7ca90eb.webp",
+      "bytes": 196,
+      "sha256": "4350314050474fa4eb820afbf56386f5162cef1d5d2c0b0d2efc4f4d18ddebf9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/588d0010db26de8c8970.webp",
+      "bytes": 8318,
+      "sha256": "91b04a72c792eea0f873c760d85093d92548f372f1739df01aafcd3b80e8f1c6",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/58a45fba2d64ef648d20.webp",
+      "bytes": 456,
+      "sha256": "bb63091e346b700b8abf681597e724a210807d2271df0553ab2e237a96c986a3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/58ac4cae27525dbbdaf2.webp",
+      "bytes": 5292,
+      "sha256": "5357119dd128eb1d0ca8b5963b2c40bcd5b1ccd6737ef56fc6d27b1525f67ee5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/58e5853862e2daaae7d7.webp",
+      "bytes": 17420,
+      "sha256": "57a778d803f4ef28025c57206bf53a0721fad410d7aa1c049047f5fd45b441ea",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5903f20841c588f1f2c8.webp",
+      "bytes": 15940,
+      "sha256": "b30c284ff51aa22759255b1eeb7a21743be31dfcf39f156bc30e3f8448131b21",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/59b8d2209803e136f9c9.webp",
+      "bytes": 5994,
+      "sha256": "9281e2c148447f1aaf5dd9ca9299604e38c3c0d12ef39560a23a32ba32af482a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5a3db00e5f8e26c11aba.webp",
+      "bytes": 22662,
+      "sha256": "e6603531137ebb13001228b7000a5cf8023c9de1aa2033ea2534add7c51f97c2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5b9a447b494a05e94722.webp",
+      "bytes": 7672,
+      "sha256": "1b3aedfdab2b129039816e5f7b89e32661e4ee3bfc23c42dc416502202b99535",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5bbfd0beb71cfe7f3a7b.webp",
+      "bytes": 5470,
+      "sha256": "e02c3a8641687b788c180645ccab56ea5f86505797b5017483c3565adebe2a7f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5c389e519e10727ccd10.webp",
+      "bytes": 10186,
+      "sha256": "6e63ee16cdebc0154677e3279260e0f398459f00d8d4659020a09fe0601e81c9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5c40058d1519363584ad.webp",
+      "bytes": 2756,
+      "sha256": "7791f054559c27a315981767cd96e0481b967e5b2d8b2b932818f2a989e4cfe7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5d81df966c79b70cb764.webp",
+      "bytes": 22200,
+      "sha256": "233ff166bae0e29ec0a0d77c39381226772df7ea415c85c7f26d09c2c53228c7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5d9436407cdcf25639b5.webp",
+      "bytes": 11036,
+      "sha256": "0114285fe8c1464653b760f130219df65d4ed01d1e16559ce5af160d6bf5dd3c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5e4f8cbcd17ec7842dbc.webp",
+      "bytes": 9588,
+      "sha256": "fd511b72307f4dff4f4a2e200e490352348cb6efc23ba2bd5fae88e461259607",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5e61d27acf070aabf359.webp",
+      "bytes": 3926,
+      "sha256": "abfb42d04869e6fc63a4356438b432536c72b1e6ec988c29fb93f35ab521163a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5ed5d2c5b0dd79257893.webp",
+      "bytes": 26780,
+      "sha256": "fcdd0f38337ab1984375eac7390b22f1a5a3e12daca990f21be37e2f0381af43",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/5f03c2a4ef704787fbdc.webp",
+      "bytes": 15132,
+      "sha256": "933ff79758df9ff868b05be311a48ba2b0cf0d13f31fe49d5424a3c6a3e8b9c5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/60b1c5aa8312983f0881.webp",
+      "bytes": 6268,
+      "sha256": "271e48c531e19fbdddc546a8c309e8669ee4179909d71cf32cc44e2b291e1833",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/60bdc9cd5e87e88cf9c0.webp",
+      "bytes": 8822,
+      "sha256": "34745e6d575d013d2c93f334a94186b199503e160bafa1145c12284451957c61",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/60f81b68d7473781310d.webp",
+      "bytes": 5810,
+      "sha256": "dd670f6250c015d85567ecb6b0e41122c028f3b5dc5569db0253447c32872d38",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/625bf6e50388a0078eb6.webp",
+      "bytes": 65262,
+      "sha256": "847ebcece3270f72f783c69c9a386fd202111493ded73d505b2fa03cab6c581d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/62de09249cefd46bbcea.webp",
+      "bytes": 40222,
+      "sha256": "90fc06ebf581124e0a280e4c08582c50047fc2d56ad5b5721fed3fa3ca17766c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6341ec52de03a3a31125.webp",
+      "bytes": 26696,
+      "sha256": "6832ec332ac140ae9196fb5f60883f1acb5b36a6ad2251332914f77937fc0fd3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6392977a541f75108c54.webp",
+      "bytes": 612,
+      "sha256": "47e2b1516b4f60890faa3e8bdf4e24f40f43bc7b7a2f2d3c8ca663c25495f833",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/63b844505d4011cfeb01.webp",
+      "bytes": 10710,
+      "sha256": "26f68628a2fc421f1128ccbe30744435850c0100337e58729e4f265c9fa144a4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6549fd375e3395b1d232.webp",
+      "bytes": 12904,
+      "sha256": "d3b917e07cc23fe3888bb3889809e53b5a61ed407812b82a9732ee8b3a9168ca",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/66259ec404b1b6432455.webp",
+      "bytes": 5184,
+      "sha256": "8a68c3e823261c9803e43251a5a4fe36b10c836fc19ebf4f856015783e967e08",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/669ee5ac7de9ab430dc9.webp",
+      "bytes": 4852,
+      "sha256": "33c43e9bae85abb00a8bbcbd9a3a652bc8740f610405caaabee8226f97fd1bd9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/66fadce0ee734991dcc5.webp",
+      "bytes": 17312,
+      "sha256": "744aae2b78ebebae9a7ea5fa708160a3011d66672e531d89d7768400f4b162b4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/680ef3d938e1e288d7a0.webp",
+      "bytes": 14698,
+      "sha256": "f332b264fe6266702db2ec2a246730656234b563f5c47ffe773299d56d614c06",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/68161df9501fc8bec290.webp",
+      "bytes": 6486,
+      "sha256": "f2224d3e3fae48dccc5457782ef76a8fc825fd90577f2aa0ddab3dbc9bbb2937",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/683faad79d2c1971a029.webp",
+      "bytes": 3766,
+      "sha256": "21933aeab09128ffde12818202da9925d767b8ac881e16f39aaa38506bb602a3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/688ace86a600671e483b.webp",
+      "bytes": 3062,
+      "sha256": "64e70871688dd0fea79a57604331f5a8668604dad927b614fd23b955aa674189",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/68e1440d0673cd4c56dd.webp",
+      "bytes": 11288,
+      "sha256": "e64b67abd479923ef75f07a191304f7ac7e60714cbab4ed881fa087d23a8c9f7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/68ef3923d88837ac5a33.webp",
+      "bytes": 8320,
+      "sha256": "8637a98a8794efce545fc588d6443b0e450551f459ae03934e2e679b8441dd3e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/693b059fbf42cc046cec.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6a33a0f5fddfda758e7b.webp",
+      "bytes": 4590,
+      "sha256": "bbfeb094de4c2f5ad899b6b90b384805dfa86a8845625aa457a95f1f79fdd8f4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6a58684d480952e1816c.webp",
+      "bytes": 9316,
+      "sha256": "316a9d90b2d06c95d5d56378953cbbe417ac185be1d9f6dd148787b0a762606c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6a6051e55c9243d43b99.webp",
+      "bytes": 204,
+      "sha256": "a50ea16959038741909c7e45dbead4d8f2da53c4c65bd404b364197379df8143",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6a60b9d79a2784f2709a.webp",
+      "bytes": 8782,
+      "sha256": "1a9effaa4e65377eb66c46379ad3fe649d90d10185f62b14cdbe990d054c318a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6abec9e4e1b08249c5c5.webp",
+      "bytes": 3210,
+      "sha256": "263840f3f57f45c10a0bed7cad803466be2c397ed9ead1fb2975686fa9964d98",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6b06af19cd29243d3002.webp",
+      "bytes": 9174,
+      "sha256": "0da6bc79c5fd5e6101066d7bf77b6d38c6cbe68698e5f75553f8e2c0186a3f9c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6b4a1385be01fe42c163.webp",
+      "bytes": 21810,
+      "sha256": "55e5c8c0bc6eb29ed78909e0fec4c721bf9a6b23635b4e48588f37a6cf5bfd81",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6bc390bc0cc48a4c8efd.webp",
+      "bytes": 3280,
+      "sha256": "794cd62138ca1efbd329b932c98658fc9d56ae2f4d7cb9bc9cc3fa4af8b1554f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6bda84dbb014ef19a9cf.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6bf28852ba3172556b48.webp",
+      "bytes": 6878,
+      "sha256": "e092df1c6ab42035b8ae6a685c8dccbe393c2bad4dad8e9b903c6daadd602ed5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6c36df8240013185289d.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6c6ce317ffecabe9302c.webp",
+      "bytes": 16320,
+      "sha256": "8aef19457a22cf159f7d3f4c1b430b7c88a4db9f0b7eac965fa59aa34564d00a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6c86a95ffe53ce0c67ff.webp",
+      "bytes": 30112,
+      "sha256": "5dd1bc8eea2eb9bc976ef34677a37a35d6fd543dae7a2cd364e87ed78290e046",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6d22291b77f7afd52208.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6d8fb1ef32cb9a55da99.webp",
+      "bytes": 15762,
+      "sha256": "0e9a81b27708bb6b82b662b6cb99d4cef099b4e52f379d9cc1518a76bca9cf75",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6da1c1a15ca6f82ddf77.webp",
+      "bytes": 48314,
+      "sha256": "e324d1c1555cd7332c8176865bfdbedf4c7a5f5438cdf696c7dacdef0f267b1d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6da80f99a8226d28ee67.webp",
+      "bytes": 3572,
+      "sha256": "03ea0c568a55d5e2ac6c0fb6fc6d54eed04da193bb9abe12448920bc62cc87fc",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6e1a5750682207e42240.webp",
+      "bytes": 3710,
+      "sha256": "012811de14a0886567419a302653d9af9f01427eacf3346e6c892607b4d9b070",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6e286f1e8d8406c15c7d.webp",
+      "bytes": 5614,
+      "sha256": "fe406a3ace5655eb798a228209f41fc378728dd6b9338b6b362ce855a35a16b9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6e7207f058cbf31b6f9d.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6ebb2b80f9d5402a6f0f.webp",
+      "bytes": 5390,
+      "sha256": "e0d82f277b182f3589a0aac7c36c4ae8d041e0e37c6fab60ed3ef62f0239952e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6fb0d65e70af5eff848f.webp",
+      "bytes": 3732,
+      "sha256": "d08b05aa98197d8936d52c05147b0594c60333b1d030a6ab6ac8d83d83f1399c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/6fb2fbda62cf371877ba.webp",
+      "bytes": 14148,
+      "sha256": "730d1e2cd019e67a5f506977c43be2b3061200986c7fe125e4e220eee89d00a9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/70cbe7707b91482552f7.webp",
+      "bytes": 5080,
+      "sha256": "5d23ba97e1e4105bc43c2e886fe1dae9cb429bcd194a466c2cbf0b69a0a207d5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7180be10d55f1bf0f115.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7215cf806ce28ee64b08.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/726a55f31584c84003cf.webp",
+      "bytes": 5396,
+      "sha256": "b82e8b2df325ef1bf9308efe037d70435ea9ea1e02c1073b949ccd5a0e3bb49a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/72d38e25d716fcc2b39f.webp",
+      "bytes": 138,
+      "sha256": "4b23f322684b4575da9c4e5eae61b58caa524dcb7fd9ee78fbf1667642808bbe",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/740d613a1089d079160e.webp",
+      "bytes": 13352,
+      "sha256": "27bdab4ffbbcc004676a311647f28b7fd1cba3e0ea84dd76e0408567f0391961",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7427ff96478606329365.webp",
+      "bytes": 12584,
+      "sha256": "51dbd44a02cc934c9cf6b1e4b308f476256dea798b2399178112cd32933f3b5a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/74309d6e7f0f5b3be53e.webp",
+      "bytes": 17262,
+      "sha256": "567f8e1eddaad64888b4243ab057146ff383f1e53fda5e4b0d8d7d4172e3ed0f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7477d9db30006e9416bc.webp",
+      "bytes": 8318,
+      "sha256": "a71565aa8405e0acb49cece7786e21ecdad9e0eb323637c6fec48152afb864d8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/74a60fee1ddcba1e9ecc.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/75203090bd463982662a.webp",
+      "bytes": 252,
+      "sha256": "fd6061a9dbc1e9f47825d910f1d54484d26bd8ecac3c712b1557e5230c032f55",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/75b2ef250e473d037c7d.webp",
+      "bytes": 5490,
+      "sha256": "3d26f2823b774ac6e9b9b1fd1d6f5ae5b38518d919216a04a5c23d649b4ba72b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/75c6ad23b73a2911520c.webp",
+      "bytes": 11880,
+      "sha256": "32d93f15298a68a81fa256c13b0c1615517f72c9a080c980b7b75dd6ae54a923",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/76681de44368d3325917.webp",
+      "bytes": 10566,
+      "sha256": "388e0cacc5a76a700025846118708a0b0903d6ae4bfc1fd2993adea4be06ab32",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/766a8c5471d2d1541d8b.webp",
+      "bytes": 14468,
+      "sha256": "b75682a58b7cd320f8d80c51f3e0fb391c19da2a724f9fddcfb5bcdba9e35876",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/767dd35b073ef1665b8b.webp",
+      "bytes": 4916,
+      "sha256": "a86874c96dcba4c0514786482de6686508c69637f715770adb628c34de898f16",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/76995f9ae0dcd51940d3.webp",
+      "bytes": 4050,
+      "sha256": "4fb96de70d339fb77e884b203c64e98f62a370ec7c64146ae56f1432b6ed76da",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/76a3513909677fa12606.webp",
+      "bytes": 13190,
+      "sha256": "cfaeb002cd327426cf3037912303b8e2188e943ab007ba8ca1dee67bf336f976",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/76ca9577db1c06e81f36.webp",
+      "bytes": 6584,
+      "sha256": "5163e45716faac03858575f22dd7ad252c4d46a8930c3a49165a3f7b9a3d0268",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/781914f1932c0e2fc57c.webp",
+      "bytes": 6666,
+      "sha256": "b4dbde88048e1b3afbff8412d6208f24bc0a22dbe239da87927b62730552f22f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/78a4c5a812be380c9727.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/79c33cd207f61d21a8b1.webp",
+      "bytes": 11832,
+      "sha256": "ae20cf0ae0aa28483009f998547866dbe309a09ce9d8d18f2a446d44b5b60906",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7b23420e12add1e96deb.webp",
+      "bytes": 492,
+      "sha256": "735f278f0a77b10b4557bd3ca77c6a4eebf515f5d67e371de1409b26cabd1f20",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7b787060a05110d95626.webp",
+      "bytes": 10880,
+      "sha256": "05e9ff8da8edb5e37eb062fbde3b7baab86c99b0e15494dea9e4094ba88afc01",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7b96eb98646644e68598.webp",
+      "bytes": 9206,
+      "sha256": "de325b2228c209c44eea3eaf265c1c5e8e4e62af0ebcfdeb11fddbaf117fe68a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7c1a6346a906b2c47567.webp",
+      "bytes": 21174,
+      "sha256": "667ffe1edfb3ef521bda8918e8fadfa7c3045dc061cd11de71ef33332a3c5a8d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7c2b53cb65112c12fbcf.webp",
+      "bytes": 138,
+      "sha256": "715ec13a75dbcccd2e9f18cf2b543b01b9a633a33bb46bd4ca603c6dca58e3e5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7d27434d09c4c0bc5091.webp",
+      "bytes": 4938,
+      "sha256": "5ac3e554cf289985a542f46a0877a220bdf546eabb0e21ec69f1a9de3d7df6f1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7d84e4f03e4a9343112f.webp",
+      "bytes": 8070,
+      "sha256": "0e2f0cd272922bd1a84164d210b920f35c01ccade350d9a63be91db225d263f6",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7e1366c8e70185a785f5.webp",
+      "bytes": 16282,
+      "sha256": "e01f537b7cb1ac07cdecf1f1546ff55992069c520c5a35d6f5f0dd92e3d09df8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7e162ec2947d40d0986f.webp",
+      "bytes": 9588,
+      "sha256": "87236ef0d0cf0b068cc7991f8c4230176671f58cc8bfc447954c39a5411efc63",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7e4363706c65d316fda1.webp",
+      "bytes": 4958,
+      "sha256": "bdefd3d8cd68435472a49da1912172d06ae32e2c7b31ff1eb6557eafdb11d347",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7eae6299c99e5ebc85c4.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/7eda2c30129b3a499f34.webp",
+      "bytes": 18142,
+      "sha256": "abbeda1e5dbe55cb5a960ab5a64341ccbee32dd4fe8a6cd6c9df3824f492faf0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8041ef4ebd205ed56d56.webp",
+      "bytes": 9606,
+      "sha256": "2271dac461b6755325d2905072805d0811ee7739b3af04f104da83a018cd5545",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/81be666da0dab14b215c.webp",
+      "bytes": 10690,
+      "sha256": "991d691605bae2a5d887244e6478282aa8fdd604deb28182bca61f50d653915c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/81f6735cc8cf9753474e.webp",
+      "bytes": 7926,
+      "sha256": "f44730769c393c1430c759de80afc700c57ec9bf6b4aac46e7c3b12647680ff9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/82729666b534cfc5a4c3.webp",
+      "bytes": 11124,
+      "sha256": "c9e40b5f941916aa3c130a7b5a990b4770ab9cd754e5c9a183d8c2acdf77bef8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/82bef57546847f701341.webp",
+      "bytes": 11702,
+      "sha256": "1899a2dfc8abd920393bcf8156aa406919c295ed56a7ab2128d5be2d064af02d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/838ca8a4af33aa6f54f9.webp",
+      "bytes": 9970,
+      "sha256": "48cdee44255e39cf571616ea9164789b74d463639cdfeb05a311268ffc7c8212",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/83e74d7a4baf5586add8.webp",
+      "bytes": 206,
+      "sha256": "878f338a2bc1b175c99b99b8f1df5b94c4047514a30de5f5dd4d895840984150",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/848bd1e3aa4546daa09e.webp",
+      "bytes": 752,
+      "sha256": "13c762c04c90f0a101fc56c0e5cf774e7bb4fae3d39ff438461a7a718da343f0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/84a66ef5dde6e3e42985.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8533eabb85730c6816a3.webp",
+      "bytes": 11742,
+      "sha256": "fb1e0bc32ed34e6c5b65b37b7c71b05dc989c7103710814979ba68ceb82221ea",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/85bd84c4078ad10b5869.webp",
+      "bytes": 5138,
+      "sha256": "362d29295a27bb39ac5f50ee0ded8e5db33d149c8df7095f337e846d4cad582f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/86176843d339f8cf35a1.webp",
+      "bytes": 11394,
+      "sha256": "97a582f161d7e143e1c8a5ef72b24bdc06996cfbd5fcd9434ad9067c22991adc",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/86f5715d0ebe97c63aaf.webp",
+      "bytes": 5300,
+      "sha256": "f80541b984f870b2b4484bd7501bda84155969cf6edbeee6498f6a2717fcbbc2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/870927b65ba5779bd48a.webp",
+      "bytes": 138,
+      "sha256": "4b23f322684b4575da9c4e5eae61b58caa524dcb7fd9ee78fbf1667642808bbe",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/87e08a388004abacbfaa.webp",
+      "bytes": 1960,
+      "sha256": "7434c1e0400ee22bcae8d777f717233d9ac779b151111bb6a2539788c87a83ae",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8902fbc48527a9488087.webp",
+      "bytes": 7512,
+      "sha256": "45775f3a647ad9c7c02947214bc7a6971ea95c077236148724329f9909aef813",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/893b61486516c8ff4540.webp",
+      "bytes": 212,
+      "sha256": "3ed2ce75bc62493b15f00f8601cd8fd3c15dc559e3f833b37dd3b6aa0d0edfa8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/898347aa7580a5c0b348.webp",
+      "bytes": 7412,
+      "sha256": "83e72436ba70105f8f9edbd955e60b25be494c5a13e40e0557e1cbda58f91eba",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/89fe09609243495a9e76.webp",
+      "bytes": 15084,
+      "sha256": "41993761eeef1b198951f61dba56421d6fbb2fcb1768402ac2a3641a53cd6de4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8a05c83b7ea39f212d8e.webp",
+      "bytes": 142,
+      "sha256": "e703e0dee3f8aaa7e62d82d444d2c1c691a5cd065c6ab84f9d63165b7a6c985c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8a5649ccdc395c1a95a2.webp",
+      "bytes": 12136,
+      "sha256": "0d123092f76e29a06df2ca3dd92d21eb60054f3b7e722d67a8fd0e23d3f3625e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8aa3fd38f47677d4c03e.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8c69e022eb4ee9131530.webp",
+      "bytes": 6990,
+      "sha256": "3dac912b11c8b56fb9104fd4c2640ab7c37c298d59c172ac07735012acc75f7e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8da66054340fe2d6e716.webp",
+      "bytes": 11868,
+      "sha256": "17f94d2e3ddb0dcc8f8cf47551e6fd08e7ebe8e40de57254a4fef1b56adab257",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8dd2afa3f86cea58b60a.webp",
+      "bytes": 9124,
+      "sha256": "abeef879f11f4278a6db99cb96be78c8375e8af6cce7c6396bbe7ebe18bb9091",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8dd32d695192b09ee60a.webp",
+      "bytes": 8822,
+      "sha256": "0ae2215c79120d05de89e60f50b2b9144201e3e641106062201b08859f4c3acf",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8df53d8f354a45f04f05.webp",
+      "bytes": 12960,
+      "sha256": "3690a33ce8b94a0d9ade1ee7c8495a9f43989b4dc10de0f29deffad866b9cce4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8df59aacb87dc739ea14.webp",
+      "bytes": 7142,
+      "sha256": "e017f8734e1994b92eab082e8fac73696069d09eca6aac6725c226834f173c6f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8e30ffad18eba553bbe2.webp",
+      "bytes": 13452,
+      "sha256": "e3d4bc514658e09a2a6979fc1486c1b0aa06c77e478161710acc725532a4556f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8ebc2b09bc273c96dd0b.webp",
+      "bytes": 8252,
+      "sha256": "cc3f3384e5bbfa2f8fe562cb67657bb1461c02f2facc7317a89b55bb2968a1dd",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8f4b1d5525f51b6816db.webp",
+      "bytes": 11386,
+      "sha256": "ae8bdf8d043c51ac3cde80ee9bd7717746d2f83cd650fed490ea7970de2eb407",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/8fb9350d270d0d1fa38a.webp",
+      "bytes": 4616,
+      "sha256": "3ca2af915806c3b9dcde38f5752c86081856727dbaeccb48763060291b3fd0d5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/90096826a0da576c99fe.webp",
+      "bytes": 19264,
+      "sha256": "83afd02d02b79ec779f7c03830caa8ac65523392f6babfcef1e8d5f0a2fe83b8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/90af2cf2ba58bc2967a0.webp",
+      "bytes": 45680,
+      "sha256": "3e45a91d9bb668e3a2731d315ff5bf9aed05b2f1188513227a9738538e642ed3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/90c02e666c07bd8cfaac.webp",
+      "bytes": 15286,
+      "sha256": "31772878fe55198eb65d0b7853e38a26f55645dad700b20d9a63c41fc5afd334",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/91a205e7ff96bc34d0ee.webp",
+      "bytes": 26280,
+      "sha256": "dd116885038af9e8dfccf8e3e4ac1c45b6cce9de09f9c8bd348d32fa4bcd24ef",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/921d0bce29803148f734.webp",
+      "bytes": 8210,
+      "sha256": "dda4ab0d37a84db068a6dffbd35d5814e5db38d2cdc496a4260b6596a0b4a9a5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9246b173107671fe92bc.webp",
+      "bytes": 13028,
+      "sha256": "51bb3011c828940e7868337914d23b1df77f39832e9e522dfb6b589870f6bfc2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9259cff791fccd951efb.webp",
+      "bytes": 10772,
+      "sha256": "51feffcaf93d225166eab45dde036bc0cab0531b1ca5a8a2c89fdc816edaa155",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/93035cb3238506807836.webp",
+      "bytes": 138,
+      "sha256": "4b23f322684b4575da9c4e5eae61b58caa524dcb7fd9ee78fbf1667642808bbe",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/93cc83d1dfaa6c2d0627.webp",
+      "bytes": 288,
+      "sha256": "f5056e6a40f58a4fe3ac56f25518aefa059037ee5542b1bda230ecfdf18342aa",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9488bc14389abcf93f48.webp",
+      "bytes": 196,
+      "sha256": "4350314050474fa4eb820afbf56386f5162cef1d5d2c0b0d2efc4f4d18ddebf9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/94f096fabe2b4520369c.webp",
+      "bytes": 11526,
+      "sha256": "8d68de500d804dda19ba1ba7b8012da44eb1c1c6b6ad8a545a6384268b17e93f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/95855f5f17c7825f1650.webp",
+      "bytes": 9366,
+      "sha256": "0d59945be1361f0acc3dea0dd6d323f248eee79d7d85bb78885032dce0b3ef30",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/963a871248ac8c66f448.webp",
+      "bytes": 7902,
+      "sha256": "23330b90862ec8c26c816a96b0229232dc71b1a866e56c7aa6b299b40bf33c56",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9644810bccc618f4cb80.webp",
+      "bytes": 112,
+      "sha256": "57124c4c372a4d51aa2657fe275ccb3296eb7437f6d586c5fdf145481a01608b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/96ad9561c46c085f91cc.webp",
+      "bytes": 5162,
+      "sha256": "0cc5fa905a0148b75da5f941755e888bf5476989b8ea55f618b9ebded6c52d3b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/97b98a6d28455261c0c9.webp",
+      "bytes": 18314,
+      "sha256": "ca680ed7bbe09f45690f72b7b669216b7912ceb173ee3ac735acab8f9447fabe",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9849422a3d261496f0bc.webp",
+      "bytes": 8202,
+      "sha256": "4d667d25d8304e1c5dbb0cb47100e16edf75c05f6a82f20de3349e7fd2fbd5b2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/98edca380c2f316b0d0e.webp",
+      "bytes": 6234,
+      "sha256": "47ba7cab2e361ae684e349c5222390b660ba8b038a253318f1b760685d4892bc",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9931ce0a83d67921463c.webp",
+      "bytes": 202,
+      "sha256": "1ea1fe46dc0148c9e12e5170631c434b80cacef93a8e67a1149336bcdf9fb28f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/99ae9b4c90ed3819422e.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9a8097389335aabaa79d.webp",
+      "bytes": 16786,
+      "sha256": "0bfb6065d8c5cf22f1aed926bd87c65507307a7099ba13594bf686555ca19943",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9bdc298e0273e45c3833.webp",
+      "bytes": 138,
+      "sha256": "4b23f322684b4575da9c4e5eae61b58caa524dcb7fd9ee78fbf1667642808bbe",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9d3db010797cebafbabf.webp",
+      "bytes": 11366,
+      "sha256": "413454ac64cfe651551345957bbd2119cefaf5dfd06b7369be125e817c743985",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9d5ff1e9f9eeb2f0c20e.webp",
+      "bytes": 2222,
+      "sha256": "a097924681c7250fb3a0543e6598d539a44af659d9aab65703325bb0a5f720b2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9d8f7f5f46a89b2bf2bf.webp",
+      "bytes": 19680,
+      "sha256": "a7d91a2e8a8b0de704e64c2f2f240459097b6170dda4afa598d9bd19b308492a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9dbd2b7f147175cb9d0f.webp",
+      "bytes": 12752,
+      "sha256": "441053807d44cef1cddb2ea6a95a6c2873c52f7d0ec2f4b2efdc3ce69fc60b92",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9deaeb99e447bdd652c0.webp",
+      "bytes": 3692,
+      "sha256": "985c705ff48ed8d96f569ac364f71a03548e9739b113f719a667b95aff18788b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9e2b2b5609042b631697.webp",
+      "bytes": 14654,
+      "sha256": "4e1afaf0af098cd0f4ce063ab602373d124044369ce71647f01e605568a8ce7f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9ec1350e6a1e6b57d0ac.webp",
+      "bytes": 6456,
+      "sha256": "becbd6cee2b6b289dc762ebfeb2e5b29e779db9478f48939330ea03287aa47a8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9fec0981931f56b4730a.webp",
+      "bytes": 11810,
+      "sha256": "d6f4366d7389fd8fc97b60ec6797b23173dc88a05ebd7283c82160ec34252c3b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/9fff75fed49be68b0d15.webp",
+      "bytes": 67270,
+      "sha256": "235e4644ce027617530a80ffd02e9fb934d623c2c65c05fe3feefe78f6147f0c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a0dadc398f860ba9b533.webp",
+      "bytes": 7460,
+      "sha256": "1954410ee703e76d39d05181d6e17d722ba2a46aee30eed0709709927c2b9262",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a11de1672eab8f2ddd85.webp",
+      "bytes": 12784,
+      "sha256": "3f1b96d85f842ce746c8e9eb7eb0fe44cb25b49e650abf42e3d7b8e203107445",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a1288f875d3fdd99e5fd.webp",
+      "bytes": 15946,
+      "sha256": "7d1b0664b331fb8285bd237026c0e33d025ad835038fc06b49dea09af6eb0c36",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a204ca303ebb68a36bd4.webp",
+      "bytes": 4132,
+      "sha256": "5ddbd886aba6873134e5a47b354d4fa0d1633126c9fcd289519c937ae43735af",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a29dde91af80656234ba.webp",
+      "bytes": 6168,
+      "sha256": "397d04932154e68ed89f6227366402e0bea59dc49970033dc1e7449209945191",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a3270336873df72665e5.webp",
+      "bytes": 4864,
+      "sha256": "b89d83131e5b91b9b7f3c0988370e7a7bd5374d6526516dca071945d57b94819",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a3305256474a44bde7d7.webp",
+      "bytes": 17152,
+      "sha256": "ee2de939c871e647eb3c08b7ee8cd5fedae0a051ee3ac2a2e02e4f0499ddaf4b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a3abb42a67c6a458b605.webp",
+      "bytes": 1016,
+      "sha256": "02e4a282dbd16d8237cd63d9d0a30c52096f3d30944d2afb6932843f7cfdf922",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a3f27f2eaba618e2aea5.webp",
+      "bytes": 262,
+      "sha256": "2241d5ad7ec05b98c94d628255d4f3dc5fe06c0522c2fa9c378f180b6e6b22c1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a3fe9724d4b1cbc5f972.webp",
+      "bytes": 4320,
+      "sha256": "ed32b97bb58246f3b5d2410ea0bc12b09146ec84332778e3e34871f09c6bfc34",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a41a949ab2e67280c145.webp",
+      "bytes": 49902,
+      "sha256": "c560cfb63098b77d9f11780cfb32fe5d452704f2962772edd8e456a10bf6d17c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a43ea2620d84c88aaa02.webp",
+      "bytes": 6226,
+      "sha256": "f3519df49dc2120094487ab4c4dc9d7c2615a711918171da75f198b0f483a100",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a450c6a56b5fcbe7796a.webp",
+      "bytes": 11224,
+      "sha256": "917188b6c204d18997d38e7b10f3a263571388a35458106a53c1efadf3e91b88",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a54a596cdb747b414a3f.webp",
+      "bytes": 2342,
+      "sha256": "63743e0862d899ff2c95d920eb5576e0fc668bdb7139e5caa8756a032dd9ffa2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a5838a7603beeeb3a779.webp",
+      "bytes": 196,
+      "sha256": "4350314050474fa4eb820afbf56386f5162cef1d5d2c0b0d2efc4f4d18ddebf9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a589c55a6b87ae81fbdd.webp",
+      "bytes": 17024,
+      "sha256": "c9deda58d957a24d91629504464eb74331eb00ec32a802a6c133342935068b35",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a5e375ebed06996b6432.webp",
+      "bytes": 38910,
+      "sha256": "db14c96c19a354a8dc3b7263091887c6d5363f90861275608239f892e4b7bdbb",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a63b0eb38732bc675a18.webp",
+      "bytes": 4858,
+      "sha256": "916666d2a9f8a0a2e77094ddd702de57c792137c740c263b44ad0a1df793b296",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a657823188c00555c67e.webp",
+      "bytes": 9744,
+      "sha256": "35603bc42ddcf84e5c58e0a089b5cfb5a41b748b510beff9026753e6d152ca9b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a6e2f52f1a329fae4374.webp",
+      "bytes": 35112,
+      "sha256": "936bbf895f55203c1ee9120982e46a2bff2cfe21d32f9e5533792a55153b94ab",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a73d78e507cbac6e3266.webp",
+      "bytes": 10134,
+      "sha256": "e02093b22a5fe2a94f7d37e43edaa6b1df3a39d789a61c394015c61478a8c42c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a77f89f3eedbac1f1516.webp",
+      "bytes": 12968,
+      "sha256": "84d026fc5db62c2e89d33d86f82796a6b101b4cfd7616915c879d7ff890e0443",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a7dd81aed83f0e2bbb84.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a8334a2a2f8d8f2ca8a7.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/a91456cace0f1b064265.webp",
+      "bytes": 4206,
+      "sha256": "c538e57abdc36f5d401b1bad28d6363f1bdfeb1683ad0dbe07723cec121a120d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/aaf599e8bd2849c67a0a.webp",
+      "bytes": 14260,
+      "sha256": "25ecdf7df8e8cf6375faf5046fbd9e04dd97b218687e8ced0dbee60f472a6956",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ab90e722d20fa421e13e.webp",
+      "bytes": 10262,
+      "sha256": "55fbb1ea60a1f7afc2bc6c39ebb9333f6baec5aa178c4faa3fcfd2f2542ed8e1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ab99f457aa02e4109981.webp",
+      "bytes": 12402,
+      "sha256": "f89ca38a6d0ef3f268fd8cf19f4e31dc513ee7e8fcf035c326fb2774cdd082c9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ac0c5a0686184b31b202.webp",
+      "bytes": 6140,
+      "sha256": "ab39620fe3be707faecccd6157ac7ecf9e2ec364c1c579f87fd77f59e76a449e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/acb0185c3a142d29969d.webp",
+      "bytes": 4578,
+      "sha256": "097902f997f51b5cb81481997437993d568c0c944d99b0996e30f9822dfac2d1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ad4dffcd18e25809e2a3.webp",
+      "bytes": 170,
+      "sha256": "7e004e5be5b966ace5b1014703f38bfc62fad8e88e6efbe7760b0073e40e46cf",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ad9abc3b1bcc81c605f0.webp",
+      "bytes": 7986,
+      "sha256": "1ed2b16658b835b50cfca46f2c779077869713c248b9aacd251a6122ff6cce05",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ade71caddc40134d9633.webp",
+      "bytes": 29112,
+      "sha256": "352d1ba212ea5a6dfd6ca4d4f966ad6293a77a4f67e63f9881ac1139a6369ac6",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/af2b2e3a526b8f426578.webp",
+      "bytes": 5708,
+      "sha256": "99c3a681e302a96018f27b800d50fe5f481257f26077e65429acdaea72854bb2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/afc8c5bebba3309da3cb.webp",
+      "bytes": 1228,
+      "sha256": "76976d301a9ff2c26c2a72d147e3de31241437f75878d55d68d52de1ca2162a6",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/afd9a001a9a970734717.webp",
+      "bytes": 144,
+      "sha256": "7619ee537860f338a0f84a9a9bc87ca7a69e4a78126182af4871f5b154a3ea39",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/affcb135e7af2f820278.webp",
+      "bytes": 200,
+      "sha256": "efcc64c99add275adbd13eb7968019c8361e3dbce12f5c8234d2fd55d85b01ab",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b04210ece20e57a7d2a2.webp",
+      "bytes": 7322,
+      "sha256": "fefa7fe98ef79a392e3a5f703862f3e70c4ff41c8663b122c2eda77ab42c08a5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b0b768d531fbcfdcd9a3.webp",
+      "bytes": 26526,
+      "sha256": "a28a4e28c22f76ca90333f6f3f394c20f326d7918371e5a9eb578f53dc3f3a8e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b0f88e539ab33c9ffc5c.webp",
+      "bytes": 4004,
+      "sha256": "3ffee808e095dd85d5fb3ee640191736bcb47aaf77e41e8cc4fd599733f46406",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b15e10d37abb4674fa03.webp",
+      "bytes": 278,
+      "sha256": "9bb24cc2bc65fd9f63a3ea9f50872c7d12341f4b69ad3f62d1183736700a7fc8",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b22689e50d7753fb6d4c.webp",
+      "bytes": 3488,
+      "sha256": "116a24bc6523b692b6864b15b55e92a25fc9eab4ebf7838f3b86da45467756cb",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b226b7e4601389a9c59e.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b2b04fa9e6ed88cf118e.webp",
+      "bytes": 13016,
+      "sha256": "6319161fdf66370eff433a4c9b230eacdead685f908aa8d2e3e6562b80fc3715",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b2f30149bd09a9814bad.webp",
+      "bytes": 22270,
+      "sha256": "b8587723b653faab1de83dc619b2113203d2c78849a1589c8be15061f42f46a3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b3e958f4cb07fd12bef0.webp",
+      "bytes": 18570,
+      "sha256": "03669cd15d020b4aae658d9940083d16f886f66311300353685b221811c089f1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b411fb489672db78f598.webp",
+      "bytes": 196,
+      "sha256": "4350314050474fa4eb820afbf56386f5162cef1d5d2c0b0d2efc4f4d18ddebf9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b52ede54187555af434c.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b59b0a36e2ced236870a.webp",
+      "bytes": 19898,
+      "sha256": "fef9ddc7062d0a1526082c0178ac327ee42e3317664548eed225b8385c7b9412",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b59eedf828895239489b.webp",
+      "bytes": 2540,
+      "sha256": "ccfd9afc240b0195cf1ce9d210696683d25c9c405b25758351d5e8c3fd704f39",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b64e3a8db5d1d4749e35.webp",
+      "bytes": 4592,
+      "sha256": "4f8e49d7a9c32c46dad9dbee15fa61dcd14f51403f6c25359a0de4d14abf499f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b75657e5d35adcb72eaf.webp",
+      "bytes": 12308,
+      "sha256": "d16fb719513f2f36c1a3eb6830be1741626c16238851989a49fed022b440cf38",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b77b0502fbcd0cd173f4.webp",
+      "bytes": 10800,
+      "sha256": "1d60dd42f70a7bd784291e65fba5c1cf1b364c51f1cc7f1d53d758b2193532db",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b7990a8a41edf25d6549.webp",
+      "bytes": 10176,
+      "sha256": "1c168cd5a824ced16cca7fdfa5f6039249ba60d1b05a2ea369695b9ff7edf0fc",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b7abc19276c396868101.webp",
+      "bytes": 16760,
+      "sha256": "e2d7025e09bc854d70185981415308ba001dfd77e3de04570d9405a0dde5c813",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b7fdac1c74172cc10bff.webp",
+      "bytes": 20942,
+      "sha256": "cc1689b5bcb98a885acc2de7b3932e1db6446b1af7750fd97e1cf69400e48a68",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b8505b2920dd0722800b.webp",
+      "bytes": 2436,
+      "sha256": "74b8db58c8afc7a34e6e528854dab4cb147ff66195cd91ee7a8f4a367431ebd9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b8a8568293ad24352827.webp",
+      "bytes": 202,
+      "sha256": "318274a162f4f279a24897b5a0c330a8728ad8907dd5fca310772804dd8acb34",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/b94fa87756868064c39c.webp",
+      "bytes": 13576,
+      "sha256": "aaf9c8c8e582501b5d51aaabf49102d4b52eb69eca1b8ccd801f68711f9fdb38",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ba14db17f079c4da3398.webp",
+      "bytes": 32870,
+      "sha256": "fee13a26f30cf34baf89f02f222c3effc863919c3dbcb9b2eaadb285924667ed",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ba1ad4babf4bfb083f1f.webp",
+      "bytes": 142,
+      "sha256": "e703e0dee3f8aaa7e62d82d444d2c1c691a5cd065c6ab84f9d63165b7a6c985c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/bb44cdaec2f2e465a151.webp",
+      "bytes": 9104,
+      "sha256": "f50727e31126c335dba82335b456703eb33049200e1df437c36c73904ff80818",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/bc1d8ccbdeaa4b1f82bb.webp",
+      "bytes": 3946,
+      "sha256": "9c2d1aada6b2a0636ff3b4acabb7ce6a6e5e9755ecd21c273f1cf28fdfdfaca0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/bc9a845e22feed6ccdb8.webp",
+      "bytes": 3678,
+      "sha256": "336c6ca20b23dcf9528c92da18c48325c25044b21ea40969696e17ad31275b02",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/bd1b7936997bcdfcf59a.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/bd29fbe7a75a855891fe.webp",
+      "bytes": 11414,
+      "sha256": "f4719522c0059c1cf8433b840bd7e2c3e29e8e4fef60fdba42c7cb02332b47af",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/bd5a9bc06eca27d2ed7e.webp",
+      "bytes": 5102,
+      "sha256": "4cbcdae9c941990aefbba613dcd6ecaa8de6fd8f7a3e01c694ca680834cf978e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/be627b8ea2fe48a9e223.webp",
+      "bytes": 3062,
+      "sha256": "6b3924b934c88930573bb8b2876f8c104543d8683803ee630842aa3509f701be",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c01acb9995a15237cb2b.webp",
+      "bytes": 12302,
+      "sha256": "fc344b49b19d8ac2c43f5ca0dddb854e1aa05c2ef7a451c1f3ab3a2087594800",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c102faa863f4e69e2548.webp",
+      "bytes": 396,
+      "sha256": "39022d492c7d9ad6dc78d5eb3ce36191b01861bc4e8cd2c15866f9eeffd8839c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c16027b30654ba6fde51.webp",
+      "bytes": 3968,
+      "sha256": "08bf079f9a07edbcbcc417b644a8f307d7d08edc46a9e14bcb27ae1232d020c3",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c1ff58290cd1f6dd531b.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c347527ce979f71bcb35.webp",
+      "bytes": 44106,
+      "sha256": "27e5b7633aa6024734b79c36a67342a4f41ce011fd7367eaa8405acb4628ab7a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c4141b0da551f756467b.webp",
+      "bytes": 1412,
+      "sha256": "5857f6eee2fbb12c6a44ad26e02c7a06995e5581d52383ca2039c2a25a67566a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c4225c677902d8e8f34a.webp",
+      "bytes": 2256,
+      "sha256": "17e9db490330f6f5f3e6d6f51fcbaf378ebd390cf0a010d3ee9ce0d2d7a5bf14",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c4926a0bfbdb1d3583bf.webp",
+      "bytes": 410,
+      "sha256": "1a5d2ecee029b7d30ffff97e123745fec693e57e4fccae02e3c0fc3219bbedf4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c4a65aa1ab989e2131d1.webp",
+      "bytes": 196,
+      "sha256": "f47dc63e8378ec5bf375b476f6711e8ccd3586dee6d5286d1fdee43557f23046",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c5540c336b713fef8593.webp",
+      "bytes": 14900,
+      "sha256": "98f156f16892aead5bf5825f93f796787c585d184440de06ca9aedbbe037a49b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c5613154a65532656003.webp",
+      "bytes": 5442,
+      "sha256": "6e938911edc06684576708dca8495c8a2272caf1e40d8fe3cdf62cd376d286f0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c5fc19b9977c9fd09150.webp",
+      "bytes": 306,
+      "sha256": "7a167d92a3cf6cc392634511eb4de9e4810caf8c2dca736cbaa42fdea2a6c43b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c65d04ef9bab7f6634dc.webp",
+      "bytes": 196,
+      "sha256": "4350314050474fa4eb820afbf56386f5162cef1d5d2c0b0d2efc4f4d18ddebf9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c66ca196accb2342c5e8.webp",
+      "bytes": 9382,
+      "sha256": "c6d155316ec5fdb0ba03d4d66381efa702f6dc3dba36093feb46f00376eb3d9a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c68f004ba4f4566dd3ac.webp",
+      "bytes": 11368,
+      "sha256": "66330a052bc68ca141125746f823aa182d261452f02cff316a8ff124882cb94e",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/c793288917e14b5cf8b1.webp",
+      "bytes": 50254,
+      "sha256": "98b0d878164a6745d51f1d6a121da6cf985481e420afe3804984cb58804ad68c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cb7b833a1175cf725d7d.webp",
+      "bytes": 2224,
+      "sha256": "e042995fe5e94f15ac2247d8fe63649c514e5fc7a04351dc0ef5c517a7d39151",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cb88b4e280ed423f0806.webp",
+      "bytes": 15402,
+      "sha256": "36df048543e18fa5e432ade4f1d70b4c98a32ddb46d7068628fcf31f627a6cf2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cb9c84d830aecc174c3b.webp",
+      "bytes": 616,
+      "sha256": "6b31a723e8fa19f624afedec68e5d3fff8b83f22b5e80cb56727e35b933968b0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cbbc1a6591ef2abe7a56.webp",
+      "bytes": 26440,
+      "sha256": "0e509b5ac142cb113c987308d6d71f66839c27b1e95b3b869357a622a0939e9d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cc3b84da79fc4a6aa8ff.webp",
+      "bytes": 8754,
+      "sha256": "0021435ee78dc8e1637109967377daae4148fdc55eb9b3287d290e8347a3ab27",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cc56656641612d124144.webp",
+      "bytes": 3584,
+      "sha256": "0fa4c47343bb214293188223185c89fdd4a77091f7bc40515f901f231ccdf673",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cc5745c3538dc763db76.webp",
+      "bytes": 4386,
+      "sha256": "121d0a7a4eba15ec15a91ed87f3f5a7d8fa4a80c056a5753eb416c979906bdc9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cd46ee1c3e81ea8933e7.webp",
+      "bytes": 5198,
+      "sha256": "d629a0ffb2ec761a14e498e4ef25d1a2f7f640fe97b376d9951ca6ce386156f5",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cdb69fe89b654866e96e.webp",
+      "bytes": 60326,
+      "sha256": "6c27fe0a51db5c8a8369c8a5e7eb6f4cafd05cc031ef2fc9a6cd0704d763b975",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ce943a9a292873d0d058.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cea87054510004130ee2.webp",
+      "bytes": 13084,
+      "sha256": "6d8128a68fc926c6947a2e722ea168f60498aaef10818c6f88afed03886cabb2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ceda70e5ee5141c567b8.webp",
+      "bytes": 5440,
+      "sha256": "6549ad10562a4103782f035be19fbb174b9bb6f83f8298181915a0fe007e3a7b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cf3ba7655d8723a71fa7.webp",
+      "bytes": 5870,
+      "sha256": "6a1fb7fb451a3c97355e4de79721114def8d0bd54d12ea7eeeb4e421bf9d47e1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/cf496a51a48e35c41453.webp",
+      "bytes": 50794,
+      "sha256": "b2216b84bab77f018759f60e037b9df6ac9b6761688ae7f9ba6ab21986e928c1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d049cf59a6c86a33c640.webp",
+      "bytes": 8834,
+      "sha256": "e95917d0a503e3b41094900ed1436530ec1ec49c2481591323734bf8b79381bd",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d0a82de9b78cbb824b59.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d1df358f28968359623f.webp",
+      "bytes": 3804,
+      "sha256": "6e3d4b22b22448e48ddbd60d0f1171778889ad5a815cf3552b94d62ee43e776d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d1dfc9aae9ceca7cfc02.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d26325f0cc082e27d806.webp",
+      "bytes": 12454,
+      "sha256": "ca84c324850dee7b85895fbf13f5bbcb7136a192b2ccddb3313e53e6590fdab0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d2a9814f0a1b49c8d1ae.webp",
+      "bytes": 44412,
+      "sha256": "1ad421889b3c162f872c0035bc6e40406596a413908e196bf155493dcf3697c4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d2b3856eb60e0bbc4da9.webp",
+      "bytes": 8752,
+      "sha256": "063e7ccc88a60cb1354cc103d5fbd94a58476c5b83d2a2673d214fe9a4bb0c9b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d35fe90a918f38f3bc3a.webp",
+      "bytes": 11632,
+      "sha256": "b162fa4814ffaf3d31cd4c0db632b8ee20e2bb8bcb61f6337f75cd502979b93d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d3797c95205660a0949f.webp",
+      "bytes": 14656,
+      "sha256": "c9a9b0127dd10ce929adcafd82c06d6394f193c76b416a289ee128db1be0ddf1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d3a3f791ff5f8b381b9b.webp",
+      "bytes": 12576,
+      "sha256": "38b022946bd7d85b123537b9d90fb34daa9e32f06825f72d7b07d6becdfea5af",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d412105d10c3b7e52467.webp",
+      "bytes": 400,
+      "sha256": "5f030250fe7a8eec15863f13e93fe99899ed764000b53fac075e4b1c78af7e2b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d415c69d58924d40d272.webp",
+      "bytes": 20900,
+      "sha256": "9efc82ca68031b3f9ca773b4f510ab86b1c4973bdd1bd44c2efc2d4e3e5aa709",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d5bb7ef7280ed17e3af7.webp",
+      "bytes": 3702,
+      "sha256": "7eb10a83b9e53ba97f7034ea799f1857e4c459d03d0e208174dd217d4cc13857",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d5c9e55cae8b9d082014.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d614566d52b6ef7d4a79.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d65663b9fd71b43ccd6d.webp",
+      "bytes": 9062,
+      "sha256": "cf3c620d8a3948d57f0fc75e4a55f21ccf8246657df94fb079d86f9ff69a82d6",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d6b03fe72bb03313276e.webp",
+      "bytes": 2794,
+      "sha256": "040b5f956049cd1b608efb0cdff18d5e8f1c2ff9f45718cc653ff04502aa9619",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d7789e786e72507c815f.webp",
+      "bytes": 7424,
+      "sha256": "9be416577bdd00f9a1f95004c1ceb37ad0296ecd79dac995b31ddba7943335c0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d7d8de2f0fdf1d1b8814.webp",
+      "bytes": 12428,
+      "sha256": "cc0c523e8dff941cc918d18acc1a10770a1d79cf9039589fd43520ad5d0c04b2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d7dc7c5630bccb6869ce.webp",
+      "bytes": 10954,
+      "sha256": "12ea1638acfadf5a17acc2891a46ad190fe518e3c90887c9af8f57af4c29a145",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d900337cb6082c29aedf.webp",
+      "bytes": 10968,
+      "sha256": "606b13f505205d7a71d4ea80e47ac3b12d90eeb0963024fd835813003a7efe57",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/d9da56de96dcbc926ecb.webp",
+      "bytes": 15270,
+      "sha256": "b374b99a0cb64122f2ef747e9da83f0461c411b3b3098cdb9fde3d395581be48",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/da70fdd148c4908de6e2.webp",
+      "bytes": 13050,
+      "sha256": "e918207e0244fc320b30998f22246fba005251e37699a0c1d9cd889f29515a35",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/da9a9a5bb0ec879e38f9.webp",
+      "bytes": 7514,
+      "sha256": "4f5ecd388ec1651be31e266c51e2b0ecec80beef0aeb5ff341e9b4f5b1b8cf9b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/daba99a7b3e344f6439e.webp",
+      "bytes": 23090,
+      "sha256": "1a9243f73ab82b8880fab866ed57b18f4144954f27f15ae42e31fa7b866af825",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/dbb20d6635c76a2c4f15.webp",
+      "bytes": 47442,
+      "sha256": "4fe9835d33b0deb8dcb67c14f8245386132615f55a4df314100c3870a8f3c216",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/dc23195e1b2c404ba4a1.webp",
+      "bytes": 13878,
+      "sha256": "6167e9f9689f5d26dc6f625dd21c7418da524189dfb6d942c87750b123cab20b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/dccabfd7944cf21b3ea4.webp",
+      "bytes": 164,
+      "sha256": "53df171b81faa1fa1e9bf884f0c8b9d787280ec66f75cd2d2dace28645c7bafc",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/dda5b06cb5476d4d1f85.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/de5f8421fa8f0674054c.webp",
+      "bytes": 5224,
+      "sha256": "a9463385225bab8b1435bce7eed81d667c4cfecd153ce7602760cec24a4ee1f6",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/de73d5a912f2b00434b2.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/de76c3dce1fcc487d2b8.webp",
+      "bytes": 5976,
+      "sha256": "fe2e69d62e2f83398b0417ff3fdc3b5f01aa03bc521c4c8a056c46bbcafd7af0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/de83f457493d234f678a.webp",
+      "bytes": 340,
+      "sha256": "fc6d823e2b41641cc2428d30c753313a47f1c4fc87f5548e94cefa7293acf5f1",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/dedcb310fd6a8e3ec943.webp",
+      "bytes": 7476,
+      "sha256": "759265bd8061cc5f3af5da4b7a47a5d6c97706f41c68fdd30ef6fd5db63cc206",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/df574de74690a8169fc7.webp",
+      "bytes": 3022,
+      "sha256": "eb1cd0479ce092da6d7296ce63567e279c206784daac7a960854af51b9dc463c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/dfb4ae6e115c6d77958d.webp",
+      "bytes": 19512,
+      "sha256": "583bb2463c1cacf80185bc9302a0eb5dd0f4451508201e5bbb1d9a5c53b7d3b7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e000c0905d9836616a1a.webp",
+      "bytes": 3084,
+      "sha256": "54600cd2af75339d22fc5bf0da45f616b990f4708052f036d19a7bd9b9821688",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e091d8f1537ffdfb902a.webp",
+      "bytes": 10506,
+      "sha256": "8b204b818298585ced922054048edb03e5fed06d427e10e2659a15cb1c108284",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e106d6de9bbf4be89c01.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e260854006ed4006b268.webp",
+      "bytes": 8924,
+      "sha256": "7513fb9352fe2ea05f880f6c0ebb9ffa47939841ef6499d8cae5d53fe0a8c78f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e2f8a162d9fba6ad50af.webp",
+      "bytes": 196,
+      "sha256": "4350314050474fa4eb820afbf56386f5162cef1d5d2c0b0d2efc4f4d18ddebf9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e2fb8b6d465f9484b488.webp",
+      "bytes": 15718,
+      "sha256": "8b249a001e6036b58ae5ecf1743d1c29844a61bfe780cac1c6e1592764b6c5df",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e300b4cdceea525d8ed0.webp",
+      "bytes": 6166,
+      "sha256": "c9f21ba67b644abce563299ec629fef9f56c723d4dd387ece6739ff1d836508f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e30be5ab34da71cf0f67.webp",
+      "bytes": 11832,
+      "sha256": "ca1744fa7dc315881f5d7f75c6e1f094552f4765e8f9ae78e2f3a9bff1490100",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e37f7ecd1d6754f439bf.webp",
+      "bytes": 9340,
+      "sha256": "7ffca2379a703df059a6e6f6488cf951b1c505e98280064bb3d10cb86f1cb120",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e393bc793654bcfd2919.webp",
+      "bytes": 4034,
+      "sha256": "b74000055b50298c26ad62ae2bb567024de0c8425f85ce75971d64465709243f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e3a993b08546189b22f6.webp",
+      "bytes": 4472,
+      "sha256": "85d2424f67b62f1325e22ea922e1e807d89c8e1707ac98459cf68fa1d680312f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e411311ee5a3ddfba154.webp",
+      "bytes": 7620,
+      "sha256": "86f008e565c09ad42629db62fc0054a8bc443b6f7adef407e028bc1692986787",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e4b9449b898b8a5865fb.webp",
+      "bytes": 28216,
+      "sha256": "a67fcffe849b7068200bde17f92c447149f06f576a289ca2059f787a179ab64f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e4eac75827c85baf724c.webp",
+      "bytes": 12496,
+      "sha256": "5d17e9bc9bf407cf9a9980a0d562617781bcacca63f709b8b8d3b090870f8b70",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e5425ef64c565517b027.webp",
+      "bytes": 10374,
+      "sha256": "bfacb3b9f942af89d4129abd310e0e8d043da95c733aebad121f238e93c1a58d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e572917f6ebad4ac007c.webp",
+      "bytes": 33250,
+      "sha256": "3ae3307e2ce807dbbc4b3c4fa35788f5e786a8ac5f1640d8392ac7f6fbd3efab",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e578b7ddf3d3c8e88ad5.webp",
+      "bytes": 162,
+      "sha256": "40207584f2fbda8e73bbad27c5c579659080d5ba21166b1125738ffb51e27119",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e57d6109fddba905e061.webp",
+      "bytes": 19518,
+      "sha256": "71ce2d9314aedbe09fe9d3c01971750035c4ee6f5349e72fecb35188e844a6f6",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e59973379c4175355975.webp",
+      "bytes": 11458,
+      "sha256": "6342e62293a290e7b4f17623e19653c2e7b76fcc13e3c4d347df110949e3d713",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e5c48f6137895a8bf02a.webp",
+      "bytes": 7460,
+      "sha256": "d335bc7b6a57de1d124b10e88806195d3355fef2b44f49391798e294a92900d7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e5ff11e1ce4067550e12.webp",
+      "bytes": 5368,
+      "sha256": "ab9d20ef0675d1c8b249eeccf22928c743a3bdf4ba7dab5cb9ab97810d6a4c29",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e63d7c26f749fe6aac62.webp",
+      "bytes": 10122,
+      "sha256": "1206e988d701a511c4e66289ef039e53745efe08b2dcd2046d05b05d664acdae",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e6d20015c9b499492f5a.webp",
+      "bytes": 4130,
+      "sha256": "442b07df7c11778bf820b420f5d65a132ca483388b85e69c7a5c9e2391d85921",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e7017ec5f0eda484f8e7.webp",
+      "bytes": 11538,
+      "sha256": "f54a489e9a308f9023f19c149cfc3040f98fcf4f2c9591e9768cfca68bb2c66f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e76085f3f108c5b31954.webp",
+      "bytes": 2496,
+      "sha256": "07048ff180391a0b1a764eecaf3c298b580d15bf8d571aad5c96d937339b3358",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e7c2abae635ff481143f.webp",
+      "bytes": 18914,
+      "sha256": "f1eb9dea8b5b58da69575b2e510d79b256050d40a4e7e214f66b74765a7aeb8f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e824745c991968615901.webp",
+      "bytes": 2842,
+      "sha256": "56dc4e83e5d35429606c62f912913359c2ef24c5f9b704cc79a43e2c85e90813",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e8a85f0dfc9fe59c75b9.webp",
+      "bytes": 11200,
+      "sha256": "fd31413aa7ad8313886a4a2140069ae80a577c652653f5ee9ab5e568a5f040e2",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/e9fdd39e968fc850fe42.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ea53a4c64f9b75fae6db.webp",
+      "bytes": 13540,
+      "sha256": "7303e6a844398d4e59636416ad6246d1289dabaf1c835dc89459a8c095aa451b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/eaa2c665bdef790b8652.webp",
+      "bytes": 11116,
+      "sha256": "a86584c47c1d8b3b0d054d89a608aa56672f4b2c1d750b34d9b49e4c67142ace",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/eae9b081264830bf3962.webp",
+      "bytes": 7424,
+      "sha256": "41583498f131b2b37b2950cff2cf22a4d7a3a59a791501f45b013913e0166a9f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/eb3ce02a1afa6f6ba08f.webp",
+      "bytes": 2836,
+      "sha256": "fee3c7a6ce595810b955e6f169139b60bbcd85a20f3222ae770448332d70b632",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/eb6940e48f573459b10b.webp",
+      "bytes": 8850,
+      "sha256": "c281792804c06bc78f7905dbfa7b64a53e13ecb00d8291551b9c3fce7f9b7b5f",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/eb7691725e079ad0ec7d.webp",
+      "bytes": 5414,
+      "sha256": "72ddb7de72b18f522463b6d1b54de7185131f1a786e29ba89135003e324627ed",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ec82ae347a98bbf999f3.webp",
+      "bytes": 4670,
+      "sha256": "8709a0f9e4bbf6a4df3d109a2df504a71b2a659ed311e0d8e1e9f7fccf797c47",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ecf9d37b9d95d1377a73.webp",
+      "bytes": 330,
+      "sha256": "092b8213918e83ea546bd1817e6bc23e25f3aa20134de2a5bac9aa6d186b33df",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ededa82015ee58e2b6da.webp",
+      "bytes": 21062,
+      "sha256": "d4d62fcc85ece24929dfdb8aa01eb4ce934a60527e7a834ff1d1d57865375c54",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ee9c1f6c33d1cbf49e9c.webp",
+      "bytes": 8376,
+      "sha256": "407fc71f041b19a0838ead86becb107cfc1c1d45e26a281c9f29f2aa314d2819",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ef5ba5607c7b607406be.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/efb3c88b1667f77e066b.webp",
+      "bytes": 7288,
+      "sha256": "96f6cc8872c416285eb0cd7b86f577f323a68bd347db90e983f82766f335ecb0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f0b3cbc3917b5ebb0041.webp",
+      "bytes": 10592,
+      "sha256": "7d13a7232a29d0c54ddccc9028b6ae4d3f64c431a294b6d04f8fa84ba1c8b00c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f17994aa26e12af24de4.webp",
+      "bytes": 6976,
+      "sha256": "f231e32f8faf500c327a537dd942091e5c60e23a0d842b6118674a69de6d4476",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f298a790c67b67b6da27.webp",
+      "bytes": 5330,
+      "sha256": "364b4d44bb4d1784a4e26202881ca58366235be805b700c6a5f3b44e624b6f78",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f35e5efdaa8cbdf9570c.webp",
+      "bytes": 29524,
+      "sha256": "28601a594c2ee483ef8b82ba545936406c4a3c4976182ec0a017e74e42c60f97",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f36d8cf5b43acdd16508.webp",
+      "bytes": 322,
+      "sha256": "4b6b083cfc1b398788585a226bb3f12431f2e6361de2efb1f9122f84e41f883b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f575e34a59fdfff4f789.webp",
+      "bytes": 49308,
+      "sha256": "e462c7c2cd83a54e74f5728e42ab2e8615cf6a420c6e9fc3bae12d0886ceea4b",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f5b1f61c205cdaa72805.webp",
+      "bytes": 14020,
+      "sha256": "f5c8cde6c5edf402408478fa9b519d63700ab9814e889d1fc17fdfcf0c4e60bd",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f6dd02a1f82255389f84.webp",
+      "bytes": 10042,
+      "sha256": "f8de376ee3ec3d3a972b07a4225e77cbd971da4ee37e326fef4835103ac90483",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f6fca574b62c06b2535b.webp",
+      "bytes": 4704,
+      "sha256": "562488b5b3be38297bfb838260ba775be1c36b10e54ddc1795cb6ee0262d95d4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f72e67bedb75c398e2d8.webp",
+      "bytes": 22106,
+      "sha256": "fc707f6c4a112f3a1002ae6f06e90269268f889e8dc4009562b26f385b8f7561",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f8ca1a97e53f17bae44d.webp",
+      "bytes": 4136,
+      "sha256": "d52762909c4466ff581d0b7fd4e790a44b26d87fa7845cf0206933598337fef7",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f8f0454d4661ea71b37d.webp",
+      "bytes": 3032,
+      "sha256": "4b6f603071a2a02425654440e80be785eb859a5d50029426113b10b14a28f51d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/f9aadbb2f79c7cdeaf9b.webp",
+      "bytes": 6670,
+      "sha256": "a96435b7e7eb617282bb88356a0de36fa65488938a9463b3b41780f3f7a71c7d",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/fa07d4920c13a8bf38f6.webp",
+      "bytes": 9514,
+      "sha256": "343b152bf6f5ffe2427ffa33f84e7ded997d6eb7cfc1e89fd765c271c00c96df",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/fa3beac5cd8625360a2c.webp",
+      "bytes": 7700,
+      "sha256": "b78838b50959274ea9f90527522532d3c1e4aa5e24dcac430ef6645273b19dd4",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/fafdf6a3292e29dfb089.webp",
+      "bytes": 16918,
+      "sha256": "8d31724af72b5deb8f5f3201c35a3a8a0e3970ea99e5dc56bcc9b9d398878614",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/fb97514db7a8cc33dc06.webp",
+      "bytes": 16174,
+      "sha256": "2b00bab679aa9f6452c7768b6882da0f2459d607dcff1b4f305e4cace1ce61e9",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/fbc5756494af35e46e27.webp",
+      "bytes": 14508,
+      "sha256": "404894aa9b1cb35d43b8afb5e29beb1640276d0b39f51d47b9f0953bd41bced0",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/fbff5dcafe043b2ea57f.webp",
+      "bytes": 6142,
+      "sha256": "05ad7e5da37ffd8b883c985ca9f86e42c990842f335eb3a79d24b4189c4318fb",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/fe5f3a0c17b5ca288b39.webp",
+      "bytes": 200,
+      "sha256": "54a100d7a05903335b0f46f7bfbf7efb5717ed0a3a5a56bc73c307b30e6fbd4a",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/fe649674bdb23e0a44f8.webp",
+      "bytes": 10828,
+      "sha256": "a01253fd191a4b6e55195e8a65c526908735022fc72392b31f1a688e834a2888",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/fe726a2b3667a4c57947.webp",
+      "bytes": 5858,
+      "sha256": "a91211e1f6a95811364eba9a3da0fd4f2af67a63096ff4e0cad7f1732bd7ab1c",
+      "group": "map"
+    },
+    {
+      "path": "assets/map-mobile/textures/ff0acae7409b4b33151e.webp",
+      "bytes": 142,
+      "sha256": "683a85ab990b40fbe9af8d3379f8ae1ec9cd0b1316fbe7c8c74e8cdf173f6e97",
       "group": "map"
     },
     {

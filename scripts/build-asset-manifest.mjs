@@ -25,7 +25,7 @@ async function walk(dir, group) {
     else if (/\.(glb|gltf|bin|webp|png|jpe?g|mp3|wav|ogg|svg)$/i.test(file)) await add(file, group);
   }
 }
-const entries = [];
+let entries = [];
 await add('assets/map-cs2/dust2-web.gltf', 'map');
 await add('assets/map/positions.f32', 'collision');
 await add('assets/sky/daylight.hdr','sky');
@@ -42,8 +42,14 @@ for (const dir of ['assets/viewmodel']) {
 }
 // Gun and utility models are fetched on equip; only their previews and shared
 // arm animation bundle belong to the initial download.
-entries.sort((a, b) => a.path.localeCompare(b.path));
-const version = createHash('sha256').update(JSON.stringify(entries)).digest('hex').slice(0, 16);
-const manifest = { version, totalBytes: entries.reduce((sum, entry) => sum + entry.bytes, 0), files: entries };
-await writeFile(path.join(root, 'assets/asset-manifest.json'), JSON.stringify(manifest));
-console.log(`Runtime asset manifest ${version}: ${entries.length} files, ${(manifest.totalBytes / 1048576).toFixed(1)} MiB`);
+async function writeManifest(name){
+ entries.sort((a,b)=>a.path.localeCompare(b.path));
+ const version=createHash('sha256').update(JSON.stringify(entries)).digest('hex').slice(0,16);
+ const manifest={version,totalBytes:entries.reduce((sum,entry)=>sum+entry.bytes,0),files:entries};
+ await writeFile(path.join(root,'assets',name),JSON.stringify(manifest));
+ console.log(`${name} ${version}: ${entries.length} files, ${(manifest.totalBytes/1048576).toFixed(1)} MiB`);
+}
+await writeManifest('asset-manifest.json');
+entries=entries.filter(entry=>entry.group!=='map');files.clear();entries.forEach(entry=>files.add(entry.path));
+await add('assets/map-mobile/dust2-mobile.gltf','map');
+await writeManifest('asset-manifest-mobile.json');

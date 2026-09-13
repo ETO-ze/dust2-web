@@ -46,15 +46,15 @@ export class TouchControls {
  drawHeld(){this.buttons.forEach(b=>b.classList.toggle('pressed',this.controls.down(b.dataset.action)));}
  drawThrow(){this.element.querySelectorAll('[data-throw]').forEach(b=>b.classList.toggle('selected',b.dataset.throw===this.throwMode));}
  update(state){
-  this.state=state;document.body.classList.toggle('touch-utility',state.slot===4);if(!this.enabled||!this.active)return;
+  this.state=state;document.body.classList.toggle('touch-spectator',state.spectator);document.body.classList.toggle('touch-utility',state.slot===4);if(!this.enabled||!this.active)return;
   for(const b of this.buttons){const a=b.dataset.action;const combat=['fire','altFire','reload'].includes(a),movement=['jump','crouch','walk'].includes(a),equipment=['primary','secondary','knife','utility','bomb','drop','interact'].includes(a);
-   b.disabled=(combat&&!state.combat&&!(state.spectator&&['fire','altFire'].includes(a)))||(movement&&!state.moving)||(equipment&&!state.equipment)||(a==='buy'&&!state.alive);
+   b.disabled=(combat&&!state.combat&&!(state.spectator&&['fire','altFire'].includes(a)))||(movement&&!state.moving)||(equipment&&!state.equipment&&!(a==='interact'&&state.canTakeBot))||(a==='buy'&&!state.alive);
    if(b.dataset.slot){const slot=Number(b.dataset.slot);b.disabled||=!state.slots.includes(slot);b.classList.toggle('selected',state.slot===slot);}
   }
   this.element.querySelector('.touch-fire').textContent=state.spectator?'下一位':state.slot===4?'投掷':state.slot===5?'下包':'开火';
   this.element.querySelector('.touch-alt').textContent=state.spectator?'上一位':state.slot===3?'重刀':'开镜';
   this.element.querySelector('.touch-alt').disabled||=state.slot===4;
-  this.element.querySelector('.touch-use').textContent=state.hasBomb?'下包':state.planted?'拆包 / 用':'拾取 / 用';
+  this.element.querySelector('.touch-use').textContent=state.canTakeBot?'控制人机':state.hasBomb?'下包':state.planted?'拆包 / 用':'拾取 / 用';
   this.element.querySelector('.touch-throw').hidden=state.slot!==4||!state.alive;
  }
  get axes(){return this.input.axes;}

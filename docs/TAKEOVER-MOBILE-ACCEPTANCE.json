@@ -1,0 +1,322 @@
+{
+  "release": "20260913T061345Z",
+  "archiveSha256": "0cd61b6400beddfc6de6c630958d79ab2dd9fd0b03f4d3f936a402e908bc456e",
+  "overlaySha256": "768e2321a7eb0bcc7b802a67da9b34a620ee40809b35ca4ccec17ce91088aad0",
+  "automatedTests": 254,
+  "finalRelatedTests": 13,
+  "releaseBoundaryTests": 17,
+  "integrity": {
+    "release": "20260913T061345Z",
+    "checked": 1610,
+    "errors": []
+  },
+  "publicNetwork": {
+    "at": "2026-09-13T06:19:15.118Z",
+    "origin": "https://cs2.duskrain.cn",
+    "stages": [
+      {
+        "humans": 1,
+        "bodies": 10,
+        "seconds": 8.01,
+        "clients": [
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.218,
+            "decodedMbps": 1.499,
+            "snapshots": 119,
+            "rttP50Ms": 39,
+            "rttP95Ms": 44,
+            "errors": []
+          }
+        ],
+        "health": {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T061345Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 151,
+          "rooms": 1,
+          "humans": 1,
+          "players": 10,
+          "memory": {
+            "rssMiB": 130,
+            "heapMiB": 17
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 0,
+            "tickP95Ms": 5.46,
+            "tickMaxMs": 94.39,
+            "maxSchedulingDelayMs": 61.29,
+            "lateTicks": 2,
+            "totalTicks": 4515
+          }
+        }
+      },
+      {
+        "humans": 2,
+        "bodies": 10,
+        "seconds": 8,
+        "clients": [
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.252,
+            "decodedMbps": 1.532,
+            "snapshots": 118,
+            "rttP50Ms": 38,
+            "rttP95Ms": 40,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.252,
+            "decodedMbps": 1.532,
+            "snapshots": 118,
+            "rttP50Ms": 38,
+            "rttP95Ms": 40,
+            "errors": []
+          }
+        ],
+        "health": {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T061345Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 160,
+          "rooms": 1,
+          "humans": 2,
+          "players": 10,
+          "memory": {
+            "rssMiB": 134,
+            "heapMiB": 18
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 0,
+            "tickP95Ms": 6.04,
+            "tickMaxMs": 94.39,
+            "maxSchedulingDelayMs": 61.29,
+            "lateTicks": 2,
+            "totalTicks": 4782
+          }
+        }
+      },
+      {
+        "humans": 5,
+        "bodies": 10,
+        "seconds": 8.01,
+        "clients": [
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.243,
+            "decodedMbps": 1.563,
+            "snapshots": 120,
+            "rttP50Ms": 39,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.243,
+            "decodedMbps": 1.563,
+            "snapshots": 120,
+            "rttP50Ms": 39,
+            "rttP95Ms": 299,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.243,
+            "decodedMbps": 1.563,
+            "snapshots": 120,
+            "rttP50Ms": 39,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.243,
+            "decodedMbps": 1.563,
+            "snapshots": 120,
+            "rttP50Ms": 39,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.243,
+            "decodedMbps": 1.563,
+            "snapshots": 120,
+            "rttP50Ms": 38,
+            "rttP95Ms": 299,
+            "errors": []
+          }
+        ],
+        "health": {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T061345Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 169,
+          "rooms": 1,
+          "humans": 5,
+          "players": 10,
+          "memory": {
+            "rssMiB": 139,
+            "heapMiB": 19
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 0,
+            "tickP95Ms": 6.22,
+            "tickMaxMs": 94.39,
+            "maxSchedulingDelayMs": 61.29,
+            "lateTicks": 2,
+            "totalTicks": 5061
+          }
+        }
+      },
+      {
+        "humans": 10,
+        "bodies": 10,
+        "seconds": 8,
+        "clients": [
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 39,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 39,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 38,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 39,
+            "rttP95Ms": 43,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 39,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 38,
+            "rttP95Ms": 39,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 38,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 38,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 38,
+            "rttP95Ms": 44,
+            "errors": []
+          },
+          {
+            "compression": "permessage-deflate",
+            "wireMbps": 0.214,
+            "decodedMbps": 1.568,
+            "snapshots": 120,
+            "rttP50Ms": 38,
+            "rttP95Ms": 39,
+            "errors": []
+          }
+        ],
+        "health": {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T061345Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 179,
+          "rooms": 1,
+          "humans": 10,
+          "players": 10,
+          "memory": {
+            "rssMiB": 141,
+            "heapMiB": 20
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 3.49,
+            "tickP95Ms": 6.22,
+            "tickMaxMs": 94.39,
+            "maxSchedulingDelayMs": 61.29,
+            "lateTicks": 2,
+            "totalTicks": 5350
+          }
+        }
+      }
+    ]
+  },
+  "browser": {
+    "desktop": "E takeover, movement, weapon selection, firing passed",
+    "mobile": "load, death spectator, touch takeover, 844x390 / 667x320 / 390x844 bounds passed",
+    "physicalAndroidVerified": false
+  },
+  "mobileTextures": {
+    "profile": "mobile-256",
+    "images": 510,
+    "sourceRgbaMiB": 937.7,
+    "mobileRgbaMiB": 105.5,
+    "geometryUnchanged": true,
+    "maxTextureSize": 256
+  }
+}

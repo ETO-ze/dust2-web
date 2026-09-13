@@ -1,3 +1,4 @@
+import {controlledPlayer,releaseBot,takeBot} from './bot-control.js';
 import {visibleAimPoint,observationPoint,lookAt,hearGunshot} from './bot-perception.js';
 import {combatMovement} from './bot-combat.js';
 import {combatSlot} from './bot-utility.js';
@@ -132,6 +133,10 @@ export class GameRoom {
     this.emit('bots_changed',result);return result;
   }
 
+  controlledPlayer(id){return controlledPlayer(this,id);}
+  takeBot(id,botId){return takeBot(this,id,botId);}
+  releaseBot(id){releaseBot(this,id);}
+
   freeSeat(team){return [0,1,2,3,4].find(seat=>![...this.players.values()].some(p=>p.team===team&&p.seat===seat))??-1;}
   roomSeats(){return Object.fromEntries(['CT','T'].map(team=>[team,Array.from({length:5},(_,seat)=>{
     const p=[...this.players.values()].find(p=>p.team===team&&p.seat===seat);
@@ -142,6 +147,7 @@ export class GameRoom {
     if(!p||p.bot||!['T','CT'].includes(team)||!Number.isInteger(seat)||seat<0||seat>4)return {ok:false,message:'无效的房间位置。'};
     if([...this.players.values()].some(other=>other.id!==id&&other.team===team&&other.seat===seat))return {ok:false,message:'这个位置已有人，请选择空位。'};
     if(p.team!==team){
+      this.releaseBot(id);
       if(p.hasBomb)this.dropBomb(p);
       this.cancelReload(p);this.cancelGrenade(p,'team');
       if(this.bomb.actorId===id)Object.assign(this.bomb,{actorId:null,action:null,progress:0});
@@ -171,7 +177,8 @@ export class GameRoom {
     let assigned = team;
     if (!['T', 'CT'].includes(assigned)) assigned = this.count('T', true) <= this.count('CT', true) ? 'T' : 'CT';
     if (this.count(assigned, true) >= 5) { if (team !== 'auto') throw new Error('该阵营已有 5 名玩家，请选择另一队。'); assigned = opposite(assigned); }
-    const botToReplace = (this.count(assigned)>=5||this.players.size>=10)?[...this.players.values()].find(p=>p.bot&&p.team===assigned)||[...this.players.values()].find(p=>p.bot):null;
+    const replaceable=[...this.players.values()].filter(p=>p.bot).sort((a,b)=>Number(!!a.controllerId)-Number(!!b.controllerId)||Number(a.alive)-Number(b.alive));
+    const botToReplace=(this.count(assigned)>=5||this.players.size>=10)?replaceable.find(p=>p.team===assigned)||replaceable[0]:null;
     if (botToReplace) this.removePlayer(botToReplace.id);
     const id = `p_${randomBytes(6).toString('hex')}`;
     const player = this.makePlayer(id, name, assigned, false, primary);
@@ -217,7 +224,7 @@ export class GameRoom {
 
   ensureBots() {
     const wanted = Math.min(this.desiredBots, MAX_PLAYERS - this.humanCount);
-    let bots = [...this.players.values()].filter(p => p.bot);
+    let bots = [...this.players.values()].filter(p => p.bot).sort((a,b)=>Number(!!b.controllerId)-Number(!!a.controllerId)||Number(b.alive)-Number(a.alive));
     while (bots.length > wanted) { this.removePlayer(bots.pop().id); }
     while (bots.length < wanted) {
       const team = this.count('T') <= this.count('CT') ? 'T' : 'CT';
@@ -231,6 +238,7 @@ export class GameRoom {
   removePlayer(id) {
     const player = this.players.get(id);
     if (!player) return;
+    this.releaseBot(player.controllerId||id);
     if(player.botAI?.utility&&!player.botAI.utility.released)this.utilityClaims?.delete(player.botAI.utility.key);
     if (player.hasBomb) this.dropBomb(player);
     this.players.delete(id); this.clients.delete(id);
@@ -239,8 +247,11 @@ export class GameRoom {
   }
 
   receiveInput(id, message) {
-    const player = this.players.get(id), input = sanitizeInput(message);
-    if (!player || !input || input.seq <= player.lastReceivedSeq) return false;
+    const owner=this.players.get(id),player=this.controlledPlayer(id),input=sanitizeInput(message);
+    if(!player||!input||input.seq<=owner.lastReceivedSeq)return false;
+    // Old in-flight packets belong to the previous body, including after release.
+    if((message.bodyId!==undefined&&message.bodyId!==player.id)||(message.lifeId!==undefined&&message.lifeId!==player.lifeId)||(owner.controlledBotId&&message.bodyId!==player.id))return true;
+    owner.lastReceivedSeq=input.seq;
     if(input.moves.length){if(!player.movementStream){player.movementStream=new MovementStream(player.lifeId);player.movementAt=this.clock();}player.movementStream.receive(input.moves);}
     // Retain the complete click sample. A later release/turn/unzoom/switch must
     // not overwrite the aim that actually fired. New clients send one shot ID
@@ -317,7 +328,7 @@ export class GameRoom {
   }
 
   buy(id, rawWeapon) {
-    const p = this.players.get(id);
+    const p = this.controlledPlayer(id);
     if (!p?.alive) return { ok: false, message: '存活时才可以购买。' };
     if (typeof rawWeapon !== 'string') return { ok: false, message: '无效的购买物品。' };
     const availability=this.buyStatus(p);if(!availability.buyAllowed)return {ok:false,message:availability.buyReason};
@@ -348,7 +359,7 @@ export class GameRoom {
     return Object.entries(p.purchases||{}).filter(([id,r])=>p.inventory[id]&&r.round===this.round.number&&r.life===p.lifeId).map(([weapon,r])=>({weapon,price:r.price}));
   }
   refund(id,weapon){
-    const p=this.players.get(id),receipt=p&&this.refundable(p).find(r=>r.weapon===weapon);
+    const p=this.controlledPlayer(id),receipt=p&&this.refundable(p).find(r=>r.weapon===weapon);
     if(!receipt)return {ok:false,message:'只能退还本回合在购买区购买且尚未使用、未丢弃的枪械。'};
     this.cancelReload(p);delete p.inventory[weapon];delete p.purchases[weapon];p.money=Math.min(16000,p.money+receipt.price);
     if(p.weapon===weapon)this.selectSlot(p,Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3);
@@ -361,6 +372,7 @@ export class GameRoom {
 
   startRound() {
     if(this.match.status==='ended')return;
+    for(const p of this.players.values())if(p.controlledBotId)this.releaseBot(p.id);
     const now = this.clock();
     if(this.pendingTransition){
       const {swapSides,resetMoney}=this.pendingTransition;this.pendingTransition=null;
@@ -453,8 +465,9 @@ export class GameRoom {
     victim.respawnAt = this.mode === 'deathmatch' ? this.clock() + this.rules.respawnSeconds * 1000 : 0;
     if (victim.hasBomb) this.dropBomb(victim);
     const credited=!!killer&&killer.id!==victim.id&&killer.team!==victim.team;
-    if (credited) { killer.kills++;killer.roundKills=(killer.roundKills||0)+1;killer.lifeKills=(killer.lifeKills||0)+1;killer.killCards||=[];if(killer.killCards.length<5)killer.killCards.push({weapon,headshot,backstab:metadata.backstab===true});killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.mode === 'deathmatch') this.scores[killer.team]++; }
-    this.emit('kill', { killerId: killer?.id || null, victimId: victim.id, killerName: killer?.name || '环境', victimName: victim.name, weapon, headshot,...metadata,credited,killerRoundKills:credited?killer.roundKills:0,killerLifeKills:credited?killer.lifeKills:0 });
+    const scorer=this.players.get(killer?.controllerId)||killer;
+    if (credited) { scorer.kills++;scorer.roundKills=(scorer.roundKills||0)+1;scorer.lifeKills=(scorer.lifeKills||0)+1;scorer.killCards||=[];if(scorer.killCards.length<5)scorer.killCards.push({weapon,headshot,backstab:metadata.backstab===true});killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.mode === 'deathmatch') this.scores[killer.team]++; }
+    this.emit('kill', { killerId: killer?.id || null, victimId: victim.id, killerName: scorer?.name || '环境',killerControllerId:killer?.controllerId||null, victimName: victim.name, weapon, headshot,...metadata,credited,killerRoundKills:credited?scorer.roundKills:0,killerLifeKills:credited?scorer.lifeKills:0 });
     if(this.mode==='deathmatch'&&killer&&this.scores[killer.team]>=MATCH_RULES.deathmatchWinTarget)this.endMatch(killer.teamId,'队伍率先完成 100 次击杀');
   }
 
@@ -509,7 +522,7 @@ export class GameRoom {
 
   heldSkin(p,weapon=p.weapon){return p.inventory[weapon]?.skinId||p.skins[weapon]||DEFAULT_SKINS[weapon];}
   dropWeapon(id,death=false){
-    const p=this.players.get(id),current=p&&getWeapon(p.weapon);
+    const p=this.controlledPlayer(id),current=p&&getWeapon(p.weapon);
     if(!death&&p?.alive&&p.weapon==='c4'&&p.hasBomb&&['freeze','live'].includes(this.round.phase)){this.dropBomb(p);p.bombPickupAfter=this.clock()+1500;return {ok:true,weaponId:'c4'};}
     const dropId=death&&current&&![1,2].includes(current.slot)?Object.keys(p.inventory).find(id=>getWeapon(id).slot===1)||Object.keys(p.inventory).find(id=>getWeapon(id).slot===2):p?.weapon;
     const w=dropId&&getWeapon(dropId);
@@ -857,10 +870,11 @@ export class GameRoom {
     for (const p of this.players.values()) {
       if(this.match.status==='ended')break;
       if (!p.alive) { if (p.respawnAt && now >= p.respawnAt) this.respawn(p); continue; }
-      const input = p.bot ? this.botInput(p, dt) : now - p.inputAt < 300 ? { ...p.input } : { ...neutralInput(), yaw: p.yaw || 0, pitch: p.pitch || 0 };
-      if(p.bot){this.captureGrenadeInput(p,input);p.input={...input};p.inputAt=now;}
+      const automatic=p.bot&&!p.controllerId;
+      const input = automatic ? this.botInput(p, dt) : now - p.inputAt < 300 ? { ...p.input } : { ...neutralInput(), yaw: p.yaw || 0, pitch: p.pitch || 0 };
+      if(automatic){this.captureGrenadeInput(p,input);p.input={...input};p.inputAt=now;}
       p.pendingFire = false;
-      if(!p.bot){
+      if(!automatic){
         const fresh=now-p.inputAt<300;
         if(fresh&&(input.reloadId||0)>(p.lastReloadId||0))input.reload=true;
         p.lastReloadId=Math.max(p.lastReloadId||0,p.input.reloadId||0);
@@ -881,7 +895,7 @@ export class GameRoom {
         p.movementStream.advance(p,elapsed,movementOptions,shotMove||Infinity);
       }
       if(p.objectiveLocked){p.fireQueue.length=0;this.cancelGrenade(p,'objective');}
-      const queuedShot=canAct&&!p.objectiveLocked&&!p.bot&&this.fireQueued(p);
+      const queuedShot=canAct&&!p.objectiveLocked&&!automatic&&this.fireQueued(p);
       if(this.match.status==='ended')break;
       if(!canAct&&p.fireQueue)p.fireQueue.length=0;
       const awaitingShotMove=p.movementStream&&p.fireQueue?.[0]?.input.moveId>p.movementStream.ack;
@@ -902,7 +916,7 @@ export class GameRoom {
       if (input.reload) this.reload(p);
       const heldAmmo=p.inventory[p.weapon];
       if(canAct&&!input.fire&&!input.cancelGrenade&&now-p.inputAt<300&&now>=p.nextShotAt&&!p.fireQueue?.length&&getWeapon(p.weapon).magazine&&heldAmmo?.ammo===0)this.reload(p);
-      if((canAct||this.round.phase==='freeze')&&!p.bot&&p.pendingInteract&&now-p.inputAt<300)this.pickupWeapon(p);
+      if((canAct||this.round.phase==='freeze')&&!automatic&&p.pendingInteract&&now-p.inputAt<300)this.pickupWeapon(p);
       p.pendingInteract=false;
       if(canMove||this.round.phase==='freeze')this.pickupWeapon(p,true);
       if (canAct&&!p.objectiveLocked) {this.stepGrenade(p);if(!p.shotCommands&&!queuedShot)this.fire(p,input);}
@@ -922,7 +936,7 @@ export class GameRoom {
 
   snapshot({ drainEvents = true } = {}) {
     const now = this.clock();
-    const players = [...this.players.values()].map(p => ({ id: p.id,seat:p.seat, lifeId:p.lifeId,name: p.name, team: p.team, teamId:p.teamId, bot: p.bot, agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
+    const players = [...this.players.values()].map(p => ({ id: p.id,seat:p.seat, lifeId:p.lifeId,name: p.name, team: p.team, teamId:p.teamId, bot: p.bot, ...(p.controllerId?{controllerId:p.controllerId}:{}),...(p.controlledBotId?{controlledBotId:p.controlledBotId}:{}), agentId:p.agentId||DEFAULT_AGENT_IDS[p.team], x: round2(p.x), y: round2(p.y), z: round2(p.z),
       vx: round2(p.vx), vy: round2(p.vy), vz: round2(p.vz), yaw: round2(p.yaw), pitch: round2(p.pitch), crouch: !!p.crouch, grounded: !!p.grounded,
       ...(p.movementStream?{movementAck:p.movementStream.ack,movementState:movementState(p)}:{}),
       objectiveLocked:!!p.objectiveLocked,health: p.health, armor: round2(p.armor), helmet:!!p.helmet, defuseKit:!!p.defuseKit,zoomLevel:p.zoomLevel,utilityCounts:Object.fromEntries(UTILITY_IDS.map(id=>[id,p.inventory[id]?.ammo||0])), alive: p.alive, weapon: p.weapon, skinId:this.heldSkin(p), slot: p.slot, ammo: p.inventory[p.weapon]?.ammo || 0, reserve: p.inventory[p.weapon]?.reserve || 0,

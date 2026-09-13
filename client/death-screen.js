@@ -87,7 +87,7 @@ export class DeathScreen {
     this.deaths = victim?.deaths ?? null;
   }
 
-  update(snapshot, self, { elapsed = 0, spectating = null, scoreboardKey = 'Tab', menuKey = 'Esc', nextSpectatorKey = '左键', previousSpectatorKey = '右键' } = {}) {
+  update(snapshot, self, { elapsed = 0, spectating = null, interactKey='E',canTakeBot=false,touch=false, scoreboardKey = 'Tab', menuKey = 'Esc', nextSpectatorKey = '左键', previousSpectatorKey = '右键' } = {}) {
     if (!this.element) return;
     if (!self || self.alive || (this.room && this.room !== snapshot?.room) ||
       (this.deaths != null && self.deaths != null && this.deaths !== self.deaths)) this.eventRecord = null;
@@ -108,8 +108,8 @@ export class DeathScreen {
     this.parts.weapon.hidden = !state.weaponName;
     write(this.parts.status.querySelector('b'), state.statusTitle);
     write(this.parts.status.querySelector('span'), state.statusDetail);
-    write(this.parts.keys, state.observedName
-      ? `${nextSpectatorKey || '左键'} 下一位 · ${previousSpectatorKey || '右键'} 上一位 · ${scoreboardKey || 'Tab'} 战况`
+    write(this.parts.keys, touch ? (canTakeBot?'点击右下角「控制人机」':'右下角切换观战队友') : state.observedName
+      ? `${canTakeBot?interactKey+' 控制人机 · ':''}${nextSpectatorKey || '左键'} 下一位 · ${previousSpectatorKey || '右键'} 上一位 · ${scoreboardKey || 'Tab'} 战况`
       : `${scoreboardKey || 'Tab'} 查看战况 · ${menuKey || 'Esc'} 菜单`);
     write(this.parts.clock.querySelector('strong'), state.clock);
     write(this.parts.clock.querySelector('span'), state.clockLabel);

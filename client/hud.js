@@ -69,7 +69,7 @@ export class HUD {
     if (element && element.textContent !== content) element.textContent = content;
   }
 
-  update(snapshot, self, { ping = 0, fps = 0, spectating = null, scoreboardKey = 'Tab', menuKey = 'Esc', nextSpectatorKey = '左键', previousSpectatorKey = '右键' } = {}) {
+  update(snapshot, self, { ping = 0, fps = 0, spectating = null, interactKey='E',canTakeBot=false,touch=false, scoreboardKey = 'Tab', menuKey = 'Esc', nextSpectatorKey = '左键', previousSpectatorKey = '右键' } = {}) {
     if (!snapshot || !self) return;
     const time = now();
     if (this.snapshotTime !== snapshot.time || this.lastSnapshot?.room !== snapshot.room) {
@@ -87,7 +87,7 @@ export class HUD {
     this.myId = self.id;
     this.killCards.update(snapshot,self);
     const elapsed = Math.max(0, (time - this.receivedAt) / 1000);
-    this.deathScreen.update(snapshot, self, { elapsed, spectating, scoreboardKey, menuKey, nextSpectatorKey, previousSpectatorKey });
+    this.deathScreen.update(snapshot, self, { elapsed, spectating, interactKey,canTakeBot,touch,scoreboardKey, menuKey, nextSpectatorKey, previousSpectatorKey });
     const round = snapshot.round || {};
     const bomb = snapshot.bomb || {};
     const mode = snapshot.mode === 'defuse' ? 'defuse' : 'deathmatch';

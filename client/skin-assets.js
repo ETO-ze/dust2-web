@@ -1,5 +1,5 @@
 import { UTILITY_ASSETS } from '../shared/utility-assets.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import {gameGLTFLoader} from './gltf-loader.js';
 import { DEFAULT_SKINS, getSkin } from '../shared/skins.js';
 import { fetchCachedAsset,isAssetSaved } from './loading.js';
 
@@ -24,8 +24,8 @@ export async function loadSkin(id,{onProgress,signal}={}){
     const response=await fetchCachedAsset(new URL(skin.model,document.baseURI).href,{sha256:skin.sha256,bytes:skin.bytes,signal,onProgress});
     if(!response.ok)throw new Error(`皮肤下载失败 (${response.status})`);
     const buffer=await response.arrayBuffer();
-    const model=await new GLTFLoader().parseAsync(buffer,new URL('.',new URL(skin.model,document.baseURI)).href);
-    if(skin.animation){const a=skin.animation,r=await fetchCachedAsset(new URL(a.model,document.baseURI),{sha256:a.sha256,bytes:a.bytes,signal});const clips=await new GLTFLoader().parseAsync(await r.arrayBuffer(),'');model.animations=clips.animations;}
+    const model=await gameGLTFLoader().parseAsync(buffer,new URL('.',new URL(skin.model,document.baseURI)).href);
+    if(skin.animation){const a=skin.animation,r=await fetchCachedAsset(new URL(a.model,document.baseURI),{sha256:a.sha256,bytes:a.bytes,signal});const clips=await gameGLTFLoader().parseAsync(await r.arrayBuffer(),'');model.animations=clips.animations;}
     models.set(id,model);trimSkins(id);return model;
   })();
   pending.set(id,task);

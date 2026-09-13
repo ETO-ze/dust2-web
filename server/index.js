@@ -86,7 +86,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(found).toLowerCase()] || 'application/octet-stream', 'Content-Length': info.size, 'Cache-Control': path.extname(found) === '.html' ? 'no-cache' : 'public, max-age=3600' });
     if (req.method === 'HEAD') res.end(); else { const stream = createReadStream(found); stream.on('error', () => res.destroy()); stream.pipe(res); }
   });
-  const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 4096, perMessageDeflate: false });
+  const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 4096, perMessageDeflate: {serverNoContextTakeover:true,clientNoContextTakeover:true,threshold:1024,concurrencyLimit:2,zlibDeflateOptions:{level:1,memLevel:7}} });
   wss.on('connection', socket => {
     // Rejected connections can still receive invalid frames while closing.
     socket.on('error', () => {});
@@ -130,6 +130,10 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       if (!room || !socket.playerId) { error(socket, 'NOT_JOINED', '请先加入一个房间。'); return; }
       if (msg.type === 'input') {
         if (!room.receiveInput(socket.playerId, msg)) { if (++socket.strikes > 100) socket.close(1008, 'Invalid input'); }
+      } else if(msg.type==='takeBot'){
+        if(now-(socket.takeBotAt||0)<300)return;
+        socket.takeBotAt=now;const result=room.takeBot(socket.playerId,typeof msg.botId==='string'?msg.botId:null);
+        if(!result.ok)error(socket,'BOT_CONTROL_REJECTED',result.message);else send(socket,{type:'botControl',...result});
       } else if(msg.type==='takeSeat'||msg.type==='setSeatBot'){
         if(now-(socket.seatAt||0)<300){error(socket,'SEAT_RATE','请稍后再操作席位。');return;}
         socket.seatAt=now;const result=msg.type==='takeSeat'?room.takeSeat(socket.playerId,msg.team,msg.seat):room.setSeatBot(socket.playerId,msg.team,msg.seat,msg.enabled);

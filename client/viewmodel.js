@@ -1,6 +1,6 @@
 import {c4Display} from './c4-display.js';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import {gameGLTFLoader} from './gltf-loader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { UTILITY_IDS } from '../shared/equipment.js';
 import { WEAPONS, getWeapon } from '../shared/weapons.js';
@@ -11,7 +11,7 @@ import { disposeInstanceAnimation, disposeInstanceSkeletons } from './resource-l
 import {DEFAULT_AGENT_IDS,getAgent} from '../shared/agents.js';
 import {loadAgentArms,loadedAgentArms,requestAgentArms,retainAgentArms,releaseAgentArms} from './agent-arms.js';
 
-const loader = new GLTFLoader();
+const loader = gameGLTFLoader();
 let animationSource;
 const weaponSources = {};
 const sourceBasisInverse = new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion(-.5, -.5, -.5, .5)).invert();

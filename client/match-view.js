@@ -33,6 +33,11 @@ export class MatchView {
     if (now - this.diedAt < 1500) return null;
     return this.candidates(player, snapshot).find(p => p.id === this.targetId) ?? null;
   }
+  takeoverTarget(player,snapshot,now){
+    if(snapshot?.round?.phase!=='live'||snapshot.match?.status==='ended')return null;
+    const target=this.spectating(player,snapshot,now);
+    return target?.bot&&!target.controllerId?target:null;
+  }
   cycle(player, snapshot, direction = 1) {
     const candidates = this.candidates(player, snapshot);
     if (!candidates.length) return;

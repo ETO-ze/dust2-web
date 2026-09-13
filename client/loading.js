@@ -1,3 +1,4 @@
+import {assetManifestName} from './device-profile.js';
 import { DefaultLoadingManager } from 'three';
 const blobs=new Map(),inflight=new Map();let manifestMemory=null,manifestChecked=false;
 const base=()=>new URL('.',document.baseURI),absolute=value=>new URL(value,document.baseURI);
@@ -5,7 +6,7 @@ const canonical=value=>{const u=absolute(value);return u.origin+u.pathname;};
 const cacheNames=()=>({assets:`dust2-assets-v1:${base().pathname}`,meta:`dust2-meta-v1:${base().pathname}`});
 const hashKey=hash=>new URL(`__asset_cache__/sha256/${hash}`,base()).href;
 const indexKey=url=>new URL(`__asset_cache__/url/${encodeURIComponent(absolute(url).href)}`,base()).href;
-const manifestURL=()=>new URL('assets/asset-manifest.json',base()).href;
+const manifestURL=()=>new URL('assets/'+assetManifestName(),base()).href;
 const check=signal=>{if(signal?.aborted)throw signal.reason||new DOMException('已取消','AbortError');};
 const digest=async data=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data)),b=>b.toString(16).padStart(2,'0')).join('');
 const changed=()=>{if(typeof window!=='undefined'&&typeof CustomEvent!=='undefined')window.dispatchEvent(new CustomEvent('dust2-cache-change'));};

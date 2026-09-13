@@ -15,14 +15,7 @@ npm start
 
 随后打开 `http://localhost:3000`。`npm run dev` 只启动 Vite 开发前端；联机房间和机器人还需要运行游戏服务器。
 
-当前锁清单为 [`config/assets-lock.json`](../config/assets-lock.json)：**619 个文件，248,412,901 字节，约 236.9 MiB**，版本 `d78b688ceaa4eb61`。它包含：
-
-| 内容 | 用途 |
-| --- | --- |
-| 590 个基础资源 | Dust II 地图、碰撞几何、角色、默认六把武器、手臂和动作、声音 |
-| 12 款额外皮肤的 24 个模型与预览 | 服务器提供全部皮肤；玩家在网页中装备时才下载额外模型 |
-| 服务端碰撞 JSON | 服务端移动、射线与命中判定 |
-| 大厅背景、图标、雷达图与基础资源 manifest | 菜单、加载画面、地图导航与浏览器缓存 |
+当前锁清单为 [`config/assets-lock.json`](../config/assets-lock.json)：**1,569 个文件，452,116,795 字节，约 431.2 MiB**，版本 `6e6fbd9dabf5b687`。它包含桌面与手机两档地图纹理、共享碰撞与动画、默认及可选武器和探员、声音、音乐盒、界面图像和版本清单。服务器本地恢复整个清单；玩家浏览器只下载设备对应的基础档，可选内容在装备时下载。
 
 下载器使用 4 个并行连接；每个请求附带文件 SHA-256 版本参数。已有文件必须同时满足大小与 SHA-256，才会直接跳过。新文件先写入随机 `.part` 临时文件，完整接收并校验后才替换目标；断流、HTTP 错误或校验失败均会删除该临时文件，保留原文件。再次运行即可补齐缺失项。
 
@@ -32,7 +25,7 @@ npm start
 node scripts/fetch-assets.mjs --check
 ```
 
-默认镜像是本项目部署站点 `https://duskrain.cn/dust2/`。可以替换成保持相同 `assets/` 路径和文件内容的镜像：
+默认镜像是本项目部署站点 `https://cs2.duskrain.cn/`。可以替换成保持相同 `assets/` 路径和文件内容的镜像：
 
 ```sh
 node scripts/fetch-assets.mjs --base-url https://your-host.example/dust2/
