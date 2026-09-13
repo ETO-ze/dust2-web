@@ -48,7 +48,7 @@ function joinSettings(msg) {
   if(msg.botDifficulty!==undefined&&!BOT_DIFFICULTIES.includes(msg.botDifficulty))return {error:'人机难度应为普通或困难。'};
   const bots = botCount(msg.bots),botDifficulty=normalizeBotDifficulty(msg.botDifficulty);
   const primary = PRIMARY_WEAPONS.includes(msg.primary) ? msg.primary : 'auto';
-  return { name, room, mode, team, bots, botDifficulty, primary, skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0 };
+  return { name, room, mode, team, bots, botDifficulty, primary, skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0,shotProtocol:msg.shotProtocol===1?1:0 };
 }
 
 /** Start the authoritative server after loading collision geometry. No external services. */
@@ -123,7 +123,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         }
         try {
           const player = room.addHuman(socket, settings); socket.playerId = player.id; socket.roomCode = room.code;
-          send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1 });
+          send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1,shotProtocol:1 });
           send(socket, room.snapshot({ drainEvents: false }));
         } catch (e) { if (created) rooms.delete(room.code); error(socket, 'JOIN_FAILED', e.message); }
         return;

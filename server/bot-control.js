@@ -13,7 +13,7 @@ function clearCommands(room,body,owner=null){
   body.input={forward:0,right:0,yaw:body.yaw,pitch:body.pitch,jump:false,crouch:body.crouch,
     walk:false,fire:false,fire2:false,interact:false,reload:false,slot:0,
     jumpId:owner?.input.jumpId||0,reloadId:owner?.input.reloadId||0,zoomLevel:body.zoomLevel||0};
-  body.inputAt=room.clock();body.fireQueue=[];body.shotCommands=false;body.lastShotId=0;
+  body.inputAt=room.clock();body.fireQueue=[];body.shotCommands=owner?.shotProtocol===1;body.lastShotId=0;body.shotRejected=null;
   body.pendingInteract=false;body.interactWasDown=false;body.triggerWasDown=false;
   body.lastJumpId=body.input.jumpId;body.lastReloadId=body.input.reloadId;body.jumpBufferRemaining=0;
   body.lifeId++; // Discard movement and rewind history from the previous driver.

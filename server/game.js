@@ -182,7 +182,7 @@ export class GameRoom {
     this.desiredBots=this.botCount;this.maybeStart();this.emit('bots_changed',{botCount:this.botCount,desiredBots:this.desiredBots});return {ok:true,botCount:this.botCount};
   }
 
-  addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents, movementProtocol }) {
+  addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents, movementProtocol, shotProtocol }) {
     if (this.humanCount >= MAX_PLAYERS) throw new Error('房间已满，最多 10 名玩家。');
     let assigned = team;
     if (!['T', 'CT'].includes(assigned)) assigned = this.count('T', true) <= this.count('CT', true) ? 'T' : 'CT';
@@ -192,6 +192,7 @@ export class GameRoom {
     if (botToReplace) this.removePlayer(botToReplace.id);
     const id = `p_${randomBytes(6).toString('hex')}`;
     const player = this.makePlayer(id, name, assigned, false, primary);
+    player.shotProtocol=shotProtocol===1?1:0;player.shotCommands=player.shotProtocol===1;
     if(movementProtocol===1){player.movementStream=new MovementStream(player.lifeId);player.movementAt=this.clock();}
     player.skins=normalizeSkinLoadout(skins);
     player.agents=normalizeAgentLoadout(agents);player.agentId=player.agents[assigned];
@@ -271,9 +272,14 @@ export class GameRoom {
     const attacking=input.fire||(input.slot===3&&input.fire2);
     if(attacking&&input.slot!==4&&((explicit&&input.shotId>(player.lastShotId||0))||(!player.shotCommands&&(!player.input.fire&&!player.input.fire2)))){
       const weaponId=input.shotWeapon||player.weapon;
-      if(player.inventory[weaponId]&&getWeapon(weaponId).slot!==4){
+      const weapon=getWeapon(weaponId),ammo=player.inventory[weaponId],now=this.clock();
+      const readyAt=Math.max(player.nextShotAt,ammo?.reloadReadyAt||0,player.reloadEndsAt&&weapon.reloadStyle!=='shell'?player.reloadEndsAt:0);
+      if(!ammo||weapon.slot>=4)this.rejectShot(player,input,'weapon_unavailable');
+      else if(readyAt>now+150)this.rejectShot(player,input,'not_ready');
+      else if(player.inventory[weaponId]&&weapon.slot<4){
         player.fireQueue||=[];
-        if(player.fireQueue.length<4)player.fireQueue.push({input:{...input},weaponId,receivedAt:this.clock(),lifeId:player.lifeId});
+        if(player.fireQueue.length<4)player.fireQueue.push({input:{...input},weaponId,receivedAt:now,lifeId:player.lifeId});
+        else this.rejectShot(player,input,'queue_full');
       }
       player.lastShotId=Math.max(player.lastShotId||0,input.shotId);
     }
@@ -287,15 +293,25 @@ export class GameRoom {
   giveWeapon(player, id) { const w = getWeapon(id); player.inventory[w.id] = { ammo: w.magazine, reserve: w.reserve }; }
   fireQueued(player){
     const queue=player.fireQueue,now=this.clock();if(!queue?.length)return false;
-    while(queue.length&&(now-queue[0].receivedAt>150||queue[0].lifeId!==player.lifeId||!player.inventory[queue[0].weaponId]))queue.shift();
+    // A brief delayed tick or movement backlog must not erase a legal click.
+    // Admission still rejects clicks far ahead of a weapon's fire/reload gate.
+    while(queue.length&&(now-queue[0].receivedAt>500||queue[0].lifeId!==player.lifeId||!player.inventory[queue[0].weaponId])){
+      const stale=queue.shift();this.rejectShot(player,stale.input,'expired');
+    }
     if(!queue.length)return false;
     const command=queue[0];
-    if(command.weaponId!==player.weapon){queue.shift();return true;}
+    if(command.weaponId!==player.weapon){queue.shift();this.rejectShot(player,command.input,'weapon_changed');return true;}
     if(player.movementStream&&command.input.moveId>player.movementStream.ack)return true;
-    if(now<player.nextShotAt)return true;
+    if(now<Math.max(player.nextShotAt,player.inventory[player.weapon]?.reloadReadyAt||0,getWeapon(player.weapon).reloadStyle!=='shell'?player.reloadEndsAt:0))return true;
     queue.shift();player.triggerWasDown=false;
+    if(player.reloadEndsAt&&now>=player.reloadEndsAt)this.finishReload(player);
+    const w=getWeapon(player.weapon);
+    if(player.reloadEndsAt&&!(w.reloadStyle==='shell'&&player.inventory[player.weapon]?.ammo>0)){this.rejectShot(player,command.input,'reloading');return true;}
+    if(w.magazine&&player.inventory[player.weapon]?.ammo<=0){this.rejectShot(player,command.input,'empty');return true;}
     this.fire(player,command.input,command);return true;
   }
+
+  rejectShot(player,input,reason){if(input.shotId)player.shotRejected={id:input.shotId,reason};}
 
   recordPoses(){this.poseHistory.push(this.clock(),[...this.players.values()].map(p=>({id:p.id,x:p.x,y:p.y,z:p.z,yaw:p.yaw,pitch:p.pitch,crouch:p.crouch,alive:p.alive,team:p.team,lifeId:p.lifeId,protectionUntil:p.protectionUntil})));}
   shotTargets(viewTime,receivedAt){
@@ -309,7 +325,7 @@ export class GameRoom {
     if(player.grenadeState&&player.grenadeState.weapon!==next)this.cancelGrenade(player,'switch');
     this.cancelReload(player);
     player.weapon = next; player.slot = slot;player.zoomLevel=0;
-    player.nextShotAt = Math.max(player.nextShotAt, this.clock() + 180);
+    player.nextShotAt = Math.max(player.nextShotAt, this.clock() + 180);player.equipReadyAt=player.nextShotAt;
   }
 
   equipSkin(id,weapon,skinId){
@@ -418,7 +434,7 @@ export class GameRoom {
     const consumedJump=p.input.jumpId||0, consumedReload=p.input.reloadId||0;
     Object.assign(p, createPlayerState(spawn), { lifeId:(p.lifeId||0)+1,objectiveLocked:false,fireQueue:[],lastJumpId:consumedJump,lastReloadId:consumedReload,alive: true, health: 100, hasBomb: false, respawnAt: 0, flashBlindUntil:0, reloadEndsAt: 0, triggerWasDown: false, pendingFire: false,pendingInteract:false,grenadeState:null,grenadeRequireRelease:true,
       protectionUntil: this.mode === 'deathmatch' ? this.clock() + this.rules.protectionSeconds * 1000 : 0,
-      nextShotAt: this.clock() + 350, input: neutralInput(), inputAt: 0,zoomLevel:0 });
+      nextShotAt: this.clock() + 350,equipReadyAt:this.clock()+350,shotRejected:null, input: neutralInput(), inputAt: 0,zoomLevel:0 });
     p.input.yaw = p.yaw || spawn.yaw || 0;
     p.movementStream?.reset(p.lifeId);
     p.movementAt=this.clock();
@@ -555,7 +571,7 @@ export class GameRoom {
     if(!automatic)this.cancelReload(p);
     if(old){const ammo=p.inventory[old],drop=this.droppedWeapons.drop(p,{weaponId:old,skinId:this.heldSkin(p,old),ammo:ammo.ammo,reserve:ammo.reserve,...(ammo.reloadReadyAt?{reloadReadyAt:ammo.reloadReadyAt}:{})});delete p.inventory[old];if(p.purchases)delete p.purchases[old];this.emit('weapon_dropped',{playerId:p.id,droppedId:drop.id,weaponId:old,skinId:drop.skinId,death:false});}
     p.inventory[w.id]={ammo:item.ammo,reserve:item.reserve,skinId:item.skinId,...(item.reloadReadyAt?{reloadReadyAt:item.reloadReadyAt}:{})};if(!automatic){p.reloadEndsAt=0;p.zoomLevel=0;this.cancelGrenade(p,'pickup');}
-    if(!automatic){this.selectSlot(p,w.slot);p.nextShotAt=Math.max(p.nextShotAt,this.clock()+250);}
+    if(!automatic){this.selectSlot(p,w.slot);p.nextShotAt=Math.max(p.nextShotAt,this.clock()+250);p.equipReadyAt=p.nextShotAt;}
     this.emit('weapon_picked_up',{playerId:p.id,droppedId:item.id,weaponId:w.id,skinId:item.skinId});return true;
   }
 
@@ -911,7 +927,7 @@ export class GameRoom {
         const elapsed=Math.max(0,(now-(p.movementAt??now))/1000);p.movementAt=now;
         p.movementStream.advance(p,elapsed,movementOptions,shotMove||Infinity);
       }
-      if(p.objectiveLocked){p.fireQueue.length=0;this.cancelGrenade(p,'objective');}
+      if(p.objectiveLocked){if(p.fireQueue?.length)this.rejectShot(p,p.fireQueue.at(-1).input,'objective');p.fireQueue.length=0;this.cancelGrenade(p,'objective');}
       const queuedShot=canAct&&!p.objectiveLocked&&!automatic&&this.fireQueued(p);
       if(this.match.status==='ended')break;
       if(!canAct&&p.fireQueue)p.fireQueue.length=0;
@@ -959,7 +975,8 @@ export class GameRoom {
       objectiveLocked:!!p.objectiveLocked,health: p.health, armor: round2(p.armor), helmet:!!p.helmet, defuseKit:!!p.defuseKit,zoomLevel:p.zoomLevel,utilityCounts:Object.fromEntries(UTILITY_IDS.map(id=>[id,p.inventory[id]?.ammo||0])), alive: p.alive, weapon: p.weapon, skinId:this.heldSkin(p), slot: p.slot, ammo: p.inventory[p.weapon]?.ammo || 0, reserve: p.inventory[p.weapon]?.reserve || 0,
       reserveAmmoAsClips:!!getWeapon(p.weapon).reserveAmmoAsClips,reserveClips:getWeapon(p.weapon).reserveAmmoAsClips?Math.ceil((p.inventory[p.weapon]?.reserve||0)/getWeapon(p.weapon).magazine):0,
       grenadeState:p.grenadeState?{state:'primed',weapon:p.grenadeState.weapon,mode:p.grenadeState.mode,strength:grenadeStrength(p.grenadeState.mode),primedAt:p.grenadeState.primedAt}:{state:'idle',weapon:null,mode:'full',strength:1,primedAt:0},
-      reloadRemaining: Math.max(0, (p.reloadEndsAt - now) / 1000),reloadDuration:p.reloadEndsAt?getWeapon(p.weapon).reloadTime:0,reloadElapsed:p.reloadEndsAt?Math.max(0,(now-p.reloadStartedAt)/1000):0,reloadEmpty:!!p.reloadEmpty,reloadCommitted:!!p.reloadEndsAt&&!!p.reloadCommitted,fireReadyRemaining:Math.max(0,((p.inventory[p.weapon]?.reloadReadyAt||0)-now)/1000), money: p.money, kills: p.kills, deaths: p.deaths, assists: p.assists, seq: p.seq,
+      ...(p.shotCommands?{shotAck:(p.fireQueue?.find(c=>c.input.shotId)?.input.shotId??((p.lastShotId||0)+1))-1,...(p.shotRejected?{shotRejected:p.shotRejected}:{})}:{}),
+      reloadRemaining: Math.max(0, (p.reloadEndsAt - now) / 1000),reloadDuration:p.reloadEndsAt?getWeapon(p.weapon).reloadTime:0,reloadElapsed:p.reloadEndsAt?Math.max(0,(now-p.reloadStartedAt)/1000):0,reloadEmpty:!!p.reloadEmpty,reloadCommitted:!!p.reloadEndsAt&&!!p.reloadCommitted,fireReadyRemaining:Math.max(0,(Math.max(p.equipReadyAt||0,p.inventory[p.weapon]?.reloadReadyAt||0)-now)/1000), money: p.money, kills: p.kills, deaths: p.deaths, assists: p.assists, seq: p.seq,
       ...this.buyStatus(p), refundable:this.refundable(p), inventory: Object.keys(p.inventory), hasBomb: p.hasBomb,bombAction:this.bomb.actorId===p.id?this.bomb.action:null,bombProgress:this.bomb.actorId===p.id?this.bomb.progress:0,bombActionDuration:this.bomb.action==='plant'?this.rules.plantSeconds:p.defuseKit?this.rules.defuseKitSeconds:this.rules.defuseSeconds, spawnProtectionRemaining: Math.max(0, (p.protectionUntil - now) / 1000),
       roundKills:p.roundKills||0,lifeKills:p.lifeKills||0,killCards:p.killCards||[],
       respawnIn: p.respawnAt ? Math.max(0, (p.respawnAt - now) / 1000) : 0, lastShotTime: p.lastShotTime }));
