@@ -1,6 +1,7 @@
 import fs from 'node:fs';import {initPhysics} from '../shared/physics.js';import {GameRoom} from '../server/game.js';import {BOT_LINEUPS} from '../server/bot-lineups.js';import {usefulThrow} from '../server/bot-trajectory.js';
 initPhysics(JSON.parse(fs.readFileSync('public/assets/map/collision.json','utf8')).positions);
-fs.mkdirSync('artifacts/bot-rework',{recursive:true});
+const outputDirectory=process.argv.find(a=>a.startsWith('--output-dir='))?.slice(13)||'artifacts/bot-rework';
+fs.mkdirSync(outputDirectory,{recursive:true});
 const reports=[];
 for(const initial of [19721972,731,2048]){
  let now=1000000,seed=initial;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
@@ -19,5 +20,5 @@ for(const initial of [19721972,731,2048]){
  }
  times.sort((a,b)=>a-b);const report={seed:initial,seconds:240,counts,actions:[...actions],tickP95:times[Math.floor(times.length*.95)],tickMax:times.at(-1),utilityStats:room.botUtilityStats,outcomes,finite:[...room.players.values()].every(p=>Number.isFinite(p.x+p.y+p.z))};reports.push(report);console.log(JSON.stringify(report));
 }
-fs.writeFileSync('artifacts/bot-rework/soak.json',JSON.stringify(reports,null,2));
+fs.writeFileSync(outputDirectory+'/soak.json',JSON.stringify(reports,null,2));
 if(reports.some(r=>!r.finite||!r.counts.shot)||!reports.some(r=>r.outcomes.length)||reports.some(r=>r.outcomes.some(o=>!o.useful||o.predictionError>.6)))process.exitCode=1;

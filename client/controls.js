@@ -40,7 +40,7 @@ export class GameControls {
     this.handlers = {
       keydown: event => this._keyDown(event), keyup: event => this._release(event.code, event),
       mousedown: event => this._mouseDown(event), mouseup: event => this._release(`Mouse${event.button}`, event),
-      wheel: event => this._wheel(event), blur: () => this.clear(),
+      wheel: event => this._wheel(event), blur: event => { if (event.target === this.target || event.target === this.visibilityTarget) this.clear(); },
       focusin: event => { if (editable(event)) this.clear(); },
       contextmenu: event => { if (this.capture || (this.mouse && this.held.has('altFire'))) event.preventDefault(); },
     };
@@ -83,6 +83,14 @@ export class GameControls {
     event.preventDefault?.(); this.sources.set(token, action);
     if (this.held.has(action)) return;
     this.held.add(action); this._edge(action); this.onAction(action, { pressed: true, source: token, event });
+  }
+  setVirtual(action,pressed,source='touch',event={}) {
+    const token=`Virtual:${source}:${action}`;
+    if(!pressed){this._release(token,event);return;}
+    if(!ACTIONS.has(action)||this.sources.has(token)||!this._allowed(action,event))return;
+    this.sources.set(token,action);
+    if(this.held.has(action))return;
+    this.held.add(action);this._edge(action);this.onAction(action,{pressed:true,source:token,event});
   }
   _release(token, event) {
     const action = this.sources.get(token); if (!action) return;

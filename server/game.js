@@ -1,4 +1,5 @@
 import {visibleAimPoint,observationPoint,lookAt,hearGunshot} from './bot-perception.js';
+import {combatMovement} from './bot-combat.js';
 import {combatSlot} from './bot-utility.js';
 import {tacticalGoal,shareSighting,botUtility,separateTeammates} from './bot-tactics.js';
 import { randomBytes } from 'node:crypto';
@@ -10,7 +11,7 @@ import { DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } from '../shared/ag
 import { EQUIPMENT, UTILITY_IDS, MAX_GRENADES, getEquipment, canTeamBuyEquipment, equipmentPrice, grenadeCount } from '../shared/equipment.js';
 import { GrenadeSimulation } from './grenades.js';
 import { MATCH_RULES, botCount, defuseDecision, grenadeMode, grenadeStrength } from '../shared/match-rules.js';
-import { BOT_AIM, smoothBotAim } from './bot-aim.js';
+import { BOT_AIM, BOT_SKILL, smoothBotAim } from './bot-aim.js';
 import { DroppedWeapons } from './dropped-weapons.js';
 import { traceBullet as defaultTraceBullet } from './bullet-penetration.js';
 import {eyePosition,accuracyForShot,sampleShotDirection} from '../shared/aim.js';
@@ -400,14 +401,16 @@ export class GameRoom {
     p.movementStream?.reset(p.lifeId);
     p.movementAt=this.clock();
     if (this.mode === 'deathmatch') {p.armor = 100;p.helmet=true;if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===1))this.giveWeapon(p,p.loadoutPrimary||defaultPrimaryForTeam(p.team));if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===2))this.giveWeapon(p,p.team==='CT'?'usp':'pistol');}
-    if (newRound && p.bot) {
-      const preferred = p.team === 'T' ? 'ak47' : 'm4a1';
-      if (p.money >= WEAPONS[preferred].price) { p.money -= WEAPONS[preferred].price; this.giveWeapon(p, preferred); }
+    if (newRound && p.bot && !Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)) {
+      const choices=p.team==='T'?['ak47','galilar','mac10']:['m4a1','mp9'];
+      const preferred=choices.find(id=>p.money>=WEAPONS[id].price+(id===choices[0]?0:650));
+      if (preferred) { p.money -= WEAPONS[preferred].price; this.giveWeapon(p, preferred); }
     }
     for (const id of Object.keys(p.inventory)) if(!UTILITY_IDS.includes(id)){const skinId=p.inventory[id].skinId;this.giveWeapon(p,id);if(skinId)p.inventory[id].skinId=skinId;}
     p.botAI.engaging=false;p.botAI.action='advance';p.botAI.watchPoints=[];p.botAI.watchPoint=null;p.botAI.watchUntil=0;p.botAI.hurtAt=-Infinity;p.botAI.heardPoint=null;p.botAI.heardAt=0;p.botAI.utility=null;p.botAI.utilityAfter=this.clock()+6000+(p.seat||0)*400;p.botAI.lastKnown=null;p.botAI.lastSeenAt=0;p.botAI.routeKey=null;
     if(newRound&&p.bot){for(const id of ['armor',...(p.team==='CT'?['defusekit']:[]),'smokegrenade','hegrenade','flashbang',p.team==='T'?'molotov':'incgrenade'])this.buy(p.id,id);}
     p.botAI.path = []; p.botAI.goal = null; p.botAI.targetId = null; p.botAI.nextThinkAt = 0;
+    p.botAI.defenseRole=null;p.botAI.coverUntil=0;p.botAI.coverAfter=0;
     this.selectSlot(p, Object.keys(p.inventory).some(id => getWeapon(id).slot === 1) ? 1 : 2);
     this.emit('spawn', { playerId: p.id, x: p.x, y: p.y, z: p.z });
   }
@@ -794,15 +797,15 @@ export class GameRoom {
       let enemy=visible.find(e=>e.id===ai.targetId)||visible[0];
       if(enemy&&enemy.id===ai.targetId&&visible[0]!==enemy&&now-(ai.targetChangedAt||0)>1200&&dist(p,visible[0])<dist(p,enemy)*.65)enemy=visible[0];
       if(enemy){
-        if(ai.targetId!==enemy.id){ai.reactionAt=now+420+Math.random()*240;ai.targetChangedAt=now;ai.alignedFor=0;}
+        if(ai.targetId!==enemy.id){ai.reactionAt=now+BOT_SKILL.reactionMinMs+Math.random()*BOT_SKILL.reactionRangeMs;ai.targetChangedAt=now;ai.alignedFor=0;}
         ai.targetId=enemy.id;ai.lastKnown=copyPoint(enemy);ai.lastSeenAt=now;shareSighting(this,p,enemy);
-        if(p.health<40&&Math.random()<.25){
+        if(p.health<40&&now>=(ai.coverAfter||0)&&Math.random()<.25){
           const node=this.nearestNav(p);
           const cover=(node?.neighbors||[]).map(id=>this.navMap.get(String(id))).find(n=>n&&!clearSight(eye(enemy),{x:n.x,y:n.y+1.3,z:n.z}));
-          if(cover){ai.goal=copyPoint(cover);ai.path=this.planPath(p,cover);}
+          if(cover){ai.goal=copyPoint(cover);ai.path=this.planPath(p,cover);ai.coverUntil=now+1400;ai.coverAfter=now+4000;}
         }
       }else if(blind||!current?.alive||now-ai.lastSeenAt>600){ai.targetId=null;ai.alignedFor=0;}
-      if(!ai.utility&&(!ai.goal||(!ai.path.length&&lengthXZ(p,ai.goal)>2)||now>ai.wanderAt)){ai.goal=this.chooseBotGoal(p);ai.path=this.planPath(p,ai.goal);ai.wanderAt=now+(this.mode==='defuse'?1600:5500)+Math.random()*400;}
+      if(!ai.utility&&now>=(ai.coverUntil||0)&&(!ai.goal||(!ai.path.length&&lengthXZ(p,ai.goal)>2)||now>ai.wanderAt)){ai.goal=this.chooseBotGoal(p);ai.path=this.planPath(p,ai.goal);ai.wanderAt=now+(this.mode==='defuse'?1600:5500)+Math.random()*400;}
       if(!ai.previous||lengthXZ(ai.previous,p)>.55){ai.previous=copyPoint(p);ai.stuckAt=now;}
       else if(now-ai.stuckAt>2500){ai.goal=null;ai.path=[];ai.stuckAt=now;}
     }
@@ -815,7 +818,7 @@ export class GameRoom {
     const exposed=target?.alive&&now>=(p.flashBlindUntil||0)?visibleAimPoint(this,p,target):null;
     if(exposed){
       const to=exposed,dx=to.x-from.x,dy=to.y-from.y,dz=to.z-from.z;
-      const aimError=.013+dist(p,target)/12000;
+      const aimError=(.013+dist(p,target)/12000)*BOT_SKILL.aimErrorScale;
       desired={yaw:Math.atan2(-dx,-dz)+Math.sin(now/440+Number(p.id.slice(2)))*aimError,pitch:Math.atan2(dy,Math.hypot(dx,dz))+Math.cos(now/630)*aimError};engaging=true;
     }
     ai.engaging=engaging;ai.aimPoint=exposed||watch;ai.action=engaging?'engage':ai.phase||'advance';
@@ -825,6 +828,7 @@ export class GameRoom {
     if(engaging){
       input.fire=now>ai.reactionAt&&ai.alignedFor>=BOT_AIM.settleSeconds&&Math.floor(now/150)%7<5;
       if(p.weapon==='knife')input.forward=1;
+      else combatMovement(this,p,target,input);
     }else if(waypoint){
       const dx=waypoint.x-p.x,dz=waypoint.z-p.z,d=Math.max(.01,Math.hypot(dx,dz));
       input.forward=(-Math.sin(input.yaw)*dx-Math.cos(input.yaw)*dz)/d;input.right=(Math.cos(input.yaw)*dx-Math.sin(input.yaw)*dz)/d;
@@ -832,7 +836,9 @@ export class GameRoom {
     const ammo=p.inventory[p.weapon];if(ammo&&getWeapon(p.weapon).slot<3&&ammo.ammo<3)input.reload=true;
     if(this.mode==='defuse'){
       const plant=p.hasBomb&&this.siteAt(p),defuse=p.team==='CT'&&p.botAI.role==='defuser'&&this.bomb.state==='planted'&&dist(p,this.bomb)<2.6;
-      if(plant||defuse){input.forward=input.right=0;input.fire=input.jump=false;input.interact=true;}
+      const finishing=this.bomb.actorId===p.id&&this.bomb.progress>.8;
+      const urgent=plant?this.round.phaseEndsAt-now<5000:defuse&&this.bomb.explodesAt-now<((p.defuseKit?this.rules.defuseKitSeconds:this.rules.defuseSeconds)+1)*1000;
+      if((plant||defuse)&&(!engaging||finishing||urgent)){input.forward=input.right=0;input.fire=input.jump=false;input.interact=true;}
     }
     separateTeammates(this,p,input);
     return botUtility(this,p,input,dt);

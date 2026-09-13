@@ -30,6 +30,7 @@ export function tacticalGoal(room,p){
   const key=room.round.number+':'+route.join('-');
   if(ai.routeKey!==key){ai.routeKey=key;ai.routeIndex=0;}
   ai.role=p.hasBomb?'carrier':split?'split':'entry';ai.site=site;ai.lane=split?'mid':site==='A'?'long':'tunnels';ai.watchPoints=watchPoints(p,site);ai.phase='advance';
+  const support=supportGoal(room,p,allies,report);if(support){ai.phase='support';return support;}
   while(ai.routeIndex<route.length-1&&range(p,at(room,route[ai.routeIndex]))<3){
    if(ai.routeIndex===route.length-2&&!readyToEnter(room,p,allies,site)){ai.phase='gather';return point(p);}
    ai.routeIndex++;
@@ -38,7 +39,11 @@ export function tacticalGoal(room,p){
   if(ai.routeIndex===route.length-1&&!p.hasBomb)return hold(room,p,site);
   return at(room,route[ai.routeIndex]);
  }
- const roles=['anchor-b','anchor-a','short','mid','rotator'];ai.role=roles[Math.max(0,allies.filter(q=>q.bot).findIndex(q=>q.id===p.id))%5];ai.site=ai.role==='anchor-b'?'B':'A';ai.phase='hold';ai.watchPoints=watchPoints(p,ai.site);
+ const roles=['anchor-b','anchor-a','short','mid','rotator'];
+ const roster=[...room.players.values()].filter(q=>q.bot&&q.team===p.team).sort((a,b)=>a.seat-b.seat);
+ ai.defenseRole||=roles[Math.max(0,roster.findIndex(q=>q.id===p.id))%5];ai.role=ai.defenseRole;
+ ai.site=ai.role==='anchor-b'?'B':'A';ai.phase='hold';ai.watchPoints=watchPoints(p,ai.site);
+ const support=supportGoal(room,p,allies,report);if(support&&(!ai.role.startsWith('anchor')||range(report,MAP.sites[ai.site])<16)){ai.phase='support';return support;}
  if(report&&now-report.at<6000){
   const site=range(report,MAP.sites.A)<range(report,MAP.sites.B)?'A':'B';
   if(ai.role==='rotator'||ai.role==='mid'||(site==='A'&&ai.role==='anchor-a')||(site==='B'&&ai.role==='anchor-b')){ai.site=site;ai.watchPoints=watchPoints(p,site);ai.phase='rotate';return hold(room,p,site);}
@@ -47,6 +52,15 @@ export function tacticalGoal(room,p){
 }
 export function shareSighting(room,p,enemy){
  (room.teamIntel||={})[p.team]={...point(enemy),at:room.clock(),observer:p.id};
+}
+function supportGoal(room,p,allies,report){
+ if(!report||room.clock()-report.at>1700||report.observer===p.id||p.hasBomb||p.botAI.engaging)return null;
+ const contact=allies.find(q=>q.id===report.observer);if(!contact||range(p,contact)<3||range(p,contact)>14)return null;
+ const helper=allies.filter(q=>q.bot&&q!==contact&&!q.hasBomb&&!q.botAI.engaging).sort((a,b)=>range(a,contact)-range(b,contact))[0];
+ if(helper!==p)return null;
+ const dx=contact.x-report.x,dz=contact.z-report.z,d=Math.max(1,Math.hypot(dx,dz));
+ const behind={x:contact.x+dx/d*2.3,y:contact.y,z:contact.z+dz/d*2.3};
+ return point(room.nearestNav(behind)||behind);
 }
 export function separateTeammates(room,p,input){
   if(input.interact||p.grenadeState)return;
