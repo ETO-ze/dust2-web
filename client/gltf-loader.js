@@ -29,8 +29,8 @@ export function gameGLTFLoader(manager){
             const options={premultiplyAlpha:'none',colorSpaceConversion:'none'};
             // A decoder that never settles must not leave "510/514" forever.
             bitmap=await decode(await response.blob(),options);
-            if(mobileDevice()&&Math.max(bitmap.width,bitmap.height)>512){
-              const scale=512/Math.max(bitmap.width,bitmap.height);
+            if(mobileDevice()&&Math.max(bitmap.width,bitmap.height)>1024){
+              const scale=1024/Math.max(bitmap.width,bitmap.height);
               const resized=await decode(bitmap,{...options,resizeWidth:Math.max(1,Math.round(bitmap.width*scale)),resizeHeight:Math.max(1,Math.round(bitmap.height*scale)),resizeQuality:'high'});
               bitmap.close();bitmap=resized;
             }

@@ -51,5 +51,5 @@ async function writeManifest(name){
 }
 await writeManifest('asset-manifest.json');
 entries=entries.filter(entry=>entry.group!=='map');files.clear();entries.forEach(entry=>files.add(entry.path));
-await add('assets/map-mobile/dust2-mobile.gltf','map');
+await add('assets/map-mobile/dust2-clear.gltf','map');
 await writeManifest('asset-manifest-mobile.json');

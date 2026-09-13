@@ -1,3 +1,4 @@
+import {mobileDevice} from './device-profile.js';
 import { DEFAULT_CROSSHAIR, normalizeCrosshair, decodeCrosshairCode } from '../shared/cs2-settings.js';
 import { Crosshair } from './crosshair.js';
 
@@ -21,10 +22,15 @@ export function mountSettings({controls,crosshair,getSettings,onSettings}) {
     select('#'+id).onchange=e=>{const n=Number(e.target.value);if(!Number.isFinite(n)||n<.05||n>max){e.target.value=getSettings()[key];return;}onSettings({[key]:n});};
   }
   for(const key of ['aspect','display'])select('#cs-'+key).onchange=e=>onSettings({[key]:e.target.value});
-  function videoRefresh(){for(const key of ['aspect','display'])select('#cs-'+key).value=getSettings()[key];select('#cs-quality').value=getSettings().quality;select('#cs-brightness').value=getSettings().brightness;select('#brightness-value').textContent=`${getSettings().brightness}%`;}
+  const clarityRow=document.createElement('label');clarityRow.className='config-row';clarityRow.hidden=!mobileDevice();
+  clarityRow.innerHTML='手机清晰度<select id="cs-mobile-clarity"><option value="performance">省电 · 降低分辨率</option><option value="clear">清晰 · 推荐</option><option value="sharp">高清 · 更精细</option></select>';
+  select('#cs-quality').closest('label').after(clarityRow);
+  const clarityNote=document.createElement('p');clarityNote.hidden=!mobileDevice();clarityNote.textContent='默认「清晰」兼顾细节与流畅，性能充足可切「高清」。立即生效并自动保存；画质保持最低也能提高清晰度。';clarityRow.after(clarityNote);
+  select('#cs-mobile-clarity').onchange=e=>{onSettings({mobileClarity:e.target.value});videoRefresh();};
+  function videoRefresh(){select('#cs-mobile-clarity').value=getSettings().mobileClarity||'clear';for(const key of ['aspect','display'])select('#cs-'+key).value=getSettings()[key];select('#cs-quality').value=getSettings().quality;select('#cs-brightness').value=getSettings().brightness;select('#brightness-value').textContent=`${getSettings().brightness}%`;}
   select('#cs-quality').onchange=e=>onSettings({quality:e.target.value});
   select('#cs-brightness').oninput=e=>{onSettings({brightness:Number(e.target.value)});videoRefresh();};
-  select('#reset-video').onclick=()=>{onSettings({quality:'low',brightness:100,aspect:'16:9',display:'bars'});videoRefresh();};
+  select('#reset-video').onclick=()=>{onSettings({mobileClarity:'clear',quality:'low',brightness:100,aspect:'16:9',display:'bars'});videoRefresh();};
   videoRefresh();
   const fields=[['size','长度',0,10,.1],['thickness','粗细',0,5,.1],['gap','间距',-10,10,.1],['alpha','透明度',0,255,1],['red','红',0,255,1],['green','绿',0,255,1],['blue','蓝',0,255,1],['outlineThickness','描边粗细',0,3,.5]];
   select('#crosshair-fields').innerHTML=fields.map(([key,label,min,max,step])=>`<label>${label}<input data-crosshair="${key}" type="number" min="${min}" max="${max}" step="${step}"></label>`).join('')+[['dot','中心点'],['outline','描边'],['tStyle','T 字形']].map(([key,label])=>`<label>${label}<input data-crosshair="${key}" type="checkbox"></label>`).join('');

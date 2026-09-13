@@ -105,3 +105,16 @@
 }
 
 .touch-device .touch-portrait-note{top:115px;font-size:9px;padding:4px 7px;opacity:.65}
+
+/* Keep the clarity control within reach on short landscape phone screens. */
+.touch-device #settings-menu .config-card{display:flex;flex-direction:column;width:min(760px,100%);max-height:calc(100dvh - 16px);padding:12px;overflow:hidden}
+.touch-device #settings-menu .config-card>header{padding:0;gap:12px;flex-shrink:0}
+.touch-device #settings-menu h2{font-size:20px;margin:3px 0 8px}
+.touch-device #settings-menu .eyebrow{font-size:9px}
+.touch-device #settings-menu .config-card>header button{min-height:40px;padding:7px 12px;font-size:12px}
+.touch-device #settings-menu .config-tabs{gap:2px}
+.touch-device #settings-menu .config-tabs button{padding:8px 10px;min-height:40px;font-size:12px}
+.touch-device #settings-menu .config-scroll{height:auto;flex:1;min-height:0;overflow:auto;padding:8px 2px;font-size:12px}
+.touch-device #settings-menu .config-scroll h3{font-size:15px;margin:8px 0}
+.touch-device #settings-menu .config-row{margin:10px 0;gap:10px}
+.touch-device #settings-menu select{padding:7px;min-height:38px}

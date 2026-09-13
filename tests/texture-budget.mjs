@@ -23,3 +23,18 @@ test('one shared texture decode budget covers concurrent models and failed parse
  fail=true;await assert.rejects(parse(),/404/);fail=false;
  const result=await parse();assert.ok(result.scene.children.length);assert.equal(active,0);
 });
+
+test('phone weapon textures retain 1024 detail and release oversized decoded originals',async t=>{
+ const saved={fetch:globalThis.fetch,createImageBitmap:globalThis.createImageBitmap,self:globalThis.self,ProgressEvent:globalThis.ProgressEvent,matchMedia:globalThis.matchMedia};
+ t.after(()=>Object.assign(globalThis,saved));globalThis.self=globalThis;globalThis.matchMedia=()=>({matches:true});
+ globalThis.ProgressEvent=class {constructor(type,properties){Object.assign(this,{type,...properties});}};
+ let closed=0,resized=0;
+ globalThis.fetch=(url,options)=>String(url).includes('image-')?Promise.resolve(new Response('image')):saved.fetch(url,options);
+ globalThis.createImageBitmap=async(source,options)=>{
+   if(options.resizeWidth){assert.equal(options.resizeWidth,1024);assert.equal(options.resizeHeight,512);resized++;return {width:1024,height:512,close(){}};}
+   return {width:2048,height:1024,close(){closed++;}};
+ };
+ const result=await gameGLTFLoader().parseAsync(JSON.stringify(model()),'https://fixture.invalid/');
+ assert.equal(resized,9);assert.equal(closed,9);
+ result.scene.traverse(o=>{if(o.material){assert.equal(o.material.map.image.width,1024);assert.equal(o.material.map.image.height,512);}});
+});

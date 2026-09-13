@@ -22,7 +22,7 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
   };
   const loader=gameGLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
   const [gltf,response,sky]=await Promise.all([
-    loader.loadAsync(assetUrl(mobileDevice()?'assets/map-mobile/dust2-mobile.gltf':'assets/map-cs2/dust2-web.gltf?v=e4f2b2d3903c')),
+    loader.loadAsync(assetUrl(mobileDevice()?'assets/map-mobile/dust2-clear.gltf':'assets/map-cs2/dust2-web.gltf?v=e4f2b2d3903c')),
     fetch(assetURL(assetUrl(MAP.geometryUrl))),
     new HDRLoader(manager).loadAsync(assetUrl('assets/sky/daylight.hdr?v=5244534e9cf5')),
   ]);
@@ -65,7 +65,7 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
       }
     }
   });
-  for(const texture of textures)texture.anisotropy=mobileDevice()?1:4;
+  for(const texture of textures)texture.anisotropy=4;
 
   // Keep the exported sun direction. Web lighting approximates Source 2's
   // baked lighting; original surface textures and their UVs stay untouched.

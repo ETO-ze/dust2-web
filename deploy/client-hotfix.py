@@ -10,8 +10,8 @@ from datetime import datetime, timezone
 ALLOWED=re.compile(r'(?:index\.html|sw\.js|manifest\.webmanifest|assets/[A-Za-z0-9_-]+\.(?:js|css)|downloads/(?:DustII-Android-\d+\.\d+\.\d+\.apk|android-latest\.json))(?:\.gz)?')
 def sha(data): return hashlib.sha256(data).hexdigest()
 def encode(value): return json.dumps(value,ensure_ascii=False,sort_keys=True,indent=2).encode('utf8')
-def regular(root,name):
-    if not ALLOWED.fullmatch(name):raise ValueError('Unexpected client path: '+name)
+def regular(root,name,allowed=ALLOWED):
+    if not allowed.fullmatch(name):raise ValueError('Unexpected client path: '+name)
     target=root/name
     if not target.resolve().is_relative_to(root.resolve()):raise ValueError('Client path escapes dist')
     for path in [target,*target.parents]:
@@ -68,33 +68,34 @@ def atomic(path,data):
     with pending.open('xb') as out:out.write(data);out.flush();os.fsync(out.fileno())
     os.chmod(pending,0o644);os.replace(pending,path)
 
-def apply(archive,expected,release,stamp):
+def apply(archive,expected,release,stamp,*,reader=read_patch,allowed=ALLOWED,preflight=None):
     if not re.fullmatch(r'\d{8}T\d{6}Z',release) or not re.fullmatch(r'\d{8}T\d{6}Z',stamp):raise ValueError('Invalid release/stamp')
-    metadata,entries=read_patch(archive,expected)
+    metadata,entries=reader(archive,expected)
     base=Path('/opt/dust2-web');active=(base/'current').resolve(strict=True)
     if active!=(base/'releases'/release):raise ValueError('Active release changed')
     dist=active/'dist'
+    if preflight:preflight(dist,metadata,entries)
     def pid():return subprocess.check_output(['systemctl','show','dust2-web.service','-p','MainPID','--value'],text=True).strip()
     initial_pid=pid()
     backup=base/'backups'/('client-'+stamp);backup.mkdir(parents=True,exist_ok=False)
     before={};changed=[]
     for name in entries:
-        target=regular(dist,name);before[name]=target.read_bytes() if target.exists() else None
+        target=regular(dist,name,allowed);before[name]=target.read_bytes() if target.exists() else None
         if before[name] is not None:
             saved=backup/name;saved.parent.mkdir(parents=True,exist_ok=True);saved.write_bytes(before[name])
     try:
         # Existing tabs keep using their old content-addressed bundles. HTML
         # commits last, after every file it references is available.
-        for name in sorted(entries,key=lambda n:(n=='index.html',n)):
+        for name in sorted(entries,key=lambda n:(2 if n.startswith('index.html') else 1 if n.startswith('assets/asset-manifest-mobile.json') else 0,not n.endswith('.gz'),n)):
             if (base/'current').resolve()!=active or pid()!=initial_pid:raise ValueError('Active server changed during client update')
-            target=regular(dist,name);target.parent.mkdir(parents=True,exist_ok=True)
+            target=regular(dist,name,allowed);target.parent.mkdir(parents=True,exist_ok=True)
             if before[name]==entries[name]:continue
             atomic(target,entries[name]);changed.append(name)
         for name,data in entries.items():
-            if regular(dist,name).read_bytes()!=data:raise ValueError('Deployed client verification failed')
+            if regular(dist,name,allowed).read_bytes()!=data:raise ValueError('Deployed client verification failed')
     except BaseException:
         for name in reversed(changed):
-            target=regular(dist,name)
+            target=regular(dist,name,allowed)
             if before[name] is None:target.unlink()
             else:atomic(target,before[name])
         raise

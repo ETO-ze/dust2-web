@@ -1,0 +1,87 @@
+{
+  "date": "2026-09-13",
+  "environment": "Local Chrome, iPhone 13 landscape emulation, DPR 3; not physical P60",
+  "profiles": [
+    {
+      "clarity": "performance",
+      "quality": "low",
+      "css": {
+        "width": 844,
+        "height": 390
+      },
+      "render": [
+        844,
+        390
+      ],
+      "antialias": true,
+      "contextLost": false,
+      "errors": []
+    },
+    {
+      "clarity": "clear",
+      "quality": "low",
+      "css": {
+        "width": 844,
+        "height": 390
+      },
+      "render": [
+        1688,
+        780
+      ],
+      "antialias": true,
+      "contextLost": false,
+      "errors": []
+    },
+    {
+      "clarity": "sharp",
+      "quality": "low",
+      "css": {
+        "width": 844,
+        "height": 390
+      },
+      "render": [
+        2279,
+        1053
+      ],
+      "antialias": true,
+      "contextLost": false,
+      "errors": []
+    }
+  ],
+  "resized": [
+    {
+      "css": [
+        390,
+        844
+      ],
+      "render": [
+        1053,
+        2279
+      ]
+    },
+    {
+      "css": [
+        667,
+        320
+      ],
+      "render": [
+        2001,
+        960
+      ]
+    },
+    {
+      "css": [
+        960,
+        432
+      ],
+      "render": [
+        2309,
+        1039
+      ]
+    }
+  ],
+  "persisted": {
+    "setting": "sharp",
+    "stored": "sharp"
+  }
+}

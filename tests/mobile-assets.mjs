@@ -10,11 +10,11 @@ test('phone viewport fills portrait, wide landscape and browser chrome sizes wit
  }
 });
 test('mobile map preserves every mesh, material and texture association; manifest excludes desktop images',async()=>{
- const desktop=await json('../public/assets/map-cs2/dust2-web.gltf'),mobile=await json('../public/assets/map-mobile/dust2-mobile.gltf');
+ const desktop=await json('../public/assets/map-cs2/dust2-web.gltf'),mobile=await json('../public/assets/map-mobile/dust2-clear.gltf');
  for(const key of ['meshes','accessors','bufferViews','materials','textures','nodes'])assert.deepEqual(mobile[key],desktop[key]);
  assert.equal(mobile.images.length,desktop.images.length);assert.ok(mobile.images.every(i=>i.uri.startsWith('textures/')));
  const manifest=await json('../public/assets/asset-manifest-mobile.json'),full=await json('../public/assets/asset-manifest.json');
  assert.ok(!manifest.files.some(f=>f.path.startsWith('assets/map-cs2/textures/')));
- assert.ok(manifest.files.some(f=>f.path==='assets/map-mobile/dust2-mobile.gltf'));
+ assert.ok(manifest.files.some(f=>f.path==='assets/map-mobile/dust2-clear.gltf'));
  assert.ok(manifest.totalBytes<full.totalBytes*.7);
 });
