@@ -83,5 +83,44 @@
   "persisted": {
     "setting": "sharp",
     "stored": "sharp"
+  },
+  "production": {
+    "url": "https://cs2.duskrain.cn/",
+    "clientCommit": "0aacd03f8c87ce343850f187b47738a8b36d1e07",
+    "patchStamp": "20260913T072600Z",
+    "archiveSha256": "a80cb386ba1d6f3fe2a90258bb68bed610781a9b1eff67f3e37534f3413258a2",
+    "verifiedFiles": 524,
+    "serverRestarted": false,
+    "apkUnchanged": true,
+    "oldMobileModelPreserved": true,
+    "publicManifestVersion": "6c6b06a0c606b341",
+    "publicFilesVerified": [
+      {
+        "path": "assets/index-D6El7n0V.js",
+        "bytes": 1128286,
+        "sha256": "2716a8eee6693cda679b23975590c46ba14b21eb63b75618ccc85e35b7c4d428",
+        "encoding": "gzip"
+      },
+      {
+        "path": "assets/index-DgZSN0_f.css",
+        "bytes": 98488,
+        "sha256": "5be051ae7ec720f621da7199394a21ba11d68b8423c64e7c3bf6320d0d87f760",
+        "encoding": "gzip"
+      },
+      {
+        "path": "assets/asset-manifest-mobile.json",
+        "bytes": 151342,
+        "sha256": "90dd1a9cb429c5ab908871cc46cdde19bca98c41247335d5df852f508b7381d0",
+        "encoding": "gzip"
+      },
+      {
+        "path": "assets/map-mobile/textures/000e81f29a8c5d9a11a4.webp",
+        "bytes": 10528,
+        "sha256": "cfd17ad333c389f685dc5124cc0880e890d0e3282f832d3c9f5e4b6669781f76",
+        "encoding": null
+      }
+    ],
+    "publicBrowserSettingsAndReloadPassed": true,
+    "checkedAt": "2026-09-13T07:30:15.933Z"
   }
 }

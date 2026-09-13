@@ -35,4 +35,6 @@
 
 客户端通过 `deploy/mobile-graphics-hotfix.py` 发布：只允许首页、前端包、手机资源清单和新手机地图文件；先校验现有共享依赖，再备份、写资源、最后更新入口。保留旧哈希资源供已打开页面继续使用，检查服务器 PID 未改变。服务器逻辑和 APK 不在此补丁的写入范围。
 
+线上补丁 `20260913T072600Z` 已完成：524 个文件逐项校验通过，公网首页、脚本、样式、手机清单和抽样贴图与本地一致。服务器 PID 保持不变，APK 校验值不变；公网手机模拟页面验证了默认清晰档、切换高清和重载保存。客户端代码对应提交 `0aacd03`。
+
 实现参考 Three.js 官方的[高 DPI 渲染说明](https://threejs.org/manual/en/responsive.html)、[WebGLRenderer](https://threejs.org/docs/pages/WebGLRenderer.html)和[纹理参数](https://threejs.org/docs/pages/Texture.html)。这些资料解释像素密度与过滤；档位预算来自本项目的实现和上述本地验证，并非官方 P60 性能承诺。
