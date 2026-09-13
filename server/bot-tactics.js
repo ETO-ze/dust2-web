@@ -1,13 +1,21 @@
 import {MAP} from '../shared/map-data.js';
+import {smoothBotAim} from './bot-aim.js';
 export {botUtility} from './bot-utility.js';
 const point=p=>({x:p.x,y:p.y,z:p.z});
 const range=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
-const raw={long:{x:40,y:0,z:-31},short:{x:7,y:2.5,z:-48},mid:{x:-11,y:0,z:-31},doors:{x:-11,y:-1,z:-48},tunnels:{x:-43,y:0,z:-27},bEntry:{x:-42,y:0,z:-53}};
+const raw={long:{x:40,y:0,z:-31},catwalk:{x:7,y:0,z:-31},short:{x:8,y:2.5,z:-51},mid:{x:-11,y:0,z:-31},doors:{x:-11,y:-1,z:-48},tunnels:{x:-43,y:0,z:-27},bEntry:{x:-42,y:0,z:-53}};
 function at(room,id){return point(room.nearestNav(raw[id]||MAP.sites[id])||raw[id]||MAP.sites[id]);}
 function team(room,p){return [...room.players.values()].filter(q=>q.alive&&q.team===p.team).sort((a,b)=>a.seat-b.seat);}
-function hold(room,p,site){
+function hold(room,p,site,reposition=false){
  const candidates=site==='A'?[{x:27,y:2.5,z:-67},{x:36,y:2.8,z:-66},{x:23,y:2.5,z:-62},{x:31,y:3,z:-72}]:[{x:-46,y:.8,z:-69},{x:-38,y:.3,z:-68},{x:-34,y:.4,z:-70},{x:-43,y:.3,z:-65}];
- return point(room.nearestNav(candidates[p.seat%candidates.length])||MAP.sites[site]);
+ const base=candidates[p.seat%candidates.length],near=candidates.filter(c=>range(c,base)<7);
+ const selected=reposition?near[Math.floor(room.clock()/11000+p.seat)%near.length]:base;
+ return point(room.nearestNav(selected)||MAP.sites[site]);
+}
+export function attackPlan(room){
+ if(room.attackPlan?.round===room.round.number)return room.attackPlan;
+ const plans=room.botDifficulty==='hard'?['a-short','b-execute','a-split']:['a-split','b-execute','a-short'];
+ return room.attackPlan={round:room.round.number,id:plans[(Math.max(1,room.round.number)-1)%plans.length],coordinated:room.botDifficulty==='hard'};
 }
 /** Dust2 defaults: long/short A split or tunnels/mid B split. Information is
  * shared only after a teammate has seen an opponent; it expires after 6 s. */
@@ -16,7 +24,7 @@ export function tacticalGoal(room,p){
  if(ai.utility?.phase==='approach')return point(ai.utility.stand);
  if(b.state==='planted'){
   ai.site=b.site;ai.phase='postplant';ai.watchPoints=watchPoints(p,b.site);
-  if(p.team==='T'){ai.role='postplant';return hold(room,p,b.site);}
+  if(p.team==='T'){ai.role='postplant';return hold(room,p,b.site,true);}
   const active=allies.find(q=>q.id===b.actorId&&b.action==='defuse');
   const defuser=active||[...allies.filter(q=>q.bot)].sort((a,c)=>Number(c.defuseKit)-Number(a.defuseKit)||range(a,b)-range(c,b))[0];
   ai.role=defuser?.id===p.id?'defuser':'retake-cover';return ai.role==='defuser'?point(b):hold(room,p,b.site);
@@ -25,15 +33,22 @@ export function tacticalGoal(room,p){
   if(b.state==='dropped'&&[...allies].sort((a,c)=>range(a,b)-range(c,b))[0]?.id===p.id){ai.role='recover-bomb';return point(b);}
   const humanCarrier=allies.find(q=>!q.bot&&q.hasBomb);
   if(humanCarrier&&humanCarrier.z<0&&(humanCarrier.x<-28||humanCarrier.x>10))room.botAttackSite=humanCarrier.x<0?'B':'A';
-  const site=room.botAttackSite||(room.round.number%3===2?'B':'A'),split=p.seat%3===2;
-  const route=site==='A'?(split?['mid','short','A']:['long','A']):(split?['mid','doors','B']:['tunnels','bEntry','B']);
+  const plan=attackPlan(room),site=room.botAttackSite||(plan.id==='b-execute'?'B':'A');
+  // Keep approach assignments stable when a teammate dies; otherwise survivors
+  // can reset their route index and walk back to an already-cleared waypoint.
+  const roster=[...room.players.values()].filter(q=>q.team===p.team).sort((a,b)=>a.seat-b.seat);
+  const rank=Math.max(0,roster.findIndex(q=>q===p)),split=site==='A'&&plan.id==='a-short'?rank===roster.length-1&&roster.length>2:rank%3===2;
+  let lane=site==='A'?(plan.id==='a-short'?!split:split)?'short':'long':split?'mid':'tunnels';
+  if((ai.routeVariant||0)%2)lane=site==='A'?(lane==='short'?'long':'short'):(lane==='tunnels'?'mid':'tunnels');
+  const route=site==='A'?(lane==='short'?['catwalk','short','A']:['long','A']):(lane==='mid'?['mid','doors','B']:['tunnels','bEntry','B']);
   const key=room.round.number+':'+route.join('-');
   if(ai.routeKey!==key){ai.routeKey=key;ai.routeIndex=0;}
-  ai.role=p.hasBomb?'carrier':split?'split':'entry';ai.site=site;ai.lane=split?'mid':site==='A'?'long':'tunnels';ai.watchPoints=watchPoints(p,site);ai.phase='advance';
+  const fighters=allies.filter(q=>!q.hasBomb),order=fighters.indexOf(p);
+  ai.role=p.hasBomb?'carrier':split?'split':order===0?'entry':order===1?'trade':'utility-support';ai.site=site;ai.lane=lane;ai.execute=plan.id;ai.watchPoints=watchPoints(p,site);ai.phase='advance';
   const support=supportGoal(room,p,allies,report);if(support){ai.phase='support';return support;}
   while(ai.routeIndex<route.length-1&&range(p,at(room,route[ai.routeIndex]))<3){
    if(ai.routeIndex===route.length-2&&!readyToEnter(room,p,allies,site)){ai.phase='gather';return point(p);}
-   ai.routeIndex++;
+   ai.routeIndex++;ai.routeFailures=0;
   }
   if(p.hasBomb&&room.siteAt(p))return point(p);
   if(ai.routeIndex===route.length-1&&!p.hasBomb)return hold(room,p,site);
@@ -48,7 +63,7 @@ export function tacticalGoal(room,p){
   const site=range(report,MAP.sites.A)<range(report,MAP.sites.B)?'A':'B';
   if(ai.role==='rotator'||ai.role==='mid'||(site==='A'&&ai.role==='anchor-a')||(site==='B'&&ai.role==='anchor-b')){ai.site=site;ai.watchPoints=watchPoints(p,site);ai.phase='rotate';return hold(room,p,site);}
  }
- return ['anchor-b','anchor-a'].includes(ai.role)?hold(room,p,ai.site):at(room,({short:'short',mid:'doors',rotator:'short'})[ai.role]);
+ return ['anchor-b','anchor-a'].includes(ai.role)?hold(room,p,ai.site,true):at(room,({short:'short',mid:'doors',rotator:'short'})[ai.role]);
 }
 export function shareSighting(room,p,enemy){
  (room.teamIntel||={})[p.team]={...point(enemy),at:room.clock(),observer:p.id};
@@ -84,11 +99,24 @@ function readyToEnter(room,p,allies,site){
  const plans=room.botExecutions||=new Map();let plan=plans.get(key);
  if(!plan){plan={at:now,releaseAt:0};plans.set(key,plan);}
  const mates=allies.filter(q=>q!==p&&q.botAI?.lane===ai.lane);
- const near=mates.some(q=>range(q,p)<8),support=mates.find(q=>q.botAI?.utility&&!q.botAI.utility.released);
- if(!plan.releaseAt&&((near&&!support&&now-plan.at>700)||now-plan.at>4200))plan.releaseAt=now;
+ const near=mates.some(q=>range(q,p)<8),support=mates.find(q=>q.botAI?.utility&&!q.botAI.utility.released||(q.botAI?.utilityFollowupUntil||0)>now);
+ const deadline=room.attackPlan?.coordinated?6500:4200;
+ if(!plan.releaseAt&&((near&&!support&&now-plan.at>700)||now-plan.at>deadline))plan.releaseAt=now;
  if(!plan.releaseAt)return false;
  // Entry first, trading partner next, bomb carrier last. A bounded delay never
  // leaves survivors waiting forever for a dead or distant teammate.
  const order=[...allies.filter(q=>q.botAI?.lane===ai.lane)].sort((a,b)=>Number(a.hasBomb)-Number(b.hasBomb)||a.seat-b.seat);
  return now>=plan.releaseAt+Math.max(0,order.indexOf(p))*350;
+}
+
+/** Nearby teammates can turn away from their own announced flash. No enemy
+ * positions are involved, and the same bounded aim controller is used. */
+export function coordinateFlash(room,p,input,dt){
+ const ai=p.botAI,now=room.clock();
+ if(ai.engaging||ai.utility||input.interact||p.objectiveLocked)return;
+ const flasher=[...room.players.values()].find(q=>q!==p&&q.alive&&q.team===p.team&&q.botAI?.lane===ai.lane&&range(p,q)<12&&q.botAI.utility?.weapon==='flashbang'&&['ready','prime','released'].includes(q.botAI.utility.phase));
+ const u=flasher?.botAI.utility||(room.botFlashes||[]).find(f=>f.team===p.team&&f.lane===ai.lane&&f.until>now&&range(f.stand,p)<12);
+ if(!u||u.releasedAt&&now>u.releasedAt+(u.expected?.seconds||1.5)*1000+300)return;
+ const target=u.target,aim=smoothBotAim({yaw:p.yaw,pitch:p.pitch},{yaw:Math.atan2(target.x-p.x,target.z-p.z),pitch:0},dt);
+ input.yaw=aim.yaw;input.pitch=aim.pitch;input.forward=input.right=0;input.jump=input.fire=false;ai.action='avoid-team-flash';
 }

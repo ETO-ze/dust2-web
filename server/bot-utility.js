@@ -5,18 +5,24 @@ import {getWeapon} from '../shared/weapons.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export function combatSlot(p){return [1,2,3].find(slot=>Object.keys(p.inventory).some(id=>getWeapon(id).slot===slot&&(slot===3||p.inventory[id].ammo+p.inventory[id].reserve>0)))||3;}
 function cancel(room,p,input,reason){
- const u=p.botAI.utility;if(u){room.botUtilityStats||={};room.botUtilityStats[reason]=(room.botUtilityStats[reason]||0)+1;if(!u.released)room.utilityClaims?.delete(u.key);}
+ const u=p.botAI.utility;if(u){room.botUtilityStats||={};room.botUtilityStats[reason]=(room.botUtilityStats[reason]||0)+1;if(!u.released)room.utilityClaims?.delete(u.key);
+  const failures=p.botAI.utilityFailures||=new Map();failures.set(u.id,room.clock()+(['timeout','bad-trajectory','moved'].includes(reason)?120000:8000));
+ }
  p.botAI.utility=null;p.botAI.utilityAfter=room.clock()+2500;p.botAI.goal=null;p.botAI.path=[];
  room.cancelGrenade(p,'bot-'+reason);input.cancelGrenade=true;input.slot=combatSlot(p);input.fire=false;input.fire2=false;
  return input;
 }
 function choose(room,p){
  const ai=p.botAI,now=room.clock();room.utilityClaims||=new Map();
- const choices=BOT_LINEUPS.filter(s=>s.team===p.team&&(s.site==='*'||s.site===ai.site)&&(p.team==='CT'?s.lane===ai.role:s.lane===ai.lane)&&p.inventory[s.weapon]?.ammo&&distance(p,s.stand)<9&&!room.utilityClaims.has(p.team+':'+s.id));
+ if(room.bomb?.state==='planted'||room.round.phaseEndsAt-now<12000)return null;
+ const choices=BOT_LINEUPS.filter(s=>s.team===p.team&&(s.site==='*'||s.site===ai.site)&&(p.team==='CT'?s.lane===ai.role:s.lane===ai.lane||ai.lane==='short'&&s.lane==='mid')&&p.inventory[s.weapon]?.ammo&&distance(p,s.stand)<9&&!room.utilityClaims.has(p.team+':'+s.id)&&(ai.utilityFailures?.get(s.id)||0)<=now);
+ // Cover sightlines first, clear a close angle with fire, flash just before
+ // entry. Claims distribute different throws among the available teammates.
+ const order={smokegrenade:0,molotov:1,incgrenade:1,flashbang:2,hegrenade:3};choices.sort((a,b)=>order[a.weapon]-order[b.weapon]||distance(p,a.stand)-distance(p,b.stand));
  for(const s of choices){
   if(s.weapon==='hegrenade'&&(!ai.lastKnown||now-ai.lastSeenAt>3000||distance(ai.lastKnown,s.target)>5))continue;
   if(s.weapon==='smokegrenade'&&room.grenades.smokes.some(c=>distance(c,s.target)<5))continue;
-  if(teammateRisk(room.grenades,p,s.expected,[...room.players.values()],s.weapon))continue;
+  if(s.weapon!=='flashbang'&&teammateRisk(room.grenades,p,s.expected,[...room.players.values()],s.weapon))continue;
   const path=room.planPath(p,s.stand);if(!path.length||distance(path.at(-1),s.stand)>.5)continue;
   const key=p.team+':'+s.id;room.utilityClaims.set(key,p.id);return {...s,key,expiresAt:now+10000,phase:'approach',plannedAt:now};
  }
@@ -26,13 +32,16 @@ export function botUtility(room,p,input,dt){
  const ai=p.botAI,now=room.clock();
  const interrupted=room.mode!=='defuse'||room.round.phase!=='live'||ai.engaging||input.interact||p.objectiveLocked||now<(p.flashBlindUntil||0)||now-(ai.hurtAt||-Infinity)<1000;
  if(interrupted)return ai.utility?cancel(room,p,input,'interrupted'):input;
- if(!ai.utility&&now>=(ai.utilityAfter||0)&&!p.hasBomb&&now-ai.lastSeenAt>1400){
-  ai.utilityAfter=now+1500+(p.seat||0)*75;ai.utility=choose(room,p);
+ if(!ai.utility&&now>=(ai.utilityAfter||0)&&now>=(ai.escapeUntil||0)&&!p.hasBomb&&now-ai.lastSeenAt>1400){
+  ai.utilityAfter=now+1500+(p.seat||0)*75;ai.utility=choose(room,p);ai.utilityFollowupUntil=0;
   if(ai.utility){ai.goal=ai.utility.stand;ai.path=room.planPath(p,ai.goal);}
  }
  const u=ai.utility;if(!u)return input;
  ai.action='utility-'+u.phase;
- if(!p.inventory[u.weapon]?.ammo){ai.utility=null;ai.utilityAfter=now+10000;ai.goal=null;ai.path=[];input.slot=combatSlot(p);return input;}
+ if(!p.inventory[u.weapon]?.ammo){
+  const followup=room.attackPlan?.coordinated&&p.team==='T'&&room.bomb?.state!=='planted'&&p.inventory.flashbang?.ammo;
+  ai.utility=null;ai.utilityAfter=now+(followup?350:10000);ai.utilityFollowupUntil=followup?now+1200:0;ai.goal=null;ai.path=[];input.slot=combatSlot(p);return input;
+ }
  if(now>u.expiresAt)return cancel(room,p,input,'timeout');
  const gap=distance(p,u.stand);
  if(u.phase==='approach'&&gap>.10){
@@ -63,15 +72,19 @@ export function botUtility(room,p,input,dt){
  u.alignedSince=aligned?(u.alignedSince||now):0;
  if(u.phase==='ready'){
   if(!aligned||now-u.alignedSince<180||now<p.nextShotAt)return input;
-  if(teammateRisk(room.grenades,p,u.result,[...room.players.values()],u.weapon))return cancel(room,p,input,'team-risk');
+  const teammates=[...room.players.values()].filter(q=>u.weapon!=='flashbang'||q!==p);
+  if(teammateRisk(room.grenades,p,u.result,teammates,u.weapon)){
+   u.teamWaitAt||=now;if(now-u.teamWaitAt<1200)return input;return cancel(room,p,input,'team-risk');
+  }
   u.phase='prime';u.primedAt=now;
  }
  if(u.phase==='prime'){
   const chord=u.throwMode==='lob',under=u.throwMode==='drop';input.fire=!under;input.fire2=under||chord;
   if(!aligned)return cancel(room,p,input,'aim-drift');
   if(p.grenadeState&&now-u.primedAt>=350&&now>=p.grenadeState.readyAt){
-   if(teammateRisk(room.grenades,p,u.result,[...room.players.values()],u.weapon))return cancel(room,p,input,'team-risk');
-   input.fire=input.fire2=false;u.released=true;u.phase='released';
+   if(teammateRisk(room.grenades,p,u.result,[...room.players.values()].filter(q=>u.weapon!=='flashbang'||q!==p),u.weapon))return cancel(room,p,input,'team-risk');
+   input.fire=input.fire2=false;u.released=true;u.releasedAt=now;u.phase='released';
+   if(u.weapon==='flashbang'){room.botFlashes=(room.botFlashes||[]).filter(f=>f.until>now);room.botFlashes.push({team:p.team,lane:ai.lane,stand:u.stand,target:u.target,until:now+(u.expected?.seconds||1.5)*1000+300});}
    room.botUtilityStats||={};room.botUtilityStats.validated=(room.botUtilityStats.validated||0)+1;
    room.emit('bot_utility_validated',{playerId:p.id,lineup:u.id,target:u.target,predicted:u.result.point,angleError:Math.hypot(angleDifference(u.yaw,aim.yaw),u.pitch-aim.pitch)});
   }

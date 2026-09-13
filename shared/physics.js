@@ -1,6 +1,7 @@
 import { BufferGeometry, Float32BufferAttribute, Vector3, Ray, Box3, DoubleSide } from 'three';
 import { MeshBVH, CENTER } from 'three-mesh-bvh';
 import {HullContact} from './hull-collision.js';
+import {patchMapCollision} from './map-collision-patch.js';
 
 export const PLAYER_RADIUS = 0.30;
 export const STAND_HEIGHT = 1.80;
@@ -58,7 +59,8 @@ class MapCollision {
   }
 }
 
-export function initPhysics(positions, surfaceMaterials = null) {
+export function initPhysics(positions, surfaceMaterials = null, {mapPatches=true}={}) {
+  if(mapPatches){const patched=patchMapCollision(positions,surfaceMaterials);positions=patched.positions;surfaceMaterials=patched.materials;}
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
   geometry.computeBoundingBox();

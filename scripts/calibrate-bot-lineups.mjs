@@ -11,6 +11,9 @@ const world=new GrenadeSimulation({raycastWorld,raycastContact:raycastWorldConta
 const point=(x,y,z)=>({x,y,z});
 const definitions=[
  ['mid-cross','T','mid','*','smokegrenade',point(-11,0,-27),point(-8.1,-.7,-35.8)],
+ ['a-short-ct','T','short','A','smokegrenade',point(8,2.5,-51),point(21,.2,-57)],
+ ['a-short-flash','T','short','A','flashbang',point(8,2.5,-51),point(26,2.5,-66)],
+ ['a-short-fire','T','short','A','molotov',point(8,2.5,-51),point(28,2.5,-68)],
  ['a-ct','T','long','A','smokegrenade',point(39,.2,-48),point(30,.2,-57)],
  ['b-door','T','tunnels','B','smokegrenade',point(-42,.3,-55),point(-28,.3,-57)],
  ['b-window','T','tunnels','B','smokegrenade',point(-42,.3,-55),point(-35,.3,-67)],
@@ -21,8 +24,9 @@ const definitions=[
  ['b-back-fire','T','tunnels','B','molotov',point(-42,.3,-57),point(-46,.8,-69)],
  ['b-back-he','T','tunnels','B','hegrenade',point(-42,.3,-57),point(-46,.8,-69)]
 ];
-const results=[];
+const filter=new Set(process.argv.slice(2)),results=filter.size?(await import('../server/bot-lineups.js')).BOT_LINEUPS.filter(s=>!filter.has(s.id)):[];
 for(const [id,team,lane,site,weapon,near,target]of definitions){
+ if(filter.size&&!filter.has(id))continue;
  const ground=floorHeight(target.x,target.z,target.y+1.2,3);if(ground!==null)target.y=ground;
  const stands=MAP.nav.filter(n=>Math.abs(n.y-near.y)<1).sort((a,b)=>Math.hypot(a.x-near.x,a.z-near.z)-Math.hypot(b.x-near.x,b.z-near.z)).slice(0,4).map(n=>({...n,y:floorHeight(n.x,n.z,n.y+.2,1)??n.y}));
  let found=null,attempts=0;

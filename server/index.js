@@ -8,6 +8,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { PRIMARY_WEAPONS } from '../shared/weapons.js';
 import { normalizeSkinLoadout } from '../shared/skins.js';
 import { normalizeAgentLoadout } from '../shared/agents.js';
+import {BOT_DIFFICULTIES,normalizeBotDifficulty} from '../shared/bot-difficulty.js';
 import { botCount } from '../shared/match-rules.js';
 import { initPhysics } from '../shared/physics.js';
 import { GameRoom, TICK_RATE, SNAPSHOT_RATE } from './game.js';
@@ -44,9 +45,10 @@ function joinSettings(msg) {
   const mode = msg.mode === 'deathmatch' ? 'deathmatch' : 'defuse';
   const team = ['T', 'CT'].includes(msg.team) ? msg.team : 'auto';
   if(msg.bots!==undefined&&(!Number.isInteger(msg.bots)||msg.bots<0||msg.bots>9))return {error:'机器人数量必须为 0–9 的整数。'};
-  const bots = botCount(msg.bots);
+  if(msg.botDifficulty!==undefined&&!BOT_DIFFICULTIES.includes(msg.botDifficulty))return {error:'人机难度应为普通或困难。'};
+  const bots = botCount(msg.bots),botDifficulty=normalizeBotDifficulty(msg.botDifficulty);
   const primary = PRIMARY_WEAPONS.includes(msg.primary) ? msg.primary : 'auto';
-  return { name, room, mode, team, bots, primary, skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0 };
+  return { name, room, mode, team, bots, botDifficulty, primary, skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0 };
 }
 
 /** Start the authoritative server after loading collision geometry. No external services. */
@@ -106,7 +108,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       if(msg.type==='listRooms'){
         if(now-(socket.listRoomsAt||0)<1000)return;
         socket.listRoomsAt=now;
-        send(socket,{type:'rooms',rooms:[...rooms.values()].filter(r=>r.humanCount>0).map(r=>({code:r.code,mode:r.mode,humans:r.humanCount,bots:r.botCount,scores:r.scores,phase:r.round.phase,joinable:r.humanCount<10&&r.match.status!=='ended'})).sort((a,b)=>Number(b.joinable)-Number(a.joinable)||b.humans-a.humans)});return;
+        send(socket,{type:'rooms',rooms:[...rooms.values()].filter(r=>r.humanCount>0).map(r=>({code:r.code,mode:r.mode,botDifficulty:r.botDifficulty,humans:r.humanCount,bots:r.botCount,scores:r.scores,phase:r.round.phase,joinable:r.humanCount<10&&r.match.status!=='ended'})).sort((a,b)=>Number(b.joinable)-Number(a.joinable)||b.humans-a.humans)});return;
       }
       if (msg.type === 'join') {
         if (socket.playerId) { error(socket, 'ALREADY_JOINED', '当前连接已经加入房间。'); return; }
@@ -117,11 +119,11 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         if(msg.existing===true&&!room){error(socket,'ROOM_GONE','房间已经关闭，请在大厅选择有玩家的房间。');return;}
         if (!room) {
           if (rooms.size >= maxRooms) { error(socket, 'SERVER_FULL', '服务器当前房间数量已达上限。'); return; }
-          room = new GameRoom(settings.room, { mode: settings.mode, bots: settings.bots, rules }); rooms.set(settings.room, room); created = true;
+          room = new GameRoom(settings.room, { mode: settings.mode, bots: settings.bots, botDifficulty:settings.botDifficulty, rules }); rooms.set(settings.room, room); created = true;
         }
         try {
           const player = room.addHuman(socket, settings); socket.playerId = player.id; socket.roomCode = room.code;
-          send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1 });
+          send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1 });
           send(socket, room.snapshot({ drainEvents: false }));
         } catch (e) { if (created) rooms.delete(room.code); error(socket, 'JOIN_FAILED', e.message); }
         return;
@@ -138,6 +140,10 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         if(now-(socket.seatAt||0)<300){error(socket,'SEAT_RATE','请稍后再操作席位。');return;}
         socket.seatAt=now;const result=msg.type==='takeSeat'?room.takeSeat(socket.playerId,msg.team,msg.seat):room.setSeatBot(socket.playerId,msg.team,msg.seat,msg.enabled);
         if(!result.ok)error(socket,'SEAT_REJECTED',result.message);else send(socket,{type:'seatUpdated',...result});
+      } else if(msg.type==='setBotDifficulty'){
+        if(now-(socket.setDifficultyAt||0)<250){error(socket,'BOT_DIFFICULTY_RATE','设置过于频繁，请稍后重试。');return;}
+        socket.setDifficultyAt=now;const result=room.setBotDifficulty(socket.playerId,msg.botDifficulty);
+        if(!result.ok)error(socket,'BOT_DIFFICULTY_REJECTED',result.message);else send(socket,{type:'botDifficultyUpdated',...result});
       } else if(msg.type==='setBots'){
         if(now-(socket.setBotsAt||0)<250){error(socket,'BOTS_RATE','设置过于频繁，请稍后重试。');return;}
         socket.setBotsAt=now;const result=room.setBots(socket.playerId,msg.bots);

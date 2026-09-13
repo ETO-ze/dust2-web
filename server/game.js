@@ -2,7 +2,7 @@ import {controlledPlayer,releaseBot,takeBot} from './bot-control.js';
 import {visibleAimPoint,observationPoint,lookAt,hearGunshot} from './bot-perception.js';
 import {combatMovement} from './bot-combat.js';
 import {combatSlot} from './bot-utility.js';
-import {tacticalGoal,shareSighting,botUtility,separateTeammates} from './bot-tactics.js';
+import {tacticalGoal,shareSighting,botUtility,separateTeammates,coordinateFlash} from './bot-tactics.js';
 import { randomBytes } from 'node:crypto';
 import { MAP } from '../shared/map-data.js';
 import { createPlayerState, stepPlayer, raycastWorld, raycastWorldContact } from '../shared/physics.js';
@@ -12,7 +12,9 @@ import { DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } from '../shared/ag
 import { EQUIPMENT, UTILITY_IDS, MAX_GRENADES, getEquipment, canTeamBuyEquipment, equipmentPrice, grenadeCount } from '../shared/equipment.js';
 import { GrenadeSimulation } from './grenades.js';
 import { MATCH_RULES, botCount, defuseDecision, grenadeMode, grenadeStrength } from '../shared/match-rules.js';
-import { BOT_AIM, BOT_SKILL, smoothBotAim } from './bot-aim.js';
+import { BOT_AIM, smoothBotAim } from './bot-aim.js';
+import {BOT_DIFFICULTIES,normalizeBotDifficulty,botSkill} from '../shared/bot-difficulty.js';
+import {recoverNavigation,navigationEdge} from './bot-navigation.js';
 import { DroppedWeapons } from './dropped-weapons.js';
 import { traceBullet as defaultTraceBullet } from './bullet-penetration.js';
 import {eyePosition,accuracyForShot,sampleShotDirection} from '../shared/aim.js';
@@ -100,9 +102,9 @@ export function applyArmorDamage(rawDamage, player, { headshot=false, armorRatio
 }
 
 export class GameRoom {
-  constructor(code, { mode = 'defuse', bots = 6, clock = () => Date.now(), rules = {}, traceBullet=defaultTraceBullet } = {}) {
+  constructor(code, { mode = 'defuse', bots = 6, botDifficulty = 'normal', clock = () => Date.now(), rules = {}, traceBullet=defaultTraceBullet } = {}) {
     this.code = code; this.mode = mode==='deathmatch'?'deathmatch':'defuse'; this.desiredBots = botCount(bots);
-    mode=this.mode;this.traceBullet=traceBullet;this.hostId=null;
+    mode=this.mode;this.traceBullet=traceBullet;this.hostId=null;this.botDifficulty=normalizeBotDifficulty(botDifficulty);
     this.clock = clock; this.rules = { ...RULES, ...rules }; this.players = new Map(); this.clients = new Map();
     this.scores = { T: 0, CT: 0 }; this.events = []; this.eventCounter = 0; this.botCounter = 0; this.spawnCounter = { T: 0, CT: 0 };
     this.teamSides={A:'CT',B:'T'};
@@ -131,6 +133,14 @@ export class GameRoom {
     this.desiredBots=value;this.ensureBots();this.maybeStart();
     const result={ok:true,bots:value,desiredBots:value,botCount:this.botCount,hostId:this.hostId};
     this.emit('bots_changed',result);return result;
+  }
+
+  setBotDifficulty(id,value){
+    if(id!==this.hostId)return {ok:false,message:'只有房主可以设置人机难度。'};
+    if(!BOT_DIFFICULTIES.includes(value))return {ok:false,message:'人机难度应为普通或困难。'};
+    this.botDifficulty=value;
+    const result={ok:true,botDifficulty:value,hostId:this.hostId};
+    this.emit('bot_difficulty_changed',result);return result;
   }
 
   controlledPlayer(id){return controlledPlayer(this,id);}
@@ -389,7 +399,7 @@ export class GameRoom {
       }
     }
     this.round = { number: this.round.number + 1, phase: 'freeze', phaseEndsAt: now + this.rules.freezeSeconds * 1000, buyEndsAt: now + (this.rules.freezeSeconds + this.rules.buySeconds) * 1000, winner: null, reason: '' };
-    this.bomb = this.emptyBomb();this.teamIntel={};this.botAttackSite=null;this.utilityClaims=new Map();this.botExecutions=new Map();
+    this.bomb = this.emptyBomb();this.teamIntel={};this.botAttackSite=null;this.utilityClaims=new Map();this.botExecutions=new Map();this.attackPlan=null;this.botFlashes=[];
     this.grenades.clear();this.defuseKits=[];
     this.droppedWeapons.clear();
     this.poseHistory.clear();
@@ -420,9 +430,10 @@ export class GameRoom {
     }
     for (const id of Object.keys(p.inventory)) if(!UTILITY_IDS.includes(id)){const skinId=p.inventory[id].skinId;this.giveWeapon(p,id);if(skinId)p.inventory[id].skinId=skinId;}
     p.botAI.engaging=false;p.botAI.action='advance';p.botAI.watchPoints=[];p.botAI.watchPoint=null;p.botAI.watchUntil=0;p.botAI.hurtAt=-Infinity;p.botAI.heardPoint=null;p.botAI.heardAt=0;p.botAI.utility=null;p.botAI.utilityAfter=this.clock()+6000+(p.seat||0)*400;p.botAI.lastKnown=null;p.botAI.lastSeenAt=0;p.botAI.routeKey=null;
-    if(newRound&&p.bot){for(const id of ['armor',...(p.team==='CT'?['defusekit']:[]),'smokegrenade','hegrenade','flashbang',p.team==='T'?'molotov':'incgrenade'])this.buy(p.id,id);}
+    if(newRound&&p.bot){for(const id of ['armor',...(p.team==='CT'?['defusekit']:[]),'smokegrenade','flashbang',p.team==='T'?'molotov':'incgrenade','hegrenade'])this.buy(p.id,id);}
     p.botAI.path = []; p.botAI.goal = null; p.botAI.targetId = null; p.botAI.nextThinkAt = 0;
     p.botAI.defenseRole=null;p.botAI.coverUntil=0;p.botAI.coverAfter=0;
+    Object.assign(p.botAI,{wantMove:false,travelProbe:null,stuckAt:this.clock(),escape:null,escapeUntil:0,blockedEdges:new Map(),routeFailures:0,routeVariant:0,recoveries:0,utilityFailures:new Map()});
     this.selectSlot(p, Object.keys(p.inventory).some(id => getWeapon(id).slot === 1) ? 1 : 2);
     this.emit('spawn', { playerId: p.id, x: p.x, y: p.y, z: p.z });
   }
@@ -770,13 +781,14 @@ export class GameRoom {
       const node = this.navMap.get(current.id);
       for (const nextId of node?.neighbors || []) {
         const key = String(nextId), next = this.navMap.get(key); if (!next) continue;
-          const nextCost = cost.get(current.id) + dist(node, next) + Math.max(0, next.y - node.y - .35) * 30;
+        if((p.botAI?.blockedEdges?.get(navigationEdge(current.id,key))||0)>this.clock())continue;
+        const nextCost = cost.get(current.id) + dist(node, next) + Math.max(0, next.y - node.y - .35) * 30;
         if (nextCost < (cost.get(key) ?? Infinity)) { cost.set(key, nextCost); came.set(key, current.id); frontier.push({ id: key, cost: nextCost + lengthXZ(next, end) }); }
       }
     }
-    if (String(start.id) !== String(end.id) && !came.has(String(end.id))) return [copyPoint(start)];
+    if (String(start.id) !== String(end.id) && !came.has(String(end.id))) return [];
     const result = [copyPoint(goal)]; let cursor = String(end.id), guard = 0;
-    while (cursor !== String(start.id) && guard++ < 3500) { result.unshift(copyPoint(this.navMap.get(cursor))); cursor = came.get(cursor); if (!cursor) break; }
+    while (cursor !== String(start.id) && guard++ < 3500) { result.unshift({...copyPoint(this.navMap.get(cursor)),navId:cursor,fromNavId:came.get(cursor)}); cursor = came.get(cursor); if (!cursor) break; }
     return result;
   }
 
@@ -799,9 +811,10 @@ export class GameRoom {
   }
 
   botInput(p, dt) {
-    const now=this.clock(),ai=p.botAI,input=neutralInput(),from=eye(p);
+    const now=this.clock(),ai=p.botAI,input=neutralInput(),from=eye(p),skill=botSkill(this.botDifficulty);
     input.yaw=p.yaw||0;input.pitch=p.pitch||0;input.slot=combatSlot(p);
     if(now>=ai.nextThinkAt){
+      recoverNavigation(this,p);
       ai.nextThinkAt=now+230+Math.random()*80;
       const candidates=[...this.players.values()].filter(e=>e.alive&&e.team!==p.team&&now>=e.protectionUntil&&dist(p,e)<110).sort((a,b)=>dist(p,a)-dist(p,b));
       const current=this.players.get(ai.targetId);
@@ -810,7 +823,7 @@ export class GameRoom {
       let enemy=visible.find(e=>e.id===ai.targetId)||visible[0];
       if(enemy&&enemy.id===ai.targetId&&visible[0]!==enemy&&now-(ai.targetChangedAt||0)>1200&&dist(p,visible[0])<dist(p,enemy)*.65)enemy=visible[0];
       if(enemy){
-        if(ai.targetId!==enemy.id){ai.reactionAt=now+BOT_SKILL.reactionMinMs+Math.random()*BOT_SKILL.reactionRangeMs;ai.targetChangedAt=now;ai.alignedFor=0;}
+        if(ai.targetId!==enemy.id){ai.reactionAt=now+skill.reactionMinMs+Math.random()*skill.reactionRangeMs;ai.targetChangedAt=now;ai.alignedFor=0;}
         ai.targetId=enemy.id;ai.lastKnown=copyPoint(enemy);ai.lastSeenAt=now;shareSighting(this,p,enemy);
         if(p.health<40&&now>=(ai.coverAfter||0)&&Math.random()<.25){
           const node=this.nearestNav(p);
@@ -818,20 +831,23 @@ export class GameRoom {
           if(cover){ai.goal=copyPoint(cover);ai.path=this.planPath(p,cover);ai.coverUntil=now+1400;ai.coverAfter=now+4000;}
         }
       }else if(blind||!current?.alive||now-ai.lastSeenAt>600){ai.targetId=null;ai.alignedFor=0;}
-      if(!ai.utility&&now>=(ai.coverUntil||0)&&(!ai.goal||(!ai.path.length&&lengthXZ(p,ai.goal)>2)||now>ai.wanderAt)){ai.goal=this.chooseBotGoal(p);ai.path=this.planPath(p,ai.goal);ai.wanderAt=now+(this.mode==='defuse'?1600:5500)+Math.random()*400;}
-      if(!ai.previous||lengthXZ(ai.previous,p)>.55){ai.previous=copyPoint(p);ai.stuckAt=now;}
-      else if(now-ai.stuckAt>2500){ai.goal=null;ai.path=[];ai.stuckAt=now;}
+      if(!ai.utility&&now>=(ai.coverUntil||0)&&now>=(ai.escapeUntil||0)&&(!ai.goal||(!ai.path.length&&lengthXZ(p,ai.goal)>2)||now>ai.wanderAt)){
+        const goal=this.chooseBotGoal(p),changed=!ai.goal||lengthXZ(goal,ai.goal)>.35;
+        if(changed||!ai.path.length){ai.goal=goal;ai.path=this.planPath(p,goal);}
+        if(!ai.path.length&&lengthXZ(p,goal)>2&&!ai.engaging){ai.path=[copyPoint(goal)];ai.wantMove=true;recoverNavigation(this,p,{force:true});}
+        ai.wanderAt=now+(this.mode==='defuse'?1200:5500)+Math.random()*400;
+      }
     }
     const target=this.players.get(ai.targetId);
     while(ai.path.length&&lengthXZ(p,ai.path[0])<.8&&Math.abs(p.y-ai.path[0].y)<1.5)ai.path.shift();
     const waypoint=ai.path[0];
     let desired={yaw:input.yaw,pitch:input.pitch},engaging=false;
-    if(waypoint){desired={yaw:Math.atan2(-(waypoint.x-p.x),-(waypoint.z-p.z)),pitch:0};if(waypoint.y-p.y>.4||now-ai.stuckAt>1300)input.jump=Math.floor(now/600)%2===0;}
+    if(waypoint){desired={yaw:Math.atan2(-(waypoint.x-p.x),-(waypoint.z-p.z)),pitch:0};if(waypoint.y-p.y>.4||now-ai.stuckAt>1300)input.jump=Math.floor(now/600)%2===0;if(now<(ai.escapeUntil||0))input.crouch=true;}
     const watch=observationPoint(this,p,waypoint);if(watch)desired=lookAt(from,watch);
     const exposed=target?.alive&&now>=(p.flashBlindUntil||0)?visibleAimPoint(this,p,target):null;
     if(exposed){
       const to=exposed,dx=to.x-from.x,dy=to.y-from.y,dz=to.z-from.z;
-      const aimError=(.013+dist(p,target)/12000)*BOT_SKILL.aimErrorScale;
+      const aimError=(.013+dist(p,target)/12000)*skill.aimErrorScale;
       desired={yaw:Math.atan2(-dx,-dz)+Math.sin(now/440+Number(p.id.slice(2)))*aimError,pitch:Math.atan2(dy,Math.hypot(dx,dz))+Math.cos(now/630)*aimError};engaging=true;
     }
     ai.engaging=engaging;ai.aimPoint=exposed||watch;ai.action=engaging?'engage':ai.phase||'advance';
@@ -854,7 +870,8 @@ export class GameRoom {
       if((plant||defuse)&&(!engaging||finishing||urgent)){input.forward=input.right=0;input.fire=input.jump=false;input.interact=true;}
     }
     separateTeammates(this,p,input);
-    return botUtility(this,p,input,dt);
+    coordinateFlash(this,p,input,dt);
+    const result=botUtility(this,p,input,dt);ai.wantMove=Math.hypot(result.forward,result.right)>.15;return result;
   }
 
   tick(dt = 1 / TICK_RATE) {
@@ -947,7 +964,7 @@ export class GameRoom {
       roundKills:p.roundKills||0,lifeKills:p.lifeKills||0,killCards:p.killCards||[],
       respawnIn: p.respawnAt ? Math.max(0, (p.respawnAt - now) / 1000) : 0, lastShotTime: p.lastShotTime }));
     const events = drainEvents ? this.events.splice(0) : [...this.events];
-    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,droppedWeapons:this.droppedWeapons.snapshot(),defuseKits:this.defuseKits.map(k=>({...k})),...this.grenades.snapshot(),
+    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),botDifficulty:this.botDifficulty,desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,droppedWeapons:this.droppedWeapons.snapshot(),defuseKits:this.defuseKits.map(k=>({...k})),...this.grenades.snapshot(),
       round: { ...this.round, timeLeft: this.round.phaseEndsAt ? Math.max(0, (this.round.phaseEndsAt - now) / 1000) : 0 },
       bomb: { ...this.bomb, remaining: this.bomb.state === 'planted' ? Math.max(0, (this.bomb.explodesAt - now) / 1000) : 0 }, scores: { ...this.scores }, events };
   }

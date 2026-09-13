@@ -14,7 +14,7 @@ function setupMovement(room,kind){
  room.mode='deathmatch';room.round.phase='live';room.round.number++;room.match.status='live';
  room.botInput=b=>({...b.input,forward:0,right:0,fire:false,fire2:false,jump:false,interact:false});
  room.respawn(p);
- const position=kind==='sky'?{...MAP.sites.A,yaw:-.45,pitch:.43}:kind==='flat'?movementFlat:kind==='ledge'?probe.ledge:probe.lower;
+ const position=kind==='window'?{x:-29.5,y:2.2,z:-68,yaw:Math.PI/2,pitch:.05}:kind==='scaffold'?{x:-30,y:2.2,z:-68,yaw:-Math.PI/2,pitch:.1}:kind==='sky'?{...MAP.sites.A,yaw:-.45,pitch:.43}:kind==='flat'?movementFlat:kind==='ledge'?probe.ledge:probe.lower;
  Object.assign(p,position,{vx:0,vy:0,vz:0,grounded:false,pitch:position.pitch||0,protectionUntil:Infinity});
  p.input={...p.input,forward:0,right:0,jump:false,fire:false,yaw:p.yaw,pitch:p.pitch};
  room.poseHistory.clear();room.recordPoses();for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));
@@ -141,7 +141,7 @@ const control=createServer((req,res)=>{
     }
     res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(results));return;
   }
-  if(/^\/qa\/movement\/(flat|ledge|jump|sky)$/.test(req.url)){
+  if(/^\/qa\/movement\/(flat|ledge|jump|sky|window|scaffold)$/.test(req.url)){
     clearInterval(soakTimer);soakTimer=null;const result=[...app.rooms.values()].map(room=>setupMovement(room,req.url.split('/').at(-1)));
     res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(result));return;
   }
