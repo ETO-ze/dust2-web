@@ -1,0 +1,85 @@
+{
+  "capturedOn": "2026-09-13",
+  "clientCodeCommit": "0aacd03f8c87ce343850f187b47738a8b36d1e07",
+  "repositoryCommitAtCapture": "6cc40eeedd0e7ce0850ab1e8a845bdc164d618ca",
+  "note": "Current-build screenshots. Local QA rooms are demonstrations; mobile images are device emulation, not physical P60 captures.",
+  "files": [
+    {
+      "file": "current-lobby.png",
+      "source": "output/playwright/current-lobby.png",
+      "capturedOn": "2026-09-13",
+      "environment": "Local Chrome, controlled demonstration room",
+      "width": 1600,
+      "height": 900,
+      "sha256": "e8adcaf56c9d73021f6ed0240466a29c2ec30d3211e8389c4fc3fedd5073cfb1",
+      "bytes": 1368990,
+      "modified": false
+    },
+    {
+      "file": "current-room.png",
+      "source": "output/playwright/current-room.png",
+      "capturedOn": "2026-09-13",
+      "environment": "Local Chrome, controlled demonstration room",
+      "width": 1600,
+      "height": 900,
+      "sha256": "b3ad747f815eda0570676cdd788edc53eb5b274467d8e5019c639dd0c5e3fc76",
+      "bytes": 298452,
+      "modified": false
+    },
+    {
+      "file": "current-desktop.png",
+      "source": "output/playwright/current-desktop.png",
+      "capturedOn": "2026-09-13",
+      "environment": "Local Chrome, controlled demonstration room",
+      "width": 1600,
+      "height": 900,
+      "sha256": "d130b3684fb28eddc0f9bf47fb758edd218fab866beda3c5d3cf813269855aea",
+      "bytes": 2177800,
+      "modified": false
+    },
+    {
+      "file": "current-shop.png",
+      "source": "output/playwright/current-shop.png",
+      "capturedOn": "2026-09-13",
+      "environment": "Local Chrome, controlled demonstration room",
+      "width": 1600,
+      "height": 900,
+      "sha256": "b21c0eafb5befebc6a99fd53df31878a94535b0f3a301d383d9d7ffa0fd5c8b8",
+      "bytes": 901723,
+      "modified": false
+    },
+    {
+      "file": "current-bot-control.png",
+      "source": "output/playwright/current-bot-control.png",
+      "capturedOn": "2026-09-13",
+      "environment": "Local Chrome, controlled demonstration room",
+      "width": 1600,
+      "height": 900,
+      "sha256": "e0198a3167cf647ed910060bc5dd4e25fa441145ade080704ab6a5959f76d16c",
+      "bytes": 1944129,
+      "modified": false
+    },
+    {
+      "file": "mobile-clarity-clear.png",
+      "source": "output/playwright/mobile-clarity-clear.png",
+      "capturedOn": "2026-09-13",
+      "environment": "Chrome mobile emulation",
+      "width": 2532,
+      "height": 1170,
+      "sha256": "fec364b0a230f282473f23961bb2c47f02dfea46b251cb3a1b3f4f93ab179c4f",
+      "bytes": 3171999,
+      "modified": false
+    },
+    {
+      "file": "mobile-clarity-settings.png",
+      "source": "output/playwright/mobile-clarity-settings.png",
+      "capturedOn": "2026-09-13",
+      "environment": "Chrome mobile emulation",
+      "width": 2532,
+      "height": 1170,
+      "sha256": "4bccaedd9b892f5598c2ae96ada2c3fa46a22fd0987b5f3bd5ccc92cef199958",
+      "bytes": 198829,
+      "modified": false
+    }
+  ]
+}
