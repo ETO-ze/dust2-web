@@ -452,6 +452,325 @@
   },
   "screenshot": "docs/screenshots/bot-rework-smoke.png",
   "publication": {
-    "status": "pending"
+    "status": "verified",
+    "activation": {
+      "release": "20260913T024304Z",
+      "url": "https://cs2.duskrain.cn/",
+      "archiveSha256": "a16bcdba06fd4517a6f9429bca0e7c7562219c10fd9d906919c13d5613746dee",
+      "siteSha256": "2a80a8db07363ffff6019b6dfdb46d1308fc805f8a409c88730089d9a11d2607",
+      "previousRelease": "/opt/dust2-web/releases/20260912T180419Z",
+      "health": {
+        "ok": true,
+        "service": "dust2-web",
+        "release": "20260913T024304Z",
+        "protocol": 1,
+        "tickRate": 30,
+        "uptime": 1,
+        "rooms": 0,
+        "humans": 0,
+        "players": 0,
+        "memory": {
+          "rssMiB": 178,
+          "heapMiB": 61
+        },
+        "performance": {
+          "windowSamples": 24,
+          "tickBudgetMs": 33.33,
+          "tickP50Ms": 0.02,
+          "tickP95Ms": 0.03,
+          "tickMaxMs": 0.03,
+          "maxSchedulingDelayMs": 1.12,
+          "lateTicks": 0,
+          "totalTicks": 24
+        }
+      },
+      "backup": "/opt/dust2-web/backups/activate-20260913T024304Z"
+    },
+    "moduleHashes": {
+      "bot-utility.js": "bd9235f595a3d57c869c67c5758a3e6c30f786a4bdfc786760e76ed00135da2f",
+      "bot-perception.js": "46742110dea3c5af296ca4342d8fe408ed0ed58b1e931a947d3cd55a3c33b3d2",
+      "bot-trajectory.js": "8f7c2577df565e939cd803b6f061bdd053fe477e5dab446bc856f1e18337407e",
+      "bot-tactics.js": "72edcbbd436aa5e64673875166d8bf627dbfa423c72593134a23997cfb039188",
+      "bot-lineups.js": "0b432de569acce805955b357d09a0a81154dd26e79565ee9c7599bcde59dc99a",
+      "game.js": "d36727f86332be9239602b0b0e4cf5a6d7024f176eb58a416d1db62fc19fa63b"
+    },
+    "publicGameplayChecks": 9,
+    "publicRoomChecks": 5,
+    "publicBotLoad": {
+      "code": "BTMTZ7R7QH",
+      "welcomed": true,
+      "players": 10,
+      "snapshots": 1056,
+      "counts": {
+        "join": 2,
+        "spawn": 20,
+        "buy": 18,
+        "round_start": 2,
+        "shot": 193,
+        "hit": 38,
+        "weapon_dropped": 5,
+        "kill": 5
+      },
+      "health": [
+        {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T024304Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 134,
+          "rooms": 1,
+          "humans": 1,
+          "players": 10,
+          "memory": {
+            "rssMiB": 128,
+            "heapMiB": 17
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 0.01,
+            "tickP95Ms": 5.68,
+            "tickMaxMs": 63.11,
+            "maxSchedulingDelayMs": 30.23,
+            "lateTicks": 2,
+            "totalTicks": 4019
+          }
+        },
+        {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T024304Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 144,
+          "rooms": 1,
+          "humans": 1,
+          "players": 10,
+          "memory": {
+            "rssMiB": 133,
+            "heapMiB": 18
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 0.01,
+            "tickP95Ms": 6.53,
+            "tickMaxMs": 55.64,
+            "maxSchedulingDelayMs": 30.23,
+            "lateTicks": 2,
+            "totalTicks": 4320
+          }
+        },
+        {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T024304Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 154,
+          "rooms": 1,
+          "humans": 1,
+          "players": 10,
+          "memory": {
+            "rssMiB": 133,
+            "heapMiB": 20
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 1.76,
+            "tickP95Ms": 6.74,
+            "tickMaxMs": 55.64,
+            "maxSchedulingDelayMs": 30.23,
+            "lateTicks": 2,
+            "totalTicks": 4621
+          }
+        },
+        {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T024304Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 165,
+          "rooms": 1,
+          "humans": 1,
+          "players": 10,
+          "memory": {
+            "rssMiB": 140,
+            "heapMiB": 23
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 3.86,
+            "tickP95Ms": 6.91,
+            "tickMaxMs": 55.64,
+            "maxSchedulingDelayMs": 30.23,
+            "lateTicks": 2,
+            "totalTicks": 4925
+          }
+        },
+        {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T024304Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 175,
+          "rooms": 1,
+          "humans": 1,
+          "players": 10,
+          "memory": {
+            "rssMiB": 144,
+            "heapMiB": 24
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 4.08,
+            "tickP95Ms": 7.04,
+            "tickMaxMs": 55.64,
+            "maxSchedulingDelayMs": 95.48,
+            "lateTicks": 3,
+            "totalTicks": 5226
+          }
+        },
+        {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T024304Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 185,
+          "rooms": 1,
+          "humans": 1,
+          "players": 10,
+          "memory": {
+            "rssMiB": 145,
+            "heapMiB": 25
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 4.16,
+            "tickP95Ms": 7.16,
+            "tickMaxMs": 32.9,
+            "maxSchedulingDelayMs": 95.48,
+            "lateTicks": 3,
+            "totalTicks": 5531
+          }
+        },
+        {
+          "ok": true,
+          "service": "dust2-web",
+          "release": "20260913T024304Z",
+          "protocol": 1,
+          "tickRate": 30,
+          "uptime": 195,
+          "rooms": 1,
+          "humans": 1,
+          "players": 10,
+          "memory": {
+            "rssMiB": 146,
+            "heapMiB": 23
+          },
+          "performance": {
+            "windowSamples": 1800,
+            "tickBudgetMs": 33.33,
+            "tickP50Ms": 3.75,
+            "tickP95Ms": 6.53,
+            "tickMaxMs": 21.07,
+            "maxSchedulingDelayMs": 95.48,
+            "lateTicks": 3,
+            "totalTicks": 5831
+          }
+        }
+      ]
+    }
+  },
+  "portable": {
+    "integrity": {
+      "zipCrc": "pass",
+      "checkedFiles": 2440,
+      "sourceCommit": "2e37d44028bd3a312221bdb7ada8c08aefb16d38",
+      "sourceDirty": false,
+      "newBotModulesMatch": true,
+      "archive": "H:\\playfround\\dust2-web\\artifacts\\portable\\DustII-Windows-x64-20260913-024305.zip",
+      "sha256": "3f4bb1e7f937a631012bfac16ffa01cab00c5aff95dff7a06020c30a8b76e638"
+    },
+    "offlineBrowser": {
+      "external": [],
+      "errors": [],
+      "players": 10,
+      "resources": {
+        "fps": 173,
+        "ping": 5,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 589,
+        "textures": 376,
+        "programs": 26,
+        "actors": 9,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 1,
+        "heapMiB": 388,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 11.1,
+          "cpuP95Ms": 7.2,
+          "actorsP95Ms": 0.5,
+          "renderSubmitP95Ms": 6.7
+        }
+      },
+      "connected": true,
+      "round": {
+        "number": 1,
+        "phase": "live",
+        "phaseEndsAt": 1789267735063,
+        "buyEndsAt": 1789267645035,
+        "winner": null,
+        "reason": "",
+        "timeLeft": 104.565
+      }
+    },
+    "onlineBrowser": {
+      "errors": [],
+      "assetOrigins": [
+        "http://127.0.0.1:27185"
+      ],
+      "sockets": [
+        "wss://cs2.duskrain.cn/ws",
+        "wss://cs2.duskrain.cn/ws"
+      ],
+      "release": "20260913T024304Z",
+      "players": 4,
+      "connected": true,
+      "resources": {
+        "fps": 167,
+        "ping": 52,
+        "connected": true,
+        "contextLost": false,
+        "geometries": 653,
+        "textures": 368,
+        "programs": 26,
+        "actors": 3,
+        "effects": 0,
+        "audioVoices": 0,
+        "audioDecodedMiB": 13,
+        "viewWeapons": 1,
+        "heapMiB": 463,
+        "timing": {
+          "samples": 300,
+          "frameP95Ms": 11.1,
+          "cpuP95Ms": 8.4,
+          "actorsP95Ms": 0.4,
+          "renderSubmitP95Ms": 8.1
+        }
+      }
+    }
   }
 }
