@@ -24,9 +24,9 @@ test('observation holds the same angle across tactical replans and looks ahead a
  let now=10000;const room={clock:()=>now,visibleToBot:()=>true};
  const p={x:0,y:0,z:0,seat:0,botAI:{lastSeenAt:0,watchPoints:[{x:0,y:1.5,z:-12},{x:10,y:1.5,z:-12}]}};
  const first=observationPoint(room,p);now+=100;p.botAI.watchPoints=p.botAI.watchPoints.map(n=>({...n}));
- assert.deepEqual(observationPoint(room,p),first);now+=1200;assert.notDeepEqual(observationPoint(room,p),first);
+ assert.deepEqual(observationPoint(room,p),first);now+=2600;assert.notDeepEqual(observationPoint(room,p),first);
  p.botAI.watchPoints=[];p.botAI.path=[{x:0,y:0,z:-1},{x:0,y:0,z:-8}];
- assert.deepEqual(observationPoint(room,p,p.botAI.path[0]),{x:0,y:1.45,z:-8});
+ assert.deepEqual(observationPoint(room,p,p.botAI.path[0]),{x:0,y:1.62,z:-8});
  assert.ok(lookAt({x:0,y:0,z:0},{x:0,y:3,z:-10}).pitch>0);
 });
 function utilityFixture(){

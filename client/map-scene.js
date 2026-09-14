@@ -1,3 +1,4 @@
+import {repairMapOverlays} from './map-overlays.js';
 import {mobileDevice} from './device-profile.js';
 import * as THREE from 'three';
 import {gameGLTFLoader} from './gltf-loader.js';
@@ -36,6 +37,7 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
   group.rotation.y=Math.PI/2;
   group.add(gltf.scene);
   group.updateMatrixWorld(true);
+  const overlayRepair=repairMapOverlays(group);
   const originalLights=[];
   const textures=new Set(),materials=new Set();
   let meshCount=0,triangles=0;
@@ -44,7 +46,7 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
     if(!object.isMesh)return;
     meshCount++;
     triangles+=(object.geometry.index?.count||object.geometry.attributes.position.count)/3;
-    object.castShadow=true;object.receiveShadow=true;
+    object.castShadow=!object.userData.overlayAligned;object.receiveShadow=true;
     object.frustumCulled=true;
     for(const material of Array.isArray(object.material)?object.material:[object.material]){
       const shaderFlags=material.userData?.vmat?.IntParams||{};
@@ -97,7 +99,7 @@ export async function createMapScene(scene,{onProgress=()=>{}}={}) {
   Object.assign(sun.shadow.camera,{left:-78,right:78,top:78,bottom:-78,near:1,far:230});
   sun.shadow.normalBias=.035;sun.shadow.bias=-.00012;
   scene.add(hemisphere,sun,sun.target);
-  group.userData.renderStats={meshCount,triangles,materials:materials.size,textures:textures.size,originalCS2Materials:true};
+  group.userData.renderStats={meshCount,triangles,materials:materials.size,textures:textures.size,originalCS2Materials:true,overlayRepair};
   onProgress('CS2 原版 Dust II 场景就绪');
   return {mapData:MAP,positions,group,lights:[hemisphere,sun],spawn:MAP.spawns.T[0]};
 }

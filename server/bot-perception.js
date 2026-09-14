@@ -1,3 +1,4 @@
+import {floorHeight,isHullClear} from '../shared/physics.js';
 import {eyePosition} from '../shared/aim.js';
 import {angleDifference} from './bot-aim.js';
 import {getWeapon} from '../shared/weapons.js';
@@ -32,22 +33,36 @@ export function visibleAimPoint(room,p,enemy,{acquire=false}={}){
   return null;
 }
 
+export function standingAimPoint(room,raw,height=1.62){
+  if(!room.nav?.length)return raw;
+  const node=room.nearestNav({...raw,y:raw.y-height});if(!node||Math.hypot(node.x-raw.x,node.z-raw.z)>4)return null;
+  const cache=room.botStandCache||=new Map(),key=node.id??`${node.x}:${node.z}`;
+  if(!cache.has(key)){const y=floorHeight(node.x,node.z,node.y+.45,1.8);cache.set(key,y!==null&&isHullClear({x:node.x,y:y+.015,z:node.z})?{x:node.x,y,z:node.z}:null);}
+  const stand=cache.get(key);return stand?{...stand,y:stand.y+height}:null;
+}
 export function observationPoint(room,p,waypoint){
-  const ai=p.botAI,now=room.clock(),from=eyePosition(p);
+  const ai=p.botAI,now=room.clock(),from=eyePosition(p),scoped=getWeapon(p.weapon).zoomStyle==='scope';
   if(ai.lastKnown&&now-ai.lastSeenAt<1800){const to={...ai.lastKnown,y:ai.lastKnown.y+(ai.lastKnown.crouch?.92:1.62)};if(room.visibleToBot(from,to))return to;}
-  if(ai.heardPoint&&now-ai.heardAt<2400&&room.visibleToBot(from,ai.heardPoint))return ai.heardPoint;
-  const checks=ai.watchPoints||[];
-  const usable=checks.filter(to=>{const d=Math.hypot(to.x-p.x,to.z-p.z);return d>2&&d<(getWeapon(p.weapon).zoomStyle==='scope'?75:45)&&room.visibleToBot(from,to);});
+  const route=(ai.path||[]).slice(0,18),ahead=[...route].reverse().find(n=>Math.hypot(n.x-p.x,n.z-p.z)>4)||waypoint;
+  const moving=!!ahead&&Math.hypot(ahead.x-p.x,ahead.z-p.z)>1.5,heading=moving?lookAt(from,ahead).yaw:p.yaw||0;
+  const eligible=to=>{const d=Math.hypot(to.x-p.x,to.z-p.z),angle=Math.abs(angleDifference(lookAt(from,to).yaw,heading));return d>3&&d<(scoped?75:45)&&(!moving||angle<1.15)&&Math.abs(lookAt(from,to).pitch)<.48&&room.visibleToBot(from,to);};
+  const source=(ai.watchPoints||[]).map(n=>standingAimPoint(room,n,scoped?1.2:1.62)).filter(Boolean);
+  let usable=source.filter(eligible);
+  // Nearby nav ground points are plausible player positions, not wall centers
+  // or the next footstep. Search only when the authored angles do not fit travel.
+  if(!usable.length&&room.nav?.length&&now>=(ai.scanAnglesAt||0)){
+    ai.scanAnglesAt=now+700;const nodes=room.nav.filter(n=>{const d=Math.hypot(n.x-p.x,n.z-p.z);return d>5&&d<24&&Math.abs(angleDifference(lookAt(from,n).yaw,heading))<.9;}).sort((a,b)=>Math.abs(angleDifference(lookAt(from,a).yaw,heading))-Math.abs(angleDifference(lookAt(from,b).yaw,heading)));
+    ai.localAngles=nodes.slice(0,20).map(n=>standingAimPoint(room,{...n,y:n.y+(scoped?1.2:1.62)},scoped?1.2:1.62)).filter(n=>n&&eligible(n)).slice(0,5);
+  }
+  if(!usable.length)usable=(ai.localAngles||[]).filter(eligible);
   if(usable.length){
-    // Hold one angle for a beat instead of sweeping every frame.
-    if(now>=(ai.watchUntil||0)||!ai.watchPoint||!usable.some(to=>Math.hypot(to.x-ai.watchPoint.x,to.y-ai.watchPoint.y,to.z-ai.watchPoint.z)<.1)){ai.watchIndex=((ai.watchIndex??-1)+1)%usable.length;ai.watchPoint=usable[ai.watchIndex];ai.watchUntil=now+1100+(p.seat||0)*100;}
-    return ai.watchPoint;
+    if(now>=(ai.watchUntil||0)||!ai.watchPoint||!usable.some(n=>Math.hypot(n.x-ai.watchPoint.x,n.y-ai.watchPoint.y,n.z-ai.watchPoint.z)<.1)){
+      usable.sort((a,b)=>Math.abs(angleDifference(lookAt(from,a).yaw,heading))-Math.abs(angleDifference(lookAt(from,b).yaw,heading)));
+      const previous=ai.watchPoint;ai.watchPoint=usable.find(n=>!previous||Math.hypot(n.x-previous.x,n.z-previous.z)>.8)||usable[0];ai.watchUntil=now+2200+(p.seat||0)*170;
+    }return ai.watchPoint;
   }
-  // Look farther along the route, at standing head height, while feet follow
-  // the immediate waypoint independently. Never stare into a nearby corner.
-  for(const n of (ai.path||[]).slice(0,12).reverse()){
-    const to={...n,y:n.y+1.45};if(Math.hypot(n.x-p.x,n.z-p.z)>2&&room.visibleToBot(from,to))return to;
+  for(const n of [...route].reverse()){
+    if(Math.hypot(n.x-p.x,n.z-p.z)<3)continue;const to=standingAimPoint(room,{...n,y:n.y+(scoped?1.2:1.62)},scoped?1.2:1.62);if(to&&eligible(to))return to;
   }
-  if(waypoint){const to={...waypoint,y:waypoint.y+1.45};if(room.visibleToBot(from,to))return to;}
   return null;
 }

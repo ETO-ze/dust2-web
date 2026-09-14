@@ -25,3 +25,13 @@ test('JSON server geometry and binary client geometry patch identically and pres
  assert.deepEqual(a.positions,b.positions);assert.deepEqual(a.materials,b.materials);assert.equal(a.materials[100],2);assert.equal(a.materials[200],3);assert.equal(a.materials.length,a.positions.length/9);
  const fixture=[0,0,0,1,0,0,0,0,1];assert.equal(patchMapCollision(fixture,null).positions,fixture);
 });
+
+// Unlike repeated jump input, this catches a single landing on the rubble lip.
+test('one crouch-jump traverses all 49 rubble approaches at client and server rates',()=>{
+ initPhysics(positions);
+ for(const hz of [30,60])for(const reverse of [false,true])for(const z of [-68.3,-68.2,-68.1,-68,-67.9,-67.8,-67.7])for(const x of reverse?[-35,-34.7]:[-30.5,-30.8,-31,-31.2,-31.5]){
+  const p=createPlayerState({x,y:4,z});for(let i=0;i<hz*1.5;i++)stepPlayer(p,{},1/hz);
+  for(let i=0;i<hz*3;i++)stepPlayer(p,{forward:1,yaw:reverse?-Math.PI/2:Math.PI/2,crouch:i>=hz*.1,jump:i<hz*.13},1/hz);
+  assert.ok(reverse?p.x> -31:p.x< -35,JSON.stringify({hz,reverse,x,z,end:p}));
+ }
+});

@@ -82,6 +82,8 @@ export function hullFor(p, height=p.crouch?CROUCH_HEIGHT:STAND_HEIGHT) {
     new Vector3(p.x+PLAYER_RADIUS,p.y+height,p.z+PLAYER_RADIUS));
 }
 
+export function isHullClear(p,height=STAND_HEIGHT){const hit=world?.hullIntersect(hullFor(p,height));return !hit||hit.depth<.025;}
+
 export function raycastWorld(origin, direction, maxDistance=300) {
   if (!world) return null;
   ray.origin.set(origin.x,origin.y,origin.z);

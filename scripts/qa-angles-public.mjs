@@ -1,0 +1,15 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';import {WebSocket} from 'ws';import {once} from 'node:events';
+const base='https://cs2.duskrain.cn/',release=JSON.parse(fs.readFileSync('artifacts/deploy/angles-overlay.json','utf8')),hash=b=>createHash('sha256').update(b).digest('hex'),report={release:release.release,hashes:[]},peers=[];
+async function peer(team,room){const ws=new WebSocket('wss://cs2.duskrain.cn/ws'),messages=[];ws.on('message',raw=>{messages.push(JSON.parse(raw));if(messages.length>400)messages.shift();});peers.push(ws);await once(ws,'open');const wait=async pred=>{const until=Date.now()+16000;while(Date.now()<until){const m=messages.find(pred);if(m)return m;await new Promise(r=>setTimeout(r,25));}throw Error('Public angles response timeout');};const send=m=>ws.send(JSON.stringify(m));send({type:'join',name:'Angles QA '+team,team,mode:'defuse',bots:0,shotProtocol:1,...(room?{room}:{})});return {messages,wait,send,welcome:await wait(m=>m.type==='welcome')};}
+try{
+ const health=await(await fetch(base+'health')).json();assert.equal(health.release,release.release);
+ for(const name of release.files.filter(p=>p.startsWith('dist/')&&!p.endsWith('.gz'))){const res=await fetch(base+(name==='dist/index.html'?'':name.slice(5)));assert.equal(res.status,200);assert.equal(hash(Buffer.from(await res.arrayBuffer())),release.sha256[name],name);report.hashes.push(name);}
+ const a=await peer('CT'),b=await peer('CT',a.welcome.room),enemy=await peer('T',a.welcome.room);report.room=a.welcome.room;
+ a.send({type:'chat',channel:'team',text:'队伍隐私验收'});await b.wait(m=>m.events?.some(e=>e.text==='队伍隐私验收'));
+ b.send({type:'requestWeapon',weapon:'p250'});await a.wait(m=>m.weaponRequests?.some(r=>r.playerId===b.welcome.id));a.send({type:'donateWeapon',playerId:b.welcome.id,weapon:'p250'});const ack=await a.wait(m=>m.type==='teamGear');assert.equal(ack.money,500);report.donation={weapon:ack.weapon,remaining:ack.money};
+ const snap=await a.wait(m=>m.type==='snapshot'&&m.players.some(p=>p.id===a.welcome.id&&p.money===500));assert.ok(snap.players.find(p=>p.id===a.welcome.id).inventory.includes('usp'));
+ a.send({type:'chat',channel:'all',text:'全体消息验收'});await enemy.wait(m=>m.events?.some(e=>e.text==='全体消息验收'));
+ assert.ok(!enemy.messages.some(m=>m.events?.some(e=>e.channel==='team')));assert.ok(!enemy.messages.some(m=>m.weaponRequests?.length));assert.ok(enemy.messages.filter(m=>m.type==='snapshot').every(m=>m.players.filter(p=>p.team==='CT').every(p=>!Object.hasOwn(p,'botBuy'))));report.privateTeamData=true;
+ const live=await a.wait(m=>m.type==='snapshot'&&m.round.phase==='live'),self=live.players.find(p=>p.id===a.welcome.id);a.send({type:'input',seq:1,slot:2,fire:true,shotId:1,yaw:self.yaw,pitch:0,forward:0,right:0});await a.wait(m=>m.type==='snapshot'&&m.players.some(p=>p.id===self.id&&p.shotAck===1&&p.ammo===self.ammo-1));report.shot={from:self.ammo,to:self.ammo-1,ack:1};report.ok=true;
+}finally{peers.forEach(ws=>ws.close());}
+fs.writeFileSync('artifacts/angles-map/public.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));

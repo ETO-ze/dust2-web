@@ -5,9 +5,10 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 // Reconcile the broken brickwork at B window against the shipped visible mesh.
 // Clip at a small audited region; every source surface outside it is retained.
-const bounds={min:[-35.2,2.7,-69.25],max:[-31.2,6.5,-67.05]};
+const bounds={min:[-35.2,1.3,-69.25],max:[-30.55,6.5,-67.05]};
 const file=path.resolve('public/assets/map-cs2/dust2-web.gltf'),json=JSON.parse(fs.readFileSync(file));
 for(const b of json.buffers)if(b.uri&&!b.uri.startsWith('data:'))b.uri=`data:application/octet-stream;base64,${fs.readFileSync(path.resolve(path.dirname(file),b.uri)).toString('base64')}`;
+const nonSolid=new Set(json.materials.filter(m=>m.alphaMode==='BLEND'||m.alphaMode==='MASK'||m.extras?.vmat?.IntParams?.F_DEPTH_FEATHER||/overlay|decal|weeds|sagebrush|palm/.test(m.name)).map(m=>m.name));
 json.materials=json.materials.map(m=>({name:m.name,doubleSided:true}));delete json.images;delete json.textures;
 globalThis.self=globalThis;globalThis.ProgressEvent??=class{constructor(type,init){Object.assign(this,{type},init);}};
 const gltf=await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(JSON.stringify(json),'');
@@ -23,12 +24,18 @@ for(let i=0;i<source.length;i+=9){const poly=[Array.from(source.slice(i,i+3)),Ar
  if(triangulate(part).length){removed.push(i/9);outside.push({source:i/9,positions:rest});}
 }
 const names=new Set();
-group.traverse(mesh=>{if(!mesh.isMesh||!mesh.material.name.includes('mudbrick'))return;
+group.traverse(mesh=>{if(!mesh.isMesh||nonSolid.has(mesh.material.name))return;
  const attr=mesh.geometry.attributes.position,indices=mesh.geometry.index;
  for(let i=0;i<(indices?.count||attr.count);i+=3){let poly=[0,1,2].map(j=>new THREE.Vector3().fromBufferAttribute(attr,indices?indices.getX(i+j):i+j).applyMatrix4(mesh.matrixWorld).toArray());if(!overlaps(poly))continue;
   for(const plane of planes){poly=half(poly,plane);if(poly.length<3)break;}const triangles=triangulate(poly);if(triangles.length){inside.push(...triangles);names.add(mesh.name);}
  }
 });
+// A small clip ramp bridges the overhanging lips between broken bricks.
+// It covers only the walkable sill, ending at the visible 3.25 m crest;
+// the side walls and opening above remain the original render-matched mesh.
+const toe=-31.45,crest=-32.58,lo=-68.65,hi=-67.35;
+const a=[toe,2.87,lo],b=[toe,2.87,hi],c=[crest,3.255,hi],d=[crest,3.255,lo];
+inside.push(...a,...b,...c,...a,...c,...d);
 const round=v=>Math.round(v*1e6)/1e6;
 const vertices=[],indices=[],lookup=new Map();
 for(let i=0;i<inside.length;i+=3){const p=inside.slice(i,i+3).map(round),key=p.join(',');if(!lookup.has(key)){lookup.set(key,vertices.length/3);vertices.push(...p);}indices.push(lookup.get(key));}

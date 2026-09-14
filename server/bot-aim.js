@@ -1,5 +1,6 @@
 export const BOT_AIM=Object.freeze({maxYawSpeed:3.6,maxPitchSpeed:2.6,damping:9,alignedRadians:.035,settleSeconds:.12});
-// A modest, identical adjustment for both teams. No score/player-based buffs.
+// Baseline aim limits are identical for both teams. Streak adaptation adjusts
+// reaction/error in bot-adaptation.js and never raises these angular limits.
 import {botSkill} from '../shared/bot-difficulty.js';
 export const BOT_SKILL=botSkill('normal');
 export const angleDifference=(target,current)=>Math.atan2(Math.sin(target-current),Math.cos(target-current));

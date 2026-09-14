@@ -52,12 +52,7 @@ export function botSharing(room){
     if(donor)donateWeapon(room,donor.id,request.playerId,request.weapon);
   }
 }
-export function equipmentGoal(room,p){
-  const id=p.botAI.donationDrop;if(!id)return null;
-  const item=room.droppedWeapons.items.find(i=>i.id===id);
-  if(!item||primary(p)||room.clock()-item.droppedAt>10000){p.botAI.donationDrop=null;return null;}
-  p.botAI.phase='collect-weapon';return {x:item.x,y:p.y,z:item.z};
-}
+
 export function privateRequests(room){
   return [...(room.weaponRequests?.values()||[])].filter(r=>r.round===room.round.number&&r.status==='waiting'&&room.players.get(r.playerId)?.alive&&room.players.get(r.playerId)?.team===r.team).map(({playerId,name,team,weapon,status})=>({playerId,name,team,weapon,status}));
 }

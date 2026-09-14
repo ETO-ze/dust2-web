@@ -20,9 +20,10 @@ export class DroppedWeapons {
     });
     candidates.sort((a,b)=>distance(origin,a)-distance(origin,b));return candidates[0]||null;
   }
-  autoCandidate(player,hasSlot,slotOf){
+  autoCandidate(player,hasSlot,slotOf,onlyId=null){
     const now=this.clock(),origin={x:player.x,y:player.y+.75,z:player.z};
     return this.items.filter(item=>{
+      if(onlyId&&item.id!==onlyId)return false;
       if(player.bot&&item.intendedFor&&item.intendedFor!==player.id&&now<item.reservedUntil)return false;
       if(item.expiresAt<=now||now-item.droppedAt<350||item.ownerId===player.id&&now-item.droppedAt<1500||hasSlot(slotOf(item.weaponId)))return false;
       const d=distance(origin,item);if(d>1.25||Math.abs(item.y-player.y)>1.5)return false;
