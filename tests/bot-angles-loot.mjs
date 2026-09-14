@@ -45,3 +45,9 @@ test('a missing or unreachable loot target is released and does not keep the bot
 test('picking up the first rifle updates the bot input slot in the same tick',()=>{
  const {room,a,advance}=roomFixture();Object.assign(a,createPlayerState({x:0,y:.001,z:0}),{alive:true,grounded:true});room.round.phase='live';room.planPath=(_,to)=>[to];a.botAI.nextThinkAt=Infinity;const d=room.droppedWeapons.drop({id:'h',x:.5,y:0,z:0},{weaponId:'ak47',ammo:30,reserve:90});Object.assign(d,{x:.5,y:.08,z:0});advance(500);const input=room.botInput(a,1/30);assert.equal(a.weapon,'ak47');assert.equal(input.slot,1);
 });
+
+test('repeated static preaim points reuse navigation lookup with bounded cache storage',()=>{
+ initPhysics(flat);let calls=0;const node={id:1,x:0,y:0,z:-8},room={nav:[node],nearestNav:()=>{calls++;return node;}};
+ for(let i=0;i<300;i++)assert.deepEqual(standingAimPoint(room,{x:0,y:1.62,z:-8}),{x:0,y:1.62,z:-8});assert.equal(calls,1);
+ for(let i=0;i<1200;i++)standingAimPoint(room,{x:i,y:1.62,z:-8});assert.ok(room.botAnchorCache.size<=1024);
+});

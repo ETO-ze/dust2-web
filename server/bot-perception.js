@@ -35,7 +35,12 @@ export function visibleAimPoint(room,p,enemy,{acquire=false}={}){
 
 export function standingAimPoint(room,raw,height=1.62){
   if(!room.nav?.length)return raw;
-  const node=room.nearestNav({...raw,y:raw.y-height});if(!node||Math.hypot(node.x-raw.x,node.z-raw.z)>4)return null;
+  // Author/map points recur every tick. Cache the nearest-node lookup too,
+  // not just its hull test; the static map cannot change under this room.
+  const anchors=room.botAnchorCache||=new Map(),anchorKey=`${raw.x}:${raw.y-height}:${raw.z}`;
+  let node=anchors.get(anchorKey);
+  if(!anchors.has(anchorKey)){node=room.nearestNav({...raw,y:raw.y-height});if(!node||Math.hypot(node.x-raw.x,node.z-raw.z)>4)node=null;if(anchors.size>=1024)anchors.delete(anchors.keys().next().value);anchors.set(anchorKey,node);}
+  if(!node)return null;
   const cache=room.botStandCache||=new Map(),key=node.id??`${node.x}:${node.z}`;
   if(!cache.has(key)){const y=floorHeight(node.x,node.z,node.y+.45,1.8);cache.set(key,y!==null&&isHullClear({x:node.x,y:y+.015,z:node.z})?{x:node.x,y,z:node.z}:null);}
   const stand=cache.get(key);return stand?{...stand,y:stand.y+height}:null;
