@@ -79,6 +79,16 @@ function matchCase(room,kind){
 const control=createServer((req,res)=>{
   if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress)){res.writeHead(403);res.end();return;}
   if(req.method!=='POST'){res.writeHead(405);res.end();return;}
+  if(req.url==='/qa/social'){
+    for(const room of app.rooms.values()){
+      room.mode='defuse';room.botInput=p=>({...p.input,forward:0,right:0,fire:false,fire2:false,interact:false});room.match.status='live';
+      Object.assign(room.round,{number:3,phase:'freeze',phaseEndsAt:Date.now()+90000,buyEndsAt:Date.now()+110000});
+      const human=[...room.players.values()].find(p=>!p.bot),bots=[...room.players.values()].filter(p=>p.bot);
+      const assigned=[human,...bots.slice(0,2)];for(const [i,p]of assigned.entries()){p.team='CT';p.teamId=room.teamForSide('CT');room.respawn(p);Object.assign(p,MAP.spawns.CT[0],{x:MAP.spawns.CT[0].x+i*2,money:i===2?0:i===1?2000:16000,armor:100,helmet:true});p.inventory={};room.giveWeapon(p,'usp');room.giveWeapon(p,'knife');if(i<2)room.giveWeapon(p,i===0?'awp':'m4a1');room.selectSlot(p,i<2?1:2);p.input.slot=p.slot;}
+      room.teamBuys.CT={kind:'eco'};if(assigned[2]){assigned[2].requestAt=0;room.requestWeapon(assigned[2].id,'m4a1');}
+    }
+    res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({ok:true}));return;
+  }
   if(/^\/qa\/round-update\/(ended|damage-assist|flash-assist)$/.test(req.url)){
     const kind=req.url.split('/').at(-1),results=[];
     for(const room of app.rooms.values()){

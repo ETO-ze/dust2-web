@@ -1,0 +1,14 @@
+#game-chat{position:fixed;left:max(16px,env(safe-area-inset-left));bottom:145px;width:min(410px,60vw);z-index:55;font:13px/1.5 Arial,"Microsoft YaHei",sans-serif;color:#f2f3ed;pointer-events:none;text-shadow:0 1px 3px #000,0 0 5px #0009}.chat-log{max-height:116px;overflow:hidden;overflow-wrap:anywhere;display:flex;flex-direction:column;justify-content:flex-end}.chat-line{flex:none}.chat-line.old{display:none}.chat-line b{font-weight:600}.chat-form{display:flex;gap:5px;padding:7px;background:#182630e8;border-bottom:1px solid #dbc06b;pointer-events:auto;text-shadow:none}.chat-form[hidden]{display:none}.chat-form input{width:0;flex:1;min-width:30px;border:0;background:transparent;color:#fff;outline:none;font:inherit}.chat-form button{border:0;background:#314553;color:#eacb77;padding:4px 7px;font:inherit;cursor:pointer}.chat-status{font-size:11px;color:#ffd077}.open .chat-log{background:#17252be0;padding:8px;max-height:min(220px,36dvh);overflow-y:auto;justify-content:initial;pointer-events:auto}.open .chat-line.old{display:block}
+body.touch-device #game-chat{left:12px;bottom:112px;width:min(320px,48vw);font-size:10px}body.touch-device #game-chat.open{left:10vw;bottom:12px;width:80vw;font-size:14px}body.touch-device .chat-log{max-height:58px}body.touch-device .open .chat-log{max-height:30dvh}.shop-team-help{display:flex;align-items:center;gap:7px;padding:6px 14px;font-size:11px;flex-wrap:wrap}.shop-team-help select,.shop-team-help button,.shop-requests button{background:#344751;border:1px solid #d1c48e55;color:#ece4c2;padding:6px 9px;font-size:inherit}.shop-requests{display:flex;gap:5px;flex-wrap:wrap;padding:0 14px}.shop-requests button{font-size:11px}.shop-requests:empty{display:none}
+
+.shop-team-help[hidden]{display:none}
+
+.shop-team-help select{width:auto;min-width:130px;flex:0 1 150px;margin:0}
+body:has(#buy-menu:not([hidden])) #game-chat:not(.open){display:none}
+
+.touch-device .shop-team-help small{display:none}
+.touch-device .equipment-card .equipment-item{height:96px;min-height:96px;padding:5px 7px}
+.touch-device .equipment-card .equipment-item img{height:32px;flex-shrink:0}
+.touch-device .equipment-item.weapon-item img{transform:scale(2.05)}
+.touch-device .equipment-card .equipment-item b{font-size:11px;line-height:14px}
+.touch-device .equipment-card .equipment-price strong{font-size:12px}

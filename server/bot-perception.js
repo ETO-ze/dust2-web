@@ -1,5 +1,13 @@
 import {eyePosition} from '../shared/aim.js';
 import {angleDifference} from './bot-aim.js';
+import {getWeapon} from '../shared/weapons.js';
+
+export function beginAimDuel(room,p,enemy){
+  const sniper=getWeapon(p.weapon).zoomStyle==='scope';
+  // Choose an aiming intention once per acquisition; never force a hit result.
+  const probability=sniper?(p.weapon==='awp'?.10:.38):(room.botDifficulty==='hard'?.56:.38);
+  p.botAI.headIntent=(room.aimRandom||Math.random)()<probability;p.botAI.aimEnemy=enemy.id;
+}
 
 export function lookAt(from,to){return {yaw:Math.atan2(-(to.x-from.x),-(to.z-from.z)),pitch:Math.atan2(to.y-from.y,Math.hypot(to.x-from.x,to.z-from.z))};}
 export function hearGunshot(room,shooter){
@@ -16,7 +24,8 @@ export function visibleAimPoint(room,p,enemy,{acquire=false}={}){
   const from=eyePosition(p),height=enemy.crouch?1.1:1.8;
   if(acquire&&Math.hypot(enemy.x-p.x,enemy.z-p.z)>2.5&&Math.abs(angleDifference(lookAt(from,eyePosition(enemy)).yaw,p.yaw||0))>Math.PI*.4)return null;
   // Test the point that will actually be aimed at, not an unrelated eye ray.
-  for(const offset of [height*.67,height-.18,height*.43]){
+  const head=height-.18,chest=height*.67;
+  for(const offset of p.botAI?.headIntent?[head,chest,height*.43]:[chest,head,height*.43]){
     const to={x:enemy.x,y:enemy.y+offset,z:enemy.z};
     if(room.visibleToBot(from,to))return to;
   }
@@ -25,10 +34,10 @@ export function visibleAimPoint(room,p,enemy,{acquire=false}={}){
 
 export function observationPoint(room,p,waypoint){
   const ai=p.botAI,now=room.clock(),from=eyePosition(p);
-  if(ai.lastKnown&&now-ai.lastSeenAt<1800){const to={...ai.lastKnown,y:ai.lastKnown.y+1.3};if(room.visibleToBot(from,to))return to;}
-  if(ai.heardPoint&&now-ai.heardAt<2400)return ai.heardPoint;
+  if(ai.lastKnown&&now-ai.lastSeenAt<1800){const to={...ai.lastKnown,y:ai.lastKnown.y+(ai.lastKnown.crouch?.92:1.62)};if(room.visibleToBot(from,to))return to;}
+  if(ai.heardPoint&&now-ai.heardAt<2400&&room.visibleToBot(from,ai.heardPoint))return ai.heardPoint;
   const checks=ai.watchPoints||[];
-  const usable=checks.filter(to=>{const d=Math.hypot(to.x-p.x,to.z-p.z);return d>2&&d<32&&room.visibleToBot(from,to);});
+  const usable=checks.filter(to=>{const d=Math.hypot(to.x-p.x,to.z-p.z);return d>2&&d<(getWeapon(p.weapon).zoomStyle==='scope'?75:45)&&room.visibleToBot(from,to);});
   if(usable.length){
     // Hold one angle for a beat instead of sweeping every frame.
     if(now>=(ai.watchUntil||0)||!ai.watchPoint||!usable.some(to=>Math.hypot(to.x-ai.watchPoint.x,to.y-ai.watchPoint.y,to.z-ai.watchPoint.z)<.1)){ai.watchIndex=((ai.watchIndex??-1)+1)%usable.length;ai.watchPoint=usable[ai.watchIndex];ai.watchUntil=now+1100+(p.seat||0)*100;}
@@ -39,5 +48,6 @@ export function observationPoint(room,p,waypoint){
   for(const n of (ai.path||[]).slice(0,12).reverse()){
     const to={...n,y:n.y+1.45};if(Math.hypot(n.x-p.x,n.z-p.z)>2&&room.visibleToBot(from,to))return to;
   }
-  return waypoint?{...waypoint,y:waypoint.y+1.45}:null;
+  if(waypoint){const to={...waypoint,y:waypoint.y+1.45};if(room.visibleToBot(from,to))return to;}
+  return null;
 }

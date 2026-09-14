@@ -104,3 +104,7 @@ test('bad persistence is safe, unavailable storage does not prevent play, and di
   assert.equal(fixture.controls.setBinding('reload','KeyZ').ok,true);assert.ok(fixture.controls.persistenceError);fixture.press('KeyZ');assert.equal(fixture.controls.consume('reload'),true);
   fixture.controls.destroy();const count=fixture.callbacks.length;fixture.press('KeyW');assert.equal(fixture.callbacks.length,count);assert.equal(fixture.controls.down('forward'),false);
 });
+
+test('adding chat bindings preserves a previously customized Y key instead of resetting controls',()=>{
+ const bindings=structuredClone(DEFAULT_BINDINGS);delete bindings.chatAll;delete bindings.chatTeam;bindings.jump=['KeyY'];const saved=storage(JSON.stringify({version:1,bindings}));const {controls}=setup({storage:saved});assert.deepEqual(controls.getBindings().jump,['KeyY']);assert.deepEqual(controls.getBindings().chatAll,[]);assert.deepEqual(controls.getBindings().chatTeam,['KeyU']);controls.destroy();
+});

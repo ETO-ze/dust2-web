@@ -46,3 +46,7 @@ test('a distant CT saves an impossible retake, but a viable or active defuse is 
  assert.ok(saveGoal(room,p));room.bomb.explodesAt=145000;p.botAI.saveGoal=null;assert.equal(saveGoal(room,p),null);
  room.bomb.explodesAt=103000;room.bomb.action='defuse';room.bomb.actorId=ct[1].id;assert.equal(saveGoal(room,p),null);
 });
+
+test('four CT bots and a human still select a funded AWPer and upgrade a carried rifle',()=>{
+ const {room,ct}=fixture(10000);ct[4].bot=false;room.giveWeapon(ct[3],'m4a1');buyForTeam(room);assert.equal(ct.filter(p=>p.bot&&p.inventory.awp).length,1);assert.ok(ct[3].inventory.awp);assert.ok(room.droppedWeapons.items.some(i=>i.weaponId==='m4a1'));assert.ok(ct.every(p=>p.money>=0));
+});

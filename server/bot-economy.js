@@ -28,6 +28,7 @@ export function buyForTeam(room){
   for(const team of ['CT','T']){
     const plan=planTeamBuy(room,team);room.teamBuys[team]=plan;
     const bots=[...room.players.values()].filter(p=>p.bot&&p.team===team).sort((a,b)=>a.seat-b.seat);
+    const existingSniper=[...room.players.values()].some(p=>p.team===team&&primary(p)&&getWeapon(primary(p)).zoomStyle==='scope');const sniper=existingSniper?null:[...bots].sort((a,b)=>b.money-a.money||b.seat-a.seat)[0];
     for(const [rank,p]of bots.entries()){
       const floor=p.money-plan.budgets[p.id];p.botAI.buyPlan=plan.kind;
       const buy=id=>{
@@ -39,10 +40,10 @@ export function buyForTeam(room){
       }else if(plan.kind==='eco'){
         if(rank===1)buy('flashbang');
       }else{
+        if(plan.kind==='full'&&p===sniper&&p.money-floor>=6050)buy('awp');
         if(!primary(p)){
           const allowance=p.money-floor-(p.armor>=80?0:650)-(plan.kind==='full'?500:0);
           const choices=plan.kind==='half'?(team==='T'?['tec9','p250']:['fiveseven','p250']):team==='T'?['ak47','galilar','mac10','tec9','p250']:['m4a1','mp9','fiveseven','p250'];
-          if(plan.kind==='full'&&rank===4&&p.money-floor>=6750)buy('awp');
           if(!primary(p))for(const id of choices)if(getWeapon(id).price<=allowance&&buy(id))break;
         }
         if(p.armor<80)buy('armor');

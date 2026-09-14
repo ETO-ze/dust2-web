@@ -38,7 +38,7 @@ function utilityFixture(){
 test('nearby gunfire prompts an approximate visual check without revealing a target through cover',()=>{
  let now=10000;const p={id:'b_1',bot:true,alive:true,team:'CT',x:0,y:0,z:0,yaw:0,botAI:{targetId:null,path:[]}},shooter={id:'h_1',alive:true,team:'T',x:5.2,y:0,z:12.8};
  const room={clock:()=>now,players:new Map([[p.id,p],[shooter.id,shooter]]),visibleToBot:()=>false};
- hearGunshot(room,shooter);assert.deepEqual(observationPoint(room,p),{x:6,y:1.3,z:12});assert.equal(p.botAI.targetId,null);
+ hearGunshot(room,shooter);assert.deepEqual(p.botAI.heardPoint,{x:6,y:1.3,z:12});assert.equal(observationPoint(room,p),null);assert.equal(p.botAI.targetId,null);
  assert.equal(visibleAimPoint(room,p,shooter),null);now+=2500;assert.equal(observationPoint(room,p),null);
  p.botAI.heardPoint=null;shooter.x=100;hearGunshot(room,shooter);assert.equal(p.botAI.heardPoint,null);
 });

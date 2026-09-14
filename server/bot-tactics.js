@@ -1,5 +1,8 @@
+import {floorHeight} from '../shared/physics.js';
+import {getWeapon} from '../shared/weapons.js';
 import {attackPlan,defensePlan,attackLane} from './bot-strategies.js';
 import {saveGoal} from './bot-economy.js';
+import {patrolHold} from './bot-holding.js';
 export {attackPlan} from './bot-strategies.js';
 import {MAP} from '../shared/map-data.js';
 import {smoothBotAim} from './bot-aim.js';
@@ -11,9 +14,9 @@ function at(room,id){return point(room.nearestNav(raw[id]||MAP.sites[id])||raw[i
 function team(room,p){return [...room.players.values()].filter(q=>q.alive&&q.team===p.team).sort((a,b)=>a.seat-b.seat);}
 function hold(room,p,site,reposition=false){
  const candidates=site==='A'?[{x:27,y:2.5,z:-67},{x:36,y:2.8,z:-66},{x:23,y:2.5,z:-62},{x:31,y:3,z:-72}]:[{x:-46,y:.8,z:-69},{x:-38,y:.3,z:-68},{x:-34,y:.4,z:-70},{x:-43,y:.3,z:-65}];
- const setup=p.team==='T'?attackPlan(room):defensePlan(room),base=candidates[(p.seat+(setup.holdOffset||0))%candidates.length],near=candidates.filter(c=>range(c,base)<7);
- const selected=reposition?near[Math.floor(room.clock()/11000+p.seat)%near.length]:base;
- return point(room.nearestNav(selected)||MAP.sites[site]);
+ const setup=p.team==='T'?attackPlan(room):defensePlan(room),base=candidates[(p.seat+(setup.holdOffset||0))%candidates.length];
+ const selected=point(room.nearestNav(base)||MAP.sites[site]);
+ return reposition?patrolHold(room,p,selected):selected;
 }
 /** Dust2 defaults: long/short A split or tunnels/mid B split. Information is
  * shared only after a teammate has seen an opponent; it expires after 6 s. */
@@ -55,7 +58,7 @@ export function tacticalGoal(room,p){
   if((ai.routeVariant||0)%2)lane=site==='A'?(lane==='short'?'long':'short'):(lane==='tunnels'?'mid':'tunnels');
   const split=lane==='mid'||site==='A'&&lane==='short'&&plan.id!=='a-short';
   const route=site==='A'?(lane==='short'?['catwalk','short','A']:['long','A']):(lane==='mid'?['mid','doors','B']:['tunnels','bEntry','B']);
-  if(probing){ai.role=p.hasBomb?'carrier':'map-control';ai.phase='probe';ai.lane=lane;ai.site=lane==='tunnels'?'B':'A';ai.execute=plan.id;ai.watchPoints=watchPoints(p,ai.site);return at(room,lane==='short'?'catwalk':lane);}
+  if(probing){ai.role=p.hasBomb?'carrier':'map-control';ai.phase='probe';ai.lane=lane;ai.site=lane==='tunnels'?'B':'A';ai.execute=plan.id;ai.watchPoints=watchPoints(p,ai.site);const support=supportGoal(room,p,allies,report);if(support){ai.phase='support';return support;}return at(room,lane==='short'?'catwalk':lane);}
   const key=room.round.number+':'+route.join('-');
   if(ai.routeKey!==key){ai.routeKey=key;ai.routeIndex=0;}
   const fighters=allies.filter(q=>!q.hasBomb),order=fighters.indexOf(p);
@@ -72,15 +75,16 @@ export function tacticalGoal(room,p){
  }
  const setup=defensePlan(room),roles=setup.roles;
  const roster=[...room.players.values()].filter(q=>q.bot&&q.team===p.team).sort((a,b)=>a.seat-b.seat);
- ai.defenseRole||=(roster.length===1?'rotator':roles[(Math.max(0,roster.findIndex(q=>q.id===p.id))+setup.offset)%Math.max(1,roster.length)]);ai.role=ai.defenseRole;
- ai.site=ai.role==='anchor-b'?'B':'A';ai.phase='hold';ai.watchPoints=watchPoints(p,ai.site);
+ ai.defenseRole||=(getWeapon(p.weapon).zoomStyle==='scope'?(room.round.number%2?'sniper-a':'sniper-b'):roster.length===1?'rotator':roles[(Math.max(0,roster.findIndex(q=>q.id===p.id))+setup.offset)%Math.max(1,roster.length)]);ai.role=ai.defenseRole;
+ ai.site=ai.role.endsWith('-b')?'B':'A';ai.phase='hold';ai.watchPoints=watchPoints(p,ai.site);
+ if(ai.role==='mid'){ai.watchPoints=['mid','catwalk','tunnels'].map(id=>{const n=at(room,id);return {...n,y:n.y+1.62};});}
  const support=supportGoal(room,p,allies,report);if(support&&(!ai.role.startsWith('anchor')||range(report,MAP.sites[ai.site])<16)){ai.phase='support';return support;}
  if(report&&now-report.at<6000){
   const site=range(report,MAP.sites.A)<range(report,MAP.sites.B)?'A':'B';
   if(ai.role==='rotator'||ai.role==='mid'||(site==='A'&&ai.role==='anchor-a')||(site==='B'&&ai.role==='anchor-b')){ai.site=site;ai.watchPoints=watchPoints(p,site);ai.phase='rotate';return hold(room,p,site);}
  }
  if(ai.role==='long'&&now>setup.pressureUntil){ai.phase='fallback';return hold(room,p,'A',true);}
- return ['anchor-b','anchor-a'].includes(ai.role)?hold(room,p,ai.site,true):at(room,({short:'short',mid:setup.id==='mid-pressure'&&now<setup.pressureUntil?'mid':'doors',rotator:setup.holdOffset%2?'long':'short',long:'long'})[ai.role]);
+ return ['anchor-b','anchor-a','sniper-a','sniper-b'].includes(ai.role)?hold(room,p,ai.site,true):patrolHold(room,p,at(room,({short:'short',mid:setup.id==='mid-pressure'&&now<setup.pressureUntil?'mid':'doors',rotator:setup.holdOffset%2?'long':'short',long:'long'})[ai.role]));
 }
 export function shareSighting(room,p,enemy){
  const report={...point(enemy),at:room.clock(),observer:p.id};
@@ -110,7 +114,7 @@ export function separateTeammates(room,p,input){
 
 function watchPoints(p,site){
  const positions=site==='A'?(p.team==='T'?[[28,3,-68],[35,3,-64],[18,0,-57]]:[[39,1.6,-40],[8,4,-53],[15,2,-59]]):(p.team==='T'?[[-46,2,-69],[-30,3,-66],[-28,1,-56]]:[[-43,1.5,-57],[-30,3,-66],[-28,1,-56]]);
- return positions.map(([x,y,z])=>({x,y,z}));
+ return positions.map(([x,y,z])=>{const floor=floorHeight(x,z,y+.25,5);return {x,y:floor===null?y:floor+(getWeapon(p.weapon).zoomStyle==='scope'?1.2:1.62),z};});
 }
 function readyToEnter(room,p,allies,site){
  const now=room.clock(),ai=p.botAI,strategy=attackPlan(room),key=site+':'+(strategy.coordinated?strategy.id:ai.lane);

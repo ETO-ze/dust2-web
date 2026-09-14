@@ -131,7 +131,9 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       }
       const room = rooms.get(socket.roomCode);
       if (!room || !socket.playerId) { error(socket, 'NOT_JOINED', '请先加入一个房间。'); return; }
-      if (msg.type === 'input') {
+      if(msg.type==='chat'){const result=room.chat(socket.playerId,msg.text,msg.channel);if(!result.ok)error(socket,'CHAT_REJECTED',result.message);}
+      else if(msg.type==='requestWeapon'||msg.type==='donateWeapon'){const result=msg.type==='requestWeapon'?room.requestWeapon(socket.playerId,msg.weapon):room.donateWeapon(socket.playerId,msg.playerId,msg.weapon);if(!result.ok)error(socket,'TEAM_GEAR_REJECTED',result.message);else send(socket,{type:'teamGear',...result});}
+      else if (msg.type === 'input') {
         if (!room.receiveInput(socket.playerId, msg)) { if (++socket.strikes > 100) socket.close(1008, 'Invalid input'); }
       } else if(msg.type==='takeBot'){
         if(now-(socket.takeBotAt||0)<300)return;

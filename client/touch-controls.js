@@ -7,7 +7,7 @@ export class TouchControls {
   this.element=document.createElement('div');this.element.id='touch-controls';this.element.hidden=true;this.element.setAttribute('aria-label','触屏游戏控制');
   this.element.innerHTML=`<div class="touch-look" data-touch-kind="look" aria-label="滑动瞄准区域"></div>
    <div class="touch-joystick" data-touch-kind="move" role="group" aria-label="移动摇杆"><i></i><span>移动</span></div>
-   <div class="touch-toolbar"><button data-action="buy">商店</button><button data-touch-command="room">房间</button><button data-action="scoreboard">战况</button><button data-touch-command="fullscreen">全屏</button><button data-action="menu">菜单</button></div>
+   <div class="touch-toolbar"><button data-action="buy">商店</button><button data-touch-command="room">房间</button><button data-action="scoreboard">战况</button><button data-touch-command="fullscreen">全屏</button><button data-action="menu">菜单</button><button data-action="chatTeam">聊天</button></div>
    <div class="touch-combat"><button class="touch-fire" data-action="fire">开火</button><button class="touch-alt" data-action="altFire">开镜</button><button class="touch-jump" data-action="jump">跳跃</button><button class="touch-reload" data-action="reload">换弹</button><button class="touch-crouch" data-action="crouch" data-toggle>蹲下</button><button class="touch-use" data-action="interact">拾取 / 用</button></div>
    <div class="touch-weapons"><button data-action="primary" data-slot="1">主武器</button><button data-action="secondary" data-slot="2">手枪</button><button data-action="knife" data-slot="3">刀</button><button data-action="utility" data-slot="4">道具</button><button data-action="bomb" data-slot="5">C4</button><button data-action="drop">丢枪</button></div>
    <button class="touch-walk" data-action="walk" data-toggle>静步</button>

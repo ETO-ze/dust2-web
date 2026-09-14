@@ -23,6 +23,7 @@ export class DroppedWeapons {
   autoCandidate(player,hasSlot,slotOf){
     const now=this.clock(),origin={x:player.x,y:player.y+.75,z:player.z};
     return this.items.filter(item=>{
+      if(player.bot&&item.intendedFor&&item.intendedFor!==player.id&&now<item.reservedUntil)return false;
       if(item.expiresAt<=now||now-item.droppedAt<350||item.ownerId===player.id&&now-item.droppedAt<1500||hasSlot(slotOf(item.weaponId)))return false;
       const d=distance(origin,item);if(d>1.25||Math.abs(item.y-player.y)>1.5)return false;
       const dir={x:(item.x-origin.x)/Math.max(d,.001),y:(item.y-origin.y)/Math.max(d,.001),z:(item.z-origin.z)/Math.max(d,.001)};

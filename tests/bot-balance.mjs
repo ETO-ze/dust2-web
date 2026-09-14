@@ -13,7 +13,7 @@ test('a surviving bot does not pay again for its retained primary rifle',()=>{
  Object.assign(p.inventory,{hegrenade:{ammo:1,reserve:0},smokegrenade:{ammo:1,reserve:0},flashbang:{ammo:2,reserve:0}});r.respawn(p,true);assert.equal(p.money,5000);assert.ok(p.inventory.ak47);
 });
 test('only the nearest available bot helps a nearby teammate; information expires',()=>{
- const {r,advance}=fixture(),ts=[...r.players.values()].filter(p=>p.team==='T'),ct=[...r.players.values()].find(p=>p.team==='CT');ts.forEach((p,i)=>Object.assign(p,{x:i*4,y:0,z:0,hasBomb:false}));ts[0].botAI.engaging=true;
+ const {r,advance}=fixture(),ts=[...r.players.values()].filter(p=>p.team==='T'),ct=[...r.players.values()].find(p=>p.team==='CT');ts.forEach((p,i)=>Object.assign(p,{x:i*4,y:0,z:0,hasBomb:false}));ts[0].botAI.engaging=true;r.attackPlan={round:r.round.number,id:'map-default',tempo:'default',lanes:['long','long','mid','tunnels','tunnels'],offset:0,holdOffset:0,decisionAt:r.clock()+12000};
  shareSighting(r,ts[0],{...ct,x:0,y:0,z:-10});tacticalGoal(r,ts[1]);tacticalGoal(r,ts[2]);assert.equal(ts[1].botAI.phase,'support');assert.notEqual(ts[2].botAI.phase,'support');advance(1800);tacticalGoal(r,ts[1]);assert.notEqual(ts[1].botAI.phase,'support');
 });
 test('bots sidestep only in burst pauses, avoid a ledge, and settle before firing',()=>{
