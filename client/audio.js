@@ -3,6 +3,7 @@ import { fetchCachedAsset } from './loading.js';
 const clamp = (value, low, high) => Math.max(low, Math.min(high, Number(value) || 0));
 import {reloadProfile} from '../shared/reload-profiles.js';
 import {getWeapon} from '../shared/weapons.js';
+import {UTILITY_AUDIO,utilitySound} from './utility-audio.js';
 
 export class GameAudio {
   constructor() {
@@ -39,7 +40,8 @@ export class GameAudio {
     if (!response.ok) throw new Error(`CS2 音效清单加载失败 (${response.status})`);
     const manifest = await response.json();
     this.sampleManifest=manifest;this.sampleBase=base;this.decoded=new Map();this.decodePending=new Map();this.bankFiles=new Map();this.decodeJobs=[];this.activeDecoders=0;
-    const core=Object.keys(manifest.banks).filter(bank=>/^(ak47|glock|usp|knife|bomb|announce|hit|kill|headshot)/i.test(bank));
+    const utilityCore=new Set(Object.values(UTILITY_AUDIO).flatMap(c=>[c.detonate,c.far]));
+    const core=Object.keys(manifest.banks).filter(bank=>/^(ak47|glock|usp|knife|bomb|announce|hit|kill|headshot)/i.test(bank)||utilityCore.has(bank));
     await Promise.all(core.map(bank=>this.loadBank(bank)));
     // Preserve the existing CC0 footstep samples; firing never falls back to synthesis.
     this.buffers = (await Promise.all(Array.from({ length: 5 }, async (_, i) => {
@@ -66,7 +68,14 @@ export class GameAudio {
     this.sampleCount=this.decoded.size;this.decodedBytes=bytes;return true;
   }
   pumpDecoders(){while(this.activeDecoders<2&&this.decodeJobs.length){this.activeDecoders++;this.decodeJobs.shift()().finally(()=>{this.activeDecoders--;this.pumpDecoders();});}}
-  prepareWeapon(id){const prefix=this.weaponId(id);for(const bank of Object.keys(this.sampleManifest?.banks||{}))if(bank.toLowerCase().startsWith(prefix.toLowerCase()))this.loadBank(bank).catch(()=>{});}
+  prepareWeapon(id){const prefix=this.weaponId(id),utility=new Set(Object.values(UTILITY_AUDIO[id]||{}));for(const bank of Object.keys(this.sampleManifest?.banks||{}))if(bank.toLowerCase().startsWith(prefix.toLowerCase())||utility.has(bank))this.loadBank(bank).catch(()=>{});}
+
+  utilityEvent(event,listener,myId){
+    if((event.type==='grenade_cancelled'&&event.playerId===myId)||(event.type==='grenade_thrown'&&event.shooterId===myId))this.cancelChannel('utility-pin');
+    const sound=utilitySound(event,listener,myId);if(!sound)return;
+    this.lastUtility={event:event.type,weapon:event.weapon,bank:sound.bank,distance:sound.distance||0};
+    this.play(sound.bank,sound);if(sound.layer)this.play(sound.layer,{...sound,level:sound.level*.55});
+  }
 
   setVolume(value) {
     this.volume = clamp(value, 0, 1);
@@ -86,7 +95,7 @@ export class GameAudio {
       if(this.sampleManifest?.banks[bank]){const requested=performance.now(),epoch=this.playEpoch,channelEpoch=this.channelEpochs.get(channel)||0;this.loadBank(bank).then(ok=>{const elapsed=(performance.now()-requested)/1000;if(ok&&!loop&&epoch===this.playEpoch&&channelEpoch===(this.channelEpochs.get(channel)||0)&&elapsed<Math.max(.35,delay+.2))this.play(bank,{level,pan,distance,delay:Math.max(0,delay-elapsed),rate,channel,loop});}).catch(()=>{});}
       return null;
     }
-    if (channel === 'remote' && [...this.voices].filter(voice => voice.channel === channel).length >= 20) return null;
+    if (['remote','utility'].includes(channel) && [...this.voices].filter(voice => voice.channel === channel).length >= 20) return null;
     if (this.voices.size >= 64) this.stopVoice(this.voices.values().next().value);
     const c = this.ctx, source = c.createBufferSource(), gain = c.createGain(), panner = c.createStereoPanner();
     source.loop=loop;source.buffer = samples[Math.floor(Math.random() * samples.length)]; source.playbackRate.value = clamp(rate, 0.75, 1.25);

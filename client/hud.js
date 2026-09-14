@@ -196,20 +196,20 @@ export class HUD {
     if (!body) return;
     const players = [...(snapshot.players || [])].sort((a, b) =>
       Number(b.team === self.team) - Number(a.team === self.team) || String(a.team).localeCompare(String(b.team)) || number(b.kills) - number(a.kills) || number(a.deaths) - number(b.deaths));
-    const key = JSON.stringify([self.id,snapshot.scores,snapshot.match, ...players.map(p => [p.id, p.name, p.team, p.bot, p.alive, p.kills, p.deaths, p.assists, p.money])]);
+    const key = JSON.stringify([self.id,snapshot.scores,snapshot.match, ...players.map(p => [p.id, p.name, p.team, p.bot, p.alive, p.kills, p.deaths, p.assists, p.headshots, p.money,p.botBuy])]);
     if (key === this.boardKey) return;
     this.boardKey = key;
     const fragment = document.createDocumentFragment();
     let currentTeam;
     for (const player of players) {
-      if(player.team!==currentTeam){currentTeam=player.team;const row=document.createElement('tr');row.className='board-team';row.dataset.team=currentTeam;const cell=document.createElement('td');cell.colSpan=5;const title=document.createElement('b');title.textContent=currentTeam==='CT'?'反恐精英':'恐怖分子';const count=document.createElement('span');count.textContent=`${players.filter(p=>p.team===currentTeam&&p.alive).length} 人存活`;const score=document.createElement('strong');score.textContent=String(number(snapshot.scores?.[currentTeam]));cell.append(uiIcon(currentTeam),title,count,score);row.append(cell);fragment.append(row);}
+      if(player.team!==currentTeam){currentTeam=player.team;const row=document.createElement('tr');row.className='board-team';row.dataset.team=currentTeam;const cell=document.createElement('td');cell.colSpan=6;const title=document.createElement('b');title.textContent=currentTeam==='CT'?'反恐精英':'恐怖分子';const count=document.createElement('span');count.textContent=`${players.filter(p=>p.team===currentTeam&&p.alive).length} 人存活${snapshot.mode==='defuse'&&currentTeam===self.team&&player.botBuy?' · 人机 '+player.botBuy:''}`;const score=document.createElement('strong');score.textContent=String(number(snapshot.scores?.[currentTeam]));cell.append(uiIcon(currentTeam),title,count,score);row.append(cell);fragment.append(row);}
       const row = document.createElement('tr');
       if (player.id === self.id) row.classList.add('own');
       row.style.color = TEAM_COLORS[player.team] || '#ddd';
       row.classList.toggle('dead',!player.alive);
       const values = [
         `${player.bot ? 'BOT ' : ''}${player.name || '玩家'}${player.id === self.id ? ' · 你' : ''}`,
-        number(player.kills), number(player.deaths), number(player.assists),
+        number(player.kills), number(player.deaths), number(player.assists),number(player.headshots),
         `$${Math.max(0,number(player.money)).toLocaleString('en-US')}`,
       ];
       for (const [i,value] of values.entries()) { const cell = document.createElement('td');if(i===0){cell.append(uiIcon(player.alive?player.team:'death'));const name=document.createElement('span');name.textContent=String(value);cell.append(name);}else cell.textContent = String(value); row.appendChild(cell); }
@@ -294,11 +294,12 @@ export class HUD {
     } else if (event.type === 'kill') {
       const killer = find(event.killerId), victim = find(event.victimId);
       if (event.killerId === myId && event.victimId !== myId&&event.credited!==false) this.confirmKill(event, victim,snapshot);
+      const ownAssist=event.assisterId===(me?.controllerId||myId);if(ownAssist)this.confirmAssist(event);
       if (event.victimId === myId) this.combo = 0;
       const node = document.createElement('div');
-      node.className = `kill-entry${event.killerId === myId ? ' own killer' : ''}${event.victimId === myId?' victim':''}`;
+      node.className = `kill-entry${ownAssist?' own assister':''}${event.killerId === myId ? ' own killer' : ''}${event.victimId === myId?' victim':''}`;
       const killerLabel = document.createElement('span');
-      killerLabel.textContent = killer?.name || event.killerName || (event.killerId ? '玩家' : '环境');
+      killerLabel.textContent = event.killerName || killer?.name || (event.killerId ? '玩家' : '环境');
       killerLabel.style.color = TEAM_COLORS[killer?.team] || '#d2d8cc';
       const weaponLabel = uiIcon(event.weapon,event.weapon==='world'?'环境伤害':(EQUIPMENT[event.weapon]||getWeapon(event.weapon)).name,'kill-weapon-icon');
       const victimLabel = document.createElement('span');
@@ -309,7 +310,7 @@ export class HUD {
       node.append(weaponLabel);
       for(const [flag,icon,title]of [['headshot','headshot','爆头'],['penetrated','wallbang','穿透击杀'],['throughSmoke','smoke','穿烟击杀'],['noScope','noscope','未开镜击杀'],['attackerInAir','airborne','空中击杀']])if(event[flag])node.append(uiIcon(icon,title,'kill-detail-icon'));
       node.append(victimLabel);
-      const lifetime=event.killerId===myId||event.victimId===myId?7500:5000;
+      const lifetime=ownAssist||event.killerId===myId||event.victimId===myId?7500:5000;
       const entry = { node, expiresAt: now() + lifetime };
       entry.timer = setTimeout(() => { node.remove(); this.feed = this.feed.filter(item => item !== entry); }, lifetime);
       this.feed.push(entry); this.elements['kill-feed']?.appendChild(node);
@@ -368,9 +369,18 @@ export class HUD {
     const element = this.elements['kill-confirm'];
     if (!element) return;
     clearTimeout(this.killTimer); element.classList.remove('visible', 'expire');
-    element.classList.toggle('headshot', !!event.headshot);
+    element.classList.remove('assist');element.classList.toggle('headshot', !!event.headshot);
+    element.querySelector('.kill-medal img')?.replaceWith(uiIcon(event.headshot?'headshot':'kill',event.headshot?'爆头击杀':'击杀'));
     void element.offsetWidth; element.classList.add('visible');
     this.killTimer = setTimeout(() => { element.classList.remove('visible'); element.classList.add('expire'); }, 2400);
+  }
+
+  confirmAssist(event){
+    this.text('kill-title',event.flashAssist?'闪光助攻':'伤害助攻');this.text('kill-victim',event.victimName||'对手');
+    this.text('kill-weapon',event.flashAssist?'闪光辅助队友完成击杀':`累计造成 ${event.assisterDamage||0} 伤害`);this.text('kill-combo','');
+    const element=this.elements['kill-confirm'];if(!element)return;clearTimeout(this.killTimer);
+    element.classList.remove('visible','expire','headshot');element.classList.add('assist');element.querySelector('.kill-medal img')?.replaceWith(uiIcon('assist','助攻'));
+    void element.offsetWidth;element.classList.add('visible');this.killTimer=setTimeout(()=>{element.classList.remove('visible');element.classList.add('expire');},2200);
   }
 
   hit(headshot = false, damage = 0) {
@@ -379,7 +389,7 @@ export class HUD {
     clearTimeout(this.hitTimer); element.style.color = headshot ? '#ffb46e' : '#ffefc1'; element.style.opacity = '1';
     const label = this.elements['hit-damage'];
     if (label) { label.textContent = `${headshot ? '爆头 ' : ''}${damage ? Math.round(damage) : ''}`; label.style.opacity = '1'; }
-    this.hitTimer = setTimeout(() => { element.style.opacity = '0'; if (label) label.style.opacity = '0'; }, headshot ? 420 : 290);
+    this.hitTimer = setTimeout(() => { element.style.opacity = '0'; if (label) label.style.opacity = '0'; }, headshot ? 700 : 290);
   }
 
   damage() {

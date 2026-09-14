@@ -1,3 +1,4 @@
+import {snapshotForSide} from '../server/snapshot-view.js';
 /** Disposable local QA fixture. Control port is loopback-only, never deployed. */
 import { createServer } from 'node:http';
 import { startGameServer } from '../server/index.js';
@@ -6,6 +7,7 @@ import {raycastWorld,floorHeight} from '../shared/physics.js';
 import {eyePosition} from '../shared/aim.js';
 import {getWeapon} from '../shared/weapons.js';
 import {UTILITY_IDS} from '../shared/equipment.js';
+import {recordFlash} from '../server/combat-credit.js';
 import fs from 'node:fs';
 const movementLedges=JSON.parse(fs.readFileSync(new URL('../tests/fixtures/movement-ledges.json',import.meta.url),'utf8'));
 const movementFlat=JSON.parse(fs.readFileSync(new URL('../tests/fixtures/movement-flat.json',import.meta.url),'utf8'));
@@ -17,7 +19,7 @@ function setupMovement(room,kind){
  const position=kind==='window'?{x:-29.5,y:2.2,z:-68,yaw:Math.PI/2,pitch:.05}:kind==='scaffold'?{x:-30,y:2.2,z:-68,yaw:-Math.PI/2,pitch:.1}:kind==='sky'?{...MAP.sites.A,yaw:-.45,pitch:.43}:kind==='flat'?movementFlat:kind==='ledge'?probe.ledge:probe.lower;
  Object.assign(p,position,{vx:0,vy:0,vz:0,grounded:false,pitch:position.pitch||0,protectionUntil:Infinity});
  p.input={...p.input,forward:0,right:0,jump:false,fire:false,yaw:p.yaw,pitch:p.pitch};
- room.poseHistory.clear();room.recordPoses();for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));
+ room.poseHistory.clear();room.recordPoses();for(const socket of room.clients.values())socket.send(JSON.stringify(snapshotForSide(room.snapshot({drainEvents:false}),room.players.get(socket.playerId)?.team)));
  return {kind,lifeId:p.lifeId,position,ledgeHeight:probe.height,lowerHeight:probe.lower.y};
 }
 let aimLane;
@@ -40,7 +42,7 @@ function setupAimLane(room,weapon){
  room.giveWeapon(human,weapon);room.selectSlot(human,1);human.weapon=weapon;human.slot=1;human.nextShotAt=0;
  Object.assign(target,{x:b.x,y:b.y,z:b.z,vx:0,vy:0,vz:0,yaw:yaw+Math.PI,pitch:0,team:team==='CT'?'T':'CT',teamId:room.teamForSide(team==='CT'?'T':'CT'),health:100,armor:0,helmet:false,grounded:true,name:'QA target · 100 HP'});target.agentId=target.agents[target.team];
  room.poseHistory.clear();room.recordPoses();
- for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));
+ for(const socket of room.clients.values())socket.send(JSON.stringify(snapshotForSide(room.snapshot({drainEvents:false}),room.players.get(socket.playerId)?.team)));
  return {weapon,distance:d,origin:eyePosition(human),target:{id:target.id,x:target.x,y:target.y+1.62,z:target.z},yaw,pitch:0};
 }
 const app = await startGameServer({port:3003,host:'127.0.0.1',rules:{respawnSeconds:3,protectionSeconds:0}});
@@ -77,6 +79,24 @@ function matchCase(room,kind){
 const control=createServer((req,res)=>{
   if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress)){res.writeHead(403);res.end();return;}
   if(req.method!=='POST'){res.writeHead(405);res.end();return;}
+  if(/^\/qa\/round-update\/(ended|damage-assist|flash-assist)$/.test(req.url)){
+    const kind=req.url.split('/').at(-1),results=[];
+    for(const room of app.rooms.values()){
+      const lane=setupAimLane(room,'awp'),p=[...room.players.values()].find(p=>!p.bot),target=room.players.get(lane.target.id);
+      if(kind==='ended'){
+        room.mode='defuse';room.endRound('CT','QA 回合结束');room.round.phaseEndsAt=Date.now()+90000;
+        results.push({kind,lane,scores:{...room.scores}});
+      }else{
+        const teammate=[...room.players.values()].find(q=>q.bot&&q.id!==target.id);teammate.team=p.team;teammate.teamId=p.teamId;teammate.name='QA teammate';
+        if(kind==='damage-assist')room.damagePlayer(target,p,45,'ak47');
+        else recordFlash(room,target,p,2);
+        room.damagePlayer(target,teammate,100,'ak47',true);
+        results.push({kind,assists:p.assists,kills:p.kills});
+      }
+      for(const socket of room.clients.values())socket.send(JSON.stringify(snapshotForSide(room.snapshot({drainEvents:false}),room.players.get(socket.playerId)?.team)));
+    }
+    res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(results));return;
+  }
   if(/^\/qa\/utility\/(hegrenade|flashbang|smokegrenade|molotov|incgrenade|decoy|plant|defuse|kit)$/.test(req.url)){
     const kind=req.url.split('/').at(-1),results=[];
     for(const room of app.rooms.values()){
@@ -93,7 +113,7 @@ const control=createServer((req,res)=>{
       if(kind==='kit'){room.defuseKits.push({id:'qa-kit',x:p.x,y:p.y,z:p.z-2});room.selectSlot(p,3);}
       p.input={...p.input,forward:0,right:0,yaw:0,pitch:0,fire:false,fire2:false,interact:false,slot:p.slot,utilityId:kind};room.poseHistory.clear();room.recordPoses();
       results.push({kind,player:p.id,lifeId:p.lifeId,position:{x:p.x,y:p.y,z:p.z}});
-      for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));
+      for(const socket of room.clients.values())socket.send(JSON.stringify(snapshotForSide(room.snapshot({drainEvents:false}),room.players.get(socket.playerId)?.team)));
     }
     res.setHeader('content-type','application/json');res.end(JSON.stringify({ok:true,results}));return;
   }
@@ -120,7 +140,7 @@ const control=createServer((req,res)=>{
         }
       }
       p.input={...p.input,yaw:p.yaw,pitch:p.pitch,fire:false,fire2:false,forward:0,right:0};room.poseHistory.clear();room.recordPoses();
-      for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));results.push({kind,id:p.id,weapon:p.weapon,position:{x:p.x,y:p.y,z:p.z}});
+      for(const socket of room.clients.values())socket.send(JSON.stringify(snapshotForSide(room.snapshot({drainEvents:false}),room.players.get(socket.playerId)?.team)));results.push({kind,id:p.id,weapon:p.weapon,position:{x:p.x,y:p.y,z:p.z}});
     }
     res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(results));return;
   }
@@ -137,7 +157,7 @@ const control=createServer((req,res)=>{
         room.bomb={...room.emptyBomb(),state:'carried',carrierId:p.id,...MAP.sites.A};p.hasBomb=true;room.giveWeapon(p,'c4');room.selectSlot(p,5);p.input.slot=5;
       }else{room.giveWeapon(p,'ak47');room.selectSlot(p,1);p.input.slot=1;p.inventory.ak47.ammo=1;p.inventory.ak47.reserve=90;}
       room.poseHistory.clear();room.recordPoses();results.push({id:p.id,weapon:p.weapon});
-      for(const socket of room.clients.values())socket.send(JSON.stringify(room.snapshot({drainEvents:false})));
+      for(const socket of room.clients.values())socket.send(JSON.stringify(snapshotForSide(room.snapshot({drainEvents:false}),room.players.get(socket.playerId)?.team)));
     }
     res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(results));return;
   }

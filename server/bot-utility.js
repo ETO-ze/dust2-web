@@ -14,6 +14,7 @@ function cancel(room,p,input,reason){
 }
 function choose(room,p){
  const ai=p.botAI,now=room.clock();room.utilityClaims||=new Map();
+ if(['contact','probe'].includes(ai.phase)||room.attackPlan?.tempo==='fake'&&ai.site==='B'&&now<room.attackPlan.fakeUntil)return null;
  if(room.bomb?.state==='planted'||room.round.phaseEndsAt-now<12000)return null;
  const choices=BOT_LINEUPS.filter(s=>s.team===p.team&&(s.site==='*'||s.site===ai.site)&&(p.team==='CT'?s.lane===ai.role:s.lane===ai.lane||ai.lane==='short'&&s.lane==='mid')&&p.inventory[s.weapon]?.ammo&&distance(p,s.stand)<9&&!room.utilityClaims.has(p.team+':'+s.id)&&(ai.utilityFailures?.get(s.id)||0)<=now);
  // Cover sightlines first, clear a close angle with fire, flash just before

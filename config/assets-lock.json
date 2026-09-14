@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
-  "version": "f7ae61faeff80fda",
+  "version": "5a82c6eead18b7e0",
   "baseURL": "https://cs2.duskrain.cn/",
-  "baseManifestVersion": "c14e41201dcbe3f9",
-  "totalBytes": 465122552,
+  "baseManifestVersion": "00c733fb22f60bd0",
+  "totalBytes": 465989836,
   "files": [
     {
       "path": "assets/asset-manifest-mobile.json",
-      "bytes": 151342,
-      "sha256": "90dd1a9cb429c5ab908871cc46cdde19bca98c41247335d5df852f508b7381d0",
+      "bytes": 155531,
+      "sha256": "dc41d963ad8ead756212cbab22efa7dd430a32efb8b2135c3bf727880fe826eb",
       "group": "metadata"
     },
     {
       "path": "assets/asset-manifest.json",
-      "bytes": 150250,
-      "sha256": "4b0c45c8afd214f6355bc55f0c84ae62c61fde54b5d1534ecd42d3dd0fb01f51",
+      "bytes": 154439,
+      "sha256": "ad0b7b5a853838244e0fb6e9ce6f9785a13d73ee91d3de1a9f18f1da52eed560",
       "group": "metadata"
     },
     {
@@ -517,8 +517,8 @@
     },
     {
       "path": "assets/audio/cs2/manifest.json",
-      "bytes": 136871,
-      "sha256": "a4d35f319ffabab90880aa55a3534e41dd0921aa4e3e5cc1d10750c609f1114f",
+      "bytes": 146226,
+      "sha256": "6227f0c7a9c92b526e365eafd824406a1c424af33324b324fcfd97985a200dcd",
       "group": "audio"
     },
     {
@@ -645,6 +645,30 @@
       "path": "assets/audio/cs2/p250_distant_01.mp3",
       "bytes": 21591,
       "sha256": "a8858e9dfd6d3bb85757f2b93e91bdf5aed5cbdbf2db79923f5979e3f5572ea7",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/physics_glass_glass_bottle_impact_hard1.mp3",
+      "bytes": 4783,
+      "sha256": "9890765885750c6c439e67166e67490253b908ed157b8e0df48294004d1b02dc",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/physics_glass_glass_bottle_impact_hard2.mp3",
+      "bytes": 5673,
+      "sha256": "2a755bc10d8c95c447957115f300d6c797628a279c019378d593e0f6ee1e2ad4",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/physics_weapons_weapon_incendiary_impact_01.mp3",
+      "bytes": 4112,
+      "sha256": "a0515f4154173e9613cfc496692db001b80e09d5436c229a7c637ff814e2de69",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/physics_weapons_weapon_incendiary_impact_02.mp3",
+      "bytes": 4764,
+      "sha256": "a119e54d3f5ef8d6847b6e7933f4a2dd578dd1c1b32fa3dbcae0515705dda990",
       "group": "audio"
     },
     {
@@ -1080,6 +1104,18 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/weapons_decoy_decoy_throw_06.mp3",
+      "bytes": 8026,
+      "sha256": "d5e6af6792d02e9a6d2b56c81bfce9ecfdb05b03beec2e3bd253ac744993a24a",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_decoy_pinpull.mp3",
+      "bytes": 8462,
+      "sha256": "0df800c1bfc314f0af9b5c451de19e07f8ebe9eae35d40a84895f848f1ffbedc",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/weapons_elite_elite_clipout.mp3",
       "bytes": 8337,
       "sha256": "63d4e84ed13c0ae130c297d1fb2ec3dfa38f937e7903238d93533e4cc754aa24",
@@ -1170,9 +1206,33 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/weapons_flashbang_flashbang_explode1_distant.mp3",
+      "bytes": 23984,
+      "sha256": "5b85a4465f18aab51d71232253866dfd9c3695d40acdc8627ecf407b92dab97b",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_flashbang_flashbang_explode2_distant.mp3",
+      "bytes": 20803,
+      "sha256": "ff3a03d30f5c4a5f4397515a705b9ba5658f38fd6c537265f0010b3a527f92be",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/weapons_flashbang_flashbang_throw_03.mp3",
       "bytes": 7059,
       "sha256": "d250d4a0297b757be5d5117665e37cd64a5deac74166504e604e8d6a396bd453",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_flashbang_grenade_hit1.mp3",
+      "bytes": 4998,
+      "sha256": "d20dbd9b4a6bcc17ebf11233b5f1d54afacdf9713094f5b316b3032747112303",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_flashbang_pinpull.mp3",
+      "bytes": 8462,
+      "sha256": "0df800c1bfc314f0af9b5c451de19e07f8ebe9eae35d40a84895f848f1ffbedc",
       "group": "audio"
     },
     {
@@ -1257,6 +1317,54 @@
       "path": "assets/audio/cs2/weapons_hegrenade_hegrenade_draw_06.mp3",
       "bytes": 8706,
       "sha256": "94e5fdad4c269d2fbaf5bb0e0fd59656aa1f0512c633078d2babb3e7dfc38c70",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_hegrenade_pinpull.mp3",
+      "bytes": 8462,
+      "sha256": "0df800c1bfc314f0af9b5c451de19e07f8ebe9eae35d40a84895f848f1ffbedc",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_incgrenade_inc_grenade_detonate_1.mp3",
+      "bytes": 63321,
+      "sha256": "18bab420a08c7c1807a6587f8250306a967daa3e19445f2afdabc40c6598c31b",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_incgrenade_inc_grenade_detonate_2.mp3",
+      "bytes": 57508,
+      "sha256": "faec6cea785921045bbca472644faa0707167f7b64422808d885d94d3dc28d8a",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_incgrenade_inc_grenade_detonate_air_01.mp3",
+      "bytes": 66780,
+      "sha256": "aa56ad62844b26c4513ee4e6af9d97d991ee248486c79776ae76c3926953abb0",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_incgrenade_inc_grenade_pop_03.mp3",
+      "bytes": 59554,
+      "sha256": "0c000a27e62b1421ce3d7f60db3d925964966794c3545fc39aeb0cde4c82181f",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_incgrenade_inc_grenade_throw_fire_01.mp3",
+      "bytes": 17983,
+      "sha256": "4aec8dbac9b68b6aaf4aef7b2b846c2de7eeb2e758908ded5267d86b2d2c4efd",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_incgrenade_inc_grenade_throw_fire_02.mp3",
+      "bytes": 21673,
+      "sha256": "1ec0c2a1ab79ca9c3f4e4b8ae8c283ae594615de187e60b47b5ba27816c8ccc8",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_incgrenade_pinpull.mp3",
+      "bytes": 8462,
+      "sha256": "0df800c1bfc314f0af9b5c451de19e07f8ebe9eae35d40a84895f848f1ffbedc",
       "group": "audio"
     },
     {
@@ -1407,6 +1515,18 @@
       "path": "assets/audio/cs2/weapons_molotov_fire_loop_1.mp3",
       "bytes": 72538,
       "sha256": "77b6db6497fbe788b7644ccb0a00a5632f5c3a0433f2f525b0e5543bc1e063e9",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_molotov_molotov_detonate_1.mp3",
+      "bytes": 66026,
+      "sha256": "fab451da8141bb03ec1772617b199cb6eacac034ae35645435df35ef66df88bf",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_molotov_molotov_detonate_air_01.mp3",
+      "bytes": 66780,
+      "sha256": "aa56ad62844b26c4513ee4e6af9d97d991ee248486c79776ae76c3926953abb0",
       "group": "audio"
     },
     {
@@ -1719,6 +1839,30 @@
       "path": "assets/audio/cs2/weapons_sg556_sg556_draw.mp3",
       "bytes": 8782,
       "sha256": "581fe3a96b53bdcf449f75d7456282a5b181f077be3a9132dbd7b424c0282677",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_smokegrenade_grenade_hit1.mp3",
+      "bytes": 4998,
+      "sha256": "d20dbd9b4a6bcc17ebf11233b5f1d54afacdf9713094f5b316b3032747112303",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_smokegrenade_pinpull.mp3",
+      "bytes": 8462,
+      "sha256": "0df800c1bfc314f0af9b5c451de19e07f8ebe9eae35d40a84895f848f1ffbedc",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_smokegrenade_sg_explode_distant.mp3",
+      "bytes": 32958,
+      "sha256": "a221e575e6d4a8943f3191189c9df15766da11c787438c4ba30506ac0f0e81d1",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_smokegrenade_smoke_emit.mp3",
+      "bytes": 272517,
+      "sha256": "48acbd463a0363c6aa78acbce975c19839d92aef0ffd652071d7800a76949ac2",
       "group": "audio"
     },
     {

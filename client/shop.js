@@ -30,7 +30,7 @@ export class WeaponShop {
     const free=mode==='deathmatch',remaining=Math.max(0,Math.ceil(((round?.buyEndsAt||0)-time)/1000));
     this.container.querySelector('#shop-money').textContent=`$ ${p.money}`;
     this.container.querySelector('#shop-time').textContent=free?'死斗 · 免费补给':`购买时间 ${remaining}s`;
-    this.container.querySelector('#buy-note').textContent=p.buyReason||(free?'存活时可更换装备':'出生区补给');
+    this.container.querySelector('#buy-note').textContent=p.buyReason||(free?'存活时可更换装备':`人机计划：${p.botBuy||'等待整备'} · 下次战败基础收入 $${p.lossIncome||0}`);
     const refunds=this.container.querySelector('.shop-refunds');refunds.replaceChildren();for(const item of p.refundable||[]){const b=document.createElement('button');b.dataset.refund=item.weapon;b.disabled=!!this.pending;b.textContent=`↶ 退还 ${getWeapon(item.weapon).name} +$${item.price}`;refunds.append(b);}
     const counts=p.utilityCounts||{},total=UTILITY_IDS.reduce((n,id)=>n+(counts[id]||0),0);
     for(const button of this.container.querySelectorAll('[data-buy]')){

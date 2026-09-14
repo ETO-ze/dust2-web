@@ -35,13 +35,13 @@ test('room difficulty is host-owned, survives ownership transfer, and plans chan
 });
 test('hard A-short execute sends a group through catwalk, retains a second approach and a carrier',()=>{
  const players=Array.from({length:5},(_,seat)=>({id:'b_'+seat,seat,bot:true,alive:true,team:'T',hasBomb:seat===2,x:0,y:0,z:20,botAI:{}}));
- const room={botDifficulty:'hard',clock:()=>100000,round:{number:1},bomb:{state:'carried'},players:new Map(players.map(p=>[p.id,p])),nearestNav:p=>p,siteAt:()=>null};
+ const room={strategyRandom:()=>0,botDifficulty:'hard',clock:()=>100000,round:{number:1},bomb:{state:'carried'},players:new Map(players.map(p=>[p.id,p])),nearestNav:p=>p,siteAt:()=>null};
  players.forEach(p=>tacticalGoal(room,p));assert.equal(players.filter(p=>p.botAI.lane==='short').length,4);assert.equal(players[4].botAI.lane,'long');assert.equal(players[2].botAI.role,'carrier');
   const p=players[0];p.botAI.routeVariant=1;p.botAI.routeKey=null;tacticalGoal(room,p);assert.equal(p.botAI.lane,'long');
 });
 test('attack lanes and completed route legs remain stable after an entry teammate dies',()=>{
  const players=Array.from({length:5},(_,seat)=>({id:'b_'+seat,seat,bot:true,alive:true,team:'T',x:0,y:0,z:20,botAI:{}}));
- const room={botDifficulty:'hard',clock:()=>100000,round:{number:1},bomb:{state:'carried'},players:new Map(players.map(p=>[p.id,p])),nearestNav:p=>p,siteAt:()=>null};
+ const room={strategyRandom:()=>0,botDifficulty:'hard',clock:()=>100000,round:{number:1},bomb:{state:'carried'},players:new Map(players.map(p=>[p.id,p])),nearestNav:p=>p,siteAt:()=>null};
  players.forEach(p=>{tacticalGoal(room,p);p.botAI.routeIndex=1;});const keys=players.map(p=>p.botAI.routeKey);players[0].alive=false;
  players.slice(1).forEach((p,i)=>{tacticalGoal(room,p);assert.equal(p.botAI.routeKey,keys[i+1]);assert.equal(p.botAI.routeIndex,1);});
 });

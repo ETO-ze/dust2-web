@@ -76,6 +76,6 @@ test('safe grenade types and teammate facing are checked at the effect point',()
 });
 test('entry gathering has a deadline when no teammate can arrive',()=>{
  let now=10000;const p={id:'b_1',bot:true,alive:true,team:'T',seat:0,x:40,y:0,z:-31,botAI:{}};
- const room={clock:()=>now,players:new Map([[p.id,p]]),bomb:{state:'carried'},round:{number:1},nearestNav:x=>x,siteAt:()=>null};
+ const room={clock:()=>now,players:new Map([[p.id,p]]),bomb:{state:'carried'},round:{number:1},attackPlan:{round:1,id:'a-long',site:'A',committedSite:'A',lanes:['long'],offset:0,holdOffset:0,tempo:'execute'},nearestNav:x=>x,siteAt:()=>null};
  tacticalGoal(room,p);assert.equal(p.botAI.phase,'gather');now+=4300;tacticalGoal(room,p);assert.equal(p.botAI.phase,'advance');
 });

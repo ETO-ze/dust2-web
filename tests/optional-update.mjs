@@ -49,7 +49,7 @@ test('release before the jump command arrives waits for authoritative jump veloc
  assert.equal(r.grenades.projectiles.length,1);assert.ok(p.vy>0);assert.ok(r.grenades.projectiles[0].vy>7);assert.equal(p.inventory.hegrenade,undefined);
 });
 test('Dust2 team roles split lanes, anchor both sites, cover one defuser and hold postplant separately',()=>{
- const {r,p,ct}=fixture();r.desiredBots=8;r.ensureBots();r.startRound();
+ const {r,p,ct}=fixture();r.strategyRandom=()=>.2;r.desiredBots=8;r.ensureBots();r.startRound();
  const ts=[...r.players.values()].filter(p=>p.team==='T'),cts=[...r.players.values()].filter(p=>p.team==='CT');
  const goals=ts.map(p=>tacticalGoal(r,p));assert.ok(new Set(goals.map(p=>JSON.stringify(p))).size>=2);
  cts.forEach(p=>tacticalGoal(r,p));assert.ok(cts.some(p=>p.botAI.role==='anchor-a'));assert.ok(cts.some(p=>p.botAI.role==='anchor-b'));

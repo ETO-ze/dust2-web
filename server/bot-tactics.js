@@ -1,3 +1,6 @@
+import {attackPlan,defensePlan,attackLane} from './bot-strategies.js';
+import {saveGoal} from './bot-economy.js';
+export {attackPlan} from './bot-strategies.js';
 import {MAP} from '../shared/map-data.js';
 import {smoothBotAim} from './bot-aim.js';
 export {botUtility} from './bot-utility.js';
@@ -8,21 +11,18 @@ function at(room,id){return point(room.nearestNav(raw[id]||MAP.sites[id])||raw[i
 function team(room,p){return [...room.players.values()].filter(q=>q.alive&&q.team===p.team).sort((a,b)=>a.seat-b.seat);}
 function hold(room,p,site,reposition=false){
  const candidates=site==='A'?[{x:27,y:2.5,z:-67},{x:36,y:2.8,z:-66},{x:23,y:2.5,z:-62},{x:31,y:3,z:-72}]:[{x:-46,y:.8,z:-69},{x:-38,y:.3,z:-68},{x:-34,y:.4,z:-70},{x:-43,y:.3,z:-65}];
- const base=candidates[p.seat%candidates.length],near=candidates.filter(c=>range(c,base)<7);
+ const setup=p.team==='T'?attackPlan(room):defensePlan(room),base=candidates[(p.seat+(setup.holdOffset||0))%candidates.length],near=candidates.filter(c=>range(c,base)<7);
  const selected=reposition?near[Math.floor(room.clock()/11000+p.seat)%near.length]:base;
  return point(room.nearestNav(selected)||MAP.sites[site]);
-}
-export function attackPlan(room){
- if(room.attackPlan?.round===room.round.number)return room.attackPlan;
- const plans=room.botDifficulty==='hard'?['a-short','b-execute','a-split']:['a-split','b-execute','a-short'];
- return room.attackPlan={round:room.round.number,id:plans[(Math.max(1,room.round.number)-1)%plans.length],coordinated:room.botDifficulty==='hard'};
 }
 /** Dust2 defaults: long/short A split or tunnels/mid B split. Information is
  * shared only after a teammate has seen an opponent; it expires after 6 s. */
 export function tacticalGoal(room,p){
  const now=room.clock(),ai=p.botAI,b=room.bomb,allies=team(room,p),report=room.teamIntel?.[p.team];
+ if(room.round.phase==='ended'){ai.phase='recover';ai.role='recover';return hold(room,p,ai.site||'A');}
  if(ai.utility?.phase==='approach')return point(ai.utility.stand);
  if(b.state==='planted'){
+  const saving=saveGoal(room,p);if(saving){ai.role='save';ai.phase='save';ai.watchPoints=[];return saving;}
   ai.site=b.site;ai.phase='postplant';ai.watchPoints=watchPoints(p,b.site);
   if(p.team==='T'){ai.role='postplant';return hold(room,p,b.site,true);}
   const active=allies.find(q=>q.id===b.actorId&&b.action==='defuse');
@@ -33,19 +33,35 @@ export function tacticalGoal(room,p){
   if(b.state==='dropped'&&[...allies].sort((a,c)=>range(a,b)-range(c,b))[0]?.id===p.id){ai.role='recover-bomb';return point(b);}
   const humanCarrier=allies.find(q=>!q.bot&&q.hasBomb);
   if(humanCarrier&&humanCarrier.z<0&&(humanCarrier.x<-28||humanCarrier.x>10))room.botAttackSite=humanCarrier.x<0?'B':'A';
-  const plan=attackPlan(room),site=room.botAttackSite||(plan.id==='b-execute'?'B':'A');
+  const plan=attackPlan(room);
+  if(!plan.committedSite&&now>=plan.decisionAt){
+   // Decide once from reports actually observed this round; no hidden positions.
+   const seen=[...(room.teamSightings?.T?.values()||[])].filter(v=>now-v.at<6000);
+   const a=seen.filter(v=>range(v,MAP.sites.A)<25).length,b=seen.filter(v=>range(v,MAP.sites.B)<25).length;
+   plan.committedSite=a>b?'B':b>a?'A':(plan.holdOffset%2?'B':'A');
+  }
+  let site=room.botAttackSite||plan.committedSite||'A';
   // Keep approach assignments stable when a teammate dies; otherwise survivors
   // can reset their route index and walk back to an already-cleared waypoint.
   const roster=[...room.players.values()].filter(q=>q.team===p.team).sort((a,b)=>a.seat-b.seat);
-  const rank=Math.max(0,roster.findIndex(q=>q===p)),split=site==='A'&&plan.id==='a-short'?rank===roster.length-1&&roster.length>2:rank%3===2;
-  let lane=site==='A'?(plan.id==='a-short'?!split:split)?'short':'long':split?'mid':'tunnels';
+  const rank=Math.max(0,roster.findIndex(q=>q===p));
+  let lane=attackLane(plan,rank,p.hasBomb),diversion=plan.tempo==='fake'&&['long','short'].includes(lane)&&!p.hasBomb&&now<plan.fakeUntil&&!room.botAttackSite;
+  if(diversion)site='A';
+  const probing=plan.tempo==='default'&&!plan.committedSite&&!room.botAttackSite;
+  if(!probing&&!diversion){
+   if(site==='A'&&!['long','short'].includes(lane))lane=rank%2?'short':'long';
+   if(site==='B'&&!['tunnels','mid'].includes(lane))lane=rank%2?'mid':'tunnels';
+  }
   if((ai.routeVariant||0)%2)lane=site==='A'?(lane==='short'?'long':'short'):(lane==='tunnels'?'mid':'tunnels');
+  const split=lane==='mid'||site==='A'&&lane==='short'&&plan.id!=='a-short';
   const route=site==='A'?(lane==='short'?['catwalk','short','A']:['long','A']):(lane==='mid'?['mid','doors','B']:['tunnels','bEntry','B']);
+  if(probing){ai.role=p.hasBomb?'carrier':'map-control';ai.phase='probe';ai.lane=lane;ai.site=lane==='tunnels'?'B':'A';ai.execute=plan.id;ai.watchPoints=watchPoints(p,ai.site);return at(room,lane==='short'?'catwalk':lane);}
   const key=room.round.number+':'+route.join('-');
   if(ai.routeKey!==key){ai.routeKey=key;ai.routeIndex=0;}
   const fighters=allies.filter(q=>!q.hasBomb),order=fighters.indexOf(p);
-  ai.role=p.hasBomb?'carrier':split?'split':order===0?'entry':order===1?'trade':'utility-support';ai.site=site;ai.lane=lane;ai.execute=plan.id;ai.watchPoints=watchPoints(p,site);ai.phase='advance';
+  ai.role=p.hasBomb?'carrier':split?'split':order===0?'entry':order===1?'trade':'utility-support';ai.site=site;ai.lane=lane;ai.execute=plan.id;ai.watchPoints=watchPoints(p,site);ai.phase=diversion?'feint':plan.tempo==='contact'&&now<plan.decisionAt&&!report?'contact':'advance';ai.stagingIndex=route.length-2;
   const support=supportGoal(room,p,allies,report);if(support){ai.phase='support';return support;}
+  if(diversion&&ai.routeIndex>=route.length-2&&range(p,at(room,route[ai.routeIndex]))<3){ai.phase='feint';return point(p);}
   while(ai.routeIndex<route.length-1&&range(p,at(room,route[ai.routeIndex]))<3){
    if(ai.routeIndex===route.length-2&&!readyToEnter(room,p,allies,site)){ai.phase='gather';return point(p);}
    ai.routeIndex++;ai.routeFailures=0;
@@ -54,19 +70,21 @@ export function tacticalGoal(room,p){
   if(ai.routeIndex===route.length-1&&!p.hasBomb)return hold(room,p,site);
   return at(room,route[ai.routeIndex]);
  }
- const roles=['anchor-b','anchor-a','short','mid','rotator'];
+ const setup=defensePlan(room),roles=setup.roles;
  const roster=[...room.players.values()].filter(q=>q.bot&&q.team===p.team).sort((a,b)=>a.seat-b.seat);
- ai.defenseRole||=roles[Math.max(0,roster.findIndex(q=>q.id===p.id))%5];ai.role=ai.defenseRole;
+ ai.defenseRole||=(roster.length===1?'rotator':roles[(Math.max(0,roster.findIndex(q=>q.id===p.id))+setup.offset)%Math.max(1,roster.length)]);ai.role=ai.defenseRole;
  ai.site=ai.role==='anchor-b'?'B':'A';ai.phase='hold';ai.watchPoints=watchPoints(p,ai.site);
  const support=supportGoal(room,p,allies,report);if(support&&(!ai.role.startsWith('anchor')||range(report,MAP.sites[ai.site])<16)){ai.phase='support';return support;}
  if(report&&now-report.at<6000){
   const site=range(report,MAP.sites.A)<range(report,MAP.sites.B)?'A':'B';
   if(ai.role==='rotator'||ai.role==='mid'||(site==='A'&&ai.role==='anchor-a')||(site==='B'&&ai.role==='anchor-b')){ai.site=site;ai.watchPoints=watchPoints(p,site);ai.phase='rotate';return hold(room,p,site);}
  }
- return ['anchor-b','anchor-a'].includes(ai.role)?hold(room,p,ai.site,true):at(room,({short:'short',mid:'doors',rotator:'short'})[ai.role]);
+ if(ai.role==='long'&&now>setup.pressureUntil){ai.phase='fallback';return hold(room,p,'A',true);}
+ return ['anchor-b','anchor-a'].includes(ai.role)?hold(room,p,ai.site,true):at(room,({short:'short',mid:setup.id==='mid-pressure'&&now<setup.pressureUntil?'mid':'doors',rotator:setup.holdOffset%2?'long':'short',long:'long'})[ai.role]);
 }
 export function shareSighting(room,p,enemy){
- (room.teamIntel||={})[p.team]={...point(enemy),at:room.clock(),observer:p.id};
+ const report={...point(enemy),at:room.clock(),observer:p.id};
+ (room.teamIntel||={})[p.team]=report;const sightings=(room.teamSightings||={})[p.team]||=new Map();sightings.set(enemy.id,report);for(const [id,r]of sightings)if(room.clock()-r.at>12000)sightings.delete(id);
 }
 function supportGoal(room,p,allies,report){
  if(!report||room.clock()-report.at>1700||report.observer===p.id||p.hasBomb||p.botAI.engaging)return null;
@@ -95,13 +113,16 @@ function watchPoints(p,site){
  return positions.map(([x,y,z])=>({x,y,z}));
 }
 function readyToEnter(room,p,allies,site){
- const now=room.clock(),ai=p.botAI,key=site+':'+ai.lane;
+ const now=room.clock(),ai=p.botAI,strategy=attackPlan(room),key=site+':'+(strategy.coordinated?strategy.id:ai.lane);
  const plans=room.botExecutions||=new Map();let plan=plans.get(key);
  if(!plan){plan={at:now,releaseAt:0};plans.set(key,plan);}
  const mates=allies.filter(q=>q!==p&&q.botAI?.lane===ai.lane);
  const near=mates.some(q=>range(q,p)<8),support=mates.find(q=>q.botAI?.utility&&!q.botAI.utility.released||(q.botAI?.utilityFollowupUntil||0)>now);
- const deadline=room.attackPlan?.coordinated?6500:4200;
- if(!plan.releaseAt&&((near&&!support&&now-plan.at>700)||now-plan.at>deadline))plan.releaseAt=now;
+ const deadline=strategy.tempo==='fast'?1800:strategy.coordinated?6500:4200;
+ const otherLanes=allies.filter(q=>q.bot&&q.botAI?.site===site&&q.botAI?.lane!==ai.lane&&q.botAI.phase!=='feint');
+ const splitReady=!strategy.coordinated||!otherLanes.length||otherLanes.some(q=>q.botAI.routeIndex>=q.botAI.stagingIndex);
+ if(strategy.tempo==='fake'&&site==='B'&&now<strategy.fakeUntil&&allies.some(q=>q.botAI?.phase==='feint'))return false;
+ if(!plan.releaseAt&&((near&&splitReady&&!support&&now-plan.at>700)||now-plan.at>deadline))plan.releaseAt=now;
  if(!plan.releaseAt)return false;
  // Entry first, trading partner next, bomb carrier last. A bounded delay never
  // leaves survivors waiting forever for a dead or distant teammate.

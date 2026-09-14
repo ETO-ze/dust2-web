@@ -1,3 +1,4 @@
+import {snapshotForSide} from './snapshot-view.js';
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
@@ -124,7 +125,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         try {
           const player = room.addHuman(socket, settings); socket.playerId = player.id; socket.roomCode = room.code;
           send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1,shotProtocol:1 });
-          send(socket, room.snapshot({ drainEvents: false }));
+          send(socket, snapshotForSide(room.snapshot({ drainEvents: false }),player.team));
         } catch (e) { if (created) rooms.delete(room.code); error(socket, 'JOIN_FAILED', e.message); }
         return;
       }
@@ -185,9 +186,9 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       try {
         room.tick(1 / TICK_RATE);
         if (tickNumber % (TICK_RATE / SNAPSHOT_RATE) === 0) {
-          const serialized = JSON.stringify(room.snapshot());
+          const snapshot=room.snapshot(),views=new Map();
           for (const socket of room.clients.values()) {
-            if (socket.readyState === WebSocket.OPEN) { if (socket.bufferedAmount > 1024 * 1024) socket.close(1008, 'Client too slow'); else socket.send(serialized); }
+            if (socket.readyState === WebSocket.OPEN) { if (socket.bufferedAmount > 1024 * 1024) socket.close(1008, 'Client too slow'); else {const side=room.players.get(socket.playerId)?.team;if(!views.has(side))views.set(side,JSON.stringify(snapshotForSide(snapshot,side)));socket.send(views.get(side));} }
           }
         }
       } catch (e) { console.error(`[room ${room.code}]`, e); for (const socket of room.clients.values()) error(socket, 'SIMULATION_ERROR', '房间模拟出现错误，请重新加入。'); }
