@@ -1,0 +1,58 @@
+.callout-editor {
+  position: fixed;
+  left: 12px;
+  top: 72px;
+  z-index: 40;
+  width: min(340px, 92vw);
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  padding: 12px 12px 14px;
+  border: 1px solid #3a4a55;
+  background: #0d141acc;
+  color: #e8eef2;
+  font: 13px/1.4 "Segoe UI", "PingFang SC", sans-serif;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+}
+.callout-editor[hidden] { display: none !important; }
+.callout-editor-title { font-weight: 700; color: #9ad0ff; margin-bottom: 6px; }
+.callout-editor-coords { color: #c5d0d8; font-size: 12px; margin-bottom: 8px; word-break: break-all; }
+.callout-editor-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 6px;
+  padding: 7px 8px;
+  border: 1px solid #31424e;
+  background: #121a20;
+  color: #eef4f7;
+}
+.callout-editor-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 8px 0;
+}
+.callout-editor-actions button {
+  padding: 7px 8px;
+  border: 1px solid #3d5160;
+  background: #1a2730;
+  color: #eef4f7;
+  cursor: pointer;
+}
+.callout-editor-actions button:hover { background: #24343f; }
+.callout-editor-hint { color: #8fa0ab; font-size: 11px; margin-bottom: 8px; }
+.callout-editor-list { display: grid; gap: 4px; max-height: 240px; overflow: auto; }
+.callout-editor-row {
+  text-align: left;
+  padding: 6px 8px;
+  border: 1px solid #2b3a44;
+  background: #121920;
+  color: #dce6ec;
+  cursor: pointer;
+  font: inherit;
+}
+.callout-editor-row.selected,
+.callout-editor-row:hover { border-color: #6aa8d8; background: #1a2a35; }
+.callout-editor-status { margin-top: 8px; color: #f0c674; font-size: 11px; }
+body.callout-editor-active #pause-menu { /* keep pause usable while editing */ }

@@ -3,7 +3,24 @@ export const MATCH_RULES = Object.freeze({ regulationHalfRounds:12, regulationWi
   overtimeHalfRounds:3, overtimeStartMoney:10000, deathmatchWinTarget:100 });
 export const TEAM_IDS=Object.freeze(['A','B']);
 export const oppositeSide=side=>side==='CT'?'T':'CT';
-export function botCount(value,fallback=6){return Number.isInteger(value)&&value>=0&&value<=9?value:fallback;}
+
+/** Room modes: id is stored on the room; ruleset drives bomb rounds vs deathmatch / debug / utility. */
+export const GAME_MODES = Object.freeze({
+  defuse: Object.freeze({ id:'defuse', ruleset:'defuse', maxPlayers:10, teamSize:5, maxBots:9, label:'竞技爆破', shortLabel:'经典爆破' }),
+  deathmatch: Object.freeze({ id:'deathmatch', ruleset:'deathmatch', maxPlayers:10, teamSize:5, maxBots:9, label:'团队死斗', shortLabel:'团队死斗' }),
+  debug: Object.freeze({ id:'debug', ruleset:'debug', maxPlayers:1, teamSize:1, maxBots:0, label:'调试模式', shortLabel:'调试' }),
+  utility: Object.freeze({ id:'utility', ruleset:'utility', maxPlayers:1, teamSize:5, maxBots:2, label:'道具练习', shortLabel:'道具' }),
+});
+
+export function normalizeMode(mode){return Object.hasOwn(GAME_MODES,mode)?mode:'defuse';}
+export function modeConfig(mode){return GAME_MODES[normalizeMode(mode)];}
+export function isBombMode(mode){return modeConfig(mode).ruleset==='defuse';}
+export function isDeathmatchMode(mode){return modeConfig(mode).ruleset==='deathmatch';}
+export function isDebugMode(mode){return modeConfig(mode).ruleset==='debug';}
+export function isUtilityMode(mode){return modeConfig(mode).ruleset==='utility';}
+/** Free-buy sandbox (deathmatch + solo debug + utility practice). */
+export function isSandboxMode(mode){const r=modeConfig(mode).ruleset;return r==='deathmatch'||r==='debug'||r==='utility';}
+export function botCount(value,fallback=6,maxBots=9){return Number.isInteger(value)&&value>=0&&value<=maxBots?value:fallback;}
 
 /** Decisions apply between rounds. Scores belong to teams, never their current side. */
 export function defuseDecision(scores,roundsPlayed){

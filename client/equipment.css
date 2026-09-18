@@ -10,3 +10,14 @@
 .equipment-item.weapon-item img{transform:scale(2.45);transform-origin:center 43%}.equipment-item.weapon-item{isolation:isolate}.equipment-item.weapon-item b,.equipment-item.weapon-item>span,.equipment-item.weapon-item .equipment-price{position:relative;z-index:1;text-shadow:0 1px 2px #20344080}@media(max-width:860px){.equipment-item.weapon-item img{transform:scale(2.1)}}
 
 .equipment-item[data-buy=elite] img{transform:scale(1.5)}.equipment-item[data-buy=mp7] img,.equipment-item[data-buy=mac10] img,.equipment-item[data-buy=mp9] img{transform:scale(2.05)}
+
+﻿#practice-landing{position:absolute;top:64px;right:16px;z-index:12;width:640px;height:360px;overflow:hidden;background:#0b1418;border:1px solid #eabe5488;border-left:3px solid #eabe54;box-shadow:0 10px 28px #000a;pointer-events:none;transform-origin:top right;transition:width .12s ease,height .12s ease,box-shadow .12s ease}
+#practice-landing.practice-pip-zoomed{box-shadow:0 14px 36px #000c;border-color:#eabe54cc}
+#practice-landing .practice-pip-canvas{display:block;width:100%;height:100%;background:#152028;image-rendering:auto}
+#practice-landing .practice-landing-overlay{position:absolute;left:0;right:0;bottom:0;padding:8px 10px 9px;background:linear-gradient(180deg,transparent,#0b1418f0 42%);color:#eef3f0;pointer-events:none}
+#practice-landing .practice-landing-title{font-size:9px;letter-spacing:1.5px;color:#eabe54;margin-bottom:2px}
+#practice-landing .practice-landing-place{display:block;font:600 15px 'Barlow Condensed',Arial,sans-serif;margin:0 0 2px;color:#fff;text-shadow:0 1px 3px #000c}
+#practice-landing .practice-landing-meta{display:block;font-size:10px;color:#d2ddd9;margin-bottom:2px}
+#practice-landing .practice-landing-xyz{font-size:9px;color:#9aaba8;font-variant-numeric:tabular-nums}
+@media(max-width:900px){#practice-landing{width:min(640px,92vw);height:auto;aspect-ratio:16/9;top:52px;right:8px}}
+

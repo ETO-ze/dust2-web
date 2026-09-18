@@ -1,3 +1,4 @@
+import { modeConfig } from '../shared/match-rules.js';
 import {preferences} from './persistence.js';
 import './lobby.css';
 export function mountLobby({connection,onJoin}){
@@ -10,7 +11,7 @@ export function mountLobby({connection,onJoin}){
  function render(rooms){
   list.replaceChildren();entry.textContent=rooms.length?`联机大厅 (${rooms.length})`:'联机大厅';status.textContent=rooms.length?'优先加入已有玩家的房间；加入时会自动腾出人机席位。':'暂无玩家在线，可以创建一个房间。';
   for(const room of rooms){const row=document.createElement('button');row.className='public-room';row.disabled=!room.joinable;
-   const title=document.createElement('b');title.textContent=room.code+' · '+(room.mode==='defuse'?'竞技爆破':'团队死斗');
+   const title=document.createElement('b');title.textContent=room.code+' · '+modeConfig(room.mode).label;
    const info=document.createElement('span');info.textContent=`${room.humans} 名玩家 · ${room.bots} 名人机 · ${room.scores.CT}:${room.scores.T} · ${room.joinable?'加入 →':'已满 / 已结束'}`;
    row.append(title,info);row.onclick=()=>join(room.code);list.append(row);
   }

@@ -1,4 +1,4 @@
-# Dust2 Web protocol v1
+﻿# Dust2 Web protocol v1
 
 This is an original browser FPS prototype. The Node server owns movement, health,
 ammo, shooting, purchases, bomb progress and rounds. All messages use JSON over
@@ -12,7 +12,7 @@ Client sends `join` once before other actions:
 
 An empty room creates a new room; a supplied existing code joins that room, whose
 mode is authoritative. A supplied unused code creates it. Room codes are uppercase
-alphanumeric, 4–12 characters. Team is `T`, `CT`, or `auto`; modes are `deathmatch`
+alphanumeric, 4鈥?2 characters. Team is `T`, `CT`, or `auto`; modes are `deathmatch`
 and `defuse`. Maximum players including bots: 10, maximum humans per team: 5.
 Bots yield their slots to humans. Match settings are set by the room's creator.
 
@@ -34,7 +34,7 @@ Buy via `{"type":"buy","weapon":"ak47"}` (`m4a1`, `awp` also supported).
 Aliases `ak`, `m4` accepted. Deathmatch has free purchases; defuse purchases require
 money, the buy period and proximity to the team's spawn. An armor purchase is
 `{"type":"buy","weapon":"armor"}` (650). Client pings can be echoed:
-`{"type":"ping","time":123}` → `{"type":"pong","time":123,"serverTime":...}`.
+`{"type":"ping","time":123}` 鈫?`{"type":"pong","time":123,"serverTime":...}`.
 
 Snapshots arrive at 15 Hz:
 
@@ -70,3 +70,94 @@ HTTP: `/health` returns room/player statistics; other requests serve the built
 `dist` frontend when present. `PORT` defaults to 3000; `HOST` defaults to 0.0.0.0.
 Programmatic API: `await startGameServer({port: 0, host: '127.0.0.1'})` returns
 `{ server, wss, rooms, port, close }` for integration tests.
+
+---
+
+# Protocol additions (merge into server/PROTOCOL.md)
+
+## Modes
+
+`join.mode` accepts:
+
+- `defuse` (default)
+- `deathmatch`
+- `utility` 鈥?solo utility practice (bots forced to 0)
+- `debug` 鈥?solo debug / callout paint (bots forced to 0)
+
+Room capacity follows `shared/match-rules.js` `GAME_MODES` (`maxPlayers`, `maxBots`, 鈥?.
+
+## Chat + client commands
+
+Client 鈫?server:
+
+```json
+{"type":"chat","scope":"all","text":"/help"}
+```
+
+Server 鈫?client (private command replies):
+
+```json
+{
+  "type": "chatMessage",
+  "system": true,
+  "text": "...",
+  "scope": "all",
+  "time": 0,
+  "clientCommand": "mode_help",
+  "args": "{\"html\":\"...\",\"plain\":\"...\"}"
+}
+```
+
+Known `clientCommand` values:
+
+| Command | Mode | Effect |
+|---------|------|--------|
+| `mode_help` | any | Show `/help` HTML |
+| `practice_export` | utility | Download throws JSON (`args` = `{ throws }`) |
+| `practice_import_pick` | utility | Open file picker (`args` = `{ force }`) |
+| `practice_list` | utility | List packs / throws HTML |
+| `practice_show` | utility | Teleport + aim for demo (`args` = stand/yaw/pitch/weapon/name) |
+| `practice_toast` | utility | HUD toast |
+| `region` | debug | Start painting |
+| `region_name` | debug | Name + commit (`args` = name) |
+| `region_end` | debug | End without rename |
+| `region_cancel` | debug | Cancel brush |
+| `region_list` | debug | List / delete / remake / rename |
+| `region_clear` | debug | `/clear all` for session regions |
+| `region_show` | debug | `temp` / `all` / `local` |
+
+Normal (non-command) chat may still be broadcast as today.
+
+## Practice import
+
+Client 鈫?server (after file pick):
+
+```json
+{
+  "type": "practiceImport",
+  "throws": [ /* throw records */ ],
+  "force": false,
+  "packId": "import"
+}
+```
+
+Server replies with a system `chatMessage` + `clientCommand: "practice_toast"`.
+
+Throw record shape: see `shared/practice-throws.js` (`cloneThrowRecord` / import sanitizers).  
+Built-in packs: place `*.json` under `shared/practice-packs/` (scanned on utility room init).
+
+## Callouts HTTP API
+
+- `GET /api/dev/callouts` 鈫?current callout document JSON  
+- `PUT` or `POST /api/dev/callouts` body: `{ "document": { ... }, "promoteShared": false }`  
+  - Writes `.runtime/map-callouts.json`  
+  - If `promoteShared: true`, also writes `shared/map-callouts.json`
+
+Used by debug F8 editor and region painter export.
+
+## Snapshot extras (utility)
+
+- `practiceThrowCount`: number of recorded throws in the room  
+- Player fields: `practiceDummy`, `practiceHud` (dummy overhead feedback)  
+- `noclip` / `fly` when cheats enabled via `/fly`
+

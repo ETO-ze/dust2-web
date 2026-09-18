@@ -18,5 +18,20 @@ export class GameChat{
   receive(e){if(e.type!=='chat')return;const row=document.createElement('div');row.className='chat-line';const who=document.createElement('b');who.style.color=e.team==='CT'?'#93b9ec':'#e9c56d';who.textContent=`${e.dead?'*阵亡* ':''}${e.channel==='team'?'(队伍) ':''}${e.bot?'BOT ':''}${e.name}：`;
     const text=document.createElement('span');text.textContent=e.text;row.append(who,text);this.log.append(row);this.rows.push({node:row,at:performance.now()});while(this.rows.length>50)this.rows.shift().node.remove();this.log.scrollTop=this.log.scrollHeight;}
   error(message){this.element.querySelector('.chat-status').textContent=message;setTimeout(()=>{this.element.querySelector('.chat-status').textContent='';},4000);}
+  system(text){
+    const row=document.createElement('div');row.className='chat-line system';
+    const span=document.createElement('span');span.textContent=String(text||'');row.append(span);
+    this.log.append(row);this.rows.push({node:row,at:performance.now()});while(this.rows.length>50)this.rows.shift().node.remove();this.log.scrollTop=this.log.scrollHeight;
+  }
+  systemHtml(html,plain){
+    const row=document.createElement('div');row.className='chat-line system';
+    row.innerHTML=String(html||'');
+    if(!row.textContent&&plain)row.textContent=String(plain);
+    this.log.append(row);this.rows.push({node:row,at:performance.now()});while(this.rows.length>50)this.rows.shift().node.remove();this.log.scrollTop=this.log.scrollHeight;
+  }
+  receiveMessage(data){
+    if(data?.system){if(data.text)this.system(data.text);return;}
+    this.receive({type:'chat',...data,channel:data.scope||data.channel||'all'});
+  }
   reset(){this.close(false);this.rows=[];this.log.replaceChildren();}
 }

@@ -1,0 +1,470 @@
+{
+  "type": "dust2-practice-throws",
+  "version": 1,
+  "exportedAt": "2026-09-17T14:12:39.528Z",
+  "room": "AB27E3",
+  "mode": "utility",
+  "count": 20,
+  "throws": [
+    {
+      "name": "T方中门烟1",
+      "weapon": "smokegrenade",
+      "team": "T",
+      "stand": {
+        "x": -12.016144568347833,
+        "y": 4.007928115293062,
+        "z": 26.786175781782987
+      },
+      "yaw": -0.046629431308153,
+      "pitch": 0.342503412411367,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": true,
+      "crouch": false,
+      "velocity": {
+        "x": -2.1767548932311993e-34,
+        "y": 5.299965134533321,
+        "z": 4.043242972201517e-34
+      },
+      "impacts": [],
+      "recordedAt": 1789652361285
+    },
+    {
+      "name": "T方Xbox烟1",
+      "weapon": "smokegrenade",
+      "team": "T",
+      "stand": {
+        "x": -12.101231152416368,
+        "y": 4.173304730888616,
+        "z": 26.910410694126902
+      },
+      "yaw": -0.07197161204710767,
+      "pitch": 0.2718524842906364,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": true,
+      "crouch": false,
+      "velocity": {
+        "x": -3.694313953501012e-80,
+        "y": 4.622631801199984,
+        "z": 0
+      },
+      "impacts": [],
+      "recordedAt": 1789652597515
+    },
+    {
+      "name": "凹槽火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": -6.863734972735264,
+        "y": -2.4599319361746854,
+        "z": -33.42798020425544
+      },
+      "yaw": 0.781215139497796,
+      "pitch": 0.23038346126325285,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": true,
+      "crouch": false,
+      "velocity": {
+        "x": -2.9354238459932535e-203,
+        "y": 5.638631801199989,
+        "z": -1.1822273390328285e-205
+      },
+      "impacts": [],
+      "recordedAt": 1789652753654
+    },
+    {
+      "name": "中路过点烟1",
+      "weapon": "smokegrenade",
+      "team": "T",
+      "stand": {
+        "x": -12.680854196916071,
+        "y": 0.6973385507097903,
+        "z": -19.2139240738033
+      },
+      "yaw": -0.12035213891239138,
+      "pitch": -0.1773952651727023,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": true,
+      "crouch": false,
+      "velocity": {
+        "x": 7.023804249396148e-99,
+        "y": 5.638631801199989,
+        "z": 5.479156293868659e-97
+      },
+      "impacts": [],
+      "recordedAt": 1789652884118
+    },
+    {
+      "name": "A小平台火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": 3.239538372924806,
+        "y": 0.1271100040531158,
+        "z": -33.8375823479163
+      },
+      "yaw": -0.5611524947960813,
+      "pitch": 0.23883085484290517,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": 9.188806031850565e-23,
+        "y": 0,
+        "z": 6.218405851873892e-23
+      },
+      "impacts": [],
+      "recordedAt": 1789652972414
+    },
+    {
+      "name": "A小平台过点烟1",
+      "weapon": "smokegrenade",
+      "team": "T",
+      "stand": {
+        "x": 3.279306100167914,
+        "y": 0.1271100040531159,
+        "z": -33.8041523570722
+      },
+      "yaw": -0.5680639986339813,
+      "pitch": 0.25572564200220926,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": -4.5584756090023366e-70,
+        "y": 0,
+        "z": -8.176445461520929e-72
+      },
+      "impacts": [],
+      "recordedAt": 1789653017049
+    },
+    {
+      "name": "蓝车死点火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": 26.13995046358959,
+        "y": -0.0038622007943609126,
+        "z": -22.62435082528396
+      },
+      "yaw": -0.5999686173605205,
+      "pitch": 0.11135200627723933,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": 3.3895989176140415,
+        "y": 0,
+        "z": -4.946207448581245
+      },
+      "impacts": [],
+      "recordedAt": 1789653112600
+    },
+    {
+      "name": "蓝车火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": 26.562096278576846,
+        "y": -0.00505129480373073,
+        "z": -22.339534408231703
+      },
+      "yaw": -0.5654110981711966,
+      "pitch": 0.16203636775515573,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": 3.0849473036522195,
+        "y": 0,
+        "z": -4.834462117198357
+      },
+      "impacts": [],
+      "recordedAt": 1789653215556
+    },
+    {
+      "name": "A门防rush烟1",
+      "weapon": "smokegrenade",
+      "team": "T",
+      "stand": {
+        "x": 35.05825680709905,
+        "y": -0.25721396793678825,
+        "z": -31.507282075020466
+      },
+      "yaw": 2.156534590069107,
+      "pitch": 0.010751228192286832,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": -9.360069755210341e-71,
+        "y": 0,
+        "z": -1.1220273099660382e-70
+      },
+      "impacts": [],
+      "recordedAt": 1789653297537
+    },
+    {
+      "name": "沙箱火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": 41.056846546303056,
+        "y": 0.34292645493089496,
+        "z": -45.26370397450924
+      },
+      "yaw": 0.8677834703963612,
+      "pitch": -0.13285446266180498,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": true,
+      "crouch": false,
+      "velocity": {
+        "x": -8.439343406237664e-9,
+        "y": 6.6546318011999945,
+        "z": 1.0596406451603554e-7
+      },
+      "impacts": [],
+      "recordedAt": 1789653506014
+    },
+    {
+      "name": "斜坡过点烟1",
+      "weapon": "smokegrenade",
+      "team": "T",
+      "stand": {
+        "x": 18.467282732300347,
+        "y": 0.38381889846133327,
+        "z": -20.450744320979243
+      },
+      "yaw": -0.446170203675063,
+      "pitch": 0.6212674005399048,
+      "throwMode": "lob",
+      "throwStrength": 0.5,
+      "jumpThrow": true,
+      "crouch": false,
+      "velocity": {
+        "x": -3.2975616452432294e-48,
+        "y": 6.6546318011999945,
+        "z": 6.182665231246588e-48
+      },
+      "impacts": [],
+      "recordedAt": 1789653641726
+    },
+    {
+      "name": "猫道雷",
+      "weapon": "hegrenade",
+      "team": "T",
+      "stand": {
+        "x": -21.05767678519253,
+        "y": -2.844689995422363,
+        "z": -35.53766610524562
+      },
+      "yaw": -1.534348085708495,
+      "pitch": 0.20350539078254226,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": 3.635481107810507,
+        "y": 0,
+        "z": -0.12296243525661862
+      },
+      "impacts": [],
+      "recordedAt": 1789653823410
+    },
+    {
+      "name": "猫道火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": -20.87283487207466,
+        "y": -2.8479675955520083,
+        "z": -35.9377116931724
+      },
+      "yaw": -1.5235968575162104,
+      "pitch": 0.34941491624926796,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": true,
+      "velocity": {
+        "x": 1.0480315182805908,
+        "y": 0,
+        "z": -0.04950329789391025
+      },
+      "impacts": [],
+      "recordedAt": 1789653879611
+    },
+    {
+      "name": "B1雷1",
+      "weapon": "hegrenade",
+      "team": "T",
+      "stand": {
+        "x": 7.353848639936476,
+        "y": -0.0007857450929864701,
+        "z": -36.48096281516764
+      },
+      "yaw": 1.5933517470354053,
+      "pitch": 0.043004912769143304,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": -0.00002947165888363552,
+        "y": 0,
+        "z": 6.617105074088183e-7
+      },
+      "impacts": [],
+      "recordedAt": 1789653947458
+    },
+    {
+      "name": "B门烟1",
+      "weapon": "smokegrenade",
+      "team": "T",
+      "stand": {
+        "x": -44.77580343345336,
+        "y": 1.5789875129603836,
+        "z": -28.215461815531345
+      },
+      "yaw": -0.39332163392469965,
+      "pitch": 0.9253735694073941,
+      "throwMode": "lob",
+      "throwStrength": 0.5,
+      "jumpThrow": true,
+      "crouch": false,
+      "velocity": {
+        "x": -3.5264164113180695e-13,
+        "y": 5.299965134533321,
+        "z": 8.554172436724215e-13
+      },
+      "impacts": [],
+      "recordedAt": 1789654108203
+    },
+    {
+      "name": "B点死点火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": -51.43619858468456,
+        "y": 0.8552016693449251,
+        "z": -43.36535348854331
+      },
+      "yaw": -0.52938750241018,
+      "pitch": 0.17355554081831653,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": 2.0456104544376386,
+        "y": 0,
+        "z": -3.4767774432944094
+      },
+      "impacts": [],
+      "recordedAt": 1789654161025
+    },
+    {
+      "name": "狙击位火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": -50.74681753816977,
+        "y": 1.4669528991960972,
+        "z": -39.53523522760233
+      },
+      "yaw": 0.048107040489712816,
+      "pitch": -0.12440706908215528,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": true,
+      "crouch": false,
+      "velocity": {
+        "x": -0.27265891368442413,
+        "y": 5.638631801199989,
+        "z": -5.663390099673138
+      },
+      "impacts": [],
+      "recordedAt": 1789654213648
+    },
+    {
+      "name": "狗洞火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": -50.878129922462186,
+        "y": 0.8089934389186884,
+        "z": -43.99075850427425
+      },
+      "yaw": -0.6177011625610902,
+      "pitch": 0.18737854849411184,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": 3.3952620163897804,
+        "y": 0,
+        "z": -4.815247308886978
+      },
+      "impacts": [],
+      "recordedAt": 1789654263295
+    },
+    {
+      "name": "矮箱火1",
+      "weapon": "molotov",
+      "team": "T",
+      "stand": {
+        "x": -51.464373683899026,
+        "y": 0.8247930915417465,
+        "z": -41.42965350775453
+      },
+      "yaw": -0.3627434654297508,
+      "pitch": 0.36323792392505955,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": 1.7369583918561233e-145,
+        "y": 0,
+        "z": 2.5740457645505142e-145
+      },
+      "impacts": [],
+      "recordedAt": 1789654283222
+    },
+    {
+      "name": "B2烟",
+      "weapon": "smokegrenade",
+      "team": "T",
+      "stand": {
+        "x": -35.93345692662111,
+        "y": 0.38918530134596435,
+        "z": -70.69437635769845
+      },
+      "yaw": 2.6313339597814718,
+      "pitch": 0.11442378576074803,
+      "throwMode": "full",
+      "throwStrength": 1,
+      "jumpThrow": false,
+      "crouch": false,
+      "velocity": {
+        "x": 0.000004424614701331239,
+        "y": 0,
+        "z": 0.000002395204823669997
+      },
+      "impacts": [],
+      "recordedAt": 1789654324210
+    }
+  ]
+}
