@@ -42,7 +42,7 @@ import java.io.OutputStream;
 
 /** Fullscreen host for the existing game. The server remains authoritative. */
 public final class MainActivity extends Activity {
-    private static final String HOME = "https://appassets.androidplatform.net/";
+    private static final String HOME = "https://appassets.androidplatform.net/index.html";
     private WebViewAssetLoader assetLoader;
     private static final int PICK_FILE = 20;
     private static final int SAVE_FILE = 21;
