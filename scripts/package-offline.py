@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 import hashlib, json, shutil, subprocess, urllib.request, zipfile
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='0.1.0'
+VERSION='0.2.0'
 NODE='v22.23.2'
 def sha(p):
  with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
@@ -47,7 +47,7 @@ def main():
   text=f'@echo off\nchcp 65001 >nul\ntitle DUST II OFFLINE\n"%~dp0runtime\\node.exe" "%~dp0app\\portable\\{script}"\nif errorlevel 1 pause\n'
   if script=='verify.mjs':text+='pause\n'
   (out/name2).write_bytes(text.replace('\n','\r\n').encode('utf-8'))
- (out/'使用说明.txt').write_text('''DUST II 离线测试版 0.1.0 · Windows 10/11 x64
+ (out/'使用说明.txt').write_text('''DUST II 离线测试版 0.2.0 · Windows 10/11 x64
 
 1. 把整个 ZIP 完整解压；不要在压缩包内直接运行。
 2. 双击「开始游戏.cmd」，浏览器会打开本机游戏。建议使用 Edge 或 Chrome。

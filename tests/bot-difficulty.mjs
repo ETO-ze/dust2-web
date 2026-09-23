@@ -18,7 +18,7 @@ test('hard improves reaction and aim precision by 1.3x while retaining normal de
  assert.equal(normal.reactionMinMs+normal.reactionRangeMs/2,500);assert.ok(Object.isFrozen(hard));
 });
 test('both difficulty levels acquire only visible enemies and keep identical turn-speed bounds',()=>{
- flat();for(const botDifficulty of ['normal','hard']){
+ flat();for(const botDifficulty of ['easy','normal','hard']){
   let now=100000;const r=new GameRoom('AIMTEST',{mode:'deathmatch',bots:1,botDifficulty,clock:()=>now});const enemy=r.addHuman({},{team:'CT'}),p=[...r.players.values()].find(q=>q.bot);
   Object.assign(p,{x:0,y:0,z:0,yaw:1,pitch:0,grounded:true});Object.assign(enemy,{x:0,y:0,z:-10,team:'CT',protectionUntil:0});p.team='T';r.visibleToBot=()=>false;
   r.botInput(p,1/30);assert.equal(p.botAI.targetId,null);r.visibleToBot=()=>true;p.botAI.nextThinkAt=0;

@@ -1,0 +1,546 @@
+[
+  {
+    "strategy": "balanced",
+    "tickP95": 1.66,
+    "bots": [
+      {
+        "weapon": "m4a1",
+        "travel": 105,
+        "scopeFrames": 0,
+        "moves": 9,
+        "peeks": 1,
+        "peekCompleted": 1,
+        "role": "anchor-b",
+        "position": {
+          "x": -32.46348231179217,
+          "y": 0.09184892824597549,
+          "z": -57.335915424008974
+        },
+        "goal": {
+          "x": -31.9913,
+          "y": 0.2032,
+          "z": -57.731
+        },
+        "watch": {
+          "x": -27.6669,
+          "y": 5.11663453166983,
+          "z": -66.9131
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 164,
+        "scopeFrames": 0,
+        "moves": 8,
+        "peeks": 1,
+        "peekCompleted": 1,
+        "role": "anchor-a",
+        "position": {
+          "x": 21.405986742974566,
+          "y": 2.3966766422335017,
+          "z": -65.23409269706401
+        },
+        "goal": {
+          "x": 20.8915,
+          "y": 2.4892,
+          "z": -64.8589
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 4.081772841902424,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 112,
+        "scopeFrames": 0,
+        "moves": 8,
+        "peeks": 0,
+        "peekCompleted": 0,
+        "role": "short",
+        "position": {
+          "x": 11.524007125399942,
+          "y": 2.435933297490746,
+          "z": -46.36914886223191
+        },
+        "goal": {
+          "x": 12.0713,
+          "y": 2.5739,
+          "z": -46.1772
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 4.081772841902424,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 90,
+        "scopeFrames": 0,
+        "moves": 10,
+        "peeks": 10,
+        "peekCompleted": 9,
+        "role": "mid",
+        "position": {
+          "x": -12.446858448385768,
+          "y": -3.128714685550519,
+          "z": -48.135365527919575
+        },
+        "goal": {
+          "x": -10.7061,
+          "y": -3.1665,
+          "z": -43.2054
+        },
+        "watch": {
+          "x": -8.455,
+          "y": 0.8608000230789186,
+          "z": -35.3854
+        },
+        "path": 6,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "awp",
+        "travel": 144,
+        "scopeFrames": 1126,
+        "moves": 9,
+        "peeks": 2,
+        "peekCompleted": 2,
+        "role": "sniper-a",
+        "position": {
+          "x": 26.11076130265194,
+          "y": 2.429164074516676,
+          "z": -68.63471938044943
+        },
+        "goal": {
+          "x": 25.854,
+          "y": 2.5781,
+          "z": -69.2467
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 3.6617728419024242,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 38
+      }
+    ]
+  },
+  {
+    "strategy": "long-control",
+    "tickP95": 2.13,
+    "bots": [
+      {
+        "weapon": "m4a1",
+        "travel": 104,
+        "scopeFrames": 0,
+        "moves": 7,
+        "peeks": 4,
+        "peekCompleted": 4,
+        "role": "anchor-b",
+        "position": {
+          "x": -42.00698021035499,
+          "y": 0.2641437209765413,
+          "z": -69.06973315678606
+        },
+        "goal": {
+          "x": -42.2148,
+          "y": 0.3725,
+          "z": -69.6087
+        },
+        "watch": {
+          "x": -52.2415,
+          "y": 2.4588846670378994,
+          "z": -75.6666
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 99,
+        "scopeFrames": 0,
+        "moves": 8,
+        "peeks": 0,
+        "peekCompleted": 0,
+        "role": "anchor-a",
+        "position": {
+          "x": 34.02192985744429,
+          "y": 4.0735100205993655,
+          "z": -72.24700030086849
+        },
+        "goal": {
+          "x": 34.3027,
+          "y": 4.1656,
+          "z": -72.0566
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 4.081772841902424,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 193,
+        "scopeFrames": 0,
+        "moves": 7,
+        "peeks": 1,
+        "peekCompleted": 1,
+        "role": "long",
+        "position": {
+          "x": 26.283544510258245,
+          "y": 2.4449986820263714,
+          "z": -69.2749488705961
+        },
+        "goal": {
+          "x": 26.924,
+          "y": 2.6247,
+          "z": -69.5706
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 4.081772841902424,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 167,
+        "scopeFrames": 0,
+        "moves": 8,
+        "peeks": 1,
+        "peekCompleted": 1,
+        "role": "long",
+        "position": {
+          "x": 8.504594095972697,
+          "y": 2.449708977806467,
+          "z": -47.51283670025784
+        },
+        "goal": {
+          "x": 7.9565,
+          "y": 2.5273,
+          "z": -47.8536
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 4.081772841902424,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "awp",
+        "travel": 113,
+        "scopeFrames": 1345,
+        "moves": 8,
+        "peeks": 6,
+        "peekCompleted": 6,
+        "role": "sniper-b",
+        "position": {
+          "x": -39.63500434589719,
+          "y": 0.0969180361848169,
+          "z": -65.94306765754409
+        },
+        "goal": {
+          "x": -39.135,
+          "y": 0.1524,
+          "z": -65.5891
+        },
+        "watch": {
+          "x": -43.0784,
+          "y": 1.107775635028575,
+          "z": -56.0737
+        },
+        "path": 0,
+        "scopeSeconds": 45
+      }
+    ]
+  },
+  {
+    "strategy": "b-lean",
+    "tickP95": 2.18,
+    "bots": [
+      {
+        "weapon": "m4a1",
+        "travel": 100,
+        "scopeFrames": 0,
+        "moves": 9,
+        "peeks": 1,
+        "peekCompleted": 1,
+        "role": "anchor-b",
+        "position": {
+          "x": -38.52220300846732,
+          "y": -0.03992453345544474,
+          "z": -54.70413776922001
+        },
+        "goal": {
+          "x": -39.0112,
+          "y": 0.0127,
+          "z": -55.1783
+        },
+        "watch": {
+          "x": -43.0784,
+          "y": 1.5277756350285752,
+          "z": -56.0737
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 108,
+        "scopeFrames": 0,
+        "moves": 10,
+        "peeks": 1,
+        "peekCompleted": 1,
+        "role": "anchor-a",
+        "position": {
+          "x": 18.58414259002437,
+          "y": 2.436187832336548,
+          "z": -63.22511817881852
+        },
+        "goal": {
+          "x": 17.9705,
+          "y": 2.5061,
+          "z": -63.0174
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 4.081772841902424,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 97,
+        "scopeFrames": 0,
+        "moves": 7,
+        "peeks": 6,
+        "peekCompleted": 6,
+        "role": "anchor-b",
+        "position": {
+          "x": -39.49915726882327,
+          "y": 0.10640759292644504,
+          "z": -66.4946749587125
+        },
+        "goal": {
+          "x": -38.6842,
+          "y": 0.1355,
+          "z": -65.2907
+        },
+        "watch": {
+          "x": -43.0784,
+          "y": 1.5277756350285752,
+          "z": -56.0737
+        },
+        "path": 5,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 102,
+        "scopeFrames": 0,
+        "moves": 7,
+        "peeks": 1,
+        "peekCompleted": 1,
+        "role": "short",
+        "position": {
+          "x": 8.11797469128664,
+          "y": 2.450314549311577,
+          "z": -46.48652017847233
+        },
+        "goal": {
+          "x": 7.8327,
+          "y": 2.5146,
+          "z": -47.0821
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 4.081772841902424,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "awp",
+        "travel": 133,
+        "scopeFrames": 1394,
+        "moves": 9,
+        "peeks": 2,
+        "peekCompleted": 2,
+        "role": "sniper-a",
+        "position": {
+          "x": 29.94075012723562,
+          "y": 2.50885241823568,
+          "z": -69.66893087158516
+        },
+        "goal": {
+          "x": 30.407,
+          "y": 2.5908,
+          "z": -69.342
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 3.6617728419024242,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 46
+      }
+    ]
+  },
+  {
+    "strategy": "mid-pressure",
+    "tickP95": 2.49,
+    "bots": [
+      {
+        "weapon": "m4a1",
+        "travel": 130,
+        "scopeFrames": 0,
+        "moves": 6,
+        "peeks": 3,
+        "peekCompleted": 3,
+        "role": "anchor-b",
+        "position": {
+          "x": -45.35610429858695,
+          "y": 0.8277792850505856,
+          "z": -68.40969413565972
+        },
+        "goal": {
+          "x": -45.1739,
+          "y": 0.9144,
+          "z": -69.0753
+        },
+        "watch": {
+          "x": -43.0784,
+          "y": 1.5277756350285752,
+          "z": -56.0737
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 93,
+        "scopeFrames": 0,
+        "moves": 9,
+        "peeks": 0,
+        "peekCompleted": 0,
+        "role": "anchor-a",
+        "position": {
+          "x": 33.95787681229561,
+          "y": 2.8796872808628553,
+          "z": -70.56709206665849
+        },
+        "goal": {
+          "x": 33.9217,
+          "y": 3.0141,
+          "z": -71.3105
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 4.081772841902424,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 134,
+        "scopeFrames": 0,
+        "moves": 7,
+        "peeks": 8,
+        "peekCompleted": 8,
+        "role": "mid",
+        "position": {
+          "x": -12.83461484355142,
+          "y": -3.096235802331887,
+          "z": -48.715942989368756
+        },
+        "goal": {
+          "x": -12.8937,
+          "y": -3.0607,
+          "z": -51.0826
+        },
+        "watch": {
+          "x": -13.0048,
+          "y": -1.513940860463578,
+          "z": -56.0832
+        },
+        "path": 2,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "m4a1",
+        "travel": 104,
+        "scopeFrames": 0,
+        "moves": 6,
+        "peeks": 2,
+        "peekCompleted": 2,
+        "role": "short",
+        "position": {
+          "x": 9.158739328902254,
+          "y": 2.4385100301361082,
+          "z": -45.64565774417901
+        },
+        "goal": {
+          "x": 8.9027,
+          "y": 2.3029,
+          "z": -45.0342
+        },
+        "watch": {
+          "x": 7.8867,
+          "y": 4.081772841902424,
+          "z": -53.5813
+        },
+        "path": 0,
+        "scopeSeconds": 0
+      },
+      {
+        "weapon": "awp",
+        "travel": 102,
+        "scopeFrames": 1072,
+        "moves": 8,
+        "peeks": 2,
+        "peekCompleted": 2,
+        "role": "sniper-b",
+        "position": {
+          "x": -42.15623439584795,
+          "y": 0.15446419542927142,
+          "z": -67.03354149822755
+        },
+        "goal": {
+          "x": -42.799,
+          "y": 0.254,
+          "z": -66.7512
+        },
+        "watch": {
+          "x": -51.2794,
+          "y": 2.8098551242369103,
+          "z": -62.0554
+        },
+        "path": 0,
+        "scopeSeconds": 36
+      }
+    ]
+  }
+]

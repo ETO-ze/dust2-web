@@ -1,0 +1,421 @@
+[
+  {
+    "seed": 19721972,
+    "seconds": 240,
+    "counts": {
+      "join": 1,
+      "spawn": 40,
+      "buy": 163,
+      "round_start": 4,
+      "grenade_primed": 10,
+      "bot_utility_validated": 10,
+      "grenade_thrown": 10,
+      "grenade_bounce": 27,
+      "smoke": 6,
+      "shot": 95,
+      "hit": 48,
+      "weapon_dropped": 26,
+      "kill": 20,
+      "bomb_action": 6,
+      "bomb_planted": 3,
+      "weapon_picked_up": 5,
+      "bomb_exploded": 1,
+      "round_end": 2,
+      "fire_started": 2,
+      "explosion": 1,
+      "kit_picked_up": 1,
+      "bomb_defused": 1,
+      "flash": 1
+    },
+    "actions": [
+      "advance",
+      "hold",
+      "peek-back",
+      "peek-wait",
+      "peek-out",
+      "peek-settle",
+      "peek-shoot",
+      "peek-return",
+      "utility-approach",
+      "utility-validate",
+      "utility-ready",
+      "utility-prime",
+      "utility-released",
+      "engage",
+      "gather",
+      "support",
+      "postplant",
+      "collect-weapon",
+      "save",
+      "recover",
+      "feint",
+      "fallback",
+      "rotate",
+      "contact",
+      "avoid-team-flash"
+    ],
+    "tickP95": 3.6608999999989464,
+    "tickMax": 64.67179999999996,
+    "utilityStats": {
+      "validated": 10,
+      "interrupted": 17,
+      "team-risk": 1
+    },
+    "outcomes": [
+      {
+        "lineup": "ct-tunnel",
+        "angleError": 0.0000015771854285075531,
+        "predictionError": 0.0035027485919736875,
+        "useful": true
+      },
+      {
+        "lineup": "mid-cross",
+        "angleError": 0.000005973842645279517,
+        "predictionError": 0.25399840657284595,
+        "useful": true
+      },
+      {
+        "lineup": "a-ct",
+        "angleError": 0.0000015354877622798364,
+        "predictionError": 0.002035947483490008,
+        "useful": true
+      },
+      {
+        "lineup": "mid-cross",
+        "angleError": 0.0000010771670064441803,
+        "predictionError": 0.0023345369692295104,
+        "useful": true
+      },
+      {
+        "lineup": "b-back-fire",
+        "angleError": 0.00001634958611568935,
+        "predictionError": 0.002055702322488786,
+        "useful": true
+      },
+      {
+        "lineup": "b-back-he",
+        "angleError": 0.000001438332252630119,
+        "predictionError": 0.2245136919467976,
+        "useful": true
+      },
+      {
+        "lineup": "b-back-fire",
+        "angleError": 0.000008049434966690582,
+        "predictionError": 0.001661508836884264,
+        "useful": true
+      },
+      {
+        "lineup": "mid-cross",
+        "angleError": 0.000016172943658988336,
+        "predictionError": 0.0001307462681756118,
+        "useful": true
+      },
+      {
+        "lineup": "b-entry-flash",
+        "angleError": 7.441414795690583e-9,
+        "predictionError": 0.19588548307612974,
+        "useful": true
+      },
+      {
+        "lineup": "b-door",
+        "angleError": 2.4800014367373454e-8,
+        "predictionError": 0.004771512860378513,
+        "useful": true
+      }
+    ],
+    "finite": true
+  },
+  {
+    "seed": 731,
+    "seconds": 240,
+    "counts": {
+      "join": 1,
+      "spawn": 50,
+      "buy": 218,
+      "round_start": 5,
+      "grenade_primed": 14,
+      "bot_utility_validated": 14,
+      "grenade_thrown": 14,
+      "grenade_bounce": 40,
+      "smoke": 11,
+      "shot": 66,
+      "hit": 49,
+      "weapon_dropped": 28,
+      "kill": 22,
+      "bomb_action": 5,
+      "fire_started": 3,
+      "bomb_planted": 3,
+      "weapon_picked_up": 5,
+      "round_end": 3,
+      "bomb_defused": 2,
+      "chat": 1
+    },
+    "actions": [
+      "advance",
+      "hold",
+      "peek-back",
+      "peek-wait",
+      "peek-out",
+      "peek-settle",
+      "peek-shoot",
+      "peek-return",
+      "utility-approach",
+      "utility-validate",
+      "utility-ready",
+      "utility-prime",
+      "utility-released",
+      "gather",
+      "engage",
+      "rotate",
+      "postplant",
+      "collect-weapon",
+      "save",
+      "recover",
+      "fallback",
+      "probe",
+      "support",
+      "contact"
+    ],
+    "tickP95": 3.305399999999281,
+    "tickMax": 57.7512999999999,
+    "utilityStats": {
+      "validated": 14,
+      "team-risk": 1,
+      "interrupted": 1
+    },
+    "outcomes": [
+      {
+        "lineup": "ct-tunnel",
+        "angleError": 0.000001558654541787047,
+        "predictionError": 0.003502820387016702,
+        "useful": true
+      },
+      {
+        "lineup": "mid-cross",
+        "angleError": 0.0000010284607660889903,
+        "predictionError": 0.0032187092400540853,
+        "useful": true
+      },
+      {
+        "lineup": "a-ct",
+        "angleError": 0.000010930525589830402,
+        "predictionError": 0.0021886830000765944,
+        "useful": true
+      },
+      {
+        "lineup": "a-short-fire",
+        "angleError": 0.000001725655640232492,
+        "predictionError": 0.003937650277197007,
+        "useful": true
+      },
+      {
+        "lineup": "ct-tunnel",
+        "angleError": 0.000001309148082476677,
+        "predictionError": 0.00350741730595958,
+        "useful": true
+      },
+      {
+        "lineup": "mid-cross",
+        "angleError": 0.00000596431824546382,
+        "predictionError": 0.001379192398457058,
+        "useful": true
+      },
+      {
+        "lineup": "b-back-fire",
+        "angleError": 0.000015725333436952968,
+        "predictionError": 0.0018456959808963917,
+        "useful": true
+      },
+      {
+        "lineup": "b-door",
+        "angleError": 2.8134106647085703e-9,
+        "predictionError": 0.005266736006936328,
+        "useful": true
+      },
+      {
+        "lineup": "ct-tunnel",
+        "angleError": 0.0000029138553601270207,
+        "predictionError": 0.0035133304704784442,
+        "useful": true
+      },
+      {
+        "lineup": "ct-short",
+        "angleError": 3.335199653186059e-7,
+        "predictionError": 0.0027460599766010747,
+        "useful": true
+      },
+      {
+        "lineup": "mid-cross",
+        "angleError": 0.000005965687132419631,
+        "predictionError": 0.0013799930537206982,
+        "useful": true
+      },
+      {
+        "lineup": "b-back-fire",
+        "angleError": 1.1535532054738305e-7,
+        "predictionError": 0.003188388718865074,
+        "useful": true
+      },
+      {
+        "lineup": "b-door",
+        "angleError": 1.69578602757532e-8,
+        "predictionError": 0.00480143099050631,
+        "useful": true
+      },
+      {
+        "lineup": "ct-tunnel",
+        "angleError": 0.0000012605569134088513,
+        "predictionError": 0.16832742919855845,
+        "useful": true
+      }
+    ],
+    "finite": true
+  },
+  {
+    "seed": 2048,
+    "seconds": 240,
+    "counts": {
+      "join": 1,
+      "spawn": 50,
+      "buy": 229,
+      "round_start": 5,
+      "shot": 156,
+      "hit": 61,
+      "weapon_dropped": 26,
+      "kill": 25,
+      "grenade_primed": 14,
+      "bot_utility_validated": 14,
+      "grenade_thrown": 14,
+      "grenade_bounce": 38,
+      "smoke": 10,
+      "fire_started": 3,
+      "bomb_action": 5,
+      "bomb_planted": 3,
+      "round_end": 3,
+      "weapon_picked_up": 1,
+      "bomb_defused": 2,
+      "flash": 1,
+      "chat": 1
+    },
+    "actions": [
+      "advance",
+      "hold",
+      "peek-back",
+      "peek-wait",
+      "peek-out",
+      "peek-settle",
+      "peek-shoot",
+      "peek-return",
+      "engage",
+      "utility-approach",
+      "utility-validate",
+      "utility-ready",
+      "utility-prime",
+      "utility-released",
+      "gather",
+      "support",
+      "postplant",
+      "recover",
+      "collect-weapon",
+      "save",
+      "fallback",
+      "avoid-team-flash",
+      "rotate",
+      "contact"
+    ],
+    "tickP95": 2.7471000000005006,
+    "tickMax": 32.62119999999777,
+    "utilityStats": {
+      "validated": 14,
+      "interrupted": 3,
+      "team-risk": 3
+    },
+    "outcomes": [
+      {
+        "lineup": "ct-short",
+        "angleError": 4.595018205838264e-7,
+        "predictionError": 0.0031814462524682556,
+        "useful": true
+      },
+      {
+        "lineup": "mid-cross",
+        "angleError": 8.336841635764359e-7,
+        "predictionError": 0.002355326113141587,
+        "useful": true
+      },
+      {
+        "lineup": "a-ct",
+        "angleError": 0.000015294869487087276,
+        "predictionError": 0.002377776182750058,
+        "useful": true
+      },
+      {
+        "lineup": "a-short-fire",
+        "angleError": 0.000013585572934577881,
+        "predictionError": 0.003682630891648117,
+        "useful": true
+      },
+      {
+        "lineup": "a-short-ct",
+        "angleError": 1.1214209987065752e-8,
+        "predictionError": 0.00763220035149784,
+        "useful": true
+      },
+      {
+        "lineup": "ct-tunnel",
+        "angleError": 0.000002885348681753388,
+        "predictionError": 0.0035131629484063042,
+        "useful": true
+      },
+      {
+        "lineup": "ct-short",
+        "angleError": 2.7448880615850473e-9,
+        "predictionError": 0.004088109478985564,
+        "useful": true
+      },
+      {
+        "lineup": "mid-cross",
+        "angleError": 0.000005973520848728748,
+        "predictionError": 0.2539773511283466,
+        "useful": true
+      },
+      {
+        "lineup": "a-ct",
+        "angleError": 0.000006731642555914981,
+        "predictionError": 0.0021424299322127965,
+        "useful": true
+      },
+      {
+        "lineup": "a-short-fire",
+        "angleError": 0.000013351616196381919,
+        "predictionError": 0.003687339341196997,
+        "useful": true
+      },
+      {
+        "lineup": "mid-cross",
+        "angleError": 0.000005973758721728677,
+        "predictionError": 0.25399328371856283,
+        "useful": true
+      },
+      {
+        "lineup": "b-entry-flash",
+        "angleError": 0.000004095670142464435,
+        "predictionError": 0.19538806241883935,
+        "useful": true
+      },
+      {
+        "lineup": "b-back-fire",
+        "angleError": 0.000008491634910003807,
+        "predictionError": 0.001571781684178055,
+        "useful": true
+      },
+      {
+        "lineup": "b-door",
+        "angleError": 1.7054111768499855e-8,
+        "predictionError": 0.004786206911419944,
+        "useful": true
+      }
+    ],
+    "finite": true
+  }
+]

@@ -8,6 +8,8 @@ import {recordDamage,recordFlash,awardAssist,resetContributions} from './combat-
 import {combatPhase,equipmentPhase} from '../shared/round-actions.js';
 import {controlledPlayer,releaseBot,takeBot} from './bot-control.js';
 import {visibleAimPoint,observationPoint,lookAt,hearGunshot,beginAimDuel} from './bot-perception.js';
+import {reportSiteThreat} from './bot-alerts.js';
+import {selectSpawn} from './spawn-selection.js';
 import {combatMovement} from './bot-combat.js';
 import {combatSlot} from './bot-utility.js';
 import {tacticalGoal,shareSighting,botUtility,separateTeammates,coordinateFlash} from './bot-tactics.js';
@@ -118,6 +120,7 @@ export class GameRoom {
     this.teamSides={A:'CT',B:'T'};this.lossLevels={A:1,B:1};this.teamBuys={};
     this.match={status:'live',period:'regulation',roundsPlayed:0,overtimeNumber:0,winTarget:mode==='deathmatch'?MATCH_RULES.deathmatchWinTarget:13,winnerTeamId:null};
     this.pendingTransition=null;
+    this.spawnPoints=MAP.spawns;
     this.createdAt = clock(); this.round = { number: 0, phase: mode === 'deathmatch' ? 'live' : 'waiting', phaseEndsAt: 0, buyEndsAt: 0, winner: null, reason: '' };
     this.bomb = this.emptyBomb();
     this.nav = Array.isArray(MAP.nav) ? MAP.nav : [];
@@ -145,7 +148,7 @@ export class GameRoom {
 
   setBotDifficulty(id,value){
     if(id!==this.hostId)return {ok:false,message:'只有房主可以设置人机难度。'};
-    if(!BOT_DIFFICULTIES.includes(value))return {ok:false,message:'人机难度应为普通或困难。'};
+    if(!BOT_DIFFICULTIES.includes(value))return {ok:false,message:'人机难度应为轻松、普通或困难。'};
     this.botDifficulty=value;
     const result={ok:true,botDifficulty:value,hostId:this.hostId};
     this.emit('bot_difficulty_changed',result);return result;
@@ -231,15 +234,7 @@ export class GameRoom {
     return player;
   }
 
-  pickSpawn(team) {
-    const pool = MAP.spawns?.[team];
-    if (!Array.isArray(pool) || !pool.length) throw new Error(`Map has no ${team} spawn points`);
-    // Favor a spawn with fewer visible opponents, then rotate equivalent candidates.
-    const order = this.spawnCounter[team]++;
-    const candidates = pool.map((p, i) => ({ p, score: [...this.players.values()].filter(e => e.alive && e.team !== team).reduce((s, e) => s + Math.max(0, 30 - lengthXZ(p, e)), 0), tie: (i - order % pool.length + pool.length) % pool.length }));
-    candidates.sort((a, b) => a.score - b.score || a.tie - b.tie);
-    return candidates[0].p;
-  }
+  pickSpawn(team,self=null) {return selectSpawn(this,team,self);}
 
   ensureBots() {
     const wanted = Math.min(this.desiredBots, MAX_PLAYERS - this.humanCount);
@@ -429,6 +424,7 @@ export class GameRoom {
     }
     this.round = { number: this.round.number + 1, phase: 'freeze', phaseEndsAt: now + this.rules.freezeSeconds * 1000, buyEndsAt: now + (this.rules.freezeSeconds + this.rules.buySeconds) * 1000, winner: null, reason: '' };
     this.weaponRequests=new Map();this.bomb = this.emptyBomb();this.teamIntel={};this.teamSightings={};this.defensePlan=null;this.botAttackSite=null;this.utilityClaims=new Map();this.botExecutions=new Map();this.attackPlan=null;this.botFlashes=[];
+    this.botAlerts={};this.botRotation=null;
     this.grenades.clear();this.defuseKits=[];
     this.droppedWeapons.clear();
     this.poseHistory.clear();
@@ -443,7 +439,7 @@ export class GameRoom {
   respawn(p, newRound = false) {
     p.purchases={};p.lifeKills=0;p.killCards=[];p.lastKnifeAt=-Infinity;
     delete p.inventory.c4;
-    const spawn = this.pickSpawn(p.team);
+    const spawn = this.pickSpawn(p.team,p);
     if (newRound && !p.alive) { p.inventory = {}; p.armor = 0;p.helmet=false;p.defuseKit=false; this.giveWeapon(p, p.team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(p, 'knife'); }
     resetContributions(p);
     const consumedJump=p.input.jumpId||0, consumedReload=p.input.reloadId||0;
@@ -458,6 +454,7 @@ export class GameRoom {
     p.botAI.engaging=false;p.botAI.action='advance';p.botAI.watchPoints=[];p.botAI.watchPoint=null;p.botAI.watchUntil=0;p.botAI.hurtAt=-Infinity;p.botAI.heardPoint=null;p.botAI.heardAt=0;p.botAI.utility=null;p.botAI.utilityAfter=this.clock()+6000+(p.seat||0)*400;p.botAI.lastKnown=null;p.botAI.lastSeenAt=0;p.botAI.routeKey=null;
 
     p.botAI.path = []; p.botAI.goal = null; p.botAI.targetId = null; p.botAI.nextThinkAt = 0;
+    p.botAI.holdPost=null;p.botAI.rotationAlert=null;
     p.botAI.lootId=null;p.botAI.nextLootAt=0;p.botAI.peek=null;p.botAI.nextPeekAt=0;p.botAI.donationDrop=null;p.botAI.holdPatrol=null;p.botAI.headIntent=false;p.botAI.lastSniperShotAt=0;p.botAI.saveGoal=null;p.botAI.defenseRole=null;p.botAI.coverUntil=0;p.botAI.coverAfter=0;
     Object.assign(p.botAI,{wantMove:false,travelProbe:null,stuckAt:this.clock(),escape:null,escapeUntil:0,blockedEdges:new Map(),routeFailures:0,routeVariant:0,recoveries:0,utilityFailures:new Map()});
     this.selectSlot(p, Object.keys(p.inventory).some(id => getWeapon(id).slot === 1) ? 1 : 2);
@@ -492,6 +489,7 @@ export class GameRoom {
   }
 
   kill(victim, killer, weapon = 'world', headshot = false, metadata={}) {
+    if(victim.alive&&killer&&killer.team!==victim.team)reportSiteThreat(this,victim.team,victim,'death');
     if (!victim.alive||this.match.status==='ended') return;
     if(victim.botAI?.utility&&!victim.botAI.utility.released)this.utilityClaims?.delete(victim.botAI.utility.key);
     this.dropWeapon(victim.id,true);

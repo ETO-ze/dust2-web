@@ -2,11 +2,13 @@ import {floorHeight,isHullClear} from '../shared/physics.js';
 import {eyePosition} from '../shared/aim.js';
 import {angleDifference} from './bot-aim.js';
 import {getWeapon} from '../shared/weapons.js';
+import {headIntent} from '../shared/bot-difficulty.js';
+import {reportSiteThreat} from './bot-alerts.js';
 
 export function beginAimDuel(room,p,enemy){
   const sniper=getWeapon(p.weapon).zoomStyle==='scope';
   // Choose an aiming intention once per acquisition; never force a hit result.
-  const probability=sniper?(p.weapon==='awp'?.10:.38):(room.botDifficulty==='hard'?.56:.38);
+  const probability=sniper?(p.weapon==='awp'?(room.botDifficulty==='easy'?.04:.10):Math.min(.38,headIntent(room.botDifficulty))):headIntent(room.botDifficulty);
   p.botAI.headIntent=(room.aimRandom||Math.random)()<probability;p.botAI.aimEnemy=enemy.id;
 }
 
@@ -18,6 +20,7 @@ export function hearGunshot(room,shooter){
     // a target lock, exact enemy tracking, or permission to shoot through cover.
     p.botAI.heardPoint={x:Math.round(shooter.x/2)*2,y:shooter.y+1.3,z:Math.round(shooter.z/2)*2};
     p.botAI.heardAt=room.clock();
+    reportSiteThreat(room,p.team,p.botAI.heardPoint,'sound');
   }
 }
 // Acquisition has a field of view. Tracking never bypasses walls or smoke.

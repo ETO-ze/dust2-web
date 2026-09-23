@@ -19,12 +19,16 @@ $gradleArgs=@('-p','android',':app:assembleDebug',':app:assembleRelease',':app:l
 if($Offline){$gradleArgs+='--offline'}
 & (Join-Path $gameTools 'gradle-8.11.1/bin/gradle.bat') @gradleArgs
 if($LASTEXITCODE){throw 'Android build failed'}
-$gameApk=Join-Path $gameRoot 'public/downloads/DustII-Android-1.0.0.apk'
+$gameVersionMatch=[regex]::Match((Get-Content android/app/build.gradle -Raw),"versionName '([^']+)'")
+if(!$gameVersionMatch.Success){throw 'Missing Android versionName'}
+$gameVersion=$gameVersionMatch.Groups[1].Value
+$gameVersionCode=[int]([regex]::Match((Get-Content android/app/build.gradle -Raw),'versionCode (\d+)').Groups[1].Value)
+$gameApk=Join-Path $gameRoot "releases/DustII-Offline-$gameVersion-Android.apk"
 New-Item -ItemType Directory -Force (Split-Path $gameApk) | Out-Null
 Copy-Item -LiteralPath 'android/app/build/outputs/apk/release/app-release.apk' -Destination $gameApk -Force
 & "$env:ANDROID_HOME/build-tools/35.0.0/apksigner.bat" verify --verbose --print-certs $gameApk
 if($LASTEXITCODE){throw 'APK signature validation failed'}
 $apkInfo=Get-Item -LiteralPath $gameApk
 $apkHash=(Get-FileHash -LiteralPath $gameApk -Algorithm SHA256).Hash.ToLowerInvariant()
-@{version='1.0.0';versionCode=1;package='cn.duskrain.dustii';url='./DustII-Android-1.0.0.apk';bytes=$apkInfo.Length;sha256=$apkHash;minAndroid='8.0';sourceCommit=(& git rev-parse HEAD)} | ConvertTo-Json | Set-Content public/downloads/android-latest.json -Encoding utf8
+@{version=$gameVersion;versionCode=$gameVersionCode;package='cn.duskrain.dustii.offline';file=$apkInfo.Name;bytes=$apkInfo.Length;sha256=$apkHash;minAndroid='8.0';sourceCommit=(& git rev-parse HEAD)} | ConvertTo-Json | Set-Content "releases/android-$gameVersion.json" -Encoding utf8
 Write-Output "APK ready: $gameApk ($($apkInfo.Length) bytes, SHA-256 $apkHash)"

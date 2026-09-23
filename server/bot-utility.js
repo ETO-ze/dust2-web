@@ -4,6 +4,19 @@ import {smoothBotAim,angleDifference} from './bot-aim.js';
 import {getWeapon} from '../shared/weapons.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export function combatSlot(p){return [1,2,3].find(slot=>Object.keys(p.inventory).some(id=>getWeapon(id).slot===slot&&(slot===3||p.inventory[id].ammo+p.inventory[id].reserve>0)))||3;}
+export function carrierCanSupport(room,p){
+ if(!p.hasBomb)return true;
+ if(room.round.phaseEndsAt-room.clock()<35000||room.siteAt?.(p))return false;
+ return [...room.players.values()].some(q=>q!==p&&q.alive&&q.team===p.team&&distance(q,p)<10&&Math.abs(q.y-p.y)<2&&
+  Object.keys(q.inventory||{}).some(id=>getWeapon(id).slot<=2&&q.inventory[id].ammo>0));
+}
+export function utilityApproach(room,p,stand){
+ const gap=distance(p,stand);if(gap>(p.hasBomb?7:14))return null;
+ if(gap<.15)return [stand];
+ const path=room.planPath(p,stand);if(!path.length||distance(path.at(-1),stand)>.5)return null;
+ const length=path.reduce((sum,n,i)=>sum+distance(i?path[i-1]:p,n),0);
+ return length<=Math.min(p.hasBomb?9:20,gap*1.6+2)?path:null;
+}
 function cancel(room,p,input,reason){
  const u=p.botAI.utility;if(u){room.botUtilityStats||={};room.botUtilityStats[reason]=(room.botUtilityStats[reason]||0)+1;if(!u.released)room.utilityClaims?.delete(u.key);
   const failures=p.botAI.utilityFailures||=new Map();failures.set(u.id,room.clock()+(['timeout','bad-trajectory','moved'].includes(reason)?120000:8000));
@@ -16,7 +29,7 @@ function choose(room,p){
  const ai=p.botAI,now=room.clock();room.utilityClaims||=new Map();
  if(['contact','probe'].includes(ai.phase)||room.attackPlan?.tempo==='fake'&&ai.site==='B'&&now<room.attackPlan.fakeUntil)return null;
  if(room.bomb?.state==='planted'||room.round.phaseEndsAt-now<12000)return null;
- const choices=BOT_LINEUPS.filter(s=>s.team===p.team&&(s.site==='*'||s.site===ai.site)&&(p.team==='CT'?s.lane===ai.role:s.lane===ai.lane||ai.lane==='short'&&s.lane==='mid')&&p.inventory[s.weapon]?.ammo&&distance(p,s.stand)<9&&!room.utilityClaims.has(p.team+':'+s.id)&&(ai.utilityFailures?.get(s.id)||0)<=now);
+ const choices=BOT_LINEUPS.filter(s=>s.team===p.team&&(s.site==='*'||s.site===ai.site)&&(p.team==='CT'?s.lane===ai.role:s.lane===ai.lane||ai.lane==='short'&&s.lane==='mid')&&p.inventory[s.weapon]?.ammo&&distance(p,s.stand)<(p.hasBomb?7:14)&&!room.utilityClaims.has(p.team+':'+s.id)&&(ai.utilityFailures?.get(s.id)||0)<=now);
  // Cover sightlines first, clear a close angle with fire, flash just before
  // entry. Claims distribute different throws among the available teammates.
  const order={smokegrenade:0,molotov:1,incgrenade:1,flashbang:2,hegrenade:3};choices.sort((a,b)=>order[a.weapon]-order[b.weapon]||distance(p,a.stand)-distance(p,b.stand));
@@ -24,16 +37,17 @@ function choose(room,p){
   if(s.weapon==='hegrenade'&&(!ai.lastKnown||now-ai.lastSeenAt>3000||distance(ai.lastKnown,s.target)>5))continue;
   if(s.weapon==='smokegrenade'&&room.grenades.smokes.some(c=>distance(c,s.target)<5))continue;
   if(s.weapon!=='flashbang'&&teammateRisk(room.grenades,p,s.expected,[...room.players.values()],s.weapon))continue;
-  const path=room.planPath(p,s.stand);if(!path.length||distance(path.at(-1),s.stand)>.5)continue;
+  const path=utilityApproach(room,p,s.stand);if(!path)continue;
   const key=p.team+':'+s.id;room.utilityClaims.set(key,p.id);return {...s,key,expiresAt:now+10000,phase:'approach',plannedAt:now};
  }
  return null;
 }
 export function botUtility(room,p,input,dt){
  const ai=p.botAI,now=room.clock();
- const interrupted=room.mode!=='defuse'||room.round.phase!=='live'||ai.engaging||input.interact||p.objectiveLocked||now<(p.flashBlindUntil||0)||now-(ai.hurtAt||-Infinity)<1000;
+ const interrupted=room.mode!=='defuse'||room.round.phase!=='live'||ai.engaging||input.interact||p.objectiveLocked||now<(p.flashBlindUntil||0)||now-(ai.hurtAt||-Infinity)<1000||!carrierCanSupport(room,p);
  if(interrupted)return ai.utility?cancel(room,p,input,'interrupted'):input;
- if(!ai.utility&&now>=(ai.utilityAfter||0)&&now>=(ai.escapeUntil||0)&&!p.hasBomb&&now-ai.lastSeenAt>1400){
+ const safeDelay=room.botDifficulty==='hard'?900:room.botDifficulty==='easy'?1800:1200;
+ if(!ai.utility&&now>=(ai.utilityAfter||0)&&now>=(ai.escapeUntil||0)&&now-(ai.lastSeenAt||0)>safeDelay){
   ai.utilityAfter=now+1500+(p.seat||0)*75;ai.utility=choose(room,p);ai.utilityFollowupUntil=0;
   if(ai.utility){ai.goal=ai.utility.stand;ai.path=room.planPath(p,ai.goal);}
  }
