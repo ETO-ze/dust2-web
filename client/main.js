@@ -58,7 +58,7 @@ import { downloadAssets, releaseDownloads } from './loading.js';
 import { connectionTarget } from './connection-target.js';
 import {knifeInterval} from '../shared/melee.js';
 
-const connection = connectionTarget(location.href, globalThis.__DUST2_PORTABLE__);
+const connection = OFFLINE ? {socketURL:null,inviteBase:null,offline:true} : connectionTarget(location.href, globalThis.__DUST2_PORTABLE__);
 
 const $=id=>document.getElementById(id);
 const canvas=$('game-canvas');
