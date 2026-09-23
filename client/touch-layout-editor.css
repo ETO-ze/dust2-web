@@ -1,0 +1,11 @@
+#touch-layout-editor{position:fixed;inset:0;z-index:300;background:#0e202bdd;touch-action:none;color:#e8ece8;font:12px system-ui}
+#touch-layout-editor[hidden]{display:none!important}
+#touch-layout-editor header{position:absolute;left:14%;right:14%;top:max(6px,env(safe-area-inset-top));display:flex;justify-content:center;align-items:center;gap:5px;flex-wrap:wrap;z-index:2;pointer-events:none}
+#touch-layout-editor header>*{pointer-events:auto}
+#touch-layout-editor button{min-height:36px;background:#223945;color:#f3edda;border:1px solid #acaa8c;border-radius:6px;padding:5px 8px;font:inherit;touch-action:none}
+#touch-layout-editor aside{position:absolute;left:30%;right:30%;top:27%;padding:12px;background:#101b22f2;border-radius:8px;z-index:2;max-height:54%;overflow:auto;touch-action:pan-y;pointer-events:auto}
+#touch-layout-editor label{display:flex;align-items:center;gap:6px;justify-content:space-between;margin:7px 0}
+#touch-layout-editor input{width:65%;min-height:24px}#touch-layout-editor textarea{width:100%;height:55px;font-size:12px;user-select:text}
+.layout-stage{position:absolute;inset:0}.layout-stage button{position:absolute;cursor:grab;border:1px dashed #f8eccb!important;border-radius:18px!important;padding:2px!important;user-select:none}
+.layout-stage .selected{outline:2px solid #f7d176;background:#7d6934!important}
+@media(max-width:600px){#touch-layout-editor header{left:5%;right:5%}#touch-layout-editor aside{left:24%;right:24%}}

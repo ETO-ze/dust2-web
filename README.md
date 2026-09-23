@@ -1,3 +1,11 @@
+# 离线测试分支 0.1.0
+
+**本分支的新版本是独立离线版，Android 与 Windows 分别下载。**
+
+[离线版下载与介绍](docs/OFFLINE-README.md) · [使用与构建说明](docs/OFFLINE-V1.md) · [GitHub 测试版下载](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.1.0)
+
+以下是原在线项目的历史说明，在线功能不适用于离线安装包。
+
 <div align="center">
 
 # DUST II · 网页战术对战

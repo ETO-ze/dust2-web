@@ -1,4 +1,5 @@
 import {initOffline,installApp} from './offline.js';
+import {OFFLINE} from './offline/build.js';
 import './mobile-shell.css';
 
 import {isAndroidApp,requestGameFullscreen} from '../shared/mobile-fullscreen.js';
@@ -13,7 +14,7 @@ export function mountMobileShell({settingsUI,storage,onStatus=()=>{}}){
   const panel=settingsUI.element.querySelector('[data-panel="touch"]');
   const row=document.createElement('label');row.className='config-row';row.hidden=native;row.innerHTML='进入游戏自动请求全屏<input type="checkbox" id="touch-auto-fullscreen">';panel.append(row);
   const check=row.querySelector('input');check.checked=automatic;check.onchange=()=>{automatic=check.checked;storage.setItem('dust2.fullscreen.v1',JSON.stringify({automatic}));};
-  const update=()=>{install.hidden=native||!matchMedia('(pointer: coarse)').matches;install.querySelector('[data-mobile-install]').hidden=offline.installed;};
+  const update=()=>{install.hidden=OFFLINE||native||!matchMedia('(pointer: coarse)').matches;install.querySelector('[data-mobile-install]').hidden=offline.installed;};
   initOffline({onStatus:s=>{offline=s;update();}}).catch(()=>{});matchMedia('(pointer: coarse)').addEventListener('change',update);update();
   const enter=(explicit=false)=>{
     if(pending)return pending;

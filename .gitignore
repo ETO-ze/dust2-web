@@ -1,5 +1,9 @@
 node_modules/
 dist/
+dist-offline/
+releases/
+android/app/src/offline/assets/
+scripts/integrate-offline.py
 artifacts/
 output/
 tools/

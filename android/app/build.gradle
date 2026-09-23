@@ -5,12 +5,14 @@ android {
     namespace 'cn.duskrain.dustii'
     compileSdk 35
     defaultConfig {
-        applicationId 'cn.duskrain.dustii'
+        applicationId 'cn.duskrain.dustii.offline'
         minSdk 26
         targetSdk 35
         versionCode 1
-        versionName '1.0.0'
+        versionName '0.1.0'
     }
+    sourceSets { main.assets.srcDirs = ['../../dist-offline'] }
+    androidResources { noCompress += ['glb','bin','webp','png','jpg','mp3','ogg','wav','hdr','f32','u8'] }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     buildFeatures { buildConfig true }
     signingConfigs {

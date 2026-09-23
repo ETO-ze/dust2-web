@@ -11,7 +11,7 @@ import {visibleAimPoint,observationPoint,lookAt,hearGunshot,beginAimDuel} from '
 import {combatMovement} from './bot-combat.js';
 import {combatSlot} from './bot-utility.js';
 import {tacticalGoal,shareSighting,botUtility,separateTeammates,coordinateFlash} from './bot-tactics.js';
-import { randomBytes } from 'node:crypto';
+import {randomId} from '../shared/random-id.js';
 import { MAP } from '../shared/map-data.js';
 import { createPlayerState, stepPlayer, raycastWorld, raycastWorldContact } from '../shared/physics.js';
 import { WEAPONS, PRIMARY_WEAPONS, getWeapon, normalizeWeapon, canTeamUseWeapon, defaultPrimaryForTeam, weaponSpeedScale } from '../shared/weapons.js';
@@ -198,7 +198,7 @@ export class GameRoom {
     const replaceable=[...this.players.values()].filter(p=>p.bot).sort((a,b)=>Number(!!a.controllerId)-Number(!!b.controllerId)||Number(a.alive)-Number(b.alive));
     const botToReplace=(this.count(assigned)>=5||this.players.size>=10)?replaceable.find(p=>p.team===assigned)||replaceable[0]:null;
     if (botToReplace) this.removePlayer(botToReplace.id);
-    const id = `p_${randomBytes(6).toString('hex')}`;
+    const id = `p_${randomId()}`;
     const player = this.makePlayer(id, name, assigned, false, primary);
     player.shotProtocol=shotProtocol===1?1:0;player.shotCommands=player.shotProtocol===1;
     if(movementProtocol===1){player.movementStream=new MovementStream(player.lifeId);player.movementAt=this.clock();}

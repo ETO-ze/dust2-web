@@ -1,7 +1,9 @@
+import {OFFLINE} from './offline/build.js';
 let installPrompt=null,registration=null,started=false;
 const listeners=new Set(),state={supported:false,online:true,ready:false,canInstall:false,installed:false};
 const publish=()=>{for(const fn of listeners)fn({...state});};
 export async function initOffline({onStatus}={}){
+  if(OFFLINE){onStatus?.({installed:true,ready:true,canInstall:false});return {installed:true,ready:true};}
   if(onStatus){listeners.add(onStatus);onStatus({...state});}if(started)return{...state};started=true;
   state.supported=Boolean('serviceWorker' in navigator&&globalThis.isSecureContext);state.online=navigator.onLine;
   state.installed=globalThis.matchMedia?.('(display-mode: standalone)').matches||globalThis.matchMedia?.('(display-mode: fullscreen)').matches||navigator.standalone===true||/\bDustIIAndroid\//.test(navigator.userAgent);

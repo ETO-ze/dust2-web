@@ -1,3 +1,4 @@
+import {OFFLINE} from './offline/build.js';
 import {assetManifestName} from './device-profile.js';
 import { DefaultLoadingManager } from 'three';
 const blobs=new Map(),inflight=new Map();let manifestMemory=null,manifestChecked=false;
@@ -10,11 +11,11 @@ const manifestURL=()=>new URL('assets/'+assetManifestName(),base()).href;
 const check=signal=>{if(signal?.aborted)throw signal.reason||new DOMException('已取消','AbortError');};
 const digest=async data=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data)),b=>b.toString(16).padStart(2,'0')).join('');
 const changed=()=>{if(typeof window!=='undefined'&&typeof CustomEvent!=='undefined')window.dispatchEvent(new CustomEvent('dust2-cache-change'));};
-async function stores(){try{if(!globalThis.caches)return null;const n=cacheNames();return{assets:await caches.open(n.assets),meta:await caches.open(n.meta)};}catch{return null;}}
+async function stores(){if(OFFLINE)return null;try{if(!globalThis.caches)return null;const n=cacheNames();return{assets:await caches.open(n.assets),meta:await caches.open(n.meta)};}catch{return null;}}
 export function assetURL(value){return blobs.get(canonical(value))||value;}
 export function releaseDownloads(){for(const b of blobs.values())URL.revokeObjectURL(b);blobs.clear();}
 export function useDownloadedAssets(manager=DefaultLoadingManager){manager.setURLModifier(assetURL);}
-export async function isAssetSaved(sha256,bytes){const cache=await stores();if(!cache||!sha256)return false;const hit=await cache.assets.match(hashKey(sha256));return !!hit&&Number(hit.headers.get('x-dust2-bytes'))===bytes;}
+export async function isAssetSaved(sha256,bytes){if(OFFLINE)return true;const cache=await stores();if(!cache||!sha256)return false;const hit=await cache.assets.match(hashKey(sha256));return !!hit&&Number(hit.headers.get('x-dust2-bytes'))===bytes;}
 
 /** SHA-keyed immutable assets. Without a supplied hash, the computed SHA is
  * indexed by URL; use sha256 or a versioned URL when optional content changes.
@@ -24,6 +25,7 @@ function pendingResult(promise,signal){
   return new Promise((resolve,reject)=>{const abort=()=>reject(signal.reason||new DOMException('已取消','AbortError'));signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();promise.then(resolve,reject).finally(()=>signal.removeEventListener('abort',abort));});
 }
 export async function fetchCachedAsset(value,options={}){
+  if(OFFLINE){const response=await fetch(absolute(value),{signal:options.signal});if(!response.ok)throw Error('本地资源缺失：'+value);const bytes=options.bytes||Number(response.headers.get('content-length'))||0;options.onProgress?.({loaded:bytes,total:bytes,fromCache:true,cached:true});return response;}
   check(options.signal);const settings={...options};
   if(!settings.sha256){
     const manifest=manifestChecked?manifestMemory:await loadManifest({signal:settings.signal}).catch(error=>{check(settings.signal);return null;});
@@ -90,6 +92,7 @@ async function collectAssets({signal,onProgress,makeBlobs=false}={}){
   finally{parent?.removeEventListener('abort',abort);}
 }
 export async function downloadAssets(options={}){
+  if(OFFLINE){const manifest=await loadManifest({signal:options.signal});options.onProgress?.({bytes:manifest.totalBytes,total:manifest.totalBytes,complete:manifest.files.length,count:manifest.files.length,rate:0,current:'本地资源已安装'});return manifest;}
   // A controlling worker can serve verified cache entries directly. Retaining
   // every compressed file as a second set of Blob URLs only increases the peak.
   const controlled=!!globalThis.navigator?.serviceWorker?.controller;

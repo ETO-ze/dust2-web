@@ -1,3 +1,7 @@
+import {OFFLINE} from './offline/build.js';
+import {OfflineTransport} from './offline/transport.js';
+import {mountOfflineShell,frameLimit} from './offline/shell.js';
+import {FramePacer} from '../shared/frame-pacer.js';
 import {GameChat} from './chat.js';
 import {combatPhase,equipmentPhase} from '../shared/round-actions.js';
 import {ShotPrediction} from './shot-prediction.js';
@@ -98,7 +102,7 @@ let lastSnapshotAlive=false,previousHealth=100,inviteBase=connection.inviteBase;
 let primary='ak47',primaryExplicit=false,downloadAbort=null,pendingJoin=false;
 const handledEvents=new Set();
 let previousWeapon=null,previousReload=0;
-let modelsReady=false,mapResultCache=null;
+let modelsReady=false,mapResultCache=null,offlineMaterials=null;
 const shotPrediction=new ShotPrediction();
 let serverAmmo=0,lastSnapshotAt=0,lastShotWarning=0,lastSentInputSeq=-1,shotId=0,lastShotEvidence=null;
 let storedSettings=preferences.readJSON('dust2.cs-settings.v1');
@@ -258,7 +262,7 @@ function controlAction(action,{pressed,event,source}){
 
 async function loadGame(audioReady){
   if(loaded){await audioReady;return;}
-  setLoadStage('download','下载地图与武器资源');
+  setLoadStage('download',OFFLINE?'读取已安装的地图与武器':'下载地图与武器资源');
   downloadAbort=new AbortController();
   await downloadAssets({signal:downloadAbort.signal,onProgress:downloadProgress});
   downloadAbort=null;
@@ -276,6 +280,7 @@ async function loadGame(audioReady){
   if(failure)throw failure.reason;
   const mapResult=mapResultCache;
   $('load-label').textContent='建立碰撞与武器动作';await paint();
+  if(OFFLINE&&!offlineMaterials){const r=await fetch(new URL('assets/map/penetration-materials.u8',document.baseURI));if(!r.ok)throw Error('穿透材质资源缺失');offlineMaterials=new Uint8Array(await r.arrayBuffer());}
   initPhysics(mapResult.positions);viewWeapon ||= new ViewWeapon(gunCamera);applyQuality();
   $('load-label').textContent='预热场景与武器着色器';await paint();
   const spawn=MAP.spawns[$('team').value==='CT'?'CT':'T'][0];camera.position.set(spawn.x,spawn.y+1.62,spawn.z);
@@ -292,19 +297,19 @@ async function start(joinExisting=false){
   $('loading-mode').textContent=$('mode').value==='defuse'?'经典爆破 · 回合制':'团队死斗 · 自动重生';
   $('loading-team').textContent={T:'进攻方 T',CT:'防守方 CT',auto:'自动平衡阵营'}[$('team').value];
   const weapon=getWeapon(primary);$('loading-weapon').textContent=`${weapon.name} · ${getSkin(skins.loadout[primary])?.name||weapon.skin}`;
-  $('menu-status').textContent='正在加载战场。资源会缓存，之后进入更快。';
+  $('menu-status').textContent=OFFLINE?'正在读取本机战场，无需联网。':'正在加载战场。资源会缓存，之后进入更快。';
   setLoadStage(loaded?'connect':'download',loaded?'连接对战房间':'准备资源清单');
   const audioReady=audio.start();audioReady.catch(()=>{});
-  try{await loadGame(audioReady);setLoadStage('connect','建立多人对战连接');connect(joinExisting);}
+  try{await loadGame(audioReady);setLoadStage('connect',OFFLINE?'启动本机人机对局':'建立多人对战连接');connect(joinExisting);}
   catch(e){downloadAbort=null;if(e.name==='AbortError'){$('loading-screen').hidden=true;loading=false;$('start-button').disabled=false;$('join-button').disabled=false;$('menu-status').textContent='已取消加载。';}else{console.error(e);loadError(e);}}
 }
 function connect(joinExisting){
   if(socket)socket.close();
   const url=connection.socketURL;
-  socket=new WebSocket(url);const activeSocket=socket;
+  socket=OFFLINE?new OfflineTransport(mapResultCache.positions,offlineMaterials):new WebSocket(url);const activeSocket=socket;
   const timeout=setTimeout(()=>{if(!connected&&socket===activeSocket){$('menu-status').textContent='服务器连接超时，请确认游戏服务已启动。';socket.close();}},15000);
   socket.addEventListener('open',()=>{if(socket!==activeSocket)return;const name=$('nickname').value.trim()||'Player';preferences.setItem('dust2.name',name);activeSocket.send(JSON.stringify({type:'join',existing:joinExisting,name,movementProtocol:1,shotProtocol:1,room:joinExisting?$('room-code').value.trim().toUpperCase():undefined,mode:$('mode').value,team:$('team').value,primary,skins:skins.loadout,agents:agentsUI.loadout,bots:Number($('bots').value),botDifficulty:preferredBotDifficulty}));});
-  socket.addEventListener('message',e=>{if(socket!==activeSocket)return;let data;try{data=JSON.parse(e.data);}catch{return;}
+  socket.addEventListener('message',e=>{if(socket!==activeSocket)return;let data;try{data=typeof e.data==='string'?JSON.parse(e.data):e.data;}catch{return;}
     if(data.type==='welcome'){
       preferences.setItem('dust2.last-session',JSON.stringify({room:data.room,mode:data.mode,at:Date.now()}));
       movementSupported=data.movementProtocol===1;movementPrediction.reset();fixed=0;networkAcc=0;
@@ -428,7 +433,7 @@ function localShoot(input,dt){
   if(!triggerReady)return;
   // Keep a held semi-automatic trigger until the switch/reload is actually ready.
   // Only a sent command may produce recoil, sound or an ammunition reservation.
-  if(socket?.readyState!==WebSocket.OPEN||now-lastSnapshotAt>1500){
+  if(socket?.readyState!==WebSocket.OPEN||(now-lastSnapshotAt>1500&&!socket?.paused)){
     if(now-lastShotWarning>4000){lastShotWarning=now;hud.toast('网络响应中断 · 正在等待服务器确认');}
     return;
   }
@@ -491,7 +496,7 @@ const pointerGuard=new MutationObserver(()=>{if(pointerMenus.some(menu=>!menu.hi
 pointerMenus.forEach(menu=>pointerGuard.observe(menu,{attributes:true,attributeFilter:['hidden']}));
 document.addEventListener('mousemove',e=>{if(document.pointerLockElement!==canvas||!self?.alive)return;const fov=zoomFov();lookYaw-=e.movementX*mouseRadiansPerCount(sensitivity,'yaw',fov,zoomSensitivity);lookPitch=THREE.MathUtils.clamp(lookPitch-e.movementY*mouseRadiansPerCount(sensitivity,'pitch',fov,zoomSensitivity),-1.48,1.48);});
 document.addEventListener('contextmenu',e=>{if(document.pointerLockElement===canvas)e.preventDefault();});
-window.addEventListener('blur',()=>{touchPlaying=false;clearGameInput();mouseFire=false;resetScope();document.exitPointerLock?.();document.body.classList.remove('mouse-captured');if(connected&&snapshot?.match?.status!=='ended')$('pause-menu').hidden=false;syncTouchSurface();});
+window.addEventListener('blur',()=>{if(OFFLINE)socket?.setPaused(true);touchPlaying=false;clearGameInput();mouseFire=false;resetScope();document.exitPointerLock?.();document.body.classList.remove('mouse-captured');if(connected&&snapshot?.match?.status!=='ended')$('pause-menu').hidden=false;syncTouchSurface();});
 function resizeViewport(){
  const width=Math.max(1,Math.round(globalThis.visualViewport?.width||innerWidth)),height=Math.max(1,Math.round(globalThis.visualViewport?.height||innerHeight));
  document.body.style.setProperty('--app-height',height+'px');
@@ -502,12 +507,16 @@ function resizeViewport(){
 }
 window.addEventListener('resize',()=>{resizeViewport();if(touchControls?.enabled){clearGameInput();touchControls.clear();}});globalThis.visualViewport?.addEventListener('resize',resizeViewport);resizeViewport();
 function syncTouchSurface(){touchControls?.setActive(touchPlaying&&gameSurfaceActive()&&snapshot?.match?.status!=='ended');}
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&touchControls?.enabled){touchPlaying=false;clearGameInput();touchControls.clear();if(connected)$('pause-menu').hidden=false;syncTouchSurface();}});
-const lobby=mountLobby({connection,onJoin:()=>{$('team').value='auto';$('join-button').click();}});
+document.addEventListener('visibilitychange',()=>{if(OFFLINE&&document.hidden)socket?.setPaused(true);if(document.hidden&&touchControls?.enabled){touchPlaying=false;clearGameInput();touchControls.clear();if(connected)$('pause-menu').hidden=false;syncTouchSurface();}});
+const lobby=OFFLINE?mountOfflineShell():mountLobby({connection,onJoin:()=>{$('team').value='auto';$('join-button').click();}});
 
+const framePacer=new FramePacer();
 function frame(now){
-  requestAnimationFrame(frame);const frameSeconds=(now-lastTime)/1000,dt=Math.min(.05,Math.max(0,frameSeconds));lastTime=now;fps=THREE.MathUtils.lerp(fps,1/Math.max(.001,frameSeconds),.025);
+  requestAnimationFrame(frame);
   syncTouchSurface();
+  if(OFFLINE)socket?.setPaused(document.hidden||!['pause-menu','room-menu','settings-menu','skin-menu','agent-menu','offline-menu','touch-layout-editor'].every(id=>$(id)?.hidden!==false));
+  if(OFFLINE&&!framePacer.due(now,socket?.paused?15:frameLimit))return;
+  const frameSeconds=(now-lastTime)/1000,dt=Math.min(.05,Math.max(0,frameSeconds));lastTime=now;fps=THREE.MathUtils.lerp(fps,1/Math.max(.001,frameSeconds),.025);
   if(!loaded||!connected||!self||contextLost||document.hidden)return;
   const cpuStart=performance.now(),renderPlayers=remotePlayers.sample(now);
   fixed+=dt;networkAcc+=dt;hudAcc+=dt;pingAcc+=dt;
@@ -536,7 +545,7 @@ function frame(now){
   for(const p of renderPlayers){if(p.id===myId)continue;const actor=actors.get(p.id);if(!actor)continue;actorBounds.center.set(p.x,p.y+.9,p.z);const visible=visibilityFrustum.intersectsSphere(actorBounds);actor.group.visible=visible;const distance=camera.position.distanceTo(actorBounds.center);actor.update(p,dt,{exactPosition:true,animationRate:visible?(distance<25?60:30):12});}
   const actorMs=performance.now()-actorStart;
   viewWeapon?.update(dt,viewed,fullScope,{optic});if(!fullScope)weaponLighting.update(scene,camera);effects.update(dt);utilityEffects.update(dt,camera,self.alive||!!spectating);audio.utilityAmbient(snapshot,camera.position);bombView.update(snapshot.bomb,now);matchAudio.update(snapshot,camera.position,now);
-  if(hudAcc>.075){hudAcc=0;touchControls?.update({alive:self.alive,moving:movementControlsEnabled(),combat:controlsEnabled(),equipment:equipmentControlsEnabled(),canTakeBot:!!takeoverTarget(),spectator:!self.alive,slot,hasBomb:self.hasBomb&&snapshot.round?.phase==='live',planted:snapshot.round?.phase==='live'&&snapshot.bomb?.state==='planted',slots:[...new Set((self.inventory||[]).map(id=>getWeapon(id).slot))]});hud.update(snapshot,self,{ping,fps:Math.round(fps),spectating,touch:!!touchControls?.enabled,interactKey:touchControls?.enabled?'点击右侧按钮':formatBinding(controls.getBindings().interact[0]),canTakeBot:!!takeoverTarget(),scoreboardKey:formatBinding(controls.getBindings().scoreboard[0]),menuKey:formatBinding(controls.getBindings().menu[0]),nextSpectatorKey:touchControls?.enabled?'右侧「下一位」':formatBinding(controls.getBindings().fire[0]),previousSpectatorKey:touchControls?.enabled?'「上一位」':formatBinding(controls.getBindings().altFire[0])});$('weapon-skin').textContent=getWeapon(self.weapon).slot>=4?'原厂装备':getSkin(self.skinId)?.name||getWeapon(self.weapon).skin;if(!$('buy-menu').hidden)shop.update({player:{...self,skins:skins.loadout},mode,round:snapshot.round,time:snapshot.time,requests:snapshot.weaponRequests});}
+  if(hudAcc>.075){hudAcc=0;touchControls?.update({alive:self.alive,moving:movementControlsEnabled(),combat:controlsEnabled(),equipment:equipmentControlsEnabled(),canTakeBot:!!takeoverTarget(),spectator:!self.alive,slot,hasBomb:self.hasBomb&&snapshot.round?.phase==='live',planted:snapshot.round?.phase==='live'&&snapshot.bomb?.state==='planted',slots:[...new Set((self.inventory||[]).map(id=>getWeapon(id).slot))]});hud.update(snapshot,self,{paused:!!socket?.paused,ping,fps:Math.round(fps),spectating,touch:!!touchControls?.enabled,interactKey:touchControls?.enabled?'点击右侧按钮':formatBinding(controls.getBindings().interact[0]),canTakeBot:!!takeoverTarget(),scoreboardKey:formatBinding(controls.getBindings().scoreboard[0]),menuKey:formatBinding(controls.getBindings().menu[0]),nextSpectatorKey:touchControls?.enabled?'右侧「下一位」':formatBinding(controls.getBindings().fire[0]),previousSpectatorKey:touchControls?.enabled?'「上一位」':formatBinding(controls.getBindings().altFire[0])});$('weapon-skin').textContent=getWeapon(self.weapon).slot>=4?'原厂装备':getSkin(self.skinId)?.name||getWeapon(self.weapon).skin;if(!$('buy-menu').hidden)shop.update({player:{...self,skins:skins.loadout},mode,round:snapshot.round,time:snapshot.time,requests:snapshot.weaponRequests});}
   droppedWeapons.update(self,camera,equipmentControlsEnabled(),formatBinding(controls.getBindings().interact[0]));
   const observedActor=spectating&&actors.get(spectating.id);if(observedActor)observedActor.group.visible=false;
   const renderStart=performance.now();renderer.info.reset();renderer.autoClear=true;renderer.render(scene,camera);
@@ -545,7 +554,7 @@ function frame(now){
   frameSamples.push({frame:frameSeconds*1000,cpu:performance.now()-cpuStart,actors:actorMs,render:performance.now()-renderStart});if(frameSamples.length>300)frameSamples.shift();
 }
 requestAnimationFrame(frame);
-function resourceMetrics(){return {shooting:shotPrediction.status(),snapshotAgeMs:Math.round(performance.now()-lastSnapshotAt),renderWidth:canvas.width,renderHeight:canvas.height,pixelRatio:renderer.getPixelRatio(),antialias:renderer.getContext().getContextAttributes()?.antialias,clarity:mobileClarity,fps:Math.round(fps),ping,connected,contextLost,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs?.length||0,actors:actors.size,effects:effects.items.length,audioVoices:audio.voices.size,audioDecodedMiB:Math.round((audio.decodedBytes||0)/1048576),viewWeapons:viewWeapon?.cache.size||0,heapMiB:performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):null,timing:frameStats()};}
+function resourceMetrics(){return {offline:OFFLINE,simulation:OFFLINE?'worker':'server',paused:socket?.paused||false,shooting:shotPrediction.status(),snapshotAgeMs:Math.round(performance.now()-lastSnapshotAt),renderWidth:canvas.width,renderHeight:canvas.height,pixelRatio:renderer.getPixelRatio(),antialias:renderer.getContext().getContextAttributes()?.antialias,clarity:mobileClarity,fps:Math.round(fps),ping,connected,contextLost,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs?.length||0,actors:actors.size,effects:effects.items.length,audioVoices:audio.voices.size,audioDecodedMiB:Math.round((audio.decodedBytes||0)/1048576),viewWeapons:viewWeapon?.cache.size||0,heapMiB:performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):null,timing:frameStats()};}
 setInterval(()=>{if(loaded)diagnostics.sample(resourceMetrics());},10000);
 window.addEventListener('error',event=>diagnostics.event('javascript-error',{message:String(event.message).slice(0,300)}));
 window.addEventListener('unhandledrejection',event=>diagnostics.event('unhandled-rejection',{message:String(event.reason?.message||event.reason).slice(0,300)}));

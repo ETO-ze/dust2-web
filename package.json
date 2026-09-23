@@ -10,7 +10,8 @@
     "start": "node server/index.js",
     "test": "node --test tests/*.mjs",
     "assets:fetch": "node scripts/fetch-assets.mjs",
-    "assets:check": "node scripts/fetch-assets.mjs --check"
+    "assets:check": "node scripts/fetch-assets.mjs --check",
+    "build:offline": "node scripts/build-asset-manifest.mjs && vite build --mode offline --outDir dist-offline"
   },
   "dependencies": {
     "three": "0.185.1",

@@ -32,6 +32,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import org.json.JSONObject;
 import androidx.webkit.WebViewCompat;
+import androidx.webkit.WebViewAssetLoader;
+import android.webkit.WebResourceResponse;
+import java.io.ByteArrayInputStream;
 import androidx.webkit.WebViewFeature;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -39,7 +42,8 @@ import java.io.OutputStream;
 
 /** Fullscreen host for the existing game. The server remains authoritative. */
 public final class MainActivity extends Activity {
-    private static final String HOME = "https://cs2.duskrain.cn/";
+    private static final String HOME = "https://appassets.androidplatform.net/";
+    private WebViewAssetLoader assetLoader;
     private static final int PICK_FILE = 20;
     private static final int SAVE_FILE = 21;
     private FrameLayout root;
@@ -76,6 +80,7 @@ public final class MainActivity extends Activity {
             if (Build.VERSION.SDK_INT >= 30) bottom=Math.max(bottom,insets.getInsets(WindowInsets.Type.ime()).bottom);
             view.setPadding(left,top,right,bottom);return insets;
         });
+        assetLoader=new WebViewAssetLoader.Builder().addPathHandler("/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
         createGame();immersive();
     }
 
@@ -121,6 +126,11 @@ public final class MainActivity extends Activity {
             });
         }
         game.setWebViewClient(new WebViewClient() {
+            @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                WebResourceResponse resource=assetLoader.shouldInterceptRequest(request.getUrl());
+                if(resource!=null)return resource;
+                return new WebResourceResponse("text/plain","UTF-8",404,"Not Found",Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();if (owned(uri)) return false;
                 if (request.isForMainFrame() && ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme()))) {
@@ -134,7 +144,7 @@ public final class MainActivity extends Activity {
                 immersive();
             }
             @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                if (request.isForMainFrame()) { pageFailed = true;showRecovery("暂时无法连接游戏", "请检查网络后重试。已经保存的设置和资源会保留。"); }
+                if (request.isForMainFrame()) { pageFailed = true;showRecovery("本地游戏文件未能载入", "请重试，或重新安装完整离线包。已保存的设置会保留。"); }
             }
             @Override public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
                 handler.cancel();pageFailed = true;showRecovery("安全连接未建立", "请检查手机日期和网络后重试。");
@@ -191,7 +201,7 @@ public final class MainActivity extends Activity {
     @Override public void onWindowFocusChanged(boolean focused) { super.onWindowFocusChanged(focused);if (focused) immersive();else pauseInput(); }
     @Override public void onBackPressed() {
         if (customView != null) { hideCustom();return; }
-        pauseInput();new AlertDialog.Builder(this).setTitle("离开游戏？").setMessage("退出会断开当前对局。资源缓存和设置会保留。")
+        pauseInput();new AlertDialog.Builder(this).setTitle("离开游戏？").setMessage("退出会结束当前离线对局。设置会保留，对局进度不会存档。")
             .setNegativeButton("继续游戏", (d,w) -> immersive()).setPositiveButton("退出", (d,w) -> finish()).show();
     }
     @Override protected void onPause() { pauseInput();if (game != null) game.onPause();super.onPause(); }

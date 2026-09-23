@@ -9,7 +9,7 @@ import { spawn } from 'node:child_process';
 const TYPES = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mjs':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8', '.json':'application/json', '.webmanifest':'application/manifest+json', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.glb':'model/gltf-binary', '.gltf':'model/gltf+json', '.wasm':'application/wasm', '.mp3':'audio/mpeg', '.ogg':'audio/ogg', '.wav':'audio/wav', '.ico':'image/x-icon' };
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export async function startPortable({ root = appRoot, mode = 'online', port = mode === 'offline' ? 27195 : 27185, attempts = 10 } = {}) {
+export async function startPortable({ root = appRoot, mode = 'online', worker = false, port = mode === 'offline' ? 27195 : 27185, attempts = 10 } = {}) {
   if (!['online', 'offline'].includes(mode)) throw new Error('Invalid play mode');
   const dist = await realpath(path.join(root, 'dist'));
   const originalHTML = await readFile(path.join(dist, 'index.html'), 'utf8');
@@ -28,10 +28,10 @@ export async function startPortable({ root = appRoot, mode = 'online', port = mo
     try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); } catch { res.writeHead(400); res.end(); return; }
     if (pathname === '/portable-health') {
       res.writeHead(200, {'Content-Type':'application/json', 'Cache-Control':'no-store'});
-      res.end(JSON.stringify({ service:'dust2-portable', mode, instance, ready: mode === 'online' || !!game, socketURL: config().socketURL })); return;
+      res.end(JSON.stringify({ service:'dust2-portable', mode, instance, ready: worker || mode === 'online' || !!game, socketURL: config().socketURL })); return;
     }
     if (pathname === '/' || pathname === '/index.html') {
-      if (mode === 'offline' && !game) { res.writeHead(503); res.end('Starting local match server.'); return; }
+      if (mode === 'offline' && !worker && !game) { res.writeHead(503); res.end('Starting local match server.'); return; }
       const label = mode === 'online' ? '本地客户端 · 在线联机' : '本地客户端 · 离线练习';
       const note = mode === 'online' ? '资源已在本机。创建房间后把房间码发给朋友；好友选择在线联机并输入同一个房间码。' : '离线机器人练习：房间在这台电脑运行。与异地朋友对战请关闭此窗口并使用“在线联机”入口。';
       const html = originalHTML.replace('<head>', `<head><script>globalThis.__DUST2_PORTABLE__=${JSON.stringify(config())};</script>`)
@@ -75,7 +75,7 @@ export async function startPortable({ root = appRoot, mode = 'online', port = mo
     }
   }
   if (!bound) throw new Error('本地端口忙，请关闭旧游戏启动窗口后重试。');
-  try { if (mode === 'offline') {const {startGameServer} = await import(pathToFileURL(path.join(root, 'server/index.js'))); game = await startGameServer({port:0, host:'127.0.0.1', staticDir:dist});} }
+  try { if (mode === 'offline' && !worker) {const {startGameServer} = await import(pathToFileURL(path.join(root, 'server/index.js'))); game = await startGameServer({port:0, host:'127.0.0.1', staticDir:dist});} }
   catch (e) { await new Promise(resolve => server.close(resolve)); throw e; }
   address = `http://127.0.0.1:${server.address().port}/`;
   let closed = false;

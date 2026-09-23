@@ -1,3 +1,4 @@
+import {mountTouchLayout} from './touch-layout-editor.js';
 import {TouchInput,normalizeTouch,touchLookDelta} from '../shared/touch-input.js';
 import './touch-controls.css';
 export class TouchControls {
@@ -65,5 +66,6 @@ export function mountTouchSettings(settingsUI,touch){
  modal.querySelector('.config-tabs').append(tab);modal.querySelector('.config-scroll').append(panel);
  tab.onclick=()=>{modal.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('selected',b===tab));modal.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p!==panel);};
  const sync=()=>{panel.querySelector('#touch-mode').value=touch.settings.mode;panel.querySelector('#touch-sensitivity').value=touch.settings.sensitivity;panel.querySelector('#touch-size').value=touch.settings.size;panel.querySelector('#touch-sens-value').textContent=touch.settings.sensitivity.toFixed(2);};sync();
+ mountTouchLayout(panel,modal,touch);
  for(const [id,key] of [['touch-mode','mode'],['touch-sensitivity','sensitivity'],['touch-size','size']])panel.querySelector('#'+id).addEventListener('input',e=>{touch.configure({[key]:key==='mode'?e.target.value:Number(e.target.value)});sync();});
 }
