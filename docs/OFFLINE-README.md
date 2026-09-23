@@ -8,6 +8,8 @@
 
 ![移动触控实测](screenshots/offline-mobile-v1.png)
 
+[查看验证记录](validation/offline-v0.1.0.md) · [Android 安装运行截图](screenshots/offline-android-v1.png) · [Windows 运行截图](screenshots/offline-desktop-v1.png)
+
 ## 这一版重点
 
 - 人机、物理与回合逻辑放进独立 Worker，避免直接占用画面线程。
