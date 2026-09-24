@@ -1,119 +1,45 @@
-<div align="center">
+# DUST II · 离线版 0.2.0
 
-# DUST II · 网页战术对战
+**用 GPT-6，把沙二装进口袋。断网，也能开一局。**
 
-**用 GPT-6，把沙二做进浏览器。**
+[Android APK / Windows ZIP 下载](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.2.0) · [这一版改了什么](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/OFFLINE-0.2.md) · [安装与构建](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/OFFLINE-V1.md) · [验证记录](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/validation/offline-v0.2.0.md)
 
-电脑与手机，同一张 Dust II。创建房间、邀请朋友，或者带上人机开一局。
+地图、枪械、皮肤、探员与音乐随包提供。1 名玩家与最多 9 名人机，支持 5v5 席位、13 胜爆破和 100 击杀团队死斗。Android 与 Windows 分别下载，首次进入也无需联网获取素材。
 
-[立即开局](https://cs2.duskrain.cn/) · [安卓全屏客户端](docs/ANDROID.md) · [新版实机截图](docs/SHOWCASE.md) · [本地运行](#本地运行)
+![离线版 0.2.0 手机横屏战场](https://raw.githubusercontent.com/ETO-ze/dust2-web/offline-v1/docs/screenshots/offline-mobile-v02.png)
 
-**5 对 5 房间 · 爆破 / 团队死斗 · 手机触控 · 按需下载 · 本地缓存**
+*当前构建的桌面 Chrome 触屏模拟截图，960×440 CSS 像素；不是 P60 真机性能展示。*
 
-</div>
+## 这一版，让队友多一点配合
 
-![当前版本桌面实机：Dust II、第一人称武器与战斗 HUD](docs/screenshots/angles-ramp.png)
-
-*2026-09-14 当前构建的本地浏览器实拍。演示房间用于展示功能，不代表公开匹配战绩。*
-
-## 现在可以怎么玩
-
-**本次更新：** 人机根据可站立位置预瞄，加入掩体 peek 和主动拾枪升级；同队连输 2 回合增强一次、连赢 2 回合恢复。修正 B 狗洞碎砖卡脚、A 小 / A 斜坡悬空装饰层，以及 C4 下包时的 LCD 材质。[更新与实测 →](docs/BOT-ANGLES-MAP.md)
-
-全体 / 队伍聊天、人机要枪发枪、守点换位和狙击架点继续保留。经济计划和队伍消息仅己方可见。[队伍配合说明 →](docs/BOT-TEAMPLAY-CHAT.md)
-
-爆头与伤害 / 闪光助攻、回合结束后的射击拾枪、分类道具音效、八套进攻战术和全队经济决策继续保留。[上一版更新 →](docs/ROUND-TACTICS-ECONOMY.md)
-
-此前的服务器射击确认与卡顿补偿继续保留。[射击修复与验证 →](docs/FIRING-FIX.md)
-
-普通 / 困难人机、A 小与 B 区烟闪火配合、失败路线恢复、B 狗洞碰撞和观战准星也已上线。[人机更新说明 →](docs/BOT-UPDATE.md)
-
-在线入口是 **[cs2.duskrain.cn](https://cs2.duskrain.cn/)**。填写名字，选择已有房间或创建自己的对局。
-
-| 玩法 | 当前版本 |
+| 更新 | 对局中的变化 |
 | --- | --- |
-| 和朋友组队 | 每边 5 个席位，自己选阵营；房主按席位添加或移除人机。分享邀请链接，朋友跨网络加入；联机大厅显示已有房间。 |
-| 竞技爆破 | 先到 13 胜，12 回合换边；12:12 进入重复 MR3 加时，每 3 回合换边。 |
-| 团队死斗 | 两边争夺 100 次击杀，阵亡后自动重生。 |
-| 阵亡继续参与 | 观战存活队友，按 E 接管正在观战的己方人机；手机点击「控制人机」。下一回合恢复自己的角色。 |
-| 完整整备 | B 打开阵营商店，购买武器、护甲、头盔和拆弹器；符合条件的未使用武器可以退回。 |
-| 枪械与道具 | 分档开镜、刀轻重击、五类投掷物、跳投、C4 安装与拆除；G 丢枪、E 拾枪，空槽自动拾取。 |
-| 自己的装备 | 皮肤、探员、M9 / 蝴蝶刀与音乐盒按需下载。默认爪子刀蓝宝石、树篱迷宫手套；探员同步第一人称手臂。 |
-| 命中有反馈 | 服务器确认击杀，显示爆头、伤害 / 闪光助攻、本回合击杀数与扑克牌反馈；原版枪声、换弹声音和可见曳光。 |
+| 三档难度 | 新增轻松档，适合手机入门；普通／困难保留视觉瞄准、平滑转向与原有枪法差异。 |
+| 守点变化 | 出生更分散，守点候选经过落脚、视线和路线检查，随回合轮换，继续支持换位与 peek。 |
+| 分人回防 | 依据听到的枪声和队友报告派人支援，连续枪声不再把新回防计时不断推后，另一点保留守备。 |
+| 道具配合 | 更积极寻找附近投掷位，同时限制绕路；携包人机有持枪队友保护、时间充足时也可辅助投掷。 |
+| 熟悉的规则 | 普通／困难连输 2 回合增强一次 50%，连赢 2 回合恢复；轻松档不额外增强。 |
 
-![当前 5 对 5 房间：选队与逐席添加人机](docs/screenshots/current-room.png)
+![三档人机难度与规则说明](https://raw.githubusercontent.com/ETO-ze/dust2-web/offline-v1/docs/screenshots/offline-difficulty-v02.png)
 
-## 手机也能进场
+## 手机上手，按自己的习惯来
 
-左手摇杆移动，右手滑动瞄准，开火、跳跃、蹲下、切枪、投掷和拾取都有触屏按钮。紧凑 HUD 随实际屏幕尺寸和横竖屏变化调整。
+左手摇杆移动，右手滑动瞄准；开火、开镜、跳跃、蹲下、切枪、投掷和拾取都有触屏按键。可以拖动按键、调整大小与透明度，并导出布局代码。
 
-新增独立的 **省电 / 清晰 / 高清** 档位。默认最低画质搭配「清晰」，提高地图和武器细节，同时限制渲染像素总量。清晰度与阴影画质分开控制。
+画质、清晰度和帧率分别可调，保留亮度、16:9／4:3 与准星设置。默认最低画质、60 FPS 上限；对局逻辑运行在独立 Worker 中。暂停菜单和切后台会暂停游戏，返回后继续。
 
-**菜单 → 画面 / 亮度 / 控制设置 → 画面 → 手机清晰度。** 立即生效并自动保存。P60 可先用「清晰」，性能充足时切「高清」。
+商店购买与退枪、护甲和拆弹器、五类道具、C4、捡枪丢枪、经济与人机配合、死亡观战和接管队友继续保留。退出应用后重新开局，当前不保存局内进度。
 
-![当前手机清晰档的触屏界面](docs/screenshots/mobile-clarity-clear.png)
+## 下载与安装
 
-*手机图来自 Chrome 触屏设备模拟，不能代替 P60 等手机的真机帧率测试。*
+- **Android：** 下载 APK 后安装。需要 Android 8+、WebGL 2 与 WebView 110+。可与原在线版共存；0.1.0 可覆盖升级，保留应用设置。
+- **Windows 10/11 x64：** 完整解压 ZIP，双击「开始游戏.cmd」，用 Edge/Chrome 打开。包内含运行时，无需另装 Node；游戏时保留启动窗口。
+- 设置可从「本地资源」导出备份。手机实际帧率取决于设备、温度与人机数量。
 
-安卓可使用[全屏客户端](docs/ANDROID.md)，通过应用图标进入，无浏览器地址栏。客户端加载同一个网站，网页更新不需要重新安装 APK。
+## 开发与来源
 
-## 从加载到下次打开
+当前发布的是单人离线版本，不支持异地联机。离线源码见 [offline-v1 分支](https://github.com/ETO-ze/dust2-web/tree/offline-v1)；原在线源码保留在 [main 分支](https://github.com/ETO-ze/dust2-web/tree/main)，在线服务与本次安装包独立更新。
 
-首次基础下载约为桌面 **202.1 MiB**、手机 **133.8 MiB**。进度显示真实文件数量与下载量，之后准备纹理、模型和着色器，失败可重试。额外皮肤、探员和音乐盒在使用时下载。
+参考 [henhaogame/dust2-offline](https://github.com/henhaogame/dust2-offline) 的离线、触控和部分人机设计，采用独立模块实现，具体取舍见[更新说明](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/OFFLINE-0.2.md)。
 
-资源按 SHA-256 校验并缓存，后续复用未改变的文件。支持 PWA 安装、设置导出和恢复。安卓客户端与浏览器的数据各自独立；清除数据或系统回收缓存后需要重新获取相应资源。网页与安卓客户端的对局都需要连接服务器。
-
-## 常用操作
-
-| 按键 | 动作 |
-| --- | --- |
-| W / A / S / D，鼠标 | 移动、瞄准 |
-| 左键 / 右键 | 开火；开镜、刀重击或道具低抛，取决于装备 |
-| 空格 / Shift / Ctrl | 跳跃 / 静步 / 蹲下 |
-| R / Q，1–5 | 换弹 / 上一件装备 / 装备槽 |
-| B / F | 商店 / 检视 |
-| G / E | 丢枪 / 拾枪、操作炸弹；阵亡观战己方人机时接管 |
-| Tab / Esc | 计分板 / 菜单 |
-| Y / U | 全体 / 队伍聊天；Enter 发送，Esc 取消 |
-| B → 队伍补给 / Ctrl + 点击枪械 | 请求发枪 / 购买并丢给队友 |
-
-键位可自定义，支持 CS 准星分享代码、独立开镜灵敏度、16:9 / 4:3 与拉伸，以及 60%–160% 亮度。详细参数见[装备说明](docs/EQUIPMENT.md)。
-
-## 本地运行
-
-需要 **Node.js 22.12 或更新版本**、npm，以及支持 WebGL2 的浏览器。
-
-```bash
-npm ci
-npm run assets:fetch
-npm run build
-npm start
-```
-
-然后打开 [localhost:3000](http://localhost:3000/)。素材通过[资源锁清单](docs/ASSETS.md)恢复，源码仓库不直接包含全部模型和纹理。
-
-Windows 可在依赖与资源齐全后使用 `Start-Game.cmd` 和 `Stop-Game.cmd`。联机与启动见 [ONLINE.md](ONLINE.md)；需要自行打包时查看[便携版构建说明](docs/PORTABLE.md)。
-
-```bash
-node --test --test-concurrency=4 tests/*.mjs
-```
-
-| 目录 | 内容 |
-| --- | --- |
-| `client/` | Three.js 场景、模型、HUD、音效、设置与缓存 |
-| `server/` | 房间、机器人与服务器战斗判定 |
-| `shared/` | 共用移动、武器、模式和设置规则 |
-| `config/`、`scripts/` | 资源锁清单、构建与准备工具 |
-| `tests/`、`deploy/` | 自动验证与发布工具 |
-
-## 当前验证与边界
-
-本次更新通过 **331 项自动测试**，包括 30 / 60 Hz 下的 **98 条 B 狗洞单次蹲跳路线**；完成 4 套守点模拟、3 场各 240 秒的 9 人机实地图对局，以及桌面 / 手机触屏浏览器画面检查。测试条件与性能数据见[本次验收](docs/BOT-ANGLES-MAP.md)。
-
-这是 GPT-6 参与开发、使用 **Three.js + Node.js / WebSocket** 独立实现的网页 FPS，**不是官方 CS2 客户端或 Source 2 引擎移植**。材质、光照、烟雾、动画与判定存在网页实现上的差异；没有官方 sub-tick、竞技反作弊、账号战绩或语音聊天。浏览器短测不代表所有设备的长期稳定性，整个浏览器被系统关闭的问题仍需真机排查。
-
-## 素材与致谢
-
-Counter-Strike、Dust II 及相关地图、武器、皮肤、手套、探员、图像和音效归 Valve 及相应权利人；本项目无 Valve 官方关联或背书。代码许可不会覆盖第三方素材，归属与获取方式见 [ASSETS.md](docs/ASSETS.md)。
-
-感谢 [Valve](https://www.counter-strike.net/cs2)、[Three.js](https://threejs.org/)、[three-mesh-bvh](https://github.com/gkjohnson/three-mesh-bvh)、[ws](https://github.com/websockets/ws)、[ValveResourceFormat](https://github.com/ValveResourceFormat/ValveResourceFormat)、[Awpy](https://github.com/pnxenopoulos/awpy) 及相关资源项目。
+个人体验项目，非 Valve 官方 CS2，也不含 Source 2 引擎。素材、音乐和第三方组件归属见[许可说明](https://github.com/ETO-ze/dust2-web/blob/offline-v1/LICENSE.md)与[素材来源](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/ASSETS.md)。
