@@ -12,3 +12,8 @@ body:has(#buy-menu:not([hidden])) #game-chat:not(.open){display:none}
 .touch-device .equipment-item.weapon-item img{transform:scale(2.05)}
 .touch-device .equipment-card .equipment-item b{font-size:11px;line-height:14px}
 .touch-device .equipment-card .equipment-price strong{font-size:12px}
+
+.chat-line.system{opacity:.95}
+.chat-line .region-temp{color:#5dffa0;font-weight:700}
+.chat-line .region-local{color:#ff6b6b;font-weight:600}
+.chat-help{white-space:pre-wrap;font-size:12px;line-height:1.45}

@@ -182,6 +182,38 @@ export function stepPlayer(p,input={},dt=1/60) {
     p.vx=p.vy=p.vz=0;p.crouch=true;p.height=CROUCH_HEIGHT;p.jumpBufferRemaining=0;p.lastJump=!!input.jump;
     p.lastJumpId=Math.max(p.lastJumpId||0,input.jumpId||0);return p;
   }
+  // Debug / utility cheats: noclip = fly through walls; fly = free flight with soft collisions.
+  if(p.noclip||p.fly){
+    const forward=Math.max(-1,Math.min(1,Number(input.forward)||0));
+    const right=Math.max(-1,Math.min(1,Number(input.right)||0));
+    const len=Math.max(1,Math.hypot(forward,right));
+    const speed=(input.walk?6:input.crouch?4:14)*(input.speedScale||1);
+    const cosPitch=Math.cos(p.pitch),sinPitch=Math.sin(p.pitch);
+    const fx=-Math.sin(p.yaw)*cosPitch,fy=sinPitch,fz=-Math.cos(p.yaw)*cosPitch;
+    const rx=Math.cos(p.yaw),rz=-Math.sin(p.yaw);
+    const mx=(fx*forward+rx*right)/len;
+    const my=(fy*forward)/len;
+    const mz=(fz*forward+rz*right)/len;
+    let up=0;
+    if(input.jump)up+=1;
+    if(input.crouch)up-=1;
+    p.vx=mx*speed;p.vy=my*speed+up*speed;p.vz=mz*speed;
+    p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;
+    p.grounded=false;p.height=p.crouch?CROUCH_HEIGHT:STAND_HEIGHT;
+    p.jumpBufferRemaining=0;p.lastJump=!!input.jump;
+    if(Number.isSafeInteger(input.jumpId)&&input.jumpId>(p.lastJumpId||0))p.lastJumpId=input.jumpId;
+    if(p.noclip){
+      p.outOfWorld=false;
+      p.stepDistance=(p.stepDistance||0)+Math.hypot(p.vx,p.vz)*dt;
+      return p;
+    }
+    const c=hullFor(p);
+    collide(c,p);
+    p.x=(c.min.x+c.max.x)/2;p.y=c.min.y;p.z=(c.min.z+c.max.z)/2;
+    p.outOfWorld=p.y<worldBounds.min.y-12 || p.x<worldBounds.min.x-20 || p.x>worldBounds.max.x+20 || p.z<worldBounds.min.z-20 || p.z>worldBounds.max.z+20;
+    p.stepDistance=(p.stepDistance||0)+Math.hypot(p.vx,p.vz)*dt;
+    return p;
+  }
   if(p.vy>.1)p.grounded=false;
   const jumpId=Number.isSafeInteger(input.jumpId)&&input.jumpId>=0?input.jumpId:null;
   const newId=jumpId!==null&&jumpId>(p.lastJumpId||0);

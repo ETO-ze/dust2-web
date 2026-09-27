@@ -1,3 +1,4 @@
+import {modeConfig,isDebugMode,isUtilityMode,isDeathmatchMode,isBombMode} from '../shared/match-rules.js';
 import { MAP } from '../shared/map-data.js';
 import { UTILITY_IDS, EQUIPMENT } from '../shared/equipment.js';
 import { getWeapon } from '../shared/weapons.js';
@@ -90,15 +91,15 @@ export class HUD {
     this.deathScreen.update(snapshot, self, { elapsed, spectating, interactKey,canTakeBot,touch,scoreboardKey, menuKey, nextSpectatorKey, previousSpectatorKey });
     const round = snapshot.round || {};
     const bomb = snapshot.bomb || {};
-    const mode = snapshot.mode === 'defuse' ? 'defuse' : 'deathmatch';
+    const mode = snapshot.mode; const debug=isDebugMode(mode), utility=isUtilityMode(mode), deathmatch=isDeathmatchMode(mode), bombMode=isBombMode(mode); const cfg=modeConfig(mode);
     const weapon = EQUIPMENT[self.weapon] || getWeapon(self.weapon || 'pistol');
     document.getElementById('hud')?.setAttribute('data-team',self.team);
 
     this.text('score-ct', number(snapshot.scores?.CT));
     this.text('score-t', number(snapshot.scores?.T));
-    this.text('mode-label', mode === 'defuse' ? '经典爆破' : '团队死斗');
+    this.text('mode-label', utility ? '道具' : debug ? '调试' : cfg.shortLabel);
     this.text('room-label', snapshot.room || '------');
-    this.text('board-room', `${snapshot.room || ''} · ${mode === 'defuse' ? '经典爆破' : '团队死斗'}`);
+    this.text('board-room', `${snapshot.room || ''} · ${cfg.label}`);
     this.text('network-status', `${Math.round(clamp(ping, 0, 9999))} ms · ${Math.round(clamp(fps, 0, 999))} FPS`);
     const network = this.elements['network-status'];
     if (network) network.style.color = time - this.receivedAt > 2500 ? '#f09b83' : '';
@@ -130,10 +131,10 @@ export class HUD {
 
     const roundLeft = Math.max(0, number(round.timeLeft) - elapsed);
     const bombLeft = Math.max(0, number(bomb.remaining) - elapsed);
-    this.text('round-time', round.phase==='matchEnded'?'结束':bomb.state === 'planted' ? clockText(bombLeft) : mode === 'deathmatch' ? '100' : round.phase === 'waiting' ? '—' : clockText(roundLeft));
+    this.text('round-time', round.phase==='matchEnded'?'结束':bomb.state === 'planted' ? clockText(bombLeft) : utility||debug ? (utility?'道具':'调试') : deathmatch ? '100' : round.phase === 'waiting' ? '—' : clockText(roundLeft));
     if (this.elements['round-time']) this.elements['round-time'].style.color = bomb.state === 'planted' ? '#ffb28c' : '';
     this.text('round-state', bomb.state === 'planted' ? `${bomb.site || ''} 区 · 炸弹已安装` :
-      round.phase==='matchEnded'?'比赛结束':mode === 'deathmatch' ? '率先获得 100 次击杀' : round.phase === 'waiting' ? '等待双方玩家' :
+      round.phase==='matchEnded'?'比赛结束':utility?'1雷 2闪 3烟 4火 · /list · /show · /record · /in':debug?'单人调试 · Y 聊天 · F8 标点 · /region 画区':deathmatch ? '率先获得 100 次击杀' : round.phase === 'waiting' ? '等待双方玩家' :
         round.phase === 'freeze' ? `回合 ${number(round.number, 1)} · 准备` :
           round.phase === 'ended' ? '下一回合即将开始' : `回合 ${number(round.number, 1)}`);
 
@@ -145,7 +146,7 @@ export class HUD {
     } else if (round.phase === 'ended') {
       title = round.winner === 'CT' ? '防守方 CT 获胜' : round.winner === 'T' ? '进攻方 T 获胜' : '回合结束';
       subtitle = `${round.reason || ''}${round.reason ? ' · ' : ''}${Math.ceil(roundLeft)} 秒后下一回合`;
-    } else if (mode === 'defuse' && round.phase === 'waiting') {
+    } else if (bombMode && round.phase === 'waiting') {
       title = '等待交战双方'; subtitle = '邀请朋友加入，或添加机器人开始对局';
     } else if (round.phase === 'freeze') {
       title = `回合 ${number(round.number, 1)}`;
@@ -158,7 +159,7 @@ export class HUD {
     this.updateInteraction(snapshot, self);
     const buyLeft = Math.max(0, (number(round.buyEndsAt) - number(snapshot.time)) / 1000 - elapsed);
     const inBuyZone = (MAP.spawns?.[self.team] || []).some(spawn => distanceXZ(self, spawn) < 9 && Math.abs(number(self.y) - number(spawn.y)) < 3);
-    this.text('buy-note', mode === 'deathmatch' ? '死斗模式可免费更换武器与补充护甲。' :
+    this.text('buy-note', utility ? '无需购买 · 1 雷 · 2 闪 · 3 烟 · 4 火（无限）。Y 聊天 · /help 看指令。' : debug ? '调试模式可随时免费购买。Y 聊天 · /help · /fly · /region。' : deathmatch ? '死斗模式可免费更换武器与补充护甲。' :
       !self.alive ? '阵亡后无法购买，等待下一回合。' : buyLeft <= 0 ? '本回合购买时间已结束。' :
         !inBuyZone ? `请返回己方出生区购买 · 剩余 ${Math.ceil(buyLeft)} 秒` : `购买时间剩余 ${Math.ceil(buyLeft)} 秒 · 当前 $${number(self.money)}`);
     if (time - this.lastBoard >= 250) { this.updateScoreboard(snapshot, self); this.updateRosters(snapshot,self); this.lastBoard = time; }
@@ -171,7 +172,7 @@ export class HUD {
     if (!prompt) return;
     const bomb = snapshot.bomb || {};
     let text = '', progress = 0, showTrack = false;
-    if (self.alive && snapshot.mode === 'defuse' && snapshot.round?.phase === 'live') {
+    if (self.alive && bombMode && snapshot.round?.phase === 'live') {
       const site = Object.entries(MAP.sites || {}).find(([, point]) => distanceXZ(self, point) <= number(point.radius, 6) && Math.abs(number(self.y) - number(point.y)) < 3)?.[0];
       if (bomb.actorId === self.id && bomb.action) {
         text = bomb.action === 'plant' ? `正在安装 · ${site || bomb.site || ''} 区 · 保持按住左键 / E` : '正在拆除炸弹 · 保持按住 E';

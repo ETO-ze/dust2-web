@@ -10,7 +10,8 @@ import { PRIMARY_WEAPONS } from '../shared/weapons.js';
 import { normalizeSkinLoadout } from '../shared/skins.js';
 import { normalizeAgentLoadout } from '../shared/agents.js';
 import {BOT_DIFFICULTIES,normalizeBotDifficulty} from '../shared/bot-difficulty.js';
-import { botCount } from '../shared/match-rules.js';
+import { botCount, normalizeMode, modeConfig } from '../shared/match-rules.js';
+import { handleCalloutApi, loadCalloutsFromDisk } from './callout-store.js';
 import { initPhysics } from '../shared/physics.js';
 import { GameRoom, TICK_RATE, SNAPSHOT_RATE } from './game.js';
 import {ServerPerformance} from './performance-metrics.js';
@@ -43,11 +44,12 @@ function joinSettings(msg) {
   const name = (msg.name || 'Player').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 20) || 'Player';
   const room = (msg.room || '').trim().toUpperCase();
   if (room && !/^[A-Z0-9]{4,12}$/.test(room)) return { error: '房间码应为 4–12 位英文字母或数字。' };
-  const mode = msg.mode === 'deathmatch' ? 'deathmatch' : 'defuse';
+  const mode = normalizeMode(msg.mode);
+  const capacity = modeConfig(mode);
   const team = ['T', 'CT'].includes(msg.team) ? msg.team : 'auto';
-  if(msg.bots!==undefined&&(!Number.isInteger(msg.bots)||msg.bots<0||msg.bots>9))return {error:'机器人数量必须为 0–9 的整数。'};
+  if(msg.bots!==undefined&&(!Number.isInteger(msg.bots)||msg.bots<0||msg.bots>capacity.maxBots))return {error:`机器人数量必须为 0–${capacity.maxBots} 的整数。`};
   if(msg.botDifficulty!==undefined&&!BOT_DIFFICULTIES.includes(msg.botDifficulty))return {error:'人机难度应为普通或困难。'};
-  const bots = botCount(msg.bots),botDifficulty=normalizeBotDifficulty(msg.botDifficulty);
+  const bots = mode === 'debug' || mode === 'utility' ? 0 : botCount(msg.bots, Math.min(6, capacity.maxBots), capacity.maxBots),botDifficulty=normalizeBotDifficulty(msg.botDifficulty);
   const primary = PRIMARY_WEAPONS.includes(msg.primary) ? msg.primary : 'auto';
   return { name, room, mode, team, bots, botDifficulty, primary, skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0,shotProtocol:msg.shotProtocol===1?1:0 };
 }
@@ -55,6 +57,7 @@ function joinSettings(msg) {
 /** Start the authoritative server after loading collision geometry. No external services. */
 export async function startGameServer({ port = Number(process.env.PORT || 3000), host = process.env.HOST || '0.0.0.0', staticDir = path.join(ROOT, 'dist'), rules = {} } = {}) {
   await loadPhysics();
+  await loadCalloutsFromDisk();
   const rooms = new Map();
   const maxRooms = Math.max(1, Math.min(100, Number(process.env.MAX_ROOMS) || 12));
   const startedAt = Date.now();
@@ -63,10 +66,11 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
   const server = createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'same-origin');
-    if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); res.end(); return; }
     let requestPath;
     try { requestPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
     catch { res.writeHead(400); res.end('Bad URL'); return; }
+    if (await handleCalloutApi(req, res, requestPath)) return;
+    if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); res.end(); return; }
     if (requestPath === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       const memory = process.memoryUsage();
@@ -109,7 +113,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       if(msg.type==='listRooms'){
         if(now-(socket.listRoomsAt||0)<1000)return;
         socket.listRoomsAt=now;
-        send(socket,{type:'rooms',rooms:[...rooms.values()].filter(r=>r.humanCount>0).map(r=>({code:r.code,mode:r.mode,botDifficulty:r.botDifficulty,humans:r.humanCount,bots:r.botCount,scores:r.scores,phase:r.round.phase,joinable:r.humanCount<10&&r.match.status!=='ended'})).sort((a,b)=>Number(b.joinable)-Number(a.joinable)||b.humans-a.humans)});return;
+        send(socket,{type:'rooms',rooms:[...rooms.values()].filter(r=>r.humanCount>0).map(r=>({code:r.code,mode:r.mode,botDifficulty:r.botDifficulty,humans:r.humanCount,bots:r.botCount,scores:r.scores,phase:r.round.phase,maxPlayers:r.maxPlayers,joinable:r.humanCount<r.maxPlayers&&r.match.status!=='ended'})).sort((a,b)=>Number(b.joinable)-Number(a.joinable)||b.humans-a.humans)});return;
       }
       if (msg.type === 'join') {
         if (socket.playerId) { error(socket, 'ALREADY_JOINED', '当前连接已经加入房间。'); return; }
@@ -124,14 +128,40 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         }
         try {
           const player = room.addHuman(socket, settings); socket.playerId = player.id; socket.roomCode = room.code;
-          send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1,shotProtocol:1 });
+          send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, maxPlayers: room.maxPlayers, teamSize: room.teamSize, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1,shotProtocol:1 });
           send(socket, snapshotForSide(room.snapshot({ drainEvents: false }),player.team));
         } catch (e) { if (created) rooms.delete(room.code); error(socket, 'JOIN_FAILED', e.message); }
         return;
       }
       const room = rooms.get(socket.roomCode);
       if (!room || !socket.playerId) { error(socket, 'NOT_JOINED', '请先加入一个房间。'); return; }
-      if(msg.type==='chat'){const result=room.chat(socket.playerId,msg.text,msg.channel);if(!result.ok)error(socket,'CHAT_REJECTED',result.message);}
+      if(msg.type==='chat'){
+        if(now-(socket.chatAt||0)<200){error(socket,'CHAT_RATE','发言过快。');return;}
+        socket.chatAt=now;
+        const result=room.handleChat(socket.playerId,{scope:msg.channel||msg.scope,text:msg.text});
+        if(!result.ok){error(socket,'CHAT_REJECTED',result.message);return;}
+        if(result.private){
+          send(socket,{type:'chatMessage',system:true,text:result.reply||'',scope:'all',time:Date.now(),...(result.clientCommand?{clientCommand:result.clientCommand,args:result.args||''}:{})});
+          return;
+        }
+        if(result.broadcast){
+          const payload=JSON.stringify(result.broadcast);
+          for(const peer of room.clients.values()){
+            if(peer.readyState!==WebSocket.OPEN)continue;
+            if(result.broadcast.scope==='team'||result.broadcast.channel==='team'){
+              const other=room.players.get(peer.playerId);
+              if(!other||other.team!==(result.broadcast.team))continue;
+            }
+            peer.send(payload);
+          }
+        }
+      } else if(msg.type==='practiceImport'){
+        if(now-(socket.practiceImportAt||0)<800){error(socket,'IMPORT_RATE','导入过于频繁。');return;}
+        socket.practiceImportAt=now;
+        const throws=Array.isArray(msg.throws)?msg.throws.slice(0,200):[];
+        const result=room.importPractice(socket.playerId,{throws,force:!!msg.force,packId:msg.packId||'import'});
+        send(socket,{type:'chatMessage',system:true,text:result.message||(result.ok?'导入完成':'导入失败'),scope:'all',time:Date.now(),clientCommand:'practice_toast',args:JSON.stringify({text:result.message||(result.ok?'导入完成':'导入失败'),tone:result.ok?'ok':'warn'})});
+      }
       else if(msg.type==='requestWeapon'||msg.type==='donateWeapon'){const result=msg.type==='requestWeapon'?room.requestWeapon(socket.playerId,msg.weapon):room.donateWeapon(socket.playerId,msg.playerId,msg.weapon);if(!result.ok)error(socket,'TEAM_GEAR_REJECTED',result.message);else send(socket,{type:'teamGear',...result});}
       else if (msg.type === 'input') {
         if (!room.receiveInput(socket.playerId, msg)) { if (++socket.strikes > 100) socket.close(1008, 'Invalid input'); }

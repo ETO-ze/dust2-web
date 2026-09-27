@@ -19,7 +19,27 @@ import { DEFAULT_SKINS, getSkin, normalizeSkinLoadout } from '../shared/skins.js
 import { DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } from '../shared/agents.js';
 import { EQUIPMENT, UTILITY_IDS, MAX_GRENADES, getEquipment, canTeamBuyEquipment, equipmentPrice, grenadeCount } from '../shared/equipment.js';
 import { GrenadeSimulation } from './grenades.js';
-import { MATCH_RULES, botCount, defuseDecision, grenadeMode, grenadeStrength } from '../shared/match-rules.js';
+import { MATCH_RULES, botCount, defuseDecision, grenadeMode, grenadeStrength, modeConfig, isSandboxMode, isDebugMode, isUtilityMode } from '../shared/match-rules.js';
+import { formatModeHelp } from '../shared/mode-help.js';
+import {
+  initPracticeRoom,
+  capturePracticeThrow,
+  notePracticeImpact,
+  practiceDummyInput,
+  handlePracticeCommand,
+  practiceThrowCount,
+  importPracticeThrows,
+  bumpPracticeDummyHud,
+  practiceDummyHudSnapshot,
+  equipPracticeKit,
+  refillPracticeAmmo,
+  startPracticeThrowTape,
+  samplePracticeThrowTape,
+  finalizePracticeThrowTape,
+  clearPracticeThrowTape,
+  stepPracticeReplay,
+} from './practice-utility.js';
+import { sanitizeChatText, parseChatCommand } from '../shared/chat.js';
 import { BOT_AIM, smoothBotAim } from './bot-aim.js';
 import {BOT_DIFFICULTIES,normalizeBotDifficulty} from '../shared/bot-difficulty.js';
 import {recoverNavigation,navigationEdge} from './bot-navigation.js';
@@ -111,22 +131,29 @@ export function applyArmorDamage(rawDamage, player, { headshot=false, armorRatio
 
 export class GameRoom {
   constructor(code, { mode = 'defuse', bots = 6, botDifficulty = 'normal', clock = () => Date.now(), rules = {}, traceBullet=defaultTraceBullet } = {}) {
-    this.code = code; this.mode = mode==='deathmatch'?'deathmatch':'defuse'; this.desiredBots = botCount(bots);
+    const cfg = modeConfig(mode);
+    this.code = code; this.mode = cfg.id; this.maxPlayers = cfg.maxPlayers; this.teamSize = cfg.teamSize; this.maxBots = cfg.maxBots;
+    this.desiredBots = botCount(bots, Math.min(cfg.maxBots ? 6 : 0, cfg.maxBots), cfg.maxBots);
+    if(cfg.ruleset==='debug'||cfg.ruleset==='utility')this.desiredBots=0;
     mode=this.mode;this.traceBullet=traceBullet;this.hostId=null;this.botDifficulty=normalizeBotDifficulty(botDifficulty);
     this.clock = clock; this.rules = { ...RULES, ...rules }; this.players = new Map(); this.clients = new Map();
     this.scores = { T: 0, CT: 0 }; this.events = []; this.eventCounter = 0; this.botCounter = 0; this.spawnCounter = { T: 0, CT: 0 };
     this.teamSides={A:'CT',B:'T'};this.lossLevels={A:1,B:1};this.teamBuys={};
-    this.match={status:'live',period:'regulation',roundsPlayed:0,overtimeNumber:0,winTarget:mode==='deathmatch'?MATCH_RULES.deathmatchWinTarget:13,winnerTeamId:null};
+    this.match={status:'live',period:'regulation',roundsPlayed:0,overtimeNumber:0,winTarget:cfg.ruleset==='deathmatch'?MATCH_RULES.deathmatchWinTarget:(cfg.ruleset==='debug'||cfg.ruleset==='utility')?0:13,winnerTeamId:null};
     this.pendingTransition=null;
-    this.createdAt = clock(); this.round = { number: 0, phase: mode === 'deathmatch' ? 'live' : 'waiting', phaseEndsAt: 0, buyEndsAt: 0, winner: null, reason: '' };
+    this.createdAt = clock(); this.round = { number: 0, phase: isSandboxMode(cfg.id) ? 'live' : 'waiting', phaseEndsAt: 0, buyEndsAt: isSandboxMode(cfg.id) ? clock() + 86400e3 : 0, winner: null, reason: '' };
     this.bomb = this.emptyBomb();
+    if(cfg.ruleset==='debug'||cfg.ruleset==='utility')Object.assign(this.rules,{freezeSeconds:0,buySeconds:86400,roundSeconds:86400,endSeconds:0,respawnSeconds:1,protectionSeconds:0});
     this.nav = Array.isArray(MAP.nav) ? MAP.nav : [];
     this.navMap = new Map(this.nav.map(n => [String(n.id), n]));
     this.grenades=new GrenadeSimulation({clock,raycastWorld,raycastContact:raycastWorldContact,onFire:(fire,config)=>this.burnPlayers(fire,config),emit:(type,fields)=>this.emit(type,fields),onExplosion:(grenade,config)=>this.explodeGrenade(grenade,config),onFlash:(grenade,config)=>this.flashGrenade(grenade,config)});
     this.defuseKits=[];this.kitSerial=0;
     this.droppedWeapons=new DroppedWeapons({clock,raycastWorld});
     this.poseHistory=new PlayerTimeline(16);
+    initPracticeRoom(this);
   }
+  get ruleset(){return modeConfig(this.mode).ruleset;}
+  get sandbox(){return isSandboxMode(this.mode);}
 
   emptyBomb() { return { state: 'none', carrierId: null, x: 0, y: 0, z: 0, site: null, plantedAt: 0, explodesAt: 0, planterId: null, actorId: null, action: null, progress: 0, remaining: 0 }; }
   emit(type, fields = {}) { this.events.push({ type, id: `${this.code}:${++this.eventCounter}`, time: this.clock(), ...fields }); if (this.events.length > 300) this.events.splice(0, this.events.length - 300); }
@@ -137,7 +164,7 @@ export class GameRoom {
   matchSnapshot(){return {...this.match,teams:Object.fromEntries(Object.entries(this.teamSides).map(([id,side])=>[id,{side,score:this.scores[side]}]))};}
   setBots(id,value){
     if(id!==this.hostId)return {ok:false,message:'只有房主可以设置机器人数量。'};
-    if(!Number.isInteger(value)||value<0||value>9)return {ok:false,message:'机器人数量必须为 0–9 的整数。'};
+    if(!Number.isInteger(value)||value<0||value>this.maxBots)return {ok:false,message:`机器人数量必须为 0–${this.maxBots} 的整数。`};
     this.desiredBots=value;this.ensureBots();this.maybeStart();
     const result={ok:true,bots:value,desiredBots:value,botCount:this.botCount,hostId:this.hostId};
     this.emit('bots_changed',result);return result;
@@ -173,7 +200,7 @@ export class GameRoom {
       p.inventory={};this.giveWeapon(p,team==='CT'?'usp':'pistol');this.giveWeapon(p,'knife');
       p.weapon=team==='CT'?'usp':'pistol';p.slot=2;p.armor=0;p.helmet=false;p.defuseKit=false;p.loadoutPrimary=defaultPrimaryForTeam(team);
       this.respawn(p);
-      if(this.match.status==='ended'||this.mode==='defuse'&&['live','ended'].includes(this.round.phase)){p.alive=false;p.health=0;p.respawnAt=0;}
+      if(this.match.status==='ended'||this.ruleset==='defuse'&&['live','ended'].includes(this.round.phase)){p.alive=false;p.health=0;p.respawnAt=0;}
     }
     p.seat=seat;this.maybeStart();this.emit('seat_changed',{playerId:id,team,seat});return {ok:true,team,seat};
   }
@@ -184,19 +211,19 @@ export class GameRoom {
     if(occupant&&!occupant.bot)return {ok:false,message:'玩家位置不能替换为人机。'};
     if(enabled&&!occupant){
       const number=++this.botCounter,p=this.makePlayer(`b_${number}`,`${team==='T'?'沙狐':'哨兵'} BOT ${number}`,team,true);p.seat=seat;
-      if(this.match.status==='ended'||this.mode==='defuse'&&['live','ended'].includes(this.round.phase)){p.alive=false;p.health=0;}
+      if(this.match.status==='ended'||this.ruleset==='defuse'&&['live','ended'].includes(this.round.phase)){p.alive=false;p.health=0;}
       this.players.set(p.id,p);
     }else if(!enabled&&occupant)this.removePlayer(occupant.id);
     this.desiredBots=this.botCount;this.maybeStart();this.emit('bots_changed',{botCount:this.botCount,desiredBots:this.desiredBots});return {ok:true,botCount:this.botCount};
   }
 
   addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents, movementProtocol, shotProtocol }) {
-    if (this.humanCount >= MAX_PLAYERS) throw new Error('房间已满，最多 10 名玩家。');
+    if (this.humanCount >= this.maxPlayers) throw new Error(`房间已满，最多 ${this.maxPlayers} 名玩家。`);
     let assigned = team;
     if (!['T', 'CT'].includes(assigned)) assigned = this.count('T', true) <= this.count('CT', true) ? 'T' : 'CT';
-    if (this.count(assigned, true) >= 5) { if (team !== 'auto') throw new Error('该阵营已有 5 名玩家，请选择另一队。'); assigned = opposite(assigned); }
+    if (this.count(assigned, true) >= this.teamSize) { if (team !== 'auto') throw new Error(`该阵营已有 ${this.teamSize} 名玩家，请选择另一队。`); assigned = opposite(assigned); }
     const replaceable=[...this.players.values()].filter(p=>p.bot).sort((a,b)=>Number(!!a.controllerId)-Number(!!b.controllerId)||Number(a.alive)-Number(b.alive));
-    const botToReplace=(this.count(assigned)>=5||this.players.size>=10)?replaceable.find(p=>p.team===assigned)||replaceable[0]:null;
+    const botToReplace=(this.count(assigned)>=this.teamSize||this.players.size>=this.maxPlayers)?replaceable.find(p=>p.team===assigned)||replaceable[0]:null;
     if (botToReplace) this.removePlayer(botToReplace.id);
     const id = `p_${randomBytes(6).toString('hex')}`;
     const player = this.makePlayer(id, name, assigned, false, primary);
@@ -206,7 +233,7 @@ export class GameRoom {
     player.agents=normalizeAgentLoadout(agents);player.agentId=player.agents[assigned];
     this.players.set(id, player); this.clients.set(id, socket);
     if(!this.hostId)this.hostId=id;
-    if (this.match.status==='ended'||(this.mode === 'defuse' && ['live', 'ended'].includes(this.round.phase))) { player.alive = false; player.health = 0; player.respawnAt = 0; }
+    if (this.match.status==='ended'||(this.ruleset === 'defuse' && ['live', 'ended'].includes(this.round.phase))) { player.alive = false; player.health = 0; player.respawnAt = 0; }
     this.ensureBots();
     this.emit('join', { playerId: id, name, team: assigned, bot: false });
     this.maybeStart();
@@ -214,9 +241,9 @@ export class GameRoom {
   }
 
   makePlayer(id, name, team, bot, primary = 'auto') {
-    const player = { ...createPlayerState(this.pickSpawn(team)), id, seat:this.freeSeat(team), lifeId:1,name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
-      money: this.mode === 'deathmatch' ? 16000 : 800, kills: 0, roundKills:0,lifeKills:0,killCards:[],deaths: 0, assists: 0,headshots:0, inventory: {}, skins:{...DEFAULT_SKINS}, slot: this.mode === 'deathmatch' ? 1 : 2,
-      helmet:this.mode==='deathmatch',defuseKit:false,zoomLevel:0,flashBlindUntil:0,agents:{...DEFAULT_AGENT_IDS},agentId:DEFAULT_AGENT_IDS[team],
+    const player = { ...createPlayerState(this.pickSpawn(team)), id, seat:this.freeSeat(team), lifeId:1,name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.sandbox ? 100 : 0, alive: true,
+      money: this.sandbox ? 16000 : 800, kills: 0, roundKills:0,lifeKills:0,killCards:[],deaths: 0, assists: 0,headshots:0, inventory: {}, skins:{...DEFAULT_SKINS}, slot: this.sandbox && !isUtilityMode(this.mode) ? 1 : 2,
+      helmet:this.sandbox,defuseKit:this.ruleset==='debug',zoomLevel:0,flashBlindUntil:0,agents:{...DEFAULT_AGENT_IDS},agentId:DEFAULT_AGENT_IDS[team],
       weapon: 'pistol', input: neutralInput(), inputAt: 0, seq: -1, lastReceivedSeq: -1, lastShotTime: 0, nextShotAt: 0, reloadEndsAt: 0,
       respawnAt: 0, protectionUntil: this.clock() + this.rules.protectionSeconds * 1000, triggerWasDown: false, hasBomb: false,
       grenadeState:null,grenadeRequireRelease:false,pendingInteract:false,interactWasDown:false,
@@ -225,8 +252,9 @@ export class GameRoom {
     this.giveWeapon(player, team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(player, 'knife');
     primary=normalizeWeapon(primary);
     player.loadoutPrimary=PRIMARY_WEAPONS.includes(primary)&&canTeamUseWeapon(team,primary)?primary:defaultPrimaryForTeam(team);
-    if (this.mode === 'deathmatch') this.giveWeapon(player,player.loadoutPrimary);
+    if (this.sandbox && !isUtilityMode(this.mode)) this.giveWeapon(player,player.loadoutPrimary);
     this.selectSlot(player, player.slot);
+    if (isUtilityMode(this.mode) && !bot) equipPracticeKit(player);
     player.input.yaw = player.yaw || 0;
     return player;
   }
@@ -242,7 +270,7 @@ export class GameRoom {
   }
 
   ensureBots() {
-    const wanted = Math.min(this.desiredBots, MAX_PLAYERS - this.humanCount);
+    const wanted = Math.min(this.desiredBots, this.maxPlayers - this.humanCount);
     let bots = [...this.players.values()].filter(p => p.bot).sort((a,b)=>Number(!!b.controllerId)-Number(!!a.controllerId)||Number(b.alive)-Number(a.alive));
     while (bots.length > wanted) { this.removePlayer(bots.pop().id); }
     while (bots.length < wanted) {
@@ -250,7 +278,7 @@ export class GameRoom {
       const number = ++this.botCounter;
       const player = this.makePlayer(`b_${number}`, `${team === 'T' ? '沙狐' : '哨兵'} BOT ${number}`, team, true);
       this.players.set(player.id, player); bots.push(player);
-      if (this.match.status==='ended'||(this.mode === 'defuse' && ['live', 'ended'].includes(this.round.phase))) { player.alive = false; player.health = 0; }
+      if (this.match.status==='ended'||(this.ruleset === 'defuse' && ['live', 'ended'].includes(this.round.phase))) { player.alive = false; player.health = 0; }
     }
   }
 
@@ -298,7 +326,54 @@ export class GameRoom {
     return true;
   }
 
-  chat(id,text,channel){return say(this,id,text,channel);}
+  chat(id,text,channel){return this.handleChat(id,{scope:channel,text});}
+  handleChat(id, { scope = 'all', text = '' } = {}) {
+    const p = this.controlledPlayer(id);
+    if (!p) return { ok: false, message: '未加入房间。' };
+    const cleaned = sanitizeChatText(text);
+    if (!cleaned) return { ok: false, message: '空消息。' };
+    const command = parseChatCommand(cleaned);
+    if (command) {
+      const result = this.handleChatCommand(p, command);
+      if (result) return result;
+    }
+    // Fall back to upstream team-social chat (broadcasts as events).
+    return say(this, id, cleaned, scope === 'team' ? 'team' : 'all');
+  }
+  importPractice(id, { throws: entries, force = false, packId = 'import' } = {}) {
+    if (!this.players.has(id) && !this.controlledPlayer(id)) return { ok: false, message: '未加入房间。' };
+    return importPracticeThrows(this, entries, { force: !!force, packId });
+  }
+  handleChatCommand(p, command) {
+    const { name, args } = command;
+    const practice = handlePracticeCommand(this, p, command);
+    if (practice) return practice;
+    if (name === 'help') return formatModeHelp(this.mode);
+    if (name === 'fly') {
+      if (!isDebugMode(this.mode) && !isUtilityMode(this.mode)) {
+        return { ok: true, private: true, reply: '/fly 仅在调试模式或道具练习可用' };
+      }
+      p.svCheats = true;
+      const on = !(p.noclip && p.fly);
+      p.noclip = on; p.fly = on;
+      if (!on && p.godMode) p.godMode = false;
+      return { ok: true, private: true, reply: `fly ${on ? 'on（飞行+穿墙）' : 'off'}` };
+    }
+    const regionAliases = {
+      region: 'region', name: 'region_name', end: 'region_end', cancel: 'region_cancel',
+      rlist: 'region_list', clear: 'region_clear', rshow: 'region_show',
+    };
+    if (Object.hasOwn(regionAliases, name)) {
+      if (!isDebugMode(this.mode)) {
+        return { ok: true, private: true, reply: '画区指令仅调试模式可用（/region · /rlist · /rshow）' };
+      }
+      return { ok: true, private: true, clientCommand: regionAliases[name], args };
+    }
+    if ((name === 'list' || name === 'show') && isDebugMode(this.mode)) {
+      return { ok: true, private: true, reply: `调试请用 /r${name}（与道具练习 /${name} 分开）` };
+    }
+    return { ok: true, private: true, reply: `未知指令 /${name} · 输入 /help` };
+  }
   requestWeapon(id,weapon){return requestWeapon(this,id,weapon);}
   donateWeapon(id,to,weapon){return donateWeapon(this,id,to,weapon);}
 
@@ -358,7 +433,8 @@ export class GameRoom {
   buyStatus(p) {
     if(this.match.status==='ended')return {buyAllowed:false,buyReason:'本场比赛已经结束。'};
     if(!p?.alive)return {buyAllowed:false,buyReason:'存活时才可以购买。'};
-    if(this.mode==='defuse'){
+    if(isUtilityMode(this.mode))return {buyAllowed:false,buyReason:'道具练习无需购买 · 快捷键 1 雷 · 2 闪 · 3 烟 · 4 火（无限）'};
+    if(this.ruleset==='defuse'){
       if(!['freeze','live'].includes(this.round.phase)||this.clock()>this.round.buyEndsAt)return {buyAllowed:false,buyReason:'购买时间已经结束。'};
       if(!MAP.spawns[p.team].some(s=>lengthXZ(s,p)<9&&Math.abs(s.y-p.y)<3))return {buyAllowed:false,buyReason:'请在己方出生区购买。'};
     }
@@ -378,7 +454,7 @@ export class GameRoom {
     if(weapon==='defusekit'&&p.defuseKit)return {ok:false,message:'已持有拆弹工具。'};
     if(weapon==='armor'&&p.armor>=100)return {ok:false,message:'防弹背心已完好。'};
     if(weapon==='helmet'&&p.armor>=100&&p.helmet)return {ok:false,message:'防弹背心和头盔已完好。'};
-    const price = this.mode === 'deathmatch' ? 0 : equipment ? equipmentPrice(weapon,p) : gun.price;
+    const price = this.sandbox ? 0 : equipment ? equipmentPrice(weapon,p) : gun.price;
     if (p.money < price) return { ok: false, message: '余额不足。' };
     if(gun)this.cancelReload(p);
     p.money -= price;
@@ -405,7 +481,7 @@ export class GameRoom {
   }
 
   maybeStart() {
-    if (this.match.status!=='ended'&&this.mode === 'defuse' && this.round.phase === 'waiting' && this.count('T') && this.count('CT')) this.startRound();
+    if (this.match.status!=='ended'&&this.ruleset === 'defuse' && this.round.phase === 'waiting' && this.count('T') && this.count('CT')) this.startRound();
   }
 
   startRound() {
@@ -448,12 +524,13 @@ export class GameRoom {
     resetContributions(p);
     const consumedJump=p.input.jumpId||0, consumedReload=p.input.reloadId||0;
     Object.assign(p, createPlayerState(spawn), { lifeId:(p.lifeId||0)+1,objectiveLocked:false,fireQueue:[],lastJumpId:consumedJump,lastReloadId:consumedReload,alive: true, health: 100, hasBomb: false, respawnAt: 0, flashBlindUntil:0, reloadEndsAt: 0, triggerWasDown: false, pendingFire: false,pendingInteract:false,grenadeState:null,grenadeRequireRelease:true,
-      protectionUntil: this.mode === 'deathmatch' ? this.clock() + this.rules.protectionSeconds * 1000 : 0,
+      protectionUntil: this.sandbox ? this.clock() + this.rules.protectionSeconds * 1000 : 0,
       nextShotAt: this.clock() + 350,equipReadyAt:this.clock()+350,shotRejected:null, input: neutralInput(), inputAt: 0,zoomLevel:0 });
     p.input.yaw = p.yaw || spawn.yaw || 0;
     p.movementStream?.reset(p.lifeId);
     p.movementAt=this.clock();
-    if (this.mode === 'deathmatch') {p.armor = 100;p.helmet=true;if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===1))this.giveWeapon(p,p.loadoutPrimary||defaultPrimaryForTeam(p.team));if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===2))this.giveWeapon(p,p.team==='CT'?'usp':'pistol');}
+    if (this.sandbox) {p.armor = 100;p.helmet=true;if(this.ruleset==='debug')p.defuseKit=true;if(!isUtilityMode(this.mode)&&!Object.keys(p.inventory).some(id=>getWeapon(id).slot===1))this.giveWeapon(p,p.loadoutPrimary||defaultPrimaryForTeam(p.team));if(!isUtilityMode(this.mode)&&!Object.keys(p.inventory).some(id=>getWeapon(id).slot===2))this.giveWeapon(p,p.team==='CT'?'usp':'pistol');}
+    if(isUtilityMode(this.mode)&&!p.practiceDummy&&!p.bot)equipPracticeKit(p);
     for (const id of Object.keys(p.inventory)) if(!UTILITY_IDS.includes(id)){const skinId=p.inventory[id].skinId;this.giveWeapon(p,id);if(skinId)p.inventory[id].skinId=skinId;}
     p.botAI.engaging=false;p.botAI.action='advance';p.botAI.watchPoints=[];p.botAI.watchPoint=null;p.botAI.watchUntil=0;p.botAI.hurtAt=-Infinity;p.botAI.heardPoint=null;p.botAI.heardAt=0;p.botAI.utility=null;p.botAI.utilityAfter=this.clock()+6000+(p.seat||0)*400;p.botAI.lastKnown=null;p.botAI.lastSeenAt=0;p.botAI.routeKey=null;
 
@@ -499,29 +576,42 @@ export class GameRoom {
     victim.objectiveLocked=false;
     victim.alive = false; victim.health = 0; victim.deaths++; victim.reloadEndsAt = 0;
     this.cancelGrenade(victim,'death');
-    victim.respawnAt = this.mode === 'deathmatch' ? this.clock() + this.rules.respawnSeconds * 1000 : 0;
+    if(victim.practiceDummy){victim.respawnAt=this.clock()+800;}else victim.respawnAt = this.sandbox ? this.clock() + this.rules.respawnSeconds * 1000 : 0;
     if (victim.hasBomb) this.dropBomb(victim);
     const credited=!!killer&&killer.id!==victim.id&&killer.team!==victim.team;
     const scorer=this.players.get(killer?.controllerId)||killer;
     const assist=credited?awardAssist(this,victim,killer):{};
-    if (credited) { scorer.kills++;if(headshot)scorer.headshots=(scorer.headshots||0)+1;scorer.roundKills=(scorer.roundKills||0)+1;scorer.lifeKills=(scorer.lifeKills||0)+1;scorer.killCards||=[];if(scorer.killCards.length<5)scorer.killCards.push({weapon,headshot,backstab:metadata.backstab===true});killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.mode === 'deathmatch') this.scores[killer.team]++; }
+    if (credited) { scorer.kills++;if(headshot)scorer.headshots=(scorer.headshots||0)+1;scorer.roundKills=(scorer.roundKills||0)+1;scorer.lifeKills=(scorer.lifeKills||0)+1;scorer.killCards||=[];if(scorer.killCards.length<5)scorer.killCards.push({weapon,headshot,backstab:metadata.backstab===true});killer.money = Math.min(16000, killer.money + (weapon === 'knife' ? 750 : 300)); if (this.ruleset === 'deathmatch') this.scores[killer.team]++; }
     this.emit('kill', { killerId: killer?.id || null, victimId: victim.id, killerName: scorer?.name || '环境',killerControllerId:killer?.controllerId||null, victimName: victim.name, weapon, headshot,...metadata,...assist,credited,killerRoundKills:credited?scorer.roundKills:0,killerLifeKills:credited?scorer.lifeKills:0 });
-    if(this.mode==='deathmatch'&&killer&&this.scores[killer.team]>=MATCH_RULES.deathmatchWinTarget)this.endMatch(killer.teamId,'队伍率先完成 100 次击杀');
+    if(this.ruleset==='deathmatch'&&killer&&this.scores[killer.team]>=MATCH_RULES.deathmatchWinTarget)this.endMatch(killer.teamId,'队伍率先完成 100 次击杀');
   }
 
   damagePlayer(victim, attacker, rawDamage, weapon, headshot=false, armorRatio=1, bypassArmor=false) {
     if(!victim.alive||this.match.status==='ended')return;
+    if(victim.godMode)return;
     const hit=applyArmorDamage(rawDamage,victim,{headshot,armorRatio,bypassArmor});
     recordDamage(this,victim,attacker,hit.damage);
+    if(victim.practiceDummy&&attacker&&!attacker.bot){
+      const kind=weapon==='hegrenade'?'he':(weapon==='molotov'||weapon==='incgrenade')?'fire':'damage';
+      notePracticeImpact(this,attacker.id,{type:kind,weapon,dummyId:victim.id,team:victim.team,damage:hit.damage,healthAfter:Math.max(0,victim.health-hit.damage)});
+      bumpPracticeDummyHud(victim,{type:kind,damage:hit.damage});
+    }
     victim.health=Math.max(0,victim.health-hit.damage);if(victim.bot)victim.botAI.hurtAt=this.clock();
     this.emit('hit',{shooterId:attacker?.id||null,targetId:victim.id,...hit,headshot,weapon});
-    if(victim.health===0)this.kill(victim,attacker,weapon,headshot);
+    if(victim.health===0){
+      if(isUtilityMode(this.mode)&&!victim.practiceDummy){
+        victim.health=100;victim.armor=Math.max(victim.armor||0,100);victim.helmet=true;
+        this.emit('practice_heal',{playerId:victim.id,reason:'utility'});
+        return;
+      }
+      this.kill(victim,attacker,weapon,headshot);
+    }
   }
 
   explodeGrenade(grenade, config) {
     const attacker=this.players.get(grenade.ownerId), now=this.clock();
     for(const victim of this.players.values()){
-      if(!victim.alive || now<victim.protectionUntil || (victim.team===grenade.team&&victim.id!==grenade.ownerId))continue;
+      if(!victim.alive || now<victim.protectionUntil || (!victim.practiceDummy&&victim.team===grenade.team&&victim.id!==grenade.ownerId))continue;
       const target={x:victim.x,y:victim.y+.9,z:victim.z},distance=dist(grenade,target);
       if(distance>=config.radius || !this.grenades.clearSight(grenade,target))continue;
       const damage=config.damage*Math.max(0,1-distance/config.radius);
@@ -532,7 +622,7 @@ export class GameRoom {
   burnPlayers(fire,config){
     const attacker=this.players.get(fire.ownerId),now=this.clock();
     for(const p of this.players.values()){
-      if(!p.alive||now<p.protectionUntil||p.team===fire.team&&p.id!==fire.ownerId)continue;
+      if(!p.alive||now<p.protectionUntil||(!p.practiceDummy&&p.team===fire.team&&p.id!==fire.ownerId))continue;
       const burning=fire.cells.some(c=>Math.hypot(p.x-c.x,p.z-c.z)<.75&&p.y<c.y+1.3&&p.y>c.y-.4&&this.grenades.clearSight({...c,y:c.y+.2},{x:p.x,y:p.y+.5,z:p.z}));
       if(burning)this.damagePlayer(p,attacker,config.damage,fire.weapon,false,1,true);
     }
@@ -553,6 +643,11 @@ export class GameRoom {
       const duration=config.duration*exposure;
       recordFlash(this,p,this.players.get(grenade.ownerId),duration);
       p.flashBlindUntil=Math.max(p.flashBlindUntil||0,now+duration*1000);
+      if(p.practiceDummy){
+        const owner=this.players.get(grenade.ownerId);
+        if(owner&&!owner.bot)notePracticeImpact(this,owner.id,{type:'flash',weapon:'flashbang',dummyId:p.id,team:p.team,exposure:round2(exposure),duration:round2(duration)});
+        bumpPracticeDummyHud(p,{type:'flash',exposure,duration});
+      }
       affected.push({playerId:p.id,exposure:round2(exposure),duration:round2(duration)});
     }
     this.emit('flash',{grenadeId:grenade.id,ownerId:grenade.ownerId,origin:copyPoint(grenade),radius:config.radius,duration:config.duration,affected});
@@ -576,7 +671,7 @@ export class GameRoom {
   }
   pickupWeapon(p,automatic=false,botTarget=null){
     if(!p.alive||this.match.status==='ended')return false;
-    const bombPriority=this.mode==='defuse'&&this.round.phase==='live'&&((p.hasBomb&&this.siteAt(p))||(p.team==='CT'&&this.bomb.state==='planted'&&dist(p,this.bomb)<2.8));
+    const bombPriority=this.ruleset==='defuse'&&this.round.phase==='live'&&((p.hasBomb&&this.siteAt(p))||(p.team==='CT'&&this.bomb.state==='planted'&&dist(p,this.bomb)<2.8));
     if(bombPriority)return false;
     const candidate=botTarget&&p.bot?this.droppedWeapons.autoCandidate(p,()=>false,id=>getWeapon(id).slot,botTarget):automatic?this.droppedWeapons.autoCandidate(p,slot=>Object.keys(p.inventory).some(id=>getWeapon(id).slot===slot),id=>getWeapon(id).slot):this.droppedWeapons.candidate(p);if(!candidate)return false;
     const w=getWeapon(candidate.weaponId),old=Object.keys(p.inventory).find(id=>getWeapon(id).slot===w.slot);
@@ -590,7 +685,7 @@ export class GameRoom {
 
   cancelGrenade(p,reason){
     if(p.grenadeState)this.emit('grenade_cancelled',{playerId:p.id,weapon:p.grenadeState.weapon,reason});
-    p.grenadeState=null;p.grenadeRequireRelease=true;
+    p.grenadeState=null;p.grenadeRequireRelease=true;clearPracticeThrowTape(p);
   }
 
   captureGrenadeInput(p,input){
@@ -607,10 +702,12 @@ export class GameRoom {
       if(!held||p.grenadeRequireRelease||(p.input.fire||p.input.fire2))return;
       state=p.grenadeState={state:'primed',weapon:requested,mode:grenadeMode(input.fire,input.fire2),primedAt:now,readyAt:Math.max(now+200,p.nextShotAt),lastChordAt:input.fire&&input.fire2?now:-Infinity,releaseInput:null};
       this.emit('grenade_primed',{playerId:p.id,weapon:requested,mode:state.mode,strength:grenadeStrength(state.mode)});
+      startPracticeThrowTape(this,p,input);
     }
     if(state.releaseInput)return;
     if(held){state.mode=grenadeMode(input.fire,input.fire2);if(input.fire&&input.fire2)state.lastChordAt=now;}
     else {if(now-state.lastChordAt<=60)state.mode='lob';state.releaseInput={yaw:input.yaw,pitch:input.pitch,moveId:input.moveId||0,jumpId:input.jumpId||0};}
+    if(p.practiceTape)samplePracticeThrowTape(this,p,input);
   }
 
   stepGrenade(p){
@@ -620,11 +717,25 @@ export class GameRoom {
     if(!state.releaseInput||now<state.readyAt||now<p.nextShotAt)return;
     if(p.movementStream&&(p.movementStream.ack<state.releaseInput.moveId||(p.lastJumpId||0)<state.releaseInput.jumpId))return;
     const ammo=p.inventory[state.weapon],w=getWeapon(state.weapon);
+    if(isUtilityMode(this.mode))samplePracticeThrowTape(this,p,p.input||state.releaseInput);
     if(!ammo?.ammo||!this.grenades.throwGrenade(p,state.weapon,{...state.releaseInput,throwMode:state.mode,throwStrength:grenadeStrength(state.mode)})){this.cancelGrenade(p,'unavailable');return;}
-    ammo.ammo--;if(ammo.ammo===0)delete p.inventory[state.weapon];
+    if(isUtilityMode(this.mode)){
+      const jumpThrow=!!state.releaseInput.jumpId&&(state.releaseInput.jumpId>(p.lastJumpId||0)||!p.grounded||(p.vy||0)>0.4);
+      const tape=finalizePracticeThrowTape(p);
+      capturePracticeThrow(this,p,{
+        weapon:state.weapon,stand:{x:p.x,y:p.y,z:p.z},yaw:state.releaseInput.yaw,pitch:state.releaseInput.pitch,
+        throwMode:state.mode,throwStrength:grenadeStrength(state.mode),jumpThrow,crouch:!!p.crouch,vx:p.vx,vy:p.vy,vz:p.vz,tape,
+      });
+      refillPracticeAmmo(p);
+    } else {
+      ammo.ammo--;if(ammo.ammo===0)delete p.inventory[state.weapon];
+      clearPracticeThrowTape(p);
+    }
     p.grenadeState=null;p.grenadeRequireRelease=true;p.lastShotTime=now;p.nextShotAt=now+w.fireInterval*1000;p.protectionUntil=0;
-    const fallback=Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3;
-    this.selectSlot(p,fallback);
+    if(!isUtilityMode(this.mode)){
+      const fallback=Object.keys(p.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(p.inventory).some(id=>getWeapon(id).slot===2)?2:3;
+      this.selectSlot(p,fallback);
+    }
   }
 
   fire(p, input, command=null) {
@@ -825,14 +936,14 @@ export class GameRoom {
 
   chooseBotGoal(p) {
     const ai = p.botAI, bomb = this.bomb;
-    if(this.mode==='defuse')return tacticalGoal(this,p);
-    if (this.mode === 'defuse') {
+    if(this.ruleset==='defuse')return tacticalGoal(this,p);
+    if (this.ruleset === 'defuse') {
       if (bomb.state === 'planted') return copyPoint(bomb);
       if (p.team === 'T' && bomb.state === 'dropped') return copyPoint(bomb);
       if (p.hasBomb) return copyPoint(MAP.sites?.[Number(p.id.slice(2)) % 2 ? 'A' : 'B'] || Object.values(MAP.sites)[0]);
     }
     if (ai.lastKnown && this.clock() - ai.lastSeenAt < 6500) return ai.lastKnown;
-    if (this.mode === 'defuse' && MAP.sites) {
+    if (this.ruleset === 'defuse' && MAP.sites) {
       const sites = Object.values(MAP.sites); const site = sites[Math.floor(Math.random() * sites.length)];
       if (site && Math.random() < 0.7) return copyPoint(site);
     }
@@ -842,6 +953,12 @@ export class GameRoom {
   }
 
   botInput(p, dt) {
+    if(p.practiceDummy){
+      const hold=practiceDummyInput(p);
+      Object.assign(p,{vx:0,vy:p.grounded?0:p.vy,vz:0});
+      if(p.holdPoint){p.x=p.holdPoint.x;p.z=p.holdPoint.z;if(p.grounded)p.y=p.holdPoint.y;p.yaw=p.holdPoint.yaw||0;p.pitch=0;}
+      return hold;
+    }
     const now=this.clock(),ai=p.botAI,input=neutralInput(),from=eye(p),skill=effectiveBotSkill(this,p);
     input.yaw=p.yaw||0;input.pitch=p.pitch||0;input.slot=combatSlot(p);
     if(now>=ai.nextThinkAt){
@@ -866,7 +983,7 @@ export class GameRoom {
         const goal=this.chooseBotGoal(p),changed=!ai.goal||lengthXZ(goal,ai.goal)>.35;
         if(changed||!ai.path.length){ai.goal=goal;ai.path=this.planPath(p,goal);}
         if(!ai.path.length&&lengthXZ(p,goal)>2&&!ai.engaging){ai.path=[copyPoint(goal)];ai.wantMove=true;recoverNavigation(this,p,{force:true});}
-        ai.wanderAt=now+(this.mode==='defuse'?1200:5500)+Math.random()*400;
+        ai.wanderAt=now+(this.ruleset==='defuse'?1200:5500)+Math.random()*400;
       }
     }
     const target=this.players.get(ai.targetId);
@@ -894,7 +1011,7 @@ export class GameRoom {
       input.forward=(-Math.sin(input.yaw)*dx-Math.cos(input.yaw)*dz)/d;input.right=(Math.cos(input.yaw)*dx-Math.sin(input.yaw)*dz)/d;
     }
     const ammo=p.inventory[p.weapon];if(ammo&&getWeapon(p.weapon).slot<3&&ammo.ammo<3)input.reload=true;
-    if(this.mode==='defuse'&&this.round.phase==='live'){
+    if(this.ruleset==='defuse'&&this.round.phase==='live'){
       const plant=p.hasBomb&&this.siteAt(p),defuse=p.team==='CT'&&p.botAI.role==='defuser'&&this.bomb.state==='planted'&&dist(p,this.bomb)<2.6;
       const finishing=this.bomb.actorId===p.id&&this.bomb.progress>.8;
       const urgent=plant?this.round.phaseEndsAt-now<5000:defuse&&this.bomb.explodesAt-now<((p.defuseKit?this.rules.defuseKitSeconds:this.rules.defuseSeconds)+1)*1000;
@@ -913,7 +1030,7 @@ export class GameRoom {
     if(this.match.status==='ended')return;
     this.maybeStart();
     this.recordPoses();
-    if (this.mode === 'defuse') {
+    if (this.ruleset === 'defuse') {
       if (this.round.phase === 'freeze' && now >= this.round.phaseEndsAt) { this.round.phase = 'live';this.round.liveStartedAt=now; this.round.phaseEndsAt = now + this.rules.roundSeconds * 1000; }
       else if (this.round.phase === 'ended' && now >= this.round.phaseEndsAt) { if (this.count('T') && this.count('CT')) this.startRound(); else { this.round.phase = 'waiting'; this.round.phaseEndsAt = 0; } }
     }
@@ -922,6 +1039,10 @@ export class GameRoom {
     for (const p of this.players.values()) {
       if(this.match.status==='ended')break;
       if (!p.alive) { if (p.respawnAt && now >= p.respawnAt) this.respawn(p); continue; }
+      if (isUtilityMode(this.mode) && p.practiceReplay) {
+        const phase = stepPracticeReplay(this, p);
+        if (phase === 'active' || phase === 'observe') continue;
+      }
       const automatic=p.bot&&!p.controllerId;
       const input = automatic ? this.botInput(p, dt) : now - p.inputAt < 300 ? { ...p.input } : { ...neutralInput(), yaw: p.yaw || 0, pitch: p.pitch || 0 };
       if(automatic){this.captureGrenadeInput(p,input);p.input={...input};p.inputAt=now;}
@@ -930,7 +1051,7 @@ export class GameRoom {
         const fresh=now-p.inputAt<300;
         if(fresh&&(input.reloadId||0)>(p.lastReloadId||0))input.reload=true;
         p.lastReloadId=Math.max(p.lastReloadId||0,p.input.reloadId||0);
-        if(!fresh||(!canMove&&this.mode==='defuse')){p.lastJumpId=Math.max(p.lastJumpId||0,p.input.jumpId||0);p.jumpBufferRemaining=0;}
+        if(!fresh||(!canMove&&this.ruleset==='defuse')){p.lastJumpId=Math.max(p.lastJumpId||0,p.input.jumpId||0);p.jumpBufferRemaining=0;}
       }
       p.seq = Math.max(p.seq, p.input.seq ?? -1);
       this.commitReload(p);
@@ -963,6 +1084,7 @@ export class GameRoom {
         // View/fire input remains immediate; queued movement never rewinds aim.
         p.yaw=input.yaw;p.pitch=input.pitch;
       }else stepPlayer(p, input, dt);
+      if (isUtilityMode(this.mode) && p.grenadeState && p.practiceTape) samplePracticeThrowTape(this, p, input);
       if (!Number.isFinite(p.x + p.y + p.z) || p.outOfWorld || p.y < (MAP.bounds?.min?.y ?? -200) - 30) { this.kill(p, null); continue; }
       if(p.reloadEndsAt&&now>=p.reloadEndsAt)this.finishReload(p);
       if (input.reload) this.reload(p);
@@ -976,7 +1098,7 @@ export class GameRoom {
     if(canAct)this.grenades.tick(dt);
     this.droppedWeapons.tick(dt);this.pickupKits();
     this.recordPoses();
-    if (this.mode === 'defuse' && this.round.phase === 'live') {
+    if (this.ruleset === 'defuse' && this.round.phase === 'live') {
       this.stepBomb(dt);
       if (this.round.phase !== 'live') return;
       const livingT = [...this.players.values()].some(p => p.team === 'T' && p.alive), livingCT = [...this.players.values()].some(p => p.team === 'CT' && p.alive);
@@ -995,12 +1117,14 @@ export class GameRoom {
       reserveAmmoAsClips:!!getWeapon(p.weapon).reserveAmmoAsClips,reserveClips:getWeapon(p.weapon).reserveAmmoAsClips?Math.ceil((p.inventory[p.weapon]?.reserve||0)/getWeapon(p.weapon).magazine):0,
       grenadeState:p.grenadeState?{state:'primed',weapon:p.grenadeState.weapon,mode:p.grenadeState.mode,strength:grenadeStrength(p.grenadeState.mode),primedAt:p.grenadeState.primedAt}:{state:'idle',weapon:null,mode:'full',strength:1,primedAt:0},
       ...(p.shotCommands?{shotAck:(p.fireQueue?.find(c=>c.input.shotId)?.input.shotId??((p.lastShotId||0)+1))-1,...(p.shotRejected?{shotRejected:p.shotRejected}:{})}:{}),
-      reloadRemaining: Math.max(0, (p.reloadEndsAt - now) / 1000),reloadDuration:p.reloadEndsAt?getWeapon(p.weapon).reloadTime:0,reloadElapsed:p.reloadEndsAt?Math.max(0,(now-p.reloadStartedAt)/1000):0,reloadEmpty:!!p.reloadEmpty,reloadCommitted:!!p.reloadEndsAt&&!!p.reloadCommitted,fireReadyRemaining:Math.max(0,(Math.max(p.equipReadyAt||0,p.inventory[p.weapon]?.reloadReadyAt||0)-now)/1000), money: p.money,botBuy:this.mode==='defuse'?this.teamBuys?.[p.team]?.label:null,lossIncome:this.mode==='defuse'?lossIncome(this,p.team):0, kills: p.kills, deaths: p.deaths, assists: p.assists,headshots:p.headshots||0, seq: p.seq,
+      reloadRemaining: Math.max(0, (p.reloadEndsAt - now) / 1000),reloadDuration:p.reloadEndsAt?getWeapon(p.weapon).reloadTime:0,reloadElapsed:p.reloadEndsAt?Math.max(0,(now-p.reloadStartedAt)/1000):0,reloadEmpty:!!p.reloadEmpty,reloadCommitted:!!p.reloadEndsAt&&!!p.reloadCommitted,fireReadyRemaining:Math.max(0,(Math.max(p.equipReadyAt||0,p.inventory[p.weapon]?.reloadReadyAt||0)-now)/1000), money: p.money,botBuy:this.ruleset==='defuse'?this.teamBuys?.[p.team]?.label:null,lossIncome:this.ruleset==='defuse'?lossIncome(this,p.team):0, kills: p.kills, deaths: p.deaths, assists: p.assists,headshots:p.headshots||0, seq: p.seq,
+      noclip:!!p.noclip,fly:!!p.fly,
+      ...(p.practiceDummy?{practiceDummy:true,practiceHud:practiceDummyHudSnapshot(p)}:{}),
       ...this.buyStatus(p), refundable:this.refundable(p), inventory: Object.keys(p.inventory), hasBomb: p.hasBomb,bombAction:this.bomb.actorId===p.id?this.bomb.action:null,bombProgress:this.bomb.actorId===p.id?this.bomb.progress:0,bombActionDuration:this.bomb.action==='plant'?this.rules.plantSeconds:p.defuseKit?this.rules.defuseKitSeconds:this.rules.defuseSeconds, spawnProtectionRemaining: Math.max(0, (p.protectionUntil - now) / 1000),
       roundKills:p.roundKills||0,lifeKills:p.lifeKills||0,killCards:p.killCards||[],
       respawnIn: p.respawnAt ? Math.max(0, (p.respawnAt - now) / 1000) : 0, lastShotTime: p.lastShotTime }));
     const events = drainEvents ? this.events.splice(0) : [...this.events];
-    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),botDifficulty:this.botDifficulty,desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,weaponRequests:privateRequests(this),droppedWeapons:this.droppedWeapons.snapshot(),defuseKits:this.defuseKits.map(k=>({...k})),...this.grenades.snapshot(),
+    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, maxPlayers: this.maxPlayers, teamSize: this.teamSize, hostId:this.hostId,seats:this.roomSeats(),botDifficulty:this.botDifficulty,desiredBots:this.desiredBots,botCount:this.botCount,practiceThrowCount:practiceThrowCount(this),match:this.matchSnapshot(),players,weaponRequests:privateRequests(this),droppedWeapons:this.droppedWeapons.snapshot(),defuseKits:this.defuseKits.map(k=>({...k})),...this.grenades.snapshot(),
       round: { ...this.round, timeLeft: this.round.phaseEndsAt ? Math.max(0, (this.round.phaseEndsAt - now) / 1000) : 0 },
       bomb: { ...this.bomb, remaining: this.bomb.state === 'planted' ? Math.max(0, (this.bomb.explodesAt - now) / 1000) : 0 }, scores: { ...this.scores }, events };
   }
