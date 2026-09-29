@@ -9,6 +9,7 @@ import {combatPhase,equipmentPhase} from '../shared/round-actions.js';
 import {controlledPlayer,releaseBot,takeBot} from './bot-control.js';
 import {visibleAimPoint,observationPoint,lookAt,hearGunshot,beginAimDuel} from './bot-perception.js';
 import {reportSiteThreat} from './bot-alerts.js';
+import {updateTeamVision} from './team-intel.js';
 import {selectSpawn} from './spawn-selection.js';
 import {combatMovement} from './bot-combat.js';
 import {combatSlot} from './bot-utility.js';
@@ -424,7 +425,7 @@ export class GameRoom {
     }
     this.round = { number: this.round.number + 1, phase: 'freeze', phaseEndsAt: now + this.rules.freezeSeconds * 1000, buyEndsAt: now + (this.rules.freezeSeconds + this.rules.buySeconds) * 1000, winner: null, reason: '' };
     this.weaponRequests=new Map();this.bomb = this.emptyBomb();this.teamIntel={};this.teamSightings={};this.defensePlan=null;this.botAttackSite=null;this.utilityClaims=new Map();this.botExecutions=new Map();this.attackPlan=null;this.botFlashes=[];
-    this.botAlerts={};this.botRotation=null;
+    this.botAlerts={};this.botRotation=null;this.nextTeamVisionAt=0;
     this.grenades.clear();this.defuseKits=[];
     this.droppedWeapons.clear();
     this.poseHistory.clear();
@@ -849,6 +850,7 @@ export class GameRoom {
       const current=this.players.get(ai.targetId);
       const blind=now<(p.flashBlindUntil||0);
       const visible=blind?[]:candidates.filter(e=>visibleAimPoint(this,p,e,{acquire:e.id!==ai.targetId}));
+      for(const seen of visible)shareSighting(this,p,seen);
       let enemy=visible.find(e=>e.id===ai.targetId)||visible[0];
       if(enemy&&enemy.id===ai.targetId&&visible[0]!==enemy&&now-(ai.targetChangedAt||0)>1200&&dist(p,visible[0])<dist(p,enemy)*.65)enemy=visible[0];
       if(enemy){
@@ -972,6 +974,7 @@ export class GameRoom {
       if (canAct&&!p.objectiveLocked) {this.stepGrenade(p);if(!p.shotCommands&&!queuedShot)this.fire(p,input);}
     }
     if(canAct)this.grenades.tick(dt);
+    updateTeamVision(this);
     this.droppedWeapons.tick(dt);this.pickupKits();
     this.recordPoses();
     if (this.mode === 'defuse' && this.round.phase === 'live') {

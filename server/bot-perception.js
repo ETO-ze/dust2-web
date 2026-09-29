@@ -15,12 +15,12 @@ export function beginAimDuel(room,p,enemy){
 export function lookAt(from,to){return {yaw:Math.atan2(-(to.x-from.x),-(to.z-from.z)),pitch:Math.atan2(to.y-from.y,Math.hypot(to.x-from.x,to.z-from.z))};}
 export function hearGunshot(room,shooter){
   for(const p of room.players.values()){
-    if(!p.bot||!p.alive||p.team===shooter.team||Math.hypot(p.x-shooter.x,p.y-shooter.y,p.z-shooter.z)>35)continue;
+    if(!p.alive||p.team===shooter.team||Math.hypot(p.x-shooter.x,p.y-shooter.y,p.z-shooter.z)>35)continue;
     // An approximate sound direction invites a visual check. It never grants
     // a target lock, exact enemy tracking, or permission to shoot through cover.
-    p.botAI.heardPoint={x:Math.round(shooter.x/2)*2,y:shooter.y+1.3,z:Math.round(shooter.z/2)*2};
-    p.botAI.heardAt=room.clock();
-    reportSiteThreat(room,p.team,p.botAI.heardPoint,'sound');
+    const heardPoint={x:Math.round(shooter.x/2)*2,y:shooter.y+1.3,z:Math.round(shooter.z/2)*2};
+    if(p.bot&&!p.controllerId){p.botAI.heardPoint=heardPoint;p.botAI.heardAt=room.clock();}
+    reportSiteThreat(room,p.team,heardPoint,'sound');
   }
 }
 // Acquisition has a field of view. Tracking never bypasses walls or smoke.

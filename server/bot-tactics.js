@@ -7,7 +7,8 @@ export {attackPlan} from './bot-strategies.js';
 import {MAP} from '../shared/map-data.js';
 import {smoothBotAim} from './bot-aim.js';
 import {chooseHoldPost} from './bot-posts.js';
-import {reportSiteThreat,rotationSite} from './bot-alerts.js';
+import {rotationSite} from './bot-alerts.js';
+export {shareSighting} from './team-intel.js';
 export {botUtility} from './bot-utility.js';
 const point=p=>({x:p.x,y:p.y,z:p.z});
 const range=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
@@ -32,6 +33,9 @@ export function tacticalGoal(room,p){
   const defuser=active||[...allies.filter(q=>q.bot)].sort((a,c)=>Number(c.defuseKit)-Number(a.defuseKit)||range(a,b)-range(c,b))[0];
   ai.role=defuser?.id===p.id?'defuser':'retake-cover';return ai.role==='defuser'?point(b):hold(room,p,b.site);
  }
+ // Combat steering already takes priority over travel. Briefly seeing an enemy
+ // on the reinforcement route must not replace that route with the home post.
+ if(p.team==='CT'&&ai.phase==='rotate'&&ai.goal&&(ai.engaging||now-(ai.lastSeenAt??-Infinity)<2500))return point(ai.goal);
  if(p.team==='T'){
   if(b.state==='dropped'&&[...allies].sort((a,c)=>range(a,b)-range(c,b))[0]?.id===p.id){ai.role='recover-bomb';return point(b);}
   const humanCarrier=allies.find(q=>!q.bot&&q.hasBomb);
@@ -83,11 +87,6 @@ export function tacticalGoal(room,p){
  if(rotation){ai.site=rotation;ai.watchPoints=watchPoints(p,rotation);ai.phase='rotate';return hold(room,p,rotation,true);}
  if(ai.role==='long'&&now>setup.pressureUntil){ai.phase='fallback';return hold(room,p,'A',true);}
  return ['anchor-b','anchor-a','sniper-a','sniper-b'].includes(ai.role)?hold(room,p,ai.site,true):patrolHold(room,p,at(room,({short:'short',mid:setup.id==='mid-pressure'&&now<setup.pressureUntil?'mid':'doors',rotator:setup.holdOffset%2?'long':'short',long:'long'})[ai.role]));
-}
-export function shareSighting(room,p,enemy){
- reportSiteThreat(room,p.team,enemy,'contact');
- const report={...point(enemy),at:room.clock(),observer:p.id};
- (room.teamIntel||={})[p.team]=report;const sightings=(room.teamSightings||={})[p.team]||=new Map();sightings.set(enemy.id,report);for(const [id,r]of sightings)if(room.clock()-r.at>12000)sightings.delete(id);
 }
 function supportGoal(room,p,allies,report){
  if(!report||room.clock()-report.at>1700||report.observer===p.id||p.hasBomb||p.botAI.engaging)return null;
