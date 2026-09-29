@@ -10,6 +10,9 @@ const out=await fs.realpath('artifacts/installed-client');
 const lock=JSON.parse(await fs.readFile('config/assets-lock.json','utf8'));
 if(lock.version!==ASSET_VERSION)throw Error('Update shared asset identity before packaging.');
 const locked=new Map(lock.files.map(f=>[f.path,f])),wanted=new Set();
+// HUD/menu images are loaded directly, outside the 3D preload manifests.
+// Include catalog previews and metadata, while optional models/music stay remote.
+for(const f of lock.files)if(/\.(png|webp|jpg|jpeg|svg)$/.test(f.path)||f.path.endsWith('manifest.json'))wanted.add(f.path);
 for(const name of ['asset-manifest.json','asset-manifest-mobile.json']){
  wanted.add('assets/'+name);const manifest=JSON.parse(await fs.readFile(path.join(root,'assets',name),'utf8'));for(const f of manifest.files)wanted.add(f.path);
 }
