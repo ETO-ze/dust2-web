@@ -7,7 +7,7 @@ export function mountMobileShell({settingsUI,storage,onStatus=()=>{}}){
   const native=isAndroidApp(),prefs=storage.readJSON('dust2.fullscreen.v1');
   let automatic=prefs.automatic!==false,offline={},pending=null;
   const install=document.createElement('section');install.className='mobile-install';install.hidden=true;
-  install.innerHTML='<div><b>全屏游玩</b><span>安装客户端，打开即横屏，没有浏览器地址栏。</span></div><div class="mobile-install-actions"><button data-mobile-fullscreen>网页全屏</button><a href="downloads/DustII-Android-1.0.0.apk" download>下载安卓 APK</a><button data-mobile-install>添加到主屏幕</button></div><small role="status"></small>';
+  install.innerHTML='<div><b>全屏游玩</b><span>安装客户端，打开即横屏，基础资源保存在本机。</span></div><div class="mobile-install-actions"><button data-mobile-fullscreen>网页全屏</button><a href="https://github.com/ETO-ze/dust2-web/releases/download/online-v1.1.0/DustII-Android-1.1.0.apk">下载安卓 APK</a><button data-mobile-install>添加到主屏幕</button></div><small role="status"></small>';
   document.querySelector('.match-card').append(install);
   const status=text=>{install.querySelector('small').textContent=text;onStatus(text);};
   const panel=settingsUI.element.querySelector('[data-panel="touch"]');

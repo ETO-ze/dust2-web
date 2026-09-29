@@ -32,6 +32,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import org.json.JSONObject;
 import androidx.webkit.WebViewCompat;
+import androidx.webkit.WebViewAssetLoader;
+import androidx.webkit.ServiceWorkerControllerCompat;
+import androidx.webkit.ServiceWorkerClientCompat;
+import android.webkit.WebResourceResponse;
 import androidx.webkit.WebViewFeature;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -39,7 +43,8 @@ import java.io.OutputStream;
 
 /** Fullscreen host for the existing game. The server remains authoritative. */
 public final class MainActivity extends Activity {
-    private static final String HOME = "https://cs2.duskrain.cn/";
+    private static final String HOME = "https://cs2.duskrain.cn/__installed__/index.html";
+    private WebViewAssetLoader assetLoader;
     private static final int PICK_FILE = 20;
     private static final int SAVE_FILE = 21;
     private FrameLayout root;
@@ -76,6 +81,10 @@ public final class MainActivity extends Activity {
             if (Build.VERSION.SDK_INT >= 30) bottom=Math.max(bottom,insets.getInsets(WindowInsets.Type.ime()).bottom);
             view.setPadding(left,top,right,bottom);return insets;
         });
+        assetLoader=new WebViewAssetLoader.Builder().setDomain("cs2.duskrain.cn").addPathHandler("/__installed__/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
+        if(WebViewFeature.isFeatureSupported(WebViewFeature.SERVICE_WORKER_BASIC_USAGE))ServiceWorkerControllerCompat.getInstance().setServiceWorkerClient(new ServiceWorkerClientCompat(){
+            @Override public WebResourceResponse shouldInterceptRequest(WebResourceRequest request){return assetLoader.shouldInterceptRequest(request.getUrl());}
+        });
         createGame();immersive();
     }
 
@@ -93,7 +102,7 @@ public final class MainActivity extends Activity {
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
         WebSettings settings = game.getSettings();settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        settings.setUserAgentString(settings.getUserAgentString() + " DustIIAndroid/1.0");
+        settings.setUserAgentString(settings.getUserAgentString() + " DustIIAndroid/1.1");
         java.util.regex.Matcher engine=java.util.regex.Pattern.compile("Chrome/(\\d+)").matcher(settings.getUserAgentString());
         if (!engine.find() || Integer.parseInt(engine.group(1))<110) {
             game.destroy();game=null;
@@ -121,6 +130,9 @@ public final class MainActivity extends Activity {
             });
         }
         game.setWebViewClient(new WebViewClient() {
+            @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();if (owned(uri)) return false;
                 if (request.isForMainFrame() && ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme()))) {
@@ -213,7 +225,11 @@ public final class MainActivity extends Activity {
         if (uri==null || !"https".equals(uri.getScheme()) || !"cs2.duskrain.cn".equals(uri.getHost())) return;
         String room=uri.getQueryParameter("room");if (room==null || !room.matches("[A-Za-z0-9]{1,12}")) return;
         pauseInput();startUrl=HOME+"?room="+room;
-        if(game!=null)game.loadUrl(startUrl);else createGame();immersive();
+        if(game!=null)game.loadUrl(startUrl);else assetLoader=new WebViewAssetLoader.Builder().setDomain("cs2.duskrain.cn").addPathHandler("/__installed__/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
+        if(WebViewFeature.isFeatureSupported(WebViewFeature.SERVICE_WORKER_BASIC_USAGE))ServiceWorkerControllerCompat.getInstance().setServiceWorkerClient(new ServiceWorkerClientCompat(){
+            @Override public WebResourceResponse shouldInterceptRequest(WebResourceRequest request){return assetLoader.shouldInterceptRequest(request.getUrl());}
+        });
+        createGame();immersive();
     }
     @Override protected void onDestroy() {
         if (fileCallback != null) { fileCallback.onReceiveValue(null);fileCallback = null; }

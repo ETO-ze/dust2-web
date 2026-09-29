@@ -5,6 +5,7 @@ The official Node archive and every locked game asset are SHA-256 checked.
 """
 from pathlib import Path
 from datetime import datetime, timezone
+import os
 import hashlib
 import json
 import shutil
@@ -45,7 +46,7 @@ def main():
     if sha(archive) != expected:
         raise RuntimeError('Node runtime SHA-256 mismatch')
     stamp = datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')
-    out = ROOT / 'artifacts/portable' / f'DustII-Windows-x64-{stamp}'
+    out = Path(os.environ.get('DUSTII_BUILD_ROOT',str(ROOT / 'artifacts/portable'))) / f'DustII-Windows-x64-{stamp}'
     out.mkdir(exist_ok=False)
     app = out / 'app'
     lock = json.loads((ROOT / 'config/assets-lock.json').read_text(encoding='utf-8'))
@@ -63,8 +64,9 @@ def main():
         if not source.is_file():
             continue
         relative = source.relative_to(ROOT / 'dist')
-        if relative.parts[0] != 'assets' or (len(relative.parts) == 2 and source.suffix in {'.js', '.css'}):
+        if relative.parts[0] not in {'assets','downloads'} or (len(relative.parts) == 2 and source.suffix in {'.js', '.css'}):
             copy(source, app / 'dist' / relative)
+    (app / 'dist/bundle-manifest.json').write_text(json.dumps({'clientBuild':'1.1.0','assetVersion':lock['version'],'files':lock['files']}),encoding='utf-8')
     for folder in ['server', 'shared', 'portable']:
         for source in (ROOT / folder).glob('*.js'):
             copy(source, app / folder / source.name)
@@ -128,6 +130,7 @@ def main():
 默认最低画质，可调 16:9 / 4:3、黑边 / 拉伸、亮度、灵敏度和准星。
 新增 M9、蝴蝶刀及三款音乐盒在库中点击下载（完整包从本机读取），完成后装备。
 本地资源面板可导出/恢复设置备份；原默认爪子刀蓝宝石与音乐盒不变。
+新增轻松人机、自定义触屏布局与 30/60/90/120 FPS 帧率上限。
 设置保存在本机浏览器，同一启动入口可持续使用；不会自动同步到朋友电脑。
 在线版更新后，如提示协议不兼容，请索取新版便携包。本包不会自动下载更新。
 

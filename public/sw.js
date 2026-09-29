@@ -60,7 +60,7 @@ async function cachedAsset(url){
 
 self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
-  if(request.method!=='GET'||!local(url))return;
+  if(request.method!=='GET'||!local(url)||url.pathname.startsWith('/__installed__/'))return;
   const relative=url.pathname.slice(SCOPE.pathname.length);
   if(/^(?:api(?:\/|$)|ws(?:\/|$)|health(?:\/|$)|__asset_cache__\/)/.test(relative))return;
   // The page refreshes this small manifest and falls back to its metadata

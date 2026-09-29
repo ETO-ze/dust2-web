@@ -13,6 +13,7 @@ import {BOT_DIFFICULTIES,normalizeBotDifficulty} from '../shared/bot-difficulty.
 import { botCount } from '../shared/match-rules.js';
 import { initPhysics } from '../shared/physics.js';
 import { GameRoom, TICK_RATE, SNAPSHOT_RATE } from './game.js';
+import {CLIENT_BUILD,RULES_VERSION,ASSET_VERSION,compatibilityError} from '../shared/online-build.js';
 import {ServerPerformance} from './performance-metrics.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -37,6 +38,7 @@ function send(socket, value) {
 function error(socket, code, message) { send(socket, { type: 'error', code, message }); }
 
 function joinSettings(msg) {
+  const incompatible=compatibilityError(msg);if(incompatible)return {error:incompatible};
   // JSON objects can override toString/valueOf; do not coerce protocol fields.
   if (msg.name !== undefined && typeof msg.name !== 'string') return { error: '玩家名称必须是文字。' };
   if (msg.room !== undefined && typeof msg.room !== 'string') return { error: '房间码必须是文字。' };
@@ -46,7 +48,7 @@ function joinSettings(msg) {
   const mode = msg.mode === 'deathmatch' ? 'deathmatch' : 'defuse';
   const team = ['T', 'CT'].includes(msg.team) ? msg.team : 'auto';
   if(msg.bots!==undefined&&(!Number.isInteger(msg.bots)||msg.bots<0||msg.bots>9))return {error:'机器人数量必须为 0–9 的整数。'};
-  if(msg.botDifficulty!==undefined&&!BOT_DIFFICULTIES.includes(msg.botDifficulty))return {error:'人机难度应为普通或困难。'};
+  if(msg.botDifficulty!==undefined&&!BOT_DIFFICULTIES.includes(msg.botDifficulty))return {error:'人机难度应为轻松、普通或困难。'};
   const bots = botCount(msg.bots),botDifficulty=normalizeBotDifficulty(msg.botDifficulty);
   const primary = PRIMARY_WEAPONS.includes(msg.primary) ? msg.primary : 'auto';
   return { name, room, mode, team, bots, botDifficulty, primary, skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0,shotProtocol:msg.shotProtocol===1?1:0 };
@@ -62,6 +64,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
   const publicDir = path.join(ROOT, 'public');
   const server = createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    if(req.url?.startsWith('/assets/'))res.setHeader('Access-Control-Allow-Origin','*');
     res.setHeader('Referrer-Policy', 'same-origin');
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); res.end(); return; }
     let requestPath;
@@ -124,7 +127,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         }
         try {
           const player = room.addHuman(socket, settings); socket.playerId = player.id; socket.roomCode = room.code;
-          send(socket, { type: 'welcome', id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1,shotProtocol:1 });
+          send(socket, { type: 'welcome', clientBuild:CLIENT_BUILD,rulesVersion:RULES_VERSION,assetVersion:ASSET_VERSION,id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1,shotProtocol:1 });
           send(socket, snapshotForSide(room.snapshot({ drainEvents: false }),player.team));
         } catch (e) { if (created) rooms.delete(room.code); error(socket, 'JOIN_FAILED', e.message); }
         return;

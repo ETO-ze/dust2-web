@@ -1,6 +1,6 @@
 {
   "name": "dust2-web",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Dust2 inspired personal browser FPS with authoritative multiplayer and bots",

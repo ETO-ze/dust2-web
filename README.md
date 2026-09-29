@@ -1,45 +1,46 @@
-# DUST II · 离线版 0.2.0
+# DUST II · 在线版 1.1.0
 
-**用 GPT-6，把沙二装进口袋。断网，也能开一局。**
+**用 GPT-6 做一张能和朋友一起玩的沙二。手机、电脑，同一个房间。**
 
-[Android APK / Windows ZIP 下载](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.2.0) · [这一版改了什么](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/OFFLINE-0.2.md) · [安装与构建](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/OFFLINE-V1.md) · [验证记录](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/validation/offline-v0.2.0.md)
+[进入网页版](https://cs2.duskrain.cn/) · [Android / Windows 下载](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.1.0) · [更新与构建说明](docs/ONLINE-1.1.md) · [验证记录](docs/validation/online-v1.1.0.md)
 
-地图、枪械、皮肤、探员与音乐随包提供。1 名玩家与最多 9 名人机，支持 5v5 席位、13 胜爆破和 100 击杀团队死斗。Android 与 Windows 分别下载，首次进入也无需联网获取素材。
+创建房间，选择 CT / T，邀请异地朋友加入。双方共 10 个席位，人机可填充空位；支持 13 胜爆破、12:12 加时，以及 100 击杀团队死斗。网页与在线安装包互通，服务器统一计算命中、经济和人机行为。
 
-![离线版 0.2.0 手机横屏战场](https://raw.githubusercontent.com/ETO-ze/dust2-web/offline-v1/docs/screenshots/offline-mobile-v02.png)
+![在线版安卓本地素材界面](docs/screenshots/online-android-v11.png)
 
-*当前构建的桌面 Chrome 触屏模拟截图，960×440 CSS 像素；不是 P60 真机性能展示。*
+*Android 11 模拟器中的原生 WebView 截图，连接独立联机测试服务器；不是 P60 真机性能展示。*
 
-## 这一版，让队友多一点配合
+## 这次，把离线版的改进带到联机
 
-| 更新 | 对局中的变化 |
+| 改进 | 实际变化 |
 | --- | --- |
-| 三档难度 | 新增轻松档，适合手机入门；普通／困难保留视觉瞄准、平滑转向与原有枪法差异。 |
-| 守点变化 | 出生更分散，守点候选经过落脚、视线和路线检查，随回合轮换，继续支持换位与 peek。 |
-| 分人回防 | 依据听到的枪声和队友报告派人支援，连续枪声不再把新回防计时不断推后，另一点保留守备。 |
-| 道具配合 | 更积极寻找附近投掷位，同时限制绕路；携包人机有持枪队友保护、时间充足时也可辅助投掷。 |
-| 熟悉的规则 | 普通／困难连输 2 回合增强一次 50%，连赢 2 回合恢复；轻松档不额外增强。 |
+| 更多守点选择 | 检查落脚位置、视线与路线，随回合轮换，减少重复站位和无效守点。 |
+| 有依据的回防 | 根据目击、枪声和队友报告分人支援，另一点留守；真人实际位置参与支援判断。 |
+| 更克制的道具决策 | 限制绕路；携包人机需有时间和队友保护，减少为了投掷耽误下包。 |
+| 三档人机 | 轻松 / 普通 / 困难，默认普通，由房主调整。普通与困难保留视觉瞄准、平滑转向和连败增强。 |
+| 自定义触控布局 | 拖动按键、调整大小与透明度，导入导出布局代码，也纳入设置备份。 |
+| 独立帧率上限 | 30 / 60 / 90 / 120 FPS 或不限；手机默认 60，桌面默认不限，只限制渲染。 |
+| 安装包读取本地素材 | Android 自带基础地图、默认装备与声音，额外外观按需下载；Windows 保留完整素材。 |
 
-![三档人机难度与规则说明](https://raw.githubusercontent.com/ETO-ze/dust2-web/offline-v1/docs/screenshots/offline-difficulty-v02.png)
+![拖动按键并调整大小和透明度](docs/screenshots/online-layout-v11.png)
 
-## 手机上手，按自己的习惯来
+*桌面 Chrome 触屏布局检查截图，960×440 CSS 像素。*
 
-左手摇杆移动，右手滑动瞄准；开火、开镜、跳跃、蹲下、切枪、投掷和拾取都有触屏按键。可以拖动按键、调整大小与透明度，并导出布局代码。
+商店、退枪、护甲与拆弹器、五类道具、C4、捡枪丢枪、死亡观战、E 接管人机、聊天和经济系统继续保留。画质、清晰度、亮度、画面比例和准星仍可独立设置。在线对局在打开菜单或切后台后继续进行，返回时重新接收服务器状态。
 
-画质、清晰度和帧率分别可调，保留亮度、16:9／4:3 与准星设置。默认最低画质、60 FPS 上限；对局逻辑运行在独立 Worker 中。暂停菜单和切后台会暂停游戏，返回后继续。
+## 选择你的入口
 
-商店购买与退枪、护甲和拆弹器、五类道具、C4、捡枪丢枪、经济与人机配合、死亡观战和接管队友继续保留。退出应用后重新开局，当前不保存局内进度。
+- **网页：** 直接打开 [cs2.duskrain.cn](https://cs2.duskrain.cn/)，素材按哈希缓存，更新只补下载变化文件。
+- **Android 在线包：** 下载 [DustII-Android-1.1.0.apk](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.1.0/DustII-Android-1.1.0.apk)。Android 8+、WebView 110+ 和 WebGL 2；沿用在线版包名与签名，可覆盖原在线 1.0.0，保留设置。基础素材在包内，联机仍需网络。
+- **Windows 10/11 x64：** 从[发布页](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.1.0)下载 ZIP，完整解压，双击「开始游戏-在线联机.cmd」。包内含运行时，无需安装 Node；原有「开始游戏-离线机器人.cmd」也保留。
+- **独立纯离线版：** [离线 0.2.0 下载](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.2.0)与 [offline-v1 源码](https://github.com/ETO-ze/dust2-web/tree/offline-v1)继续独立保留，可与 Android 在线包共存。
 
-## 下载与安装
-
-- **Android：** 下载 APK 后安装。需要 Android 8+、WebGL 2 与 WebView 110+。可与原在线版共存；0.1.0 可覆盖升级，保留应用设置。
-- **Windows 10/11 x64：** 完整解压 ZIP，双击「开始游戏.cmd」，用 Edge/Chrome 打开。包内含运行时，无需另装 Node；游戏时保留启动窗口。
-- 设置可从「本地资源」导出备份。手机实际帧率取决于设备、温度与人机数量。
+本地资源可以减少重复下载和游戏服务器的带宽争用，但不会消除网络线路延迟。设置备份入口在「本地资源」。P60 真机的温度、持续帧率和触控手感仍需实际验收。
 
 ## 开发与来源
 
-当前发布的是单人离线版本，不支持异地联机。离线源码见 [offline-v1 分支](https://github.com/ETO-ze/dust2-web/tree/offline-v1)；原在线源码保留在 [main 分支](https://github.com/ETO-ze/dust2-web/tree/main)，在线服务与本次安装包独立更新。
+Node 22.12+：`npm ci` → `npm run assets:fetch` → `npm run build` → `npm start`。测试使用 `node --test --test-concurrency=2 tests/*.mjs`。安装包构建见[在线版说明](docs/ONLINE-1.1.md)。
 
-参考 [henhaogame/dust2-offline](https://github.com/henhaogame/dust2-offline) 的离线、触控和部分人机设计，采用独立模块实现，具体取舍见[更新说明](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/OFFLINE-0.2.md)。
+参考 [henhaogame/dust2-offline](https://github.com/henhaogame/dust2-offline) 的离线、触控和部分人机设计，复用本项目离线 0.2.0 的独立决策模块，并补充联机适配。
 
-个人体验项目，非 Valve 官方 CS2，也不含 Source 2 引擎。素材、音乐和第三方组件归属见[许可说明](https://github.com/ETO-ze/dust2-web/blob/offline-v1/LICENSE.md)与[素材来源](https://github.com/ETO-ze/dust2-web/blob/offline-v1/docs/ASSETS.md)。
+个人体验项目，非 Valve 官方 CS2，也不含 Source 2 引擎。素材、音乐和第三方组件归属见[许可说明](LICENSE.md)与[素材来源](docs/ASSETS.md)。

@@ -1,3 +1,4 @@
+import {Readable} from 'node:stream';
 import { createServer } from 'node:http';
 import { createReadStream } from 'node:fs';
 import { readFile, stat, realpath } from 'node:fs/promises';
@@ -15,7 +16,8 @@ export async function startPortable({ root = appRoot, mode = 'online', port = mo
   const originalHTML = await readFile(path.join(dist, 'index.html'), 'utf8');
   const instance = createHash('sha256').update(root + mode + originalHTML).digest('hex');
   let game = null, address = null;
-  const config = () => ({mode, socketURL: mode === 'online' ? 'wss://cs2.duskrain.cn/ws' : game ? `ws://127.0.0.1:${game.port}/ws` : null});
+  const bundledAssets=await stat(path.join(dist,'bundle-manifest.json')).then(()=>true,()=>false);
+  const config = () => ({mode, bundledAssets, socketURL: mode === 'online' ? 'wss://cs2.duskrain.cn/ws' : game ? `ws://127.0.0.1:${game.port}/ws` : null});
   const server = createServer((req, res) => {
     handle(req, res).catch(() => { if (!res.headersSent) res.writeHead(500); res.end('Local resource error.'); });
   });
@@ -26,6 +28,16 @@ export async function startPortable({ root = appRoot, mode = 'online', port = mo
     if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405); res.end(); return; }
     let pathname;
     try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); } catch { res.writeHead(400); res.end(); return; }
+    if(pathname.startsWith('/__remote_assets__/assets/')){
+      const relative=pathname.slice('/__remote_assets__/'.length);
+      if(relative.includes('..')||relative.includes('\\')||relative.includes('\0')){res.writeHead(400);res.end();return;}
+      const controller=new AbortController();res.once('close',()=>controller.abort());
+      const remote=new URL(relative,'https://cs2.duskrain.cn/');remote.search=new URL(req.url,'http://localhost').search;
+      const response=await fetch(remote,{method:req.method,signal:controller.signal,redirect:'error'});
+      res.writeHead(response.status,{'Content-Type':response.headers.get('content-type')||'application/octet-stream','Cache-Control':'no-store'});
+      if(req.method==='HEAD'||!response.body)res.end();else {const stream=Readable.fromWeb(response.body);stream.on('error',()=>res.destroy());stream.pipe(res);}
+      return;
+    }
     if (pathname === '/portable-health') {
       res.writeHead(200, {'Content-Type':'application/json', 'Cache-Control':'no-store'});
       res.end(JSON.stringify({ service:'dust2-portable', mode, instance, ready: mode === 'online' || !!game, socketURL: config().socketURL })); return;

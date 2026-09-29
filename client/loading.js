@@ -1,3 +1,4 @@
+import {bundled,bundledEntry,bundledManifest,remoteAsset} from './bundled-assets.js';
 import {assetManifestName} from './device-profile.js';
 import { DefaultLoadingManager } from 'three';
 const blobs=new Map(),inflight=new Map();let manifestMemory=null,manifestChecked=false;
@@ -14,7 +15,7 @@ async function stores(){try{if(!globalThis.caches)return null;const n=cacheNames
 export function assetURL(value){return blobs.get(canonical(value))||value;}
 export function releaseDownloads(){for(const b of blobs.values())URL.revokeObjectURL(b);blobs.clear();}
 export function useDownloadedAssets(manager=DefaultLoadingManager){manager.setURLModifier(assetURL);}
-export async function isAssetSaved(sha256,bytes){const cache=await stores();if(!cache||!sha256)return false;const hit=await cache.assets.match(hashKey(sha256));return !!hit&&Number(hit.headers.get('x-dust2-bytes'))===bytes;}
+export async function isAssetSaved(sha256,bytes){if(bundled&&(await bundledManifest()).files.some(f=>f.sha256===sha256&&f.bytes===bytes))return true;const cache=await stores();if(!cache||!sha256)return false;const hit=await cache.assets.match(hashKey(sha256));return !!hit&&Number(hit.headers.get('x-dust2-bytes'))===bytes;}
 
 /** SHA-keyed immutable assets. Without a supplied hash, the computed SHA is
  * indexed by URL; use sha256 or a versioned URL when optional content changes.
@@ -24,7 +25,12 @@ function pendingResult(promise,signal){
   return new Promise((resolve,reject)=>{const abort=()=>reject(signal.reason||new DOMException('已取消','AbortError'));signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();promise.then(resolve,reject).finally(()=>signal.removeEventListener('abort',abort));});
 }
 export async function fetchCachedAsset(value,options={}){
-  check(options.signal);const settings={...options};
+  check(options.signal);const installed=await bundledEntry(value);
+  if(installed&&(!options.sha256||options.sha256===installed.sha256)&&(!options.bytes||options.bytes===installed.bytes)){
+    const response=await fetch(absolute(value),{signal:options.signal});if(!response.ok)throw Error('本地资源损坏，请重新安装客户端。');
+    options.onProgress?.({loaded:installed.bytes,total:installed.bytes,fromCache:true,cached:true});return response;
+  }
+  const settings={...options};
   if(!settings.sha256){
     const manifest=manifestChecked?manifestMemory:await loadManifest({signal:settings.signal}).catch(error=>{check(settings.signal);return null;});
     const file=manifest?.files.find(f=>canonical(f.path)===canonical(value));
@@ -48,7 +54,7 @@ async function readCachedAsset(value,{sha256,bytes,signal,onProgress}={}){
   if(!expected&&cache){const hit=await cache.meta.match(indexKey(url));if(hit)expected=(await hit.json()).sha256;}
   if(expected&&cache){const hit=await cache.assets.match(hashKey(expected)),length=Number(hit?.headers.get('x-dust2-bytes'));
     if(hit&&(!Number.isFinite(bytes)||length===bytes)){check(signal);onProgress?.({loaded:length,total:length,fromCache:true,cached:true});return hit;}}
-  const response=await fetch(url,{signal,cache:sha256?'force-cache':'default'});
+  const response=await fetch(remoteAsset(url),{signal,cache:sha256?'force-cache':'default'});
   if(!response.ok||response.type==='opaque')throw new Error(`资源下载失败 (${response.status})：${url.pathname.split('/').pop()}`);
   if(response.headers.get('content-type')?.includes('text/html')&&!url.pathname.endsWith('.html'))throw new Error(`资源地址返回了网页：${url.pathname.split('/').pop()}`);
   const chunks=[];let received=0;const reader=response.body?.getReader();
@@ -90,6 +96,7 @@ async function collectAssets({signal,onProgress,makeBlobs=false}={}){
   finally{parent?.removeEventListener('abort',abort);}
 }
 export async function downloadAssets(options={}){
+  if(bundled){const manifest=await loadManifest({signal:options.signal});const installed=await bundledManifest();const files=new Map(installed.files.map(f=>[f.path,f]));if(!manifest.files.every(f=>files.get(f.path)?.sha256===f.sha256))throw Error('基础资源不完整，请下载完整客户端。');options.onProgress?.({bytes:manifest.totalBytes,total:manifest.totalBytes,complete:manifest.files.length,count:manifest.files.length,rate:0,current:'读取已安装资源'});return manifest;}
   // A controlling worker can serve verified cache entries directly. Retaining
   // every compressed file as a second set of Blob URLs only increases the peak.
   const controlled=!!globalThis.navigator?.serviceWorker?.controller;

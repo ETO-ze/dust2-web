@@ -1,3 +1,4 @@
+import {bundled} from './bundled-assets.js';
 let installPrompt=null,registration=null,started=false;
 const listeners=new Set(),state={supported:false,online:true,ready:false,canInstall:false,installed:false};
 const publish=()=>{for(const fn of listeners)fn({...state});};
@@ -8,7 +9,7 @@ export async function initOffline({onStatus}={}){
   window.addEventListener('online',()=>{state.online=true;publish();});window.addEventListener('offline',()=>{state.online=false;publish();});
   window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;state.canInstall=true;publish();});
   window.addEventListener('appinstalled',()=>{installPrompt=null;state.canInstall=false;state.installed=true;publish();});
-  if(state.supported){try{const b=new URL('.',document.baseURI);registration=await navigator.serviceWorker.register(new URL('sw.js',b),{scope:b.pathname,updateViaCache:'none'});await navigator.serviceWorker.ready;state.ready=true;}catch(error){state.error=error.message;}}
+  if(state.supported&&!bundled){try{const b=new URL('.',document.baseURI);registration=await navigator.serviceWorker.register(new URL('sw.js',b),{scope:b.pathname,updateViaCache:'none'});await navigator.serviceWorker.ready;state.ready=true;}catch(error){state.error=error.message;}}
   publish();return{...state};
 }
 // Explicit button gesture only: browsers may decline persistent storage.
