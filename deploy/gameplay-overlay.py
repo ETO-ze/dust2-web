@@ -17,10 +17,10 @@ asset_path=rf'(?:{component}/)*{component}'
 asset_extension=r'(?:js|css|json|svg|glb|gltf|bin|u8|f32|mesh|nav|png|webp|jpg|jpeg|avif|gif|hdr|ogg|mp3|wav|webm|mp4|woff2?|ttf|otf|txt|md)'
 module.OVERLAY_NAME=re.compile(
     rf'(?:dist/(?:(?:index\.html|sw\.js|manifest\.webmanifest)(?:\.gz)?'
-    rf'|downloads/(?:DustII-Android-1\.0\.0\.apk|android-latest\.json)(?:\.gz)?'
+    rf'|downloads/(?:DustII-Android-1\.0\.0\.apk|android-latest\.json|gecko-test\.json)(?:\.gz)?'
     rf'|icons/[A-Za-z0-9_-]+\.png(?:\.gz)?'
     rf'|assets/{asset_path}\.{asset_extension}(?:\.gz)?)'
-    r'|(?:server|shared)/[A-Za-z0-9_/-]+\.js'
+    r'|package(?:-lock)?\.json|(?:server|shared)/[A-Za-z0-9_/-]+\.js'
     r'|public/assets/map/penetration-materials\.(?:u8|json))')
 module.MAX_OVERLAY_TOTAL=192*1024**2
 module.MAX_OVERLAY_FILE=32*1024**2

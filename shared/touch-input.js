@@ -1,4 +1,8 @@
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+// Embedded Android engines can report a fine pointer before their first touch.
+export function touchModeEnabled(mode,coarse,userAgent=''){
+ return mode==='on'||mode==='auto'&&(coarse||/\bDustIIAndroid\//.test(userAgent));
+}
 export function joystickVector(dx,dy,radius=52,deadzone=.12){
  const length=Math.hypot(dx,dy),strength=clamp((length/radius-deadzone)/(1-deadzone),0,1);
  return length?{right:dx/length*strength,forward:-dy/length*strength}:{right:0,forward:0};

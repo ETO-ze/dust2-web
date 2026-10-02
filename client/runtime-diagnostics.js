@@ -1,3 +1,4 @@
+import {nativeHost} from './native-host.js';
 const KEY = 'dust2.runtime-diagnostics.v1';
 /** Bounded, local-only evidence survives a reload; no player names or room codes. */
 export class RuntimeDiagnostics {
@@ -20,6 +21,7 @@ export class RuntimeDiagnostics {
   save() { try { this.storage?.setItem(KEY, JSON.stringify(this.current())); } catch {} }
   report() { return { ...this.current(), previous: this.previous }; }
   download() {
+    if(nativeHost.installed){nativeHost.request('exportDiagnostics',{data:this.report()}).catch(error=>alert('诊断导出失败：'+error.message));return;}
     const url = URL.createObjectURL(new Blob([JSON.stringify(this.report(), null, 2)], { type: 'application/json' }));
     const link = document.createElement('a'); link.href = url; link.download = 'dust2-runtime-diagnostics.json'; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);

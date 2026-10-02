@@ -4,9 +4,11 @@ import {createHash} from 'node:crypto';
 import {DEFAULT_SKINS,getSkin} from '../shared/skins.js';
 import {UTILITY_ASSETS} from '../shared/utility-assets.js';
 import {CLIENT_BUILD,ASSET_VERSION} from '../shared/online-build.js';
-const root=path.resolve('dist');
-await fs.mkdir('artifacts/installed-client',{recursive:true});
-const out=await fs.realpath('artifacts/installed-client');
+const root=path.resolve(process.env.DUSTII_WEB_DIST||'dist');
+const stage=path.resolve(process.env.DUSTII_INSTALLED_CLIENT||'artifacts/installed-client');
+if(path.basename(stage)!=='installed-client')throw Error('Staging must be a dedicated installed-client directory');
+await fs.mkdir(stage,{recursive:true});
+const out=await fs.realpath(stage);
 const lock=JSON.parse(await fs.readFile('config/assets-lock.json','utf8'));
 if(lock.version!==ASSET_VERSION)throw Error('Update shared asset identity before packaging.');
 const locked=new Map(lock.files.map(f=>[f.path,f])),wanted=new Set();
@@ -25,7 +27,7 @@ for(const name of await fs.readdir(path.join(root,'assets')))if(/\.(js|css)$/.te
 for(const name of await fs.readdir(path.join(root,'icons')))wanted.add('icons/'+name);
 await fs.mkdir(out,{recursive:true});
 // Rebuild only this generated staging directory, with a checked absolute target.
-if(out!==await fs.realpath('artifacts/installed-client'))throw Error('Invalid staging path');
+if(out!==await fs.realpath(stage)||out===root)throw Error('Invalid staging path');
 for(const entry of await fs.readdir(out))await fs.rm(path.join(out,entry),{recursive:true,force:true});
 const files=[];
 for(const relative of [...wanted].sort()){

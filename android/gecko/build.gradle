@@ -1,0 +1,24 @@
+plugins { id 'com.android.application' }
+if(System.getenv('DUSTII_BUILD_ROOT'))layout.buildDirectory.set(file(System.getenv('DUSTII_BUILD_ROOT')+'/android-gecko'))
+def secret=rootProject.file('signing/release.json')
+def signing=secret.exists()?new groovy.json.JsonSlurper().parse(secret):null
+android {
+    namespace 'cn.duskrain.dustii.gecko'
+    compileSdk 37
+    defaultConfig { applicationId 'cn.duskrain.dustii.gecko'; minSdk 26; targetSdk 35; versionCode 3; versionName '1.2.0-gecko-test' }
+    sourceSets { main {
+        java.srcDirs += '../shared/src/main/java'
+        assets.srcDirs += [System.getenv('DUSTII_INSTALLED_CLIENT') ?: '../../artifacts/installed-client']
+        res.srcDirs += '../app/src/main/res'
+    } }
+    androidResources { noCompress += ['glb','bin','webp','png','jpg','mp3','ogg','wav','hdr','f32','u8'] }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    buildFeatures { buildConfig true }
+    signingConfigs { release { if(signing) { storeFile rootProject.file('signing/dustii-release.p12'); storePassword signing.password; keyAlias 'dustii'; keyPassword signing.password } } }
+    buildTypes {
+        release { minifyEnabled false; signingConfig signingConfigs.release; ndk { abiFilters 'arm64-v8a' } }
+        debug { applicationIdSuffix '.debug'; ndk { abiFilters 'x86_64' } }
+    }
+}
+// Stable and pinned; promotion requires the P60 comparison, not merely a build.
+dependencies { implementation 'org.mozilla.geckoview:geckoview:157.0.20260924084938' }

@@ -55,6 +55,17 @@ public final class MainActivity extends Activity {
     private String startUrl = HOME;
     private boolean pageFailed;
     private String pendingBackup;
+    private MotionBridge motion;
+
+    private JSONObject engineInfo() {
+        JSONObject info=new JSONObject();
+        try {
+            android.content.pm.PackageInfo p=WebViewCompat.getCurrentWebViewPackage(this);
+            info.put("name","WebView").put("version",p==null?"unknown":p.versionName).put("package",p==null?"unknown":p.packageName)
+                .put("lastRendererExit",getPreferences(MODE_PRIVATE).getString("rendererExit","none"));
+        } catch(Exception ignored) { }
+        return info;
+    }
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -94,6 +105,7 @@ public final class MainActivity extends Activity {
     }
 
     @SuppressLint("SetJavaScriptEnabled") private void createGame() {
+        if(motion!=null)motion.close();motion=new MotionBridge(this,engineInfo());
         if (game != null) { root.removeView(game);game.destroy(); }
         if (recovery != null) { root.removeView(recovery);recovery = null; }
         game = new WebView(this);game.setBackgroundColor(Color.rgb(17,23,21));
@@ -102,7 +114,7 @@ public final class MainActivity extends Activity {
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
         WebSettings settings = game.getSettings();settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        settings.setUserAgentString(settings.getUserAgentString() + " DustIIAndroid/1.1");
+        settings.setUserAgentString(settings.getUserAgentString() + " DustIIAndroid/1.2.0");
         java.util.regex.Matcher engine=java.util.regex.Pattern.compile("Chrome/(\\d+)").matcher(settings.getUserAgentString());
         if (!engine.find() || Integer.parseInt(engine.group(1))<110) {
             game.destroy();game=null;
@@ -116,16 +128,19 @@ public final class MainActivity extends Activity {
             Uri origin=Uri.parse(startUrl);
             String allowed=origin.getScheme()+"://"+origin.getAuthority();
             WebViewCompat.addWebMessageListener(game,"DustIIHost",Collections.singleton(allowed),(view,message,sourceOrigin,isMainFrame,reply) -> {
-                if (!isMainFrame || !owned(sourceOrigin)) return;
+                if (!isMainFrame || !owned(sourceOrigin) || view.getUrl()==null || !Uri.parse(startUrl).getPath().equals(Uri.parse(view.getUrl()).getPath())) return;
                 try {
                     String data=message.getData();if (data==null || data.length()>262144) return;
                     JSONObject request=new JSONObject(data);
-                    if (!"exportPreferences".equals(request.optString("type")) || pendingBackup!=null) return;
+                    if(motion.handle(request,response -> reply.postMessage(response.toString())))return;
+                    boolean diagnostic="exportDiagnostics".equals(request.optString("type"));
+                    if ((!diagnostic&&!"exportPreferences".equals(request.optString("type"))) || pendingBackup!=null) return;
                     JSONObject backup=request.getJSONObject("data");
-                    if (backup.optInt("version")!=1 || !backup.has("preferences")) return;
+                    if (backup.optInt("version")!=1 || (!diagnostic&&!backup.has("preferences"))) return;
                     pendingBackup=backup.toString(2);
-                    Intent save=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"DustII-游戏设置.json");
+                    Intent save=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,diagnostic?"dust2-runtime-diagnostics.json":"DustII-游戏设置.json");
                     startActivityForResult(save,SAVE_FILE);
+                    reply.postMessage(new JSONObject().put("type","exportPreferences").put("requestId",request.opt("requestId")).toString());
                 } catch (Exception e) { pendingBackup=null;Toast.makeText(MainActivity.this,"无法导出设置，请重试",Toast.LENGTH_SHORT).show(); }
             });
         }
@@ -140,7 +155,7 @@ public final class MainActivity extends Activity {
                 }
                 return true;
             }
-            @Override public void onPageStarted(WebView view, String url, Bitmap icon) { pageFailed = false; }
+            @Override public void onPageStarted(WebView view, String url, Bitmap icon) { motion.stop();pageFailed = false; }
             @Override public void onPageFinished(WebView view, String url) {
                 if (!pageFailed && recovery != null) { root.removeView(recovery);recovery = null; }
                 immersive();
@@ -152,6 +167,7 @@ public final class MainActivity extends Activity {
                 handler.cancel();pageFailed = true;showRecovery("安全连接未建立", "请检查手机日期和网络后重试。");
             }
             @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                motion.stop();getPreferences(MODE_PRIVATE).edit().putString("rendererExit",(detail.didCrash()?"crash":"system-killed")+" priority="+detail.rendererPriorityAtExit()+" time="+System.currentTimeMillis()).apply();
                 if (customView != null) hideCustom();
                 root.removeView(view);view.destroy();game = null;
                 showRecovery("游戏画面已停止", "渲染进程已退出，设置和资源缓存仍保留。重新进入后建议使用最低画质。");return true;
@@ -178,6 +194,7 @@ public final class MainActivity extends Activity {
         if (customCallback != null) { customCallback.onCustomViewHidden();customCallback = null; }immersive();
     }
     private void pauseInput() {
+        if(motion!=null)motion.stop();
         if (game != null) game.evaluateJavascript("window.dispatchEvent(new Event('blur'))", null);
     }
     private void showRecovery(String title, String message) {
@@ -232,6 +249,7 @@ public final class MainActivity extends Activity {
         createGame();immersive();
     }
     @Override protected void onDestroy() {
+        if(motion!=null)motion.close();
         if (fileCallback != null) { fileCallback.onReceiveValue(null);fileCallback = null; }
         if (game != null) { root.removeView(game);game.destroy();game = null; }super.onDestroy();
     }
