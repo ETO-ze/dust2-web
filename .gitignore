@@ -30,3 +30,4 @@ android/signing/
 *.keystore
 public/downloads/*.apk
 public/downloads/android-latest.json
+public/downloads/gecko-test.json
