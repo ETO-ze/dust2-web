@@ -6,18 +6,23 @@ import {getWeapon} from '../shared/weapons.js';
 import {UTILITY_AUDIO,utilitySound} from './utility-audio.js';
 
 export class GameAudio {
-  constructor() {
-    this.ctx = null; this.volume = 0.6; this.ready = false; this.buffers = [];
+  constructor({context=null}={}) {
+    this.ctx = context; this.volume = 0.6; this.ready = false; this.buffers = [];
     this.banks = new Map(); this.voices = new Set(); this.loading = null;
     this.channelEpochs=new Map();this.playEpoch=0;
     this.lastWeapon = 'ak47'; this.lastTeam = 'T'; this.lastHitAt = -Infinity; this.lastKillAt = -Infinity;
   }
 
-  async start() {
+  // Unlock the native context in the click without starting independent asset
+  // readers while the page's cancellable prefetch is still running.
+  async resume() {
     if (!this.ctx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) throw new Error('浏览器不支持游戏音频');
-      const c = this.ctx = new AudioContext({ latencyHint: 'interactive' });
+      this.ctx = new AudioContext({ latencyHint: 'interactive' });
+    }
+    if (!this.mix || !this.master) {
+      const c = this.ctx;
       this.mix = c.createDynamicsCompressor();
       this.mix.threshold.value = -12; this.mix.knee.value = 12; this.mix.ratio.value = 8;
       this.mix.attack.value = 0.003; this.mix.release.value = 0.13;
@@ -29,6 +34,10 @@ export class GameAudio {
       this.mix.connect(this.master); this.master.connect(limiter); limiter.connect(c.destination);
     }
     await this.ctx.resume();
+  }
+
+  async start() {
+    await this.resume();
     if (!this.loading) this.loading = this.loadSamples().catch(error => { this.loading = null; throw error; });
     await this.loading;
     this.ready = true;

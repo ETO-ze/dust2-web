@@ -4,6 +4,7 @@ import { getWeapon } from '../shared/weapons.js';
 import { getSkin, DEFAULT_SKINS } from '../shared/skins.js';
 import { AGENT_ASSETS } from '../shared/agent-assets.js';
 import { uiIcon } from './ui-icons.js';
+import {imageAssetURL} from './image-asset-url.js';
 import { DeathScreen } from './death-screen.js';
 import './death-screen.css';
 import {KillCards} from './kill-cards.js';
@@ -60,7 +61,7 @@ export class HUD {
     };
     // Keep nested deployments such as /dust2/ on their own asset path.
     const radarPath = String(MAP.overview?.image || 'assets/valve-dust2/de_dust2_radar_psd.png').replace(/^\/+/, '');
-    this.radarImage.src = new URL(radarPath, document.baseURI).href;
+    this.radarImage.src = imageAssetURL(new URL(radarPath, document.baseURI).href);
   }
 
   text(id, value) {
@@ -103,12 +104,14 @@ export class HUD {
     const network = this.elements['network-status'];
     if (network) network.style.color = time - this.receivedAt > 2500 ? '#f09b83' : '';
     this.text('health', Math.ceil(clamp(self.health, 0, 999)));
+    const hud=document.getElementById('hud');
+    if(hud){hud.style.setProperty('--health-ratio',String(clamp(self.health,0,100)/100));hud.style.setProperty('--ammo-ratio',String(weapon.magazine?clamp(number(self.ammo)/weapon.magazine,0,1):0));hud.dataset.lowHealth=String(self.alive&&number(self.health)<=25);}
     this.text('armor', `护甲 ${Math.round(clamp(self.armor, 0, 999))}${self.helmet?' · 头盔':''}${self.defuseKit?' · 拆弹器':''}`);
     this.text('money', `$ ${Math.max(0, Math.round(number(self.money))).toLocaleString('en-US')}`);
     const heldSkin=getSkin(self.skinId||DEFAULT_SKINS[self.weapon]),knifeName=self.weapon==='knife'&&heldSkin?.animationFamily?heldSkin.name.split(' · ')[0]:weapon.name;
     this.text('weapon-name', knifeName);this.text('slot3',self.weapon==='knife'?'3 '+knifeName:'3 近战武器');
     this.text('weapon-skin', getSkin(self.skinId||DEFAULT_SKINS[self.weapon])?.name || '');
-    const silhouette=document.getElementById('active-weapon-icon');if(silhouette&&this.iconWeapon!==self.weapon+':'+self.skinId){this.iconWeapon=self.weapon+':'+self.skinId;if(self.weapon==='knife'&&heldSkin?.animationFamily){const image=document.createElement('img');image.src=heldSkin.preview;image.alt=knifeName;silhouette.replaceChildren(image);}else silhouette.replaceChildren(uiIcon(self.weapon,weapon.name));}
+    const silhouette=document.getElementById('active-weapon-icon');if(silhouette&&this.iconWeapon!==self.weapon+':'+self.skinId){this.iconWeapon=self.weapon+':'+self.skinId;if(self.weapon==='knife'&&heldSkin?.animationFamily){const image=document.createElement('img');image.src=imageAssetURL(heldSkin.preview);image.alt=knifeName;silhouette.replaceChildren(image);}else silhouette.replaceChildren(uiIcon(self.weapon,weapon.name));}
     this.text('ammo', [3,5].includes(weapon.slot) ? '—' : Math.max(0, Math.floor(number(self.ammo))));
     this.text('reserve', [3,5].includes(weapon.slot) ? '—' : self.reserveAmmoAsClips ? `${Math.max(0,Math.floor(number(self.reserveClips)))} 匣` : Math.max(0, Math.floor(number(self.reserve))));
     if(this.elements.slot5)this.elements.slot5.hidden=!self.hasBomb;
@@ -221,7 +224,7 @@ export class HUD {
 
   updateRosters(snapshot,self){
     const key=JSON.stringify([self.id,...(snapshot.players||[]).map(p=>[p.id,p.name,p.team,p.alive,p.agentId,p.hasBomb,p.health])]);if(key===this.rosterKey)return;this.rosterKey=key;
-    for(const team of ['CT','T']){const host=this.elements[`team-roster-${team.toLowerCase()}`];if(!host)continue;const players=(snapshot.players||[]).filter(p=>p.team===team);host.replaceChildren(...Array.from({length:Math.max(5,players.length)},(_,i)=>{const p=players[i],card=document.createElement('div');card.className=`roster-player${p?'':' empty'}${p&&!p.alive?' dead':''}${p?.id===self.id?' self':''}`;card.dataset.team=team;if(!p){card.append(uiIcon(team));card.title='空位';return card;}card.title=`${p.bot?'BOT ':''}${p.name} · ${p.alive?'存活':'阵亡'}`;const assetPreview=AGENT_ASSETS[p.agentId]?.preview,preview=typeof assetPreview==='string'?assetPreview:assetPreview?.file;if(preview){const image=document.createElement('img');image.src=preview;image.alt='';image.className='roster-portrait';card.append(image);}else card.append(uiIcon(team));if(!p.alive)card.append(uiIcon('death','阵亡','roster-death'));const label=document.createElement('span');label.textContent=p.name||'玩家';card.append(label);const health=document.createElement('i');health.style.width=`${p.alive?(p.team===self.team?clamp(p.health,0,100):100):0}%`;card.append(health);if(p.hasBomb&&p.team===self.team)card.append(uiIcon('c4','携带炸弹','roster-bomb'));return card;}));}
+    for(const team of ['CT','T']){const host=this.elements[`team-roster-${team.toLowerCase()}`];if(!host)continue;const players=(snapshot.players||[]).filter(p=>p.team===team);host.replaceChildren(...Array.from({length:Math.max(5,players.length)},(_,i)=>{const p=players[i],card=document.createElement('div');card.className=`roster-player${p?'':' empty'}${p&&!p.alive?' dead':''}${p?.id===self.id?' self':''}`;card.dataset.team=team;if(!p){card.append(uiIcon(team));card.title='空位';return card;}card.title=`${p.bot?'BOT ':''}${p.name} · ${p.alive?'存活':'阵亡'}`;const assetPreview=AGENT_ASSETS[p.agentId]?.preview,preview=typeof assetPreview==='string'?assetPreview:assetPreview?.file;if(preview){const image=document.createElement('img');image.src=imageAssetURL(preview);image.alt='';image.className='roster-portrait';card.append(image);}else card.append(uiIcon(team));if(!p.alive)card.append(uiIcon('death','阵亡','roster-death'));const label=document.createElement('span');label.textContent=p.name||'玩家';card.append(label);const health=document.createElement('i');health.style.width=`${p.alive?(p.team===self.team?clamp(p.health,0,100):100):0}%`;card.append(health);if(p.hasBomb&&p.team===self.team)card.append(uiIcon('c4','携带炸弹','roster-bomb'));return card;}));}
   }
 
   radarPoint(position) {

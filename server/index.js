@@ -12,9 +12,11 @@ import { normalizeAgentLoadout } from '../shared/agents.js';
 import {BOT_DIFFICULTIES,normalizeBotDifficulty} from '../shared/bot-difficulty.js';
 import { botCount } from '../shared/match-rules.js';
 import { initPhysics } from '../shared/physics.js';
+import {MAP} from '../shared/map-data.js';
 import { GameRoom, TICK_RATE, SNAPSHOT_RATE } from './game.js';
 import {CLIENT_BUILD,RULES_VERSION,ASSET_VERSION,compatibilityError} from '../shared/online-build.js';
 import {ServerPerformance} from './performance-metrics.js';
+import {serverDownloadConfig,sendDownloadConfig} from './download-config.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = { '.webmanifest': 'application/manifest+json; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.glb': 'model/gltf-binary', '.gltf': 'model/gltf+json', '.wasm': 'application/wasm', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
@@ -55,13 +57,15 @@ function joinSettings(msg) {
 }
 
 /** Start the authoritative server after loading collision geometry. No external services. */
-export async function startGameServer({ port = Number(process.env.PORT || 3000), host = process.env.HOST || '0.0.0.0', staticDir = path.join(ROOT, 'dist'), rules = {} } = {}) {
-  await loadPhysics();
+export async function startGameServer({ port = Number(process.env.PORT || 3000), host = process.env.HOST || '0.0.0.0', staticDir = path.join(ROOT, 'dist'), rules = {}, privateMap=null,indexFile='index.html' } = {}) {
+  if(MAP.private&&(!privateMap||privateMap.mapSignature!==MAP.mapSignature))throw Error('A fixed private-map process cannot start a different map server');
+  if(!privateMap)await loadPhysics();
   const rooms = new Map();
-  const maxRooms = Math.max(1, Math.min(100, Number(process.env.MAX_ROOMS) || 12));
+  const maxRooms = privateMap?1:Math.max(1, Math.min(100, Number(process.env.MAX_ROOMS) || 12));
   const startedAt = Date.now();
   const performanceMetrics=new ServerPerformance();
   const publicDir = path.join(ROOT, 'public');
+  const downloadConfig=serverDownloadConfig();
   const server = createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     if(req.url?.startsWith('/assets/'))res.setHeader('Access-Control-Allow-Origin','*');
@@ -70,20 +74,22 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
     let requestPath;
     try { requestPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
     catch { res.writeHead(400); res.end('Bad URL'); return; }
+    if(requestPath==='/download-config.json'){sendDownloadConfig(req,res,downloadConfig);return;}
+    if(privateMap?.handleRequest(req,res,requestPath))return;
     if (requestPath === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       const memory = process.memoryUsage();
-      res.end(JSON.stringify({ ok: true, service: 'dust2-web', release: process.env.DUST2_RELEASE || 'local', protocol: 1, tickRate: TICK_RATE, uptime: Math.round((Date.now() - startedAt) / 1000), rooms: rooms.size, humans: [...rooms.values()].reduce((n, r) => n + r.humanCount, 0), players: [...rooms.values()].reduce((n, r) => n + r.players.size, 0), memory: { rssMiB: Math.round(memory.rss / 1048576), heapMiB: Math.round(memory.heapUsed / 1048576) },performance:performanceMetrics.snapshot() })); return;
+      res.end(JSON.stringify({ ok: true, service: privateMap?'dust2-private-game':'dust2-web',...(privateMap?{mapId:privateMap.mapId,mapSignature:privateMap.mapSignature,physicsSha256:privateMap.config.physicsSha256}:{}), release: process.env.DUST2_RELEASE || 'local', protocol: 1, tickRate: TICK_RATE, uptime: Math.round((Date.now() - startedAt) / 1000), rooms: rooms.size, humans: [...rooms.values()].reduce((n, r) => n + r.humanCount, 0), players: [...rooms.values()].reduce((n, r) => n + r.players.size, 0), memory: { rssMiB: Math.round(memory.rss / 1048576), heapMiB: Math.round(memory.heapUsed / 1048576) },performance:performanceMetrics.snapshot() })); return;
     }
     if (requestPath.includes('\0') || requestPath.includes('\\')) { res.writeHead(400); res.end('Bad path'); return; }
     let found = null, info = null;
     for (const directory of [staticDir, publicDir]) {
-      const base = path.resolve(directory), candidate = path.resolve(base, `.${requestPath === '/' ? '/index.html' : requestPath}`);
+      const base = path.resolve(directory), candidate = path.resolve(base, `.${requestPath === '/' ? '/'+indexFile : requestPath}`);
       if (!candidate.startsWith(base + path.sep)) continue;
       try { const candidateInfo = await stat(candidate); if (candidateInfo.isFile()) { found = candidate; info = candidateInfo; break; } } catch { /* Try the next permitted static root. */ }
     }
     if (!found && !path.extname(requestPath) && !requestPath.startsWith('/assets')) {
-      const index = path.join(staticDir, 'index.html');
+      const index = path.join(staticDir, indexFile);
       try { const candidateInfo = await stat(index); if (candidateInfo.isFile()) { found = index; info = candidateInfo; } } catch { /* The frontend has not been built yet. */ }
     }
     if (!found) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('文件不存在。请先运行 npm run build，然后打开游戏首页。'); return; }
@@ -112,10 +118,11 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       if(msg.type==='listRooms'){
         if(now-(socket.listRoomsAt||0)<1000)return;
         socket.listRoomsAt=now;
-        send(socket,{type:'rooms',rooms:[...rooms.values()].filter(r=>r.humanCount>0).map(r=>({code:r.code,mode:r.mode,botDifficulty:r.botDifficulty,humans:r.humanCount,bots:r.botCount,scores:r.scores,phase:r.round.phase,joinable:r.humanCount<10&&r.match.status!=='ended'})).sort((a,b)=>Number(b.joinable)-Number(a.joinable)||b.humans-a.humans)});return;
+        send(socket,{type:'rooms',...(privateMap?{mapId:privateMap.mapId,mapSignature:privateMap.mapSignature,physicsSha256:privateMap.config.physicsSha256}:{}),rooms:[...rooms.values()].filter(r=>r.humanCount>0).map(r=>({code:r.code,mode:r.mode,botDifficulty:r.botDifficulty,humans:r.humanCount,bots:r.botCount,scores:r.scores,phase:r.round.phase,joinable:r.humanCount<10&&r.match.status!=='ended'})).sort((a,b)=>Number(b.joinable)-Number(a.joinable)||b.humans-a.humans)});return;
       }
       if (msg.type === 'join') {
         if (socket.playerId) { error(socket, 'ALREADY_JOINED', '当前连接已经加入房间。'); return; }
+        if(privateMap&&(msg.mapId!==privateMap.mapId||msg.mapSignature!==privateMap.mapSignature)){error(socket,'MAP_MISMATCH','地图或碰撞版本不匹配，请重新载入当前地图。');return;}
         const settings = joinSettings(msg);
         if (settings.error) { error(socket, 'BAD_JOIN', settings.error); return; }
         if (!settings.room) { do { settings.room = randomBytes(3).toString('hex').toUpperCase(); } while (rooms.has(settings.room)); }
@@ -123,11 +130,11 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         if(msg.existing===true&&!room){error(socket,'ROOM_GONE','房间已经关闭，请在大厅选择有玩家的房间。');return;}
         if (!room) {
           if (rooms.size >= maxRooms) { error(socket, 'SERVER_FULL', '服务器当前房间数量已达上限。'); return; }
-          room = new GameRoom(settings.room, { mode: settings.mode, bots: settings.bots, botDifficulty:settings.botDifficulty, rules }); rooms.set(settings.room, room); created = true;
+          room = new GameRoom(settings.room, { mode: settings.mode, bots: settings.bots, botDifficulty:settings.botDifficulty, rules, privateMap }); rooms.set(settings.room, room); created = true;
         }
         try {
           const player = room.addHuman(socket, settings); socket.playerId = player.id; socket.roomCode = room.code;
-          send(socket, { type: 'welcome', clientBuild:CLIENT_BUILD,rulesVersion:RULES_VERSION,assetVersion:ASSET_VERSION,id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1,shotProtocol:1 });
+          send(socket, { type: 'welcome', ...(privateMap?{mapId:privateMap.mapId,mapSignature:privateMap.mapSignature,physicsSha256:privateMap.config.physicsSha256}:{}),clientBuild:CLIENT_BUILD,rulesVersion:RULES_VERSION,assetVersion:ASSET_VERSION,id: player.id, room: room.code, mode: room.mode, team: player.team,teamId:player.teamId,hostId:room.hostId,desiredBots:room.desiredBots,botCount:room.botCount,botDifficulty:room.botDifficulty,match:room.matchSnapshot(), tickRate: TICK_RATE, snapshotRate: SNAPSHOT_RATE, serverTime: now, protocol: 1, movementProtocol:1,shotProtocol:1 });
           send(socket, snapshotForSide(room.snapshot({ drainEvents: false }),player.team));
         } catch (e) { if (created) rooms.delete(room.code); error(socket, 'JOIN_FAILED', e.message); }
         return;

@@ -16,7 +16,7 @@ import {combatSlot} from './bot-utility.js';
 import {tacticalGoal,shareSighting,botUtility,separateTeammates,coordinateFlash} from './bot-tactics.js';
 import {randomBytes} from 'node:crypto';
 import { MAP } from '../shared/map-data.js';
-import { createPlayerState, stepPlayer, raycastWorld, raycastWorldContact } from '../shared/physics.js';
+import { createPlayerState, stepPlayer, raycastWorld, raycastWorldContact, raycastGrenadeWorld, raycastWorldHit } from '../shared/physics.js';
 import { WEAPONS, PRIMARY_WEAPONS, getWeapon, normalizeWeapon, canTeamUseWeapon, defaultPrimaryForTeam, weaponSpeedScale } from '../shared/weapons.js';
 import { DEFAULT_SKINS, getSkin, normalizeSkinLoadout } from '../shared/skins.js';
 import { DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } from '../shared/agents.js';
@@ -113,8 +113,8 @@ export function applyArmorDamage(rawDamage, player, { headshot=false, armorRatio
 }
 
 export class GameRoom {
-  constructor(code, { mode = 'defuse', bots = 6, botDifficulty = 'normal', clock = () => Date.now(), rules = {}, traceBullet=defaultTraceBullet } = {}) {
-    this.code = code; this.mode = mode==='deathmatch'?'deathmatch':'defuse'; this.desiredBots = botCount(bots);
+  constructor(code, { mode = 'defuse', bots = 6, botDifficulty = 'normal', clock = () => Date.now(), rules = {}, traceBullet=defaultTraceBullet, privateMap=null } = {}) {
+    this.privateMap=privateMap; this.code = code; this.mode = mode==='deathmatch'?'deathmatch':'defuse'; this.desiredBots = botCount(bots);
     mode=this.mode;this.traceBullet=traceBullet;this.hostId=null;this.botDifficulty=normalizeBotDifficulty(botDifficulty);
     this.clock = clock; this.rules = { ...RULES, ...rules }; this.players = new Map(); this.clients = new Map();
     this.scores = { T: 0, CT: 0 }; this.events = []; this.eventCounter = 0; this.botCounter = 0; this.spawnCounter = { T: 0, CT: 0 };
@@ -126,14 +126,16 @@ export class GameRoom {
     this.bomb = this.emptyBomb();
     this.nav = Array.isArray(MAP.nav) ? MAP.nav : [];
     this.navMap = new Map(this.nav.map(n => [String(n.id), n]));
-    this.grenades=new GrenadeSimulation({clock,raycastWorld,raycastContact:raycastWorldContact,onFire:(fire,config)=>this.burnPlayers(fire,config),emit:(type,fields)=>this.emit(type,fields),onExplosion:(grenade,config)=>this.explodeGrenade(grenade,config),onFlash:(grenade,config)=>this.flashGrenade(grenade,config)});
+    this.grenades=new GrenadeSimulation({clock,raycastWorld:privateMap?raycastGrenadeWorld:raycastWorld,raycastContact:raycastWorldContact,onFire:(fire,config)=>this.burnPlayers(fire,config),emit:(type,fields)=>this.emit(type,fields),onExplosion:(grenade,config)=>this.explodeGrenade(grenade,config),onFlash:(grenade,config)=>this.flashGrenade(grenade,config)});
     this.defuseKits=[];this.kitSerial=0;
     this.droppedWeapons=new DroppedWeapons({clock,raycastWorld});
     this.poseHistory=new PlayerTimeline(16);
+    this.mapBreakables=privateMap?.createBreakables?.()||null;
+    this.privateBots=privateMap?.createBots(this)||null;
   }
 
   emptyBomb() { return { state: 'none', carrierId: null, x: 0, y: 0, z: 0, site: null, plantedAt: 0, explodesAt: 0, planterId: null, actorId: null, action: null, progress: 0, remaining: 0 }; }
-  emit(type, fields = {}) { this.events.push({ type, id: `${this.code}:${++this.eventCounter}`, time: this.clock(), ...fields }); if (this.events.length > 300) this.events.splice(0, this.events.length - 300); }
+  emit(type, fields = {}) { this.privateBots?.onEvent(type,fields); this.events.push({ type, id: `${this.code}:${++this.eventCounter}`, time: this.clock(), ...fields }); if (this.events.length > 300) this.events.splice(0, this.events.length - 300); }
   count(team, humansOnly = false) { return [...this.players.values()].filter(p => p.team === team && (!humansOnly || !p.bot)).length; }
   get humanCount() { return this.clients.size; }
   get botCount(){return [...this.players.values()].filter(p=>p.bot).length;}
@@ -406,6 +408,7 @@ export class GameRoom {
 
   startRound() {
     if(this.match.status==='ended')return;
+    this.privateMap?.activate?.(this);this.mapBreakables?.reset();
     for(const p of this.players.values())if(p.controlledBotId)this.releaseBot(p.id);
     const now = this.clock();
     if(this.pendingTransition){
@@ -627,6 +630,7 @@ export class GameRoom {
   }
 
   fire(p, input, command=null) {
+    this.privateMap?.activate?.(this);
     if(p.weapon==='c4'||this.bomb.actorId===p.id&&this.bomb.action)return;
     const now=this.clock(),w=getWeapon(p.weapon),ammo=p.inventory[p.weapon];
     if(w.slot===4||this.match.status==='ended')return;
@@ -643,6 +647,7 @@ export class GameRoom {
     const origin=eye(p),pellets=[],hits=new Map();
     for(let pellet=0;pellet<(w.pellets||1);pellet++){
       const dir=sampleShotDirection(input.yaw,input.pitch,accuracy);
+      const breakableHit=this.mapBreakables?raycastWorldHit(origin,dir,w.range):null;
       let trace;
       if(this.traceBullet&&w.id!=='knife')trace=this.traceBullet({origin,direction:dir,weapon:w,shooter:p,players:targets.players,now,rayHitPlayer,raycastWorld});
       if(!trace){
@@ -655,6 +660,7 @@ export class GameRoom {
         }
         trace={end:{x:origin.x+dir.x*nearest,y:origin.y+dir.y*nearest,z:origin.z+dir.z*nearest},hitWorld:!victim&&worldDistance!==null&&worldDistance<=w.range,hits:victim?[{playerId:victim.id,distance:nearest,headshot,damageScale:1}]:[]};
       }
+      if(breakableHit&&!(trace.hits||[]).some(h=>h.distance<breakableHit.distance-.002))this.damageMapBreakable(breakableHit,w.damage,p);
       const accepted=[],hitIds=new Set();
       for(const result of trace.hits||[]){
         const victim=this.players.get(result.playerId);
@@ -676,7 +682,7 @@ export class GameRoom {
     }
     const representative=pellets.find(pellet=>pellet.hitId)||pellets[0];
     this.emit('shot',{shooterId:p.id,weapon:p.weapon,shotId:input.shotId||0,inputSeq:input.seq,zoomLevel,accuracy:accuracy.total,rewindMs:targets.rewindMs,aim:{yaw:input.yaw,pitch:input.pitch},origin,...representative,...(pellets.length>1?{pellets}: {})});
-    hearGunshot(this,p);if(p.bot&&w.zoomStyle==='scope')p.botAI.lastSniperShotAt=now;
+    if(!this.privateBots)hearGunshot(this,p);if(p.bot&&w.zoomStyle==='scope')p.botAI.lastSniperShotAt=now;
     for(const hit of hits.values()){
       if(this.match.status==='ended')break;
       hit.victim.armor=hit.armorState.armor;
@@ -689,10 +695,12 @@ export class GameRoom {
   }
 
   swingKnife(p,input,command=null){
+    this.privateMap?.activate?.(this);
     const now=this.clock(),heavy=input.fire2===true;
     if(!p.alive||(!input.fire&&!heavy)||now<p.nextShotAt||!p.inventory.knife||p.reloadEndsAt)return;
     const targets=this.shotTargets(command?.input.viewTime,command?.receivedAt??now),origin=eye(p),direction=directionFromAngles(input.yaw,input.pitch);
     const hit=traceKnife({origin,direction,shooter:p,players:targets.players,heavy,now,raycastWorld});
+    if(this.mapBreakables&&!hit.hitId){const wall=raycastWorldHit(origin,direction,heavy?32*.0254:48*.0254);if(wall)this.damageMapBreakable(wall,heavy?65:40,p);}
     const first=now-(p.lastKnifeAt??-Infinity)>1000;
     p.lastKnifeAt=now;p.lastShotTime=now;p.protectionUntil=0;p.nextShotAt=(command?Math.max(command.receivedAt,p.nextShotAt):now)+knifeInterval(heavy)*1000;
     this.emit('shot',{shooterId:p.id,weapon:'knife',shotId:input.shotId||0,inputSeq:input.seq,heavy,origin,...hit,headshot:false,zoomLevel:0,accuracy:0,rewindMs:targets.rewindMs,aim:{yaw:input.yaw,pitch:input.pitch}});
@@ -702,6 +710,12 @@ export class GameRoom {
     victim.health=Math.max(0,victim.health-damage);if(victim.bot)victim.botAI.hurtAt=now;
     this.emit('hit',{shooterId:p.id,targetId:victim.id,weapon:'knife',damage,heavy,backstab:hit.backstab,headshot:false,armor:victim.armor>0});
     if(victim.health===0)this.kill(victim,p,'knife',false,{heavy,backstab:hit.backstab});
+  }
+
+  damageMapBreakable(hit,damage,actor){
+    const object=this.mapBreakables?.atTriangle(2,hit.triangle);
+    if(!object||!this.mapBreakables.damage(object.id,damage))return false;
+    this.emit('map_breakable_broken',{breakableId:object.id,origin:hit.point,actorId:actor.id,material:object.material});return true;
   }
 
   reload(p) {
@@ -743,7 +757,7 @@ export class GameRoom {
     Object.assign(this.bomb, copyPoint(p), { actorId: null, action: null, progress: 0 });
   }
 
-  siteAt(p) { return Object.entries(MAP.sites || {}).find(([, site]) => lengthXZ(site, p) <= site.radius && Math.abs(site.y - p.y) < 3)?.[0] || null; }
+  siteAt(p) { if(this.privateMap)return Object.entries(MAP.sites||{}).find(([,s])=>{const b=s.bounds;return b&&p.x>=b.min[0]&&p.x<=b.max[0]&&p.z>=b.min[2]&&p.z<=b.max[2]&&p.y>=b.min[1]-.2&&p.y<=b.max[1]+.2;})?.[0]||null; return Object.entries(MAP.sites || {}).find(([, site]) => lengthXZ(site, p) <= site.radius && Math.abs(site.y - p.y) < 3)?.[0] || null; }
 
   bombIntent(p,input){
     if(!p?.alive||!p.grounded||this.mode!=='defuse'||this.round.phase!=='live')return null;
@@ -841,6 +855,7 @@ export class GameRoom {
   }
 
   botInput(p, dt) {
+    if(this.privateBots)return this.privateBots.input(p,dt);
     const now=this.clock(),ai=p.botAI,input=neutralInput(),from=eye(p),skill=effectiveBotSkill(this,p);
     input.yaw=p.yaw||0;input.pitch=p.pitch||0;input.slot=combatSlot(p);
     if(now>=ai.nextThinkAt){
@@ -909,6 +924,7 @@ export class GameRoom {
   }
 
   tick(dt = 1 / TICK_RATE) {
+    this.privateMap?.activate?.(this);
     const now = this.clock();
     if(this.match.status==='ended')return;
     this.maybeStart();
@@ -1001,7 +1017,7 @@ export class GameRoom {
       roundKills:p.roundKills||0,lifeKills:p.lifeKills||0,killCards:p.killCards||[],
       respawnIn: p.respawnAt ? Math.max(0, (p.respawnAt - now) / 1000) : 0, lastShotTime: p.lastShotTime }));
     const events = drainEvents ? this.events.splice(0) : [...this.events];
-    return { type: 'snapshot', time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),botDifficulty:this.botDifficulty,desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,weaponRequests:privateRequests(this),droppedWeapons:this.droppedWeapons.snapshot(),defuseKits:this.defuseKits.map(k=>({...k})),...this.grenades.snapshot(),
+    return { type: 'snapshot', ...(this.privateMap?{mapId:this.privateMap.mapId,mapSignature:this.privateMap.mapSignature,physicsSha256:this.privateMap.config.physicsSha256,mapBreakables:this.mapBreakables?.snapshot()||[]}:{}), time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),botDifficulty:this.botDifficulty,desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,weaponRequests:privateRequests(this),droppedWeapons:this.droppedWeapons.snapshot(),defuseKits:this.defuseKits.map(k=>({...k})),...this.grenades.snapshot(),
       round: { ...this.round, timeLeft: this.round.phaseEndsAt ? Math.max(0, (this.round.phaseEndsAt - now) / 1000) : 0 },
       bomb: { ...this.bomb, remaining: this.bomb.state === 'planted' ? Math.max(0, (this.bomb.explodesAt - now) / 1000) : 0 }, scores: { ...this.scores }, events };
   }

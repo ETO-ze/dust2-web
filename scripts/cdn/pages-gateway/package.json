@@ -1,0 +1,12 @@
+{
+  "name": "dustii-downloads-pages-gateway",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:check": "wrangler pages functions build --build-output-directory public --outdir build",
+    "pretest:runtime": "npm run build:check",
+    "test:runtime": "node test-runtime.mjs"
+  },
+  "devDependencies": { "wrangler": "4.147.0", "miniflare": "5.20261001.0-alpha" },
+  "engines": { "node": ">=22.12.0" }
+}

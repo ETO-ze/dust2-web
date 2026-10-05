@@ -3,6 +3,7 @@ import { SKINS, DEFAULT_SKINS, getSkin, normalizeSkinLoadout } from '../shared/s
 import { getWeapon } from '../shared/weapons.js';
 import { loadSkin,skinSaved,downloadSkin } from './skin-assets.js';
 import './skins.css';
+import {imageAssetURL} from './image-asset-url.js';
 
 export function readSkinLoadout(){try{const saved=JSON.parse(preferences.getItem('dust2.skins.v1')||'{}');if(!preferences.getItem('dust2.skins.v2')){for(const id of ['ak47','m4a1','awp','pistol','usp','knife']){if(['ak47-wild-lotus','m4a1-blue-phosphor','awp-gungnir','glock-emerald','usp-printstream','karambit-sapphire'].includes(saved[id]))delete saved[id];}preferences.setItem('dust2.skins.v1',JSON.stringify(saved));preferences.setItem('dust2.skins.v2','1');}return normalizeSkinLoadout(saved);}catch{return {...DEFAULT_SKINS};}}
 export class SkinMenu{
@@ -24,7 +25,7 @@ export class SkinMenu{
     const grid=this.element.querySelector('#skin-grid');grid.replaceChildren();
     for(const skin of SKINS.filter(s=>s.weapon===this.weapon)){
       const button=document.createElement('button');button.className='skin-item';button.classList.toggle('selected',this.loadout[skin.weapon]===skin.id);button.disabled=this.busy;
-      const image=document.createElement('img');image.src=skin.preview;image.loading='lazy';image.alt=skin.name;
+      const image=document.createElement('img');image.src=imageAssetURL(skin.preview);image.loading='lazy';image.alt=skin.name;
       const name=document.createElement('b');name.textContent=skin.name;
       const label=document.createElement('small');label.textContent=this.loadout[skin.weapon]===skin.id?'已装备':skin.isDefault?'默认 · 崭新出厂':skin.downloadRequired?(this.downloaded.has(skin.id)?'已下载 · 点击装备':`下载刀型与动作 · ${((skin.bytes+skin.animation.bytes)/1048576).toFixed(1)} MB`):`按需下载 · ${(skin.bytes/1048576).toFixed(1)} MB`;
       button.append(image,name,label);button.onclick=()=>this.equip(skin);grid.append(button);

@@ -1,4 +1,4 @@
-/* Only this /dust2/ installation is controlled. No API response is cached. */
+/* Cache this installation's lobby, never another map's navigation or game API. */
 const SCOPE=new URL(self.registration.scope);
 const SHELL=`dust2-shell-v1:${SCOPE.pathname}`;
 const ASSETS=`dust2-assets-v1:${SCOPE.pathname}`,META=`dust2-meta-v1:${SCOPE.pathname}`;
@@ -6,12 +6,13 @@ const HOME=new URL('./',SCOPE).href,MANIFEST=new URL('assets/asset-manifest.json
 const local=url=>url.origin===SCOPE.origin&&url.pathname.startsWith(SCOPE.pathname);
 const hashKey=hash=>new URL(`__asset_cache__/sha256/${hash}`,SCOPE).href;
 const indexKey=url=>new URL(`__asset_cache__/url/${encodeURIComponent(url.href)}`,SCOPE).href;
+const mapResource=url=>/(?:^|\/)assets\/(?:valve-dust2|map-cs2|map-mobile)(?:\/|$)|(?:^|\/)maps(?:\/|$)/.test(url.pathname);
 
 function dependencies(text,url,type){
   const found=new Set();let match;
-  const patterns=type==='html'?[/\b(?:src|href)\s*=\s*["']([^"']+)["']/gi]:type==='css'?[/url\(\s*["']?([^\s"')]+)["']?\s*\)/gi,/\@import\s+["']([^"']+)["']/gi]:[/\b(?:import|export)\s*(?:[^;\n]*?\bfrom\s*)?["']([^"']+)["']/gi,/\bimport\(\s*["']([^"']+)["']\s*\)/gi];
+  const patterns=type==='html'?[/[\s<](?:src|href)\s*=\s*["']([^"']+)["']/gi]:type==='css'?[/url\(\s*["']?([^\s"')]+)["']?\s*\)/gi,/\@import\s+["']([^"']+)["']/gi]:[/\b(?:import|export)\s*(?:[^;\n]*?\bfrom\s*)?["']([^"']+)["']/gi,/\bimport\(\s*["']([^"']+)["']\s*\)/gi];
   for(const re of patterns)while((match=re.exec(text))){
-    try{const child=new URL(match[1],url);if(local(child)&&/\.(?:js|mjs|css|png|webp|jpg|jpeg|svg|ico|woff2?|webmanifest)(?:$|\?)/i.test(child.pathname+child.search))found.add(child.href);}catch{}
+    try{const child=new URL(match[1],url);if(local(child)&&!mapResource(child)&&/\.(?:js|mjs|css|png|webp|jpg|jpeg|svg|ico|woff2?|webmanifest)(?:$|\?)/i.test(child.pathname+child.search))found.add(child.href);}catch{}
   }
   return found;
 }
@@ -27,7 +28,7 @@ async function cacheShellResponse(homeResponse){
     const response=await fetch(url,{cache:'reload'});if(!response.ok)throw new Error(`大厅资源不可用: ${url}`);
     const ext=new URL(url).pathname;
     if(/\.(?:m?js|css)$/.test(ext))for(const dep of dependencies(await response.clone().text(),url,ext.endsWith('.css')?'css':'js'))if(!seen.has(dep))queue.push(dep);
-    if(ext.endsWith('.webmanifest')){const manifest=await response.clone().json();for(const icon of manifest.icons||[]){const u=new URL(icon.src,url);if(local(u))queue.push(u.href);}}
+    if(ext.endsWith('.webmanifest')){const manifest=await response.clone().json();for(const icon of manifest.icons||[]){const u=new URL(icon.src,url);if(local(u)&&!mapResource(u))queue.push(u.href);}}
     await cache.put(url,response);
   }
   await cache.put(HOME,homeResponse);
@@ -62,11 +63,15 @@ self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
   if(request.method!=='GET'||!local(url)||url.pathname.startsWith('/__installed__/'))return;
   const relative=url.pathname.slice(SCOPE.pathname.length);
-  if(/^(?:api(?:\/|$)|ws(?:\/|$)|health(?:\/|$)|__asset_cache__\/)/.test(relative))return;
+  if(/^(?:play(?:\/|$)|maps(?:\/|$)|api(?:\/|$)|ws(?:\/|$)|health(?:\/|$)|config(?:\/|$)|__asset_cache__\/)/.test(relative))return;
+  // Bootstrap, catalog and delivery settings must be read from the server.
+  // Asset JSON keeps its existing SHA-based offline behavior.
+  if(!relative.startsWith('assets/')&&/\.json$/.test(url.pathname))return;
   // The page refreshes this small manifest and falls back to its metadata
   // copy itself. Serving an old asset index here would hide new releases.
   if(/^assets\/asset-manifest(?:-mobile)?\.json$/.test(relative))return;
   if(request.mode==='navigate'){
+    if(url.pathname!==SCOPE.pathname&&url.pathname!==new URL('index.html',SCOPE).pathname)return;
     event.respondWith((async()=>{
       try{const response=await fetch(request);if(!response.ok)throw new Error('大厅暂时不可用');event.waitUntil(cacheShellResponse(response.clone()).catch(()=>{}));return response;}
       catch{const cache=await caches.open(SHELL);return await cache.match(HOME)||new Response('<!doctype html><meta charset="utf-8"><title>Dust II</title><h1>尚未保存离线大厅</h1><p>请联网打开一次；多人对战需要网络。</p>',{status:503,headers:{'content-type':'text/html; charset=utf-8'}});}

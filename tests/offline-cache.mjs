@@ -24,7 +24,11 @@ async function fixture(){
   globalThis.document={baseURI:base};globalThis.caches=cache;
   Object.defineProperty(globalThis,'navigator',{configurable:true,value:{onLine:true,storage:{persisted:async()=>true,estimate:async()=>({usage:4096,quota:1e9})}}});
   globalThis.fetch=async(value,options={})=>{
-    const url=new URL(key(value));requests.push(url.href);
+    const url=new URL(key(value));
+    // These fixtures exercise asset caching on an older same-origin server.
+    // The new configuration probe is deliberately outside the asset counter.
+    if(url.pathname==='/dust2/download-config.json')return new Response('',{status:404});
+    requests.push(url.href);
     if(options.signal?.aborted)throw options.signal.reason;
     const valueOrHandler=routes.get(url.pathname);
     if(typeof valueOrHandler==='function')return valueOrHandler(url,options);
@@ -119,6 +123,18 @@ test('clear keeps the offline shell and other installation caches',async()=>{
   const stats=await f.api.clearAssetCache();assert.equal(stats.count,0);assert.equal(stats.complete,false);
   assert.ok((await f.cache.keys()).includes('dust2-shell-v1:/dust2/'));
   assert.ok((await f.cache.keys()).includes('dust2-assets-v1:/another/'));
+});
+test('private map blocks are counted and clearable without removing another private library or public cache',async()=>{
+ const f=await fixture();f.files({'assets/weapon.bin':'gear'});
+ globalThis.__DUST2_PRIVATE_MAP__={renderUrl:'https://example.test/review/maps/de_inferno/render/map.gltf'};
+ try{
+  const name='dust2-private-transport-v1:/review/maps/',maps=await f.cache.open(name);
+  await maps.put('https://example.test/review/__private_transport_cache__/block.gz',new Response('compressed',{headers:{'Content-Length':'10'}}));
+  await f.cache.open('dust2-private-transport-v1:/other/maps/');await f.cache.open('dust2-assets-v1:/');
+  const stats=await f.api.getAssetCacheStats();assert.equal(stats.privateMapBytes,10);assert.equal(stats.bytes,10);
+  assert.equal((await f.api.clearAssetCache()).privateMapBytes,0);assert.equal((await f.cache.open(name)).entries.size,0);
+  assert((await f.cache.keys()).includes('dust2-private-transport-v1:/other/maps/'));assert((await f.cache.keys()).includes('dust2-assets-v1:/'));
+ }finally{delete globalThis.__DUST2_PRIVATE_MAP__;}
 });
 
 async function workerFixture(prefix='/dust2/'){

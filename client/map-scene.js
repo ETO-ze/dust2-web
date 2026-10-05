@@ -14,7 +14,8 @@ const assetUrl=path=>new URL(path.replace(/^\//,''),document.baseURI).href;
  * separately sourced reduced collision mesh for deterministic multiplayer;
  * render/collision alignment is checked by map-render-validate.mjs.
  */
-export async function createMapScene(scene,{onProgress=()=>{}}={}) {
+export async function createMapScene(scene,{onProgress=()=>{},signal}={}) {
+  if(globalThis.__DUST2_PRIVATE_MAP__)return (await import('./private-map-scene.js')).createPrivateMapScene(scene,{onProgress,signal});
   onProgress('载入 CS2 原版 Dust II 场景…');
   const manager=new THREE.LoadingManager();
   useDownloadedAssets(manager);

@@ -6,12 +6,36 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
+import {validateDownloadConfig} from '../shared/download-config.js';
 
 const TYPES = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mjs':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8', '.json':'application/json', '.webmanifest':'application/manifest+json', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.glb':'model/gltf-binary', '.gltf':'model/gltf+json', '.wasm':'application/wasm', '.mp3':'audio/mpeg', '.ogg':'audio/ogg', '.wav':'audio/wav', '.ico':'image/x-icon' };
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const GAME_ORIGIN='https://cs2.duskrain.cn/';
+const DOWNLOAD_CONFIG_URL=new URL('download-config.json',GAME_ORIGIN).href;
+const AVAILABILITY_STATUS=new Set([404,408,429,500,502,503,504]);
+const networkError=error=>error?.name!=='AbortError'&&(error instanceof TypeError||error?.name==='NetworkError');
 
-export async function startPortable({ root = appRoot, mode = 'online', port = mode === 'offline' ? 27195 : 27185, attempts = 10 } = {}) {
+async function trustedDownloadConfig(fetcher,signal){
+  signal.throwIfAborted();
+  const configSignal=AbortSignal.any([signal,AbortSignal.timeout(15000)]);
+  const response=await fetcher(new URL(DOWNLOAD_CONFIG_URL),{method:'GET',signal:configSignal,
+    cache:'no-store',redirect:'error',credentials:'omit',headers:{Accept:'application/json','Accept-Encoding':'identity'}});
+  try{
+    configSignal.throwIfAborted();
+    if(response.url&&new URL(response.url).href!==DOWNLOAD_CONFIG_URL||['opaque','opaqueredirect'].includes(response.type))throw Error('Invalid download configuration response');
+    if(response.status===404)return validateDownloadConfig({schemaVersion:1},GAME_ORIGIN);
+    if(!response.ok)throw Error('Download configuration unavailable');
+    if(Number(response.headers.get('content-length'))>16384)throw Error('Download configuration too large');
+    const chunks=[];let length=0;
+    if(response.body)for await(const chunk of response.body){configSignal.throwIfAborted();length+=chunk.byteLength;if(length>16384)throw Error('Download configuration too large');chunks.push(chunk);}
+    configSignal.throwIfAborted();
+    return validateDownloadConfig(JSON.parse(Buffer.concat(chunks).toString('utf8')),GAME_ORIGIN);
+  }finally{await response.body?.cancel().catch(()=>{});}
+}
+
+export async function startPortable({ root = appRoot, mode = 'online', port = mode === 'offline' ? 27195 : 27185, attempts = 10, downloadFetcher = fetch } = {}) {
   if (!['online', 'offline'].includes(mode)) throw new Error('Invalid play mode');
+  if(typeof downloadFetcher!=='function')throw Error('Invalid download transport');
   const dist = await realpath(path.join(root, 'dist'));
   const originalHTML = await readFile(path.join(dist, 'index.html'), 'utf8');
   const instance = createHash('sha256').update(root + mode + originalHTML).digest('hex');
@@ -29,13 +53,41 @@ export async function startPortable({ root = appRoot, mode = 'online', port = mo
     let pathname;
     try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); } catch { res.writeHead(400); res.end(); return; }
     if(pathname.startsWith('/__remote_assets__/assets/')){
-      const relative=pathname.slice('/__remote_assets__/'.length);
-      if(relative.includes('..')||relative.includes('\\')||relative.includes('\0')){res.writeHead(400);res.end();return;}
+      const relative=pathname.slice('/__remote_assets__/assets/'.length),rawPath=req.url.split('?')[0];
+      if(!relative||/[\\%?#\x00-\x1f\x7f]/.test(relative)||relative.split('/').some(part=>!part||part==='.'||part==='..')||/%(?:2e|2f|5c)/i.test(rawPath)){res.writeHead(400);res.end();return;}
       const controller=new AbortController();res.once('close',()=>controller.abort());
-      const remote=new URL(relative,'https://cs2.duskrain.cn/');remote.search=new URL(req.url,'http://localhost').search;
-      const response=await fetch(remote,{method:req.method,signal:controller.signal,redirect:'error'});
-      res.writeHead(response.status,{'Content-Type':response.headers.get('content-type')||'application/octet-stream','Cache-Control':'no-store'});
-      if(req.method==='HEAD'||!response.body)res.end();else {const stream=Readable.fromWeb(response.body);stream.on('error',()=>res.destroy());stream.pipe(res);}
+      try{
+        // Only this fixed game endpoint can choose the upstream. Browsers keep
+        // using the loopback proxy, so no loopback origin needs CDN CORS access.
+        const delivery=await trustedDownloadConfig(downloadFetcher,controller.signal);
+        const original=new URL('./assets/'+relative,GAME_ORIGIN),remote=delivery.assetBaseURL?new URL('./'+relative,delivery.assetBaseURL):new URL(original);
+        original.search=remote.search=new URL(req.url,'http://localhost').search;
+        const headers={'Accept-Encoding':'identity'};
+        for(const name of ['range','if-none-match','if-range','if-modified-since'])if(req.headers[name]!==undefined)headers[name]=req.headers[name];
+        const request=target=>{controller.signal.throwIfAborted();return downloadFetcher(target,{method:req.method,signal:controller.signal,redirect:'error',credentials:'omit',headers});};
+        const mirrored=remote.href!==original.href;let response,fromMirror=mirrored;
+        try{response=await request(remote);}catch(error){
+          controller.signal.throwIfAborted();
+          if(!mirrored||!delivery.fallbackToGameServer||!networkError(error))throw error;
+          response=await request(original);fromMirror=false;
+        }
+        if(fromMirror&&delivery.fallbackToGameServer&&AVAILABILITY_STATUS.has(response.status)){
+          await response.body?.cancel().catch(()=>{});response=await request(original);
+        }
+        controller.signal.throwIfAborted();
+        // fetch transparently decodes encoded HTTP bodies. Reject an upstream
+        // that ignores identity instead of forwarding a stale encoded size.
+        if(response.headers.get('content-encoding')&&!/^identity$/i.test(response.headers.get('content-encoding'))){await response.body?.cancel().catch(()=>{});throw Error('Encoded download response');}
+        const outgoing={'Content-Type':response.headers.get('content-type')||'application/octet-stream','Cache-Control':'no-store'};
+        for(const name of ['content-length','content-range','accept-ranges','etag','last-modified']){const value=response.headers.get(name);if(value!==null)outgoing[name]=value;}
+        res.writeHead(response.status,outgoing);
+        if(req.method==='HEAD'||!response.body){await response.body?.cancel().catch(()=>{});res.end();}
+        else {const stream=Readable.fromWeb(response.body);stream.on('error',()=>res.destroy());stream.pipe(res);}
+      }catch{
+        if(res.destroyed)return;
+        if(res.headersSent){res.destroy();return;}
+        res.writeHead(502,{'Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:'Remote asset unavailable.');
+      }
       return;
     }
     if (pathname === '/portable-health') {

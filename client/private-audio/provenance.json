@@ -1,0 +1,48 @@
+{
+  "source": "User-installed Counter-Strike 2 / Valve",
+  "selection": "Original physics sounds selected for metal_sheetmetal and wood_furniture; models do not specify an exact sound event.",
+  "files": [
+    {
+      "material": "metal",
+      "file": "metal-break.mp3",
+      "source": "sounds/physics/metal/metal_box_break1.vsnd_c",
+      "sourceCrc32": "b4e7c35c",
+      "extractedSha256": "1f48d7d3c326e713309f8fd2da96e3a69d6bd232e4357a9c7ac87f90470c3a89",
+      "sha256": "db7024e6610261c7e52db408505ef9d73a54e24684405fbf5e26554c6c4815c1",
+      "bytes": 16582,
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "0.848186"
+      }
+    },
+    {
+      "material": "wood",
+      "file": "wood-break.mp3",
+      "source": "sounds/physics/wood/wood_furniture_break1.vsnd_c",
+      "sourceCrc32": "d23cc105",
+      "extractedSha256": "9203361e43732e067c265dc76fe03246f5e36c24300dac219b6b1ce9f7bbc452",
+      "sha256": "faf923be5b214185b1efbddd12dea942485fb39f54e7e8237157fd0bd6fe0a5b",
+      "bytes": 14257,
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 1
+        }
+      ],
+      "format": {
+        "duration": "1.227370"
+      }
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import { AGENT_ASSETS } from '../shared/agent-assets.js';
 import { uiIcon } from './ui-icons.js';
 import './match-presentation.css';
+import {imageAssetURL} from './image-asset-url.js';
 
 // Original team/weapon icons; transitions are a browser implementation informed
 // by Valve's endofmatch-win / hudwinpanel Panorama styles. No game logic here.
@@ -49,7 +50,7 @@ export class MatchPresentation {
     const players=(snapshot.players||[]).filter(p=>p.teamId? p.teamId===match.winnerTeamId:p.team===winner?.side).sort((a,b)=>(b.kills||0)-(a.kills||0));
     this.result.querySelector('.match-winners').replaceChildren(...players.slice(0,5).map((p,i)=>{
       const card=document.createElement('div');card.className='result-player';const assetPreview=AGENT_ASSETS[p.agentId]?.preview,preview=typeof assetPreview==='string'?assetPreview:assetPreview?.file;
-      if(preview){const img=document.createElement('img');img.src=preview;img.alt='';card.append(img);}else card.append(uiIcon(p.team));
+      if(preview){const img=document.createElement('img');img.src=imageAssetURL(preview);img.alt='';card.append(img);}else card.append(uiIcon(p.team));
       const badge=document.createElement('small');badge.textContent=i===0?'最多击杀':p.bot?'机器人':'获胜队伍';
       const name=document.createElement('b');name.textContent=p.name||'玩家';
       const stats=document.createElement('span');stats.textContent=`${p.kills||0} 击杀 · ${p.deaths||0} 死亡 · ${p.assists||0} 助攻`;

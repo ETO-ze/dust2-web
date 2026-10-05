@@ -1,59 +1,85 @@
-# DUST II · 在线版 1.2.0
+# DUSKRAIN · 网页战术对战
 
-**用 GPT-6 做一张能和朋友一起玩的沙二。手机、电脑，同一个房间。**
+GPT-6 参与开发的第一人称射击项目，支持网页、Android 与 Windows 在线联机，包含服务器权威判定、战术人机与移动端操作。
 
-[进入网页版](https://cs2.duskrain.cn/) · [Android 1.2.0 下载](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.2.0) · [操作与构建说明](docs/ONLINE-1.2.md) · [验证记录](docs/validation/online-v1.2.0.md)
+[进入网页版](https://cs2.duskrain.cn/) · [安装包下载](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.2.0-cdn.1) · [地图池说明](docs/PUBLIC-MAP-POOL.md) · [验证范围](docs/validation/public-map-pool.md)
 
-创建房间，选择 CT / T，邀请异地朋友加入。双方共 10 个席位，人机可填充空位；支持 13 胜爆破、12:12 加时，以及 100 击杀团队死斗。网页与在线安装包互通，服务器统一计算命中、经济和人机行为。
+![公开地图池与房间配置](docs/screenshots/public-map-pool-desktop.png)
 
-![在线版安卓模拟器渲染界面](docs/screenshots/online-android-v12.png)
+*新版网页首页：地图选择、模式配置、人机数量、房间创建与联机大厅。*
 
-*Android 11 模拟器中的 WebView 游戏截图，连接独立联机测试服务器；不是 P60 真机性能展示。*
+## 地图池与资源加载
 
-## 手机瞄准，更容易上手
+| 地图 | 网页入口 | 当前开放范围 |
+| --- | --- | --- |
+| Dust II · 炙热沙城 II | [进入沙二](https://cs2.duskrain.cn/play/de_dust2/) | 默认地图，支持人机与多人房间。 |
+| Mirage · 米拉吉 | [进入米拉吉](https://cs2.duskrain.cn/play/de_mirage/) | 一个共享房间，最多 10 名玩家。 |
 
-在「设置 → 触屏」开启陀螺仪，用手机转动微调视角，手指继续负责转身、开火和走位。默认对局中开启，可改为仅开镜或关闭；两轴灵敏度、开镜倍率、反转和校准独立设置。
+首页仅加载界面、地图预览与房间列表。选择地图不会启动三维场景；创建或加入房间后，才下载所选地图的资源。通用装备与声音跨地图复用，已下载文件按 SHA 缓存，资源变化时补下载对应文件。
 
-轻度辅助瞄准默认开启，先把准星移近可见敌人，再轻微跟随躯干。墙体、烟雾和致盲会取消辅助，主动拉开即可解除；不自动开火、不锁头、不代替垂直压枪。命中仍由联机服务器判定。
+地图、材质、武器和声音通过独立下载域名分发；房间、人机、命中和经济仍由游戏服务器计算。资源缓存减少重复传输，进入场景时仍需材质解码、碰撞初始化与显卡准备。
 
-正式安卓包继续使用 **WebView**。另提供独立 **GeckoView ARM64 测试包**，与正式包共存、读取相同基础素材、连接同一服务器。**P60 性能对比尚未验收，没有把测试内核替换为正式版。**
+![米拉吉网页对战场景](docs/screenshots/public-mirage-gameplay.png)
 
-![陀螺仪与辅助瞄准设置](docs/screenshots/online-motion-settings-v12.png)
+*公开米拉吉入口的电脑浏览器对战验证截图。*
 
-*桌面 Chrome 触屏模式的设置检查截图。设置支持本地保存与备份导入。*
+## 对战功能
 
-## 已有对战功能继续保留
-
-| 改进 | 实际变化 |
+| 功能 | 作用 |
 | --- | --- |
-| 更多守点选择 | 检查落脚位置、视线与路线，随回合轮换，减少重复站位和无效守点。 |
-| 有依据的回防 | 根据目击、枪声和队友报告分人支援，另一点留守；真人实际位置参与支援判断。 |
-| 更克制的道具决策 | 限制绕路；携包人机需有时间和队友保护，减少为了投掷耽误下包。 |
-| 三档人机 | 轻松 / 普通 / 困难，默认普通，由房主调整。普通与困难保留视觉瞄准、平滑转向和连败增强。 |
-| 自定义触控布局 | 拖动按键、调整大小与透明度，导入导出布局代码，也纳入设置备份。 |
-| 独立帧率上限 | 30 / 60 / 90 / 120 FPS 或不限；手机默认 60，桌面默认不限，只限制渲染。 |
-| 安装包读取本地素材 | Android 自带基础地图、默认装备与声音，额外外观按需下载；Windows 保留完整素材。 |
+| 多人房间 | 双方共 10 个席位，支持 CT / T 选择、房间码加入与邀请链接分享，人机填充空位。 |
+| 竞技爆破 | 率先获得 13 回合胜利；每 12 回合换边，12:12 进入加时。 |
+| 团队死斗 | 团队累计 100 次击杀获胜。 |
+| 战术人机 | 轻松、普通、困难三档；结合视线、枪声与队友信息选择路线和回防，保留平滑视觉瞄准。 |
+| 装备与经济 | 商店购买、退枪、护甲、拆弹器、捡枪与丢枪；支持五类投掷物与 C4。 |
+| 战况与协作 | 击杀反馈、爆头与助攻、死亡观战、E 接管人机、聊天和计分板。 |
+| 个性化设置 | 皮肤选择、准星、灵敏度、亮度、清晰度、画面比例与帧率上限。 |
 
-![拖动按键并调整大小和透明度](docs/screenshots/online-layout-v11.png)
+打开菜单不会暂停在线对局。切到后台时清理操作输入，返回后重新同步服务器状态。
 
-*桌面 Chrome 触屏布局检查截图，960×440 CSS 像素。*
+## 移动端操作
 
-商店、退枪、护甲与拆弹器、五类道具、C4、捡枪丢枪、死亡观战、E 接管人机、聊天和经济系统继续保留。画质、清晰度、亮度、画面比例和准星仍可独立设置。在线对局在打开菜单或切后台后继续进行，返回时重新接收服务器状态。
+触屏摇杆负责移动，右侧按键支持开火、跳跃、切枪与投掷。布局可拖动、缩放、调整透明度，并通过布局代码或设置备份保存。
 
-## 选择你的入口
+陀螺仪支持对局中开启、仅开镜与关闭；提供两轴灵敏度、开镜倍率、反转和校准。轻度辅助瞄准在准星接近可见敌人时跟随躯干，遮挡、烟雾与致盲会取消辅助，命中仍由服务器判定。
 
-- **网页：** 直接打开 [cs2.duskrain.cn](https://cs2.duskrain.cn/)，素材按哈希缓存，更新只补下载变化文件。
-- **Android 正式包：** 下载 [DustII-Android-1.2.0.apk](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0/DustII-Android-1.2.0.apk)。Android 8+、WebView 110+ 和 WebGL 2；沿用包名和签名，直接覆盖在线旧版，保留设置。基础素材在包内，联机仍需网络。
-- **GeckoView 内核测试：** 下载 [DustII-Gecko-Test-1.2.0.apk](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0/DustII-Gecko-Test-1.2.0.apk)。面向 Android 8+ ARM64 手机，可与正式包并存；在「本地资源」导入设置备份。仅用于功能和性能对比。
-- **Windows 10/11 x64：** 从[发布页](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.1.0)下载 ZIP，完整解压，双击「开始游戏-在线联机.cmd」。包内含运行时，无需安装 Node；原有「开始游戏-离线机器人.cmd」也保留。
-- **独立纯离线版：** [离线 0.2.0 下载](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.2.0)与 [offline-v1 源码](https://github.com/ETO-ze/dust2-web/tree/offline-v1)继续独立保留，可与 Android 在线包共存。
+<img src="docs/screenshots/public-map-pool-mobile.png" alt="手机尺寸下的地图池与房间配置" width="360">
 
-本地资源可以减少重复下载和游戏服务器的带宽争用，但不会消除网络线路延迟。设置备份入口在「本地资源」。P60 真机的温度、持续帧率和触控手感仍需实际验收。
+*390×844 CSS 像素的浏览器布局检查截图。*
 
-## 开发与来源
+正式 Android 包使用 WebView；另有独立 GeckoView ARM64 测试包供内核比较。P60 真机持续帧率、温度和两种内核的对比尚未验收，正式内核保持 WebView。
 
-Node 22.12+：`npm ci` → `npm run assets:fetch` → `npm run build` → `npm start`。测试使用 `node --test --test-concurrency=2 tests/*.mjs`。安装包构建见[在线版说明](docs/ONLINE-1.2.md)。
+## 安装与访问
 
-参考 [henhaogame/dust2-offline](https://github.com/henhaogame/dust2-offline) 的离线、触控和部分人机设计，复用本项目离线 0.2.0 的独立决策模块，并补充联机适配。
+| 入口 | 适用场景 | 下载与要求 |
+| --- | --- | --- |
+| 网页 | 直接访问地图池，与朋友在线对战。 | [cs2.duskrain.cn](https://cs2.duskrain.cn/)；首次进入所选地图需要下载资源。 |
+| Android 正式包 | 基础素材随包安装，减少重复下载。 | [1.2.0-cdn.1 APK](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0-cdn.1/DustII-Android-1.2.0-cdn.1.apk)；Android 8+、WebView 110+、WebGL 2，沿用在线包名与签名。 |
+| Windows 本地联机包 | 本地素材与运行时，连接正式联机服务器。 | [Windows x64 ZIP](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0-cdn.1/DustII-Windows-x64-20261004-102629.zip)；解压后运行 `Start-Game.cmd`。 |
+| GeckoView 测试包 | 对比 Android 浏览器内核，可与正式包共存。 | [GeckoView ARM64 APK](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0/DustII-Gecko-Test-1.2.0.apk)。 |
+| 独立离线版 | 无网络环境下与人机对战。 | [离线 0.2.0](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.2.0) · [offline-v1 源码](https://github.com/ETO-ze/dust2-web/tree/offline-v1)。 |
 
-个人体验项目，非 Valve 官方 CS2，也不含 Source 2 引擎。素材、音乐和第三方组件归属见[许可说明](LICENSE.md)与[素材来源](docs/ASSETS.md)。
+本次地图池更新针对网页版。已发布的 Android 与 Windows 包仍使用沙二入口；下载附件未因网页更新而重新打包。在线对局仍需要网络，本地素材与 CDN 不会消除线路延迟。
+
+## 开发与验证
+
+需要 Node.js 22.12+：
+
+```bash
+npm ci
+npm run assets:fetch
+npm run build
+npm start
+```
+
+运行自动测试：`node --test --test-concurrency=1 tests/*.mjs`。CDN 工具与配置见 [CDN 自动化说明](docs/CDN-AUTOMATION.md)。
+
+公开源码包含网页菜单、联机客户端、地图运行时与 CDN 下载工具。原始地图导出、私有地图库、测试入口及部署诊断不包含在仓库内；自行部署米拉吉需要另行准备匹配签名的地图、碰撞与导航数据。沙二素材继续沿用现有获取流程。
+
+地图池已进行实际浏览器进入、沙二移动与开火、米拉吉九人机和双客户端 WSS 加入／退出、共享缓存与首页按需加载验证。桌面、手机横屏和竖屏布局均已检查；这些结果不等同于 P60 真机或十名真人长时压力验收。详细范围见 [地图池说明](docs/PUBLIC-MAP-POOL.md)。
+
+## 项目与素材来源
+
+参考 [henhaogame/dust2-offline](https://github.com/henhaogame/dust2-offline) 的离线、触控和部分人机设计，并复用本项目离线 0.2.0 的决策模块进行联机适配。
+
+个人体验项目，非 Valve 官方 CS2，不包含 Source 2 引擎。素材、音乐和第三方组件的归属见 [许可说明](LICENSE.md) 与 [素材来源](docs/ASSETS.md)。

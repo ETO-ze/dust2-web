@@ -6,6 +6,9 @@ import {UTILITY_ASSETS} from '../shared/utility-assets.js';
 import {CLIENT_BUILD,ASSET_VERSION} from '../shared/online-build.js';
 const root=path.resolve(process.env.DUSTII_WEB_DIST||'dist');
 const stage=path.resolve(process.env.DUSTII_INSTALLED_CLIENT||'artifacts/installed-client');
+const shellNames=new Set(['index.html','sw.js','manifest.webmanifest']);
+for(const entry of await fs.readdir(root))if(entry.endsWith('.html')&&entry!=='index.html')throw Error('Installed clients require a separate public-only build: extra HTML entry found');
+for(const entry of await fs.readdir(path.join(root,'assets')))if(/\.(js|css)$/.test(entry)&&/private/i.test(entry))throw Error('Private compiled chunk found in installed-client input');
 if(path.basename(stage)!=='installed-client')throw Error('Staging must be a dedicated installed-client directory');
 await fs.mkdir(stage,{recursive:true});
 const out=await fs.realpath(stage);
@@ -22,9 +25,9 @@ for(const asset of [...Object.values(DEFAULT_SKINS).map(getSkin),...Object.value
  if(asset?.model)wanted.add(asset.model);if(asset?.animation?.model)wanted.add(asset.animation.model);
 }
 // Build chunks, icons and shell only; downloads and optional cosmetics stay out.
-for(const name of await fs.readdir(root))if(/\.(html|js|webmanifest)$/.test(name))wanted.add(name);
+for(const name of shellNames){if(!(await fs.stat(path.join(root,name))).isFile())throw Error('Missing public client shell: '+name);wanted.add(name);}
 for(const name of await fs.readdir(path.join(root,'assets')))if(/\.(js|css)$/.test(name))wanted.add('assets/'+name);
-for(const name of await fs.readdir(path.join(root,'icons')))wanted.add('icons/'+name);
+for(const name of await fs.readdir(path.join(root,'icons')))if(/\.(png|svg|ico)$/i.test(name))wanted.add('icons/'+name);
 await fs.mkdir(out,{recursive:true});
 // Rebuild only this generated staging directory, with a checked absolute target.
 if(out!==await fs.realpath(stage)||out===root)throw Error('Invalid staging path');

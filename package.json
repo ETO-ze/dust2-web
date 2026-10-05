@@ -10,7 +10,13 @@
     "start": "node server/index.js",
     "test": "node --test tests/*.mjs",
     "assets:fetch": "node scripts/fetch-assets.mjs",
-    "assets:check": "node scripts/fetch-assets.mjs --check"
+    "assets:check": "node scripts/fetch-assets.mjs --check",
+    "cdn:plan": "node scripts/cdn/plan-cloudflare.mjs",
+    "cdn:build": "node scripts/cdn/build-release.mjs",
+    "cdn:publish": "node scripts/cdn/publish-release.mjs",
+    "cdn:upload-local": "node scripts/cdn/publish-interactive.mjs",
+    "cdn:verify": "node scripts/cdn/verify-public.mjs",
+    "cdn:test": "node --test tests/cdn-*.test.mjs"
   },
   "dependencies": {
     "three": "0.185.1",

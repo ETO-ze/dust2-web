@@ -3,6 +3,7 @@ import { AGENT_CATALOG, DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } fro
 import { AGENT_ASSETS } from '../shared/agent-assets.js';
 import { loadAgent as loadAgentAsset } from './player-assets.js';
 import './agents.css';
+import {imageAssetURL} from './image-asset-url.js';
 
 const STORAGE_KEY='dust2.agents.v1';
 const TEAMS=[['CT','反恐精英'],['T','恐怖分子']];
@@ -74,7 +75,7 @@ export class AgentMenu {
         if(preview){
           const image=document.createElement('img');image.alt='';image.loading='lazy';image.decoding='async';
           image.onload=()=>{fallback.hidden=true;};image.onerror=()=>{image.remove();fallback.hidden=false;};
-          image.src=preview;visual.append(image);
+          image.src=imageAssetURL(preview);visual.append(image);
         }
         if(agent.isDefault){const badge=document.createElement('span');badge.className='agent-default';badge.textContent='默认';visual.append(badge);}
         const name=document.createElement('b');name.className='agent-name';name.textContent=agent.name;

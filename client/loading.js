@@ -1,16 +1,28 @@
 import {bundled,bundledEntry,bundledManifest,remoteAsset} from './bundled-assets.js';
 import {assetManifestName} from './device-profile.js';
 import { DefaultLoadingManager } from 'three';
+import {clientAssetManifest} from './private-game-config.js';
+import {fetchAssetDownload,getDownloadOrigin,initDownloadOrigin} from './download-origin.js';
+import {publicPoolAssetCacheBase} from '../shared/public-map-paths.js';
 const blobs=new Map(),inflight=new Map();let manifestMemory=null,manifestChecked=false;
 const base=()=>new URL('.',document.baseURI),absolute=value=>new URL(value,document.baseURI);
 const canonical=value=>{const u=absolute(value);return u.origin+u.pathname;};
-const cacheNames=()=>({assets:`dust2-assets-v1:${base().pathname}`,meta:`dust2-meta-v1:${base().pathname}`});
-const hashKey=hash=>new URL(`__asset_cache__/sha256/${hash}`,base()).href;
+const cacheBase=()=>publicPoolAssetCacheBase(document.baseURI,{installed:bundled||!!globalThis.__DUST2_PORTABLE__});
+const cacheNames=()=>({assets:`dust2-assets-v1:${cacheBase().pathname}`,meta:`dust2-meta-v1:${cacheBase().pathname}`});
+const privateMapCacheName=()=>globalThis.__DUST2_PRIVATE_MAP__?.renderUrl?'dust2-private-transport-v1:'+new URL('../../',globalThis.__DUST2_PRIVATE_MAP__.renderUrl).pathname:null;
+const hashKey=hash=>new URL(`__asset_cache__/sha256/${hash}`,cacheBase()).href;
 const indexKey=url=>new URL(`__asset_cache__/url/${encodeURIComponent(absolute(url).href)}`,base()).href;
 const manifestURL=()=>new URL('assets/'+assetManifestName(),base()).href;
 const check=signal=>{if(signal?.aborted)throw signal.reason||new DOMException('已取消','AbortError');};
 const digest=async data=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data)),b=>b.toString(16).padStart(2,'0')).join('');
 const changed=()=>{if(typeof window!=='undefined'&&typeof CustomEvent!=='undefined')window.dispatchEvent(new CustomEvent('dust2-cache-change'));};
+async function ensureDownloadOrigin(signal){
+  check(signal);const configured=getDownloadOrigin();if(configured)return configured;
+  const render=globalThis.__DUST2_PRIVATE_MAP__?.renderUrl;
+  const installed=bundled&&base().origin==='https://cs2.duskrain.cn'&&base().pathname.startsWith('/__installed__/');
+  const configURL=render?new URL('../../../download-config.json',render):new URL(installed?'/download-config.json':'download-config.json',base());
+  return initDownloadOrigin({configURL,pageURL:document.baseURI,signal});
+}
 async function stores(){try{if(!globalThis.caches)return null;const n=cacheNames();return{assets:await caches.open(n.assets),meta:await caches.open(n.meta)};}catch{return null;}}
 export function assetURL(value){return blobs.get(canonical(value))||value;}
 export function releaseDownloads(){for(const b of blobs.values())URL.revokeObjectURL(b);blobs.clear();}
@@ -54,7 +66,8 @@ async function readCachedAsset(value,{sha256,bytes,signal,onProgress}={}){
   if(!expected&&cache){const hit=await cache.meta.match(indexKey(url));if(hit)expected=(await hit.json()).sha256;}
   if(expected&&cache){const hit=await cache.assets.match(hashKey(expected)),length=Number(hit?.headers.get('x-dust2-bytes'));
     if(hit&&(!Number.isFinite(bytes)||length===bytes)){check(signal);onProgress?.({loaded:length,total:length,fromCache:true,cached:true});return hit;}}
-  const response=await fetch(remoteAsset(url),{signal,cache:sha256?'force-cache':'default'});
+  await ensureDownloadOrigin(signal);
+  const response=await fetchAssetDownload(url,{pageURL:document.baseURI,signal,cache:sha256?'force-cache':'default',fetcher:(target,request)=>fetch(remoteAsset(target),request)});
   if(!response.ok||response.type==='opaque')throw new Error(`资源下载失败 (${response.status})：${url.pathname.split('/').pop()}`);
   if(response.headers.get('content-type')?.includes('text/html')&&!url.pathname.endsWith('.html'))throw new Error(`资源地址返回了网页：${url.pathname.split('/').pop()}`);
   const chunks=[];let received=0;const reader=response.body?.getReader();
@@ -74,12 +87,13 @@ async function readCachedAsset(value,{sha256,bytes,signal,onProgress}={}){
 
 async function loadManifest({signal,refresh=true}={}){
   check(signal);if(!refresh&&manifestMemory)return manifestMemory;const cache=await stores();
-  if(!refresh&&cache){const hit=await cache.meta.match(manifestURL());if(hit){manifestMemory=await hit.json();return manifestMemory;}}
-  try{const response=await fetch(manifestURL(),{cache:'no-cache',signal});if(!response.ok)throw new Error(`资源清单加载失败 (${response.status})`);
+  if(!refresh&&cache){const hit=await cache.meta.match(manifestURL());if(hit){manifestMemory=clientAssetManifest(await hit.json(),!!globalThis.__DUST2_PRIVATE_MAP__);return manifestMemory;}}
+  try{if(!bundled)await ensureDownloadOrigin(signal);
+    const response=bundled?await fetch(manifestURL(),{cache:'no-cache',signal}):await fetchAssetDownload(manifestURL(),{pageURL:document.baseURI,cache:'no-cache',signal});if(!response.ok)throw new Error(`资源清单加载失败 (${response.status})`);
     const manifest=await response.clone().json();
     if(!Array.isArray(manifest.files)||!manifest.files.every(f=>typeof f.path==='string'&&Number.isSafeInteger(f.bytes)&&f.bytes>=0&&/^[a-f\d]{64}$/i.test(f.sha256)))throw new Error('资源清单格式错误');
-    manifestMemory=manifest;manifestChecked=true;try{await cache?.meta.put(manifestURL(),response.clone());}catch{}return manifest;
-  }catch(error){check(signal);const hit=await cache?.meta.match(manifestURL());if(hit){manifestMemory=await hit.json();manifestChecked=true;return manifestMemory;}throw error;}
+    manifestMemory=clientAssetManifest(manifest,!!globalThis.__DUST2_PRIVATE_MAP__);manifestChecked=true;try{await cache?.meta.put(manifestURL(),response.clone());}catch{}return manifestMemory;
+  }catch(error){check(signal);const hit=await cache?.meta.match(manifestURL());if(hit){manifestMemory=clientAssetManifest(await hit.json(),!!globalThis.__DUST2_PRIVATE_MAP__);manifestChecked=true;return manifestMemory;}throw error;}
 }
 
 async function collectAssets({signal,onProgress,makeBlobs=false}={}){
@@ -97,9 +111,11 @@ async function collectAssets({signal,onProgress,makeBlobs=false}={}){
 }
 export async function downloadAssets(options={}){
   if(bundled){const manifest=await loadManifest({signal:options.signal});const installed=await bundledManifest();const files=new Map(installed.files.map(f=>[f.path,f]));if(!manifest.files.every(f=>files.get(f.path)?.sha256===f.sha256))throw Error('基础资源不完整，请下载完整客户端。');options.onProgress?.({bytes:manifest.totalBytes,total:manifest.totalBytes,complete:manifest.files.length,count:manifest.files.length,rate:0,current:'读取已安装资源'});return manifest;}
-  // A controlling worker can serve verified cache entries directly. Retaining
-  // every compressed file as a second set of Blob URLs only increases the peak.
-  const controlled=!!globalThis.navigator?.serviceWorker?.controller;
+  // A worker serves verified asset entries only in its own document directory.
+  // The root worker deliberately passes /play/ through; those map pages need
+  // Blob URLs so GLTF/texture readers reuse the bytes just fetched from CDN.
+  const worker=globalThis.navigator?.serviceWorker?.controller;
+  const controlled=!globalThis.__DUST2_PRIVATE_MAP__&&!!worker?.scriptURL&&new URL('.',worker.scriptURL).href===base().href;
   return collectAssets({...options,makeBlobs:!controlled});
 }
 export async function saveBaseAssets(options={}){
@@ -112,6 +128,8 @@ export async function getAssetCacheStats(){
   if(cache){for(const key of await cache.assets.keys()){const r=await cache.assets.match(key);stats.bytes+=Number(r?.headers.get('x-dust2-bytes'))||0;stats.count++;}
     for(const file of manifest?.files||[]){const r=await cache.assets.match(hashKey(file.sha256.toLowerCase()));if(r&&Number(r.headers.get('x-dust2-bytes'))===file.bytes){stats.baseCount++;stats.baseBytes+=file.bytes;}}
     stats.complete=stats.totalCount>0&&stats.baseCount===stats.totalCount;}
+  const privateName=privateMapCacheName();stats.privateMapBytes=0;
+  if(privateName&&globalThis.caches){try{const maps=await caches.open(privateName);for(const key of await maps.keys()){const response=await maps.match(key),bytes=Number(response?.headers.get('Content-Length'))||0;stats.privateMapBytes+=bytes;stats.bytes+=bytes;stats.count++;}}catch{}}
   try{stats.persisted=await navigator.storage?.persisted?.()||false;const e=await navigator.storage?.estimate?.();stats.usage=e?.usage??null;stats.quota=e?.quota??null;}catch{}return stats;
 }
-export async function clearAssetCache(){const n=cacheNames();if(globalThis.caches)await Promise.all([caches.delete(n.assets),caches.delete(n.meta)]);manifestMemory=null;manifestChecked=false;changed();return getAssetCacheStats();}
+export async function clearAssetCache(){const n=cacheNames(),privateName=privateMapCacheName();if(globalThis.caches)await Promise.all([caches.delete(n.assets),caches.delete(n.meta),...(privateName?[caches.delete(privateName)]:[])]);manifestMemory=null;manifestChecked=false;changed();return getAssetCacheStats();}

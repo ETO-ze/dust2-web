@@ -2,18 +2,26 @@ import {initOffline,installApp} from './offline.js';
 import './mobile-shell.css';
 
 import {isAndroidApp,requestGameFullscreen} from '../shared/mobile-fullscreen.js';
+import {resolveAndroidDownloadURL,LEGACY_ANDROID_APK} from './android-download.js';
 
 export function mountMobileShell({settingsUI,storage,onStatus=()=>{}}){
   const native=isAndroidApp(),prefs=storage.readJSON('dust2.fullscreen.v1');
   let automatic=prefs.automatic!==false,offline={},pending=null;
   const install=document.createElement('section');install.className='mobile-install';install.hidden=true;
-  install.innerHTML='<div><b>全屏游玩</b><span>安装客户端，打开即横屏，基础资源保存在本机。</span></div><div class="mobile-install-actions"><button data-mobile-fullscreen>网页全屏</button><a href="https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0/DustII-Android-1.2.0.apk">下载安卓 APK</a><button data-mobile-install>添加到主屏幕</button></div><small role="status"></small>';
+  install.innerHTML='<div><b>全屏游玩</b><span>安装客户端，打开即横屏，基础资源保存在本机。</span></div><div class="mobile-install-actions"><button data-mobile-fullscreen>网页全屏</button><a data-mobile-android aria-disabled="true">检查安卓更新…</a><button data-mobile-install>添加到主屏幕</button></div><small role="status"></small>';
   document.querySelector('.match-card').append(install);
   const status=text=>{install.querySelector('small').textContent=text;onStatus(text);};
   const panel=settingsUI.element.querySelector('[data-panel="touch"]');
   const row=document.createElement('label');row.className='config-row';row.hidden=native;row.innerHTML='进入游戏自动请求全屏<input type="checkbox" id="touch-auto-fullscreen">';panel.append(row);
   const check=row.querySelector('input');check.checked=automatic;check.onchange=()=>{automatic=check.checked;storage.setItem('dust2.fullscreen.v1',JSON.stringify({automatic}));};
-  const update=()=>{install.hidden=native||!matchMedia('(pointer: coarse)').matches;install.querySelector('[data-mobile-install]').hidden=offline.installed;};
+  let downloadCheck=null;
+  const update=()=>{
+    install.hidden=native||!matchMedia('(pointer: coarse)').matches;install.querySelector('[data-mobile-install]').hidden=offline.installed;
+    if(!install.hidden&&!downloadCheck){
+      const link=install.querySelector('[data-mobile-android]');
+      downloadCheck=resolveAndroidDownloadURL().catch(error=>{if(error.code==='unavailable')return LEGACY_ANDROID_APK;throw error;}).then(url=>{link.href=url;link.removeAttribute('aria-disabled');link.textContent='下载安卓 APK';}).catch(()=>{link.textContent='安卓下载暂不可用';status('安卓安装信息校验未通过，请稍后重试。');});
+    }
+  };
   initOffline({onStatus:s=>{offline=s;update();}}).catch(()=>{});matchMedia('(pointer: coarse)').addEventListener('change',update);update();
   const enter=(explicit=false)=>{
     if(pending)return pending;

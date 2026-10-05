@@ -1,4 +1,4 @@
-import { BufferGeometry, Float32BufferAttribute, Vector3, Ray, Box3, DoubleSide } from 'three';
+import { BufferGeometry, BufferAttribute, Float32BufferAttribute, Vector3, Ray, Box3, DoubleSide } from 'three';
 import { MeshBVH, CENTER } from 'three-mesh-bvh';
 import {HullContact} from './hull-collision.js';
 import {patchMapCollision} from './map-collision-patch.js';
@@ -15,7 +15,11 @@ export const JUMP_BUFFER_TIME = .05;
 // Keep the existing prototype hitbox heights, but cap aerial leg retraction at
 // CS's 18-unit standing/crouched hull difference rather than granting 0.70 m.
 export const CROUCH_JUMP_LIFT = 18 * .0254;
+export const AIR_WISH_SPEED = 30 * .0254;
+export const AIR_ACCELERATION = 12;
 let world = null;
+let bulletWorld = null, grenadeWorld = null;
+let sourceAirMovement = false;
 let worldBounds = new Box3();
 const axis = new Vector3();
 const motion = new Vector3();
@@ -24,11 +28,14 @@ const ray = new Ray();
 // Broadphase BVH with a flat, axis-aligned player hull. Render meshes are not
 // used as the character collider; both peers use this same collision geometry.
 class MapCollision {
-  constructor(geometry){this.bvh=new MeshBVH(geometry,{strategy:CENTER,targetLeafSize:16,maxDepth:32});this.geometry=geometry;this.contact=new HullContact();}
-  rayIntersect(r){return this.bvh.raycastFirst(r,DoubleSide);}
+  constructor(geometry,enabled=null){this.bvh=new MeshBVH(geometry,{strategy:CENTER,targetLeafSize:16,maxDepth:32});this.geometry=geometry;this.contact=new HullContact();this.enabled=enabled;}
+  triangleEnabled(index){return !this.enabled||this.enabled(Math.floor(this.geometry.index.getX(index*3)/3));}
+  hitEnabled(hit){return !this.enabled||this.enabled(Math.floor(hit.face.a/3));}
+  rayIntersect(r){const first=this.bvh.raycastFirst(r,DoubleSide);if(!first||this.hitEnabled(first))return first;return this.bvh.raycast(r,DoubleSide).filter(h=>this.hitEnabled(h)).sort((a,b)=>a.distance-b.distance)[0]||null;}
   sweepDown(c,maxDrop){
     const bounds=c.clone();bounds.min.y-=maxDrop;let distance=Infinity,walkable=false;
-    this.bvh.shapecast({intersectsBounds:box=>box.intersectsBox(bounds),intersectsTriangle:tri=>{
+    this.bvh.shapecast({intersectsBounds:box=>box.intersectsBox(bounds),intersectsTriangle:(tri,index)=>{
+      if(!this.triangleEnabled(index))return false;
       const hit=this.contact.sweepDown(tri,c,maxDrop);if(!hit)return false;
       if(hit.distance<distance-.00001){distance=hit.distance;walkable=hit.walkable;}
       else if(Math.abs(hit.distance-distance)<=.00001)walkable||=hit.walkable;
@@ -40,7 +47,8 @@ class MapCollision {
     const resolved=c.clone(),bounds=c.clone().expandByScalar(.002),contacts=[],push=new Vector3();
     this.bvh.shapecast({
       intersectsBounds:box=>box.intersectsBox(bounds),
-      intersectsTriangle:tri=>{
+      intersectsTriangle:(tri,index)=>{
+        if(!this.triangleEnabled(index))return false;
         const contact=this.contact.intersect(tri,resolved);
         if(contact){
           contacts.push(contact);resolved.translate(push.copy(contact.normal).multiplyScalar(contact.depth+.00001));
@@ -59,15 +67,19 @@ class MapCollision {
   }
 }
 
-export function initPhysics(positions, surfaceMaterials = null, {mapPatches=true}={}) {
+export function initPhysics(positions, surfaceMaterials = null, {mapPatches=true,bulletPositions=null,grenadePositions=null,copyPositions=true,airMovement='legacy',triangleEnabled=null}={}) {
+  sourceAirMovement=airMovement==='source';
   if(mapPatches){const patched=patchMapCollision(positions,surfaceMaterials);positions=patched.positions;surfaceMaterials=patched.materials;}
+  for(const old of new Set([world,bulletWorld,grenadeWorld]))old?.geometry?.dispose();
+  const attribute=source=>!copyPositions&&source instanceof Float32Array?new BufferAttribute(source,3):new Float32BufferAttribute(source,3);
   const geometry = new BufferGeometry();
-  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('position', attribute(positions));
   geometry.computeBoundingBox();
   worldBounds.copy(geometry.boundingBox);
-  world?.geometry?.dispose();
-  world = new MapCollision(geometry);
+  world = new MapCollision(geometry,triangleEnabled?i=>triangleEnabled(1,i):null);
   world.surfaceMaterials = surfaceMaterials;
+  const channel=(source,id)=>{if(!source||source===positions)return world;const g=new BufferGeometry();g.setAttribute('position',attribute(source));return new MapCollision(g,triangleEnabled?i=>triangleEnabled(id,i):null);};
+  bulletWorld=channel(bulletPositions,2);grenadeWorld=grenadePositions===bulletPositions?bulletWorld:channel(grenadePositions,4);
   return world;
 }
 
@@ -85,30 +97,40 @@ export function hullFor(p, height=p.crouch?CROUCH_HEIGHT:STAND_HEIGHT) {
 export function isHullClear(p,height=STAND_HEIGHT){const hit=world?.hullIntersect(hullFor(p,height));return !hit||hit.depth<.025;}
 
 export function raycastWorld(origin, direction, maxDistance=300) {
-  if (!world) return null;
+  return raycastChannel(bulletWorld||world,origin,direction,maxDistance);
+}
+/** First enabled bullet collider, retaining its original channel triangle ID. */
+export function raycastWorldHit(origin,direction,maxDistance=300){
+  const collision=bulletWorld||world;if(!collision)return null;
+  const r=new Ray(new Vector3(origin.x,origin.y,origin.z),new Vector3(direction.x,direction.y,direction.z).normalize()),hit=collision.rayIntersect(r);
+  if(!hit||hit.distance>maxDistance)return null;
+  return {distance:hit.distance,triangle:Math.floor(hit.face.a/3),point:{x:hit.point.x,y:hit.point.y,z:hit.point.z}};
+}
+function raycastChannel(collision,origin,direction,maxDistance){
+  if (!collision) return null;
   ray.origin.set(origin.x,origin.y,origin.z);
   ray.direction.set(direction.x,direction.y,direction.z).normalize();
-  const hit=world.rayIntersect(ray);
+  const hit=collision.rayIntersect(ray);
   return hit && hit.distance<=maxDistance ? hit.distance : null;
 }
 
 /** Sorted physical crossings, retaining source triangle material after BVH reordering. */
 export function raycastWorldSurfaces(origin,direction,maxDistance=300) {
-  if(!world)return [];
+  const collision=bulletWorld||world;if(!collision)return [];
   const r=new Ray(new Vector3(origin.x,origin.y,origin.z),new Vector3(direction.x,direction.y,direction.z).normalize());
-  const hits=world.bvh.raycast(r,DoubleSide).filter(h=>h.distance<=maxDistance).sort((a,b)=>a.distance-b.distance);
+  const hits=collision.bvh.raycast(r,DoubleSide).filter(h=>h.distance<=maxDistance&&collision.hitEnabled(h)).sort((a,b)=>a.distance-b.distance);
   const result=[];
   for(const h of hits){
     if(result.length&&h.distance-result.at(-1).distance<.002)continue;
     const triangle=Math.floor(h.face.a/3);
-    result.push({distance:h.distance,point:{x:h.point.x,y:h.point.y,z:h.point.z},normal:{x:h.face.normal.x,y:h.face.normal.y,z:h.face.normal.z},material:world.surfaceMaterials?.[triangle]||0,triangle});
+    result.push({distance:h.distance,point:{x:h.point.x,y:h.point.y,z:h.point.z},normal:{x:h.face.normal.x,y:h.face.normal.y,z:h.face.normal.z},material:collision.surfaceMaterials?.[triangle]||0,triangle});
     if(result.length===48)break;
   }
   return result;
 }
 
 export function floorHeight(x,z,fromY=80,maxDistance=200) {
-  const d=raycastWorld({x,y:fromY,z},{x:0,y:-1,z:0},maxDistance);
+  const d=raycastChannel(world,{x,y:fromY,z},{x:0,y:-1,z:0},maxDistance);
   return d === null ? null : fromY-d;
 }
 
@@ -147,12 +169,13 @@ function sweepDown(hull,maxDrop){
 
 /** First collision with an outward-facing surface normal for projectile reflection. */
 export function raycastWorldContact(origin,direction,maxDistance=300){
-  if(!world)return null;
+  const collision=grenadeWorld||world;if(!collision)return null;
   ray.origin.set(origin.x,origin.y,origin.z);ray.direction.set(direction.x,direction.y,direction.z).normalize();
-  const hit=world.rayIntersect(ray);if(!hit||hit.distance>maxDistance)return null;
+  const hit=collision.rayIntersect(ray);if(!hit||hit.distance>maxDistance)return null;
   const normal=hit.face.normal.clone();if(normal.dot(ray.direction)>0)normal.negate();
   return {distance:hit.distance,normal:{x:normal.x,y:normal.y,z:normal.z}};
 }
+export function raycastGrenadeWorld(origin,direction,maxDistance=300){return raycastChannel(grenadeWorld||world,origin,direction,maxDistance);}
 
 function updateCrouch(p,wanted){
   if(Boolean(wanted)===p.crouch)return;
@@ -203,9 +226,24 @@ export function stepPlayer(p,input={},dt=1/60) {
   const mx=(-Math.sin(p.yaw)*forward+Math.cos(p.yaw)*right)/len;
   const mz=(-Math.cos(p.yaw)*forward-Math.sin(p.yaw)*right)/len;
   const speed=(p.crouch?2.15:input.walk?2.7:6.0)*(input.speedScale||1);
-  const accel=p.grounded?12:2.2;
-  const t=Math.min(1,accel*dt);
-  p.vx+=(mx*speed-p.vx)*t;p.vz+=(mz*speed-p.vz)*t;
+  if(p.grounded){
+    const t=Math.min(1,12*dt);
+    p.vx+=(mx*speed-p.vx)*t;p.vz+=(mz*speed-p.vz)*t;
+  }else if(sourceAirMovement){
+    // Source-style air acceleration adds only the missing velocity projected
+    // onto the requested direction. Ducking, releasing W or turning the view
+    // must not apply ground friction to an already airborne player's momentum.
+    // The cap is a wish-direction cap, not a total-speed cap or a jump boost.
+    const magnitude=Math.hypot(mx,mz);
+    if(magnitude>0){
+      const dx=mx/magnitude,dz=mz/magnitude,wishSpeed=6.0*(input.speedScale||1)*magnitude;
+      const add=Math.min(wishSpeed,AIR_WISH_SPEED)-(p.vx*dx+p.vz*dz);
+      if(add>0){const amount=Math.min(add,AIR_ACCELERATION*wishSpeed*dt);p.vx+=dx*amount;p.vz+=dz*amount;}
+    }
+  }else{
+    const t=Math.min(1,2.2*dt);
+    p.vx+=(mx*speed-p.vx)*t;p.vz+=(mz*speed-p.vz)*t;
+  }
   if(p.grounded&&!forward&&!right){const friction=Math.max(0,1-14*dt);p.vx*=friction;p.vz*=friction;}
   const substeps=Math.max(3,Math.ceil(dt*180)),h=dt/substeps;
   const beforeX=p.x,beforeZ=p.z;

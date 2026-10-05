@@ -6,6 +6,8 @@ The official Node archive and every locked game asset are SHA-256 checked.
 from pathlib import Path
 from datetime import datetime, timezone
 import os
+import re
+import argparse
 import hashlib
 import json
 import shutil
@@ -17,6 +19,49 @@ ROOT = Path(__file__).resolve().parents[1]
 NODE = 'v22.23.2'
 BASE = f'https://nodejs.org/dist/{NODE}/'
 NAME = f'node-{NODE}-win-x64'
+
+def client_build(root):
+    source = (root / 'shared/online-build.js').read_text(encoding='utf-8')
+    match = re.search(r"\bexport\s+const\s+CLIENT_BUILD\s*=\s*['\"]([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)['\"]\s*;", source)
+    if not match:
+        raise RuntimeError('Missing or invalid public client build identity')
+    return match.group(1)
+
+def public_shell_files(dist):
+    # A review build must never become a public installed client by accident.
+    # Only the public entry, its PWA shell, icons and compiled public chunks are
+    # installable; map-review HTML and unrelated output are not an allowlist.
+    if any(p.name != 'index.html' for p in dist.glob('*.html')):
+        raise RuntimeError('Use a separate public-only build: extra HTML entry found')
+    for source in sorted(dist.rglob('*')):
+        if not source.is_file():
+            continue
+        relative = source.relative_to(dist)
+        if (relative.as_posix() in {'index.html', 'sw.js', 'manifest.webmanifest'}
+                or (relative.parts[0] == 'icons' and len(relative.parts) == 2
+                    and source.suffix.lower() in {'.png', '.svg', '.ico'})
+                or (relative.parts[0] == 'assets' and len(relative.parts) == 2
+                    and source.suffix in {'.js', '.css'})):
+            if 'private' in source.name.lower():
+                raise RuntimeError('Private compiled chunk found in public build')
+            yield source
+
+def source_identity(root, requested=None):
+    if requested is not None and not re.fullmatch(r'[0-9a-fA-F]{40}', requested):
+        raise RuntimeError('Source commit must be a full 40-character hexadecimal SHA')
+    if (root / '.git').exists():
+        actual = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+        if requested is not None and requested.lower() != actual.lower():
+            raise RuntimeError('Source commit does not match this Git checkout')
+        return {'sourceCommit':actual, 'sourceKind':'git', 'sourceDirty':bool(subprocess.check_output(['git','status','--porcelain'], cwd=root, text=True).strip())}
+    provenance_file = root / 'PUBLIC-CDN-PROVENANCE.json'
+    if requested is None or not provenance_file.is_file():
+        raise RuntimeError('An imported public build requires --source-commit and PUBLIC-CDN-PROVENANCE.json')
+    provenance = json.loads(provenance_file.read_text(encoding='utf-8'))
+    if provenance.get('source', {}).get('baselineCommit') != requested.lower():
+        raise RuntimeError('Source commit does not match the verified public baseline')
+    return {'sourceCommit':requested.lower(), 'sourceKind':'imported-public-baseline', 'sourceDirty':None,
+            'routingProvenance':{'file':provenance_file.name, 'sha256':sha(provenance_file), 'changes':provenance.get('changes', {})}}
 
 def sha(file):
     with file.open('rb') as source:
@@ -33,8 +78,16 @@ def copy(source, target):
     shutil.copy2(source, target)
 
 def main():
-    if not (ROOT / 'dist/index.html').is_file():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--source-commit', help='Full verified source SHA for an imported public build')
+    parser.add_argument('--web-dist', type=Path, help='Separate complete public-only client build')
+    args = parser.parse_args()
+    dist = (args.web_dist or ROOT / 'dist').resolve()
+    identity = source_identity(ROOT, args.source_commit)
+    if not (dist / 'index.html').is_file():
         raise SystemExit('Run npm run build first.')
+    shell_files = list(public_shell_files(dist))
+    build = client_build(ROOT)
     cache = ROOT / 'artifacts/portable/runtime-cache'
     cache.mkdir(parents=True, exist_ok=True)
     checksums = urllib.request.urlopen(BASE + 'SHASUMS256.txt', timeout=45).read().decode()
@@ -55,18 +108,14 @@ def main():
         relative = entry['path']
         if not relative.startswith('assets/') or '..' in relative.split('/') or '\\' in relative:
             raise RuntimeError(f'Invalid asset path: {relative}')
-        source = ROOT / 'dist' / relative
+        source = dist / relative
         if not source.is_file() or source.stat().st_size != entry['bytes'] or sha(source) != entry['sha256']:
             raise RuntimeError(f'Game asset mismatch: {relative}')
         copy(source, app / 'dist' / relative)
     # Built entry points, PWA icons and compiled client chunks only.
-    for source in (ROOT / 'dist').rglob('*'):
-        if not source.is_file():
-            continue
-        relative = source.relative_to(ROOT / 'dist')
-        if relative.parts[0] not in {'assets','downloads'} or (len(relative.parts) == 2 and source.suffix in {'.js', '.css'}):
-            copy(source, app / 'dist' / relative)
-    (app / 'dist/bundle-manifest.json').write_text(json.dumps({'clientBuild':'1.1.0','assetVersion':lock['version'],'files':lock['files']}),encoding='utf-8')
+    for source in shell_files:
+        copy(source, app / 'dist' / source.relative_to(dist))
+    (app / 'dist/bundle-manifest.json').write_text(json.dumps({'clientBuild':build,'assetVersion':lock['version'],'files':lock['files']}),encoding='utf-8')
     for folder in ['server', 'shared', 'portable']:
         for source in (ROOT / folder).glob('*.js'):
             copy(source, app / folder / source.name)
@@ -154,7 +203,7 @@ E 下包/拆包（持 C4 也可按左键下包），自动蹲下定位；转头�
 '''
     (out / '使用说明.txt').write_text(instructions, encoding='utf-8-sig')
     (out / 'runtime/SOURCE.json').write_text(json.dumps({'version':NODE, 'source':BASE + NAME + '.zip', 'sha256':expected, 'checksums':BASE + 'SHASUMS256.txt'}, indent=2), encoding='utf-8')
-    manifest = {'version':stamp, 'platform':'Windows x64', 'node':NODE, 'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'], cwd=ROOT, text=True).strip(), 'sourceDirty':bool(subprocess.check_output(['git','status','--porcelain'], cwd=ROOT, text=True).strip()), 'assetVersion':lock['version'], 'assetFiles':len(lock['files']), 'files':[]}
+    manifest = {'version':stamp, 'clientBuild':build, 'platform':'Windows x64', 'node':NODE, **identity, 'assetVersion':lock['version'], 'assetFiles':len(lock['files']), 'files':[]}
     for source in sorted(out.rglob('*')):
         if source.is_file():
             manifest['files'].append({'path':source.relative_to(out).as_posix(), 'bytes':source.stat().st_size, 'sha256':sha(source)})
