@@ -49,11 +49,14 @@ test('release before the jump command arrives waits for authoritative jump veloc
  assert.equal(r.grenades.projectiles.length,1);assert.ok(p.vy>0);assert.ok(r.grenades.projectiles[0].vy>7);assert.equal(p.inventory.hegrenade,undefined);
 });
 test('Dust2 team roles split lanes, anchor both sites, cover one defuser and hold postplant separately',()=>{
- const {r,p,ct}=fixture();r.strategyRandom=()=>.2;r.desiredBots=8;r.ensureBots();r.startRound();
+ const {r,p,ct}=fixture();r.strategyRandom=()=>.2;r.desiredBots=8;r.ensureBots();
+ // Test a funded split execute. ECO rounds intentionally group their contact.
+ for(const player of r.players.values())player.money=16000;
+ r.startRound();
  const ts=[...r.players.values()].filter(p=>p.team==='T'),cts=[...r.players.values()].filter(p=>p.team==='CT');
  const goals=ts.map(p=>tacticalGoal(r,p));assert.ok(new Set(goals.map(p=>JSON.stringify(p))).size>=2);
- cts.forEach(p=>tacticalGoal(r,p));assert.ok(cts.some(p=>p.botAI.role==='anchor-a'));assert.ok(cts.some(p=>p.botAI.role==='anchor-b'));
+ cts.forEach(p=>tacticalGoal(r,p));assert.ok(cts.some(p=>['anchor-a','sniper-a'].includes(p.botAI.role)));assert.ok(cts.some(p=>['anchor-b','sniper-b'].includes(p.botAI.role)));
  shareSighting(r,ct,p);assert.equal(r.teamIntel.CT.observer,ct.id);assert.equal(r.teamIntel.T,undefined);
- Object.assign(r.bomb,{...MAP.sites.B,state:'planted',site:'B'});cts.forEach(p=>tacticalGoal(r,p));assert.equal(cts.filter(p=>p.botAI.role==='defuser').length,1);
+ Object.assign(r.bomb,{...MAP.sites.B,state:'planted',site:'B',plantedAt:r.clock(),explodesAt:r.clock()+40000});cts.forEach(p=>tacticalGoal(r,p));assert.equal(cts.filter(p=>p.botAI.role==='defuser').length,1);
  const holds=ts.map(p=>tacticalGoal(r,p));assert.ok(new Set(holds.map(p=>JSON.stringify(p))).size>1);assert.ok(ts.every(p=>p.botAI.role==='postplant'));
 });

@@ -1,5 +1,6 @@
 import {botSkill,comebackScale} from '../shared/bot-difficulty.js';
 import {say} from './team-social.js';
+import {botDifficultyFor} from './bot-challenge.js';
 export function adaptAfterRound(room,winner){
  const states=room.botMomentum||={A:{losses:0,wins:0,boosted:false},B:{losses:0,wins:0,boosted:false}};
  for(const [id,side]of Object.entries(room.teamSides)){
@@ -7,4 +8,4 @@ export function adaptAfterRound(room,winner){
   if(s.boosted!==before&&comebackScale(room.botDifficulty)>1){const bot=[...room.players.values()].find(p=>p.bot&&p.teamId===id);if(bot)say(room,bot.id,s.boosted?'连续失利：本队人机反应与瞄准精度增强 50%，连续赢 2 回合后恢复。':'连续获胜：本队人机已恢复基础难度。','team',{system:true});}
  }
 }
-export function effectiveBotSkill(room,p){const skill=botSkill(room.botDifficulty),scale=room.botMomentum?.[p.teamId]?.boosted?comebackScale(room.botDifficulty):1;return {...skill,reactionMinMs:skill.reactionMinMs/scale,reactionRangeMs:skill.reactionRangeMs/scale,aimErrorScale:skill.aimErrorScale/scale};}
+export function effectiveBotSkill(room,p){const difficulty=botDifficultyFor(room,p),skill=botSkill(difficulty),scale=room.botMomentum?.[p.teamId]?.boosted?comebackScale(difficulty):1;return {...skill,reactionMinMs:skill.reactionMinMs/scale,reactionRangeMs:skill.reactionRangeMs/scale,aimErrorScale:skill.aimErrorScale/scale};}

@@ -3,25 +3,19 @@ import {eyePosition} from '../shared/aim.js';
 import {angleDifference} from './bot-aim.js';
 import {getWeapon} from '../shared/weapons.js';
 import {headIntent} from '../shared/bot-difficulty.js';
-import {reportSiteThreat} from './bot-alerts.js';
+import {botDifficultyFor} from './bot-challenge.js';
+import {hearNoise,hearingPoint} from './bot-hearing.js';
 
 export function beginAimDuel(room,p,enemy){
   const sniper=getWeapon(p.weapon).zoomStyle==='scope';
   // Choose an aiming intention once per acquisition; never force a hit result.
-  const probability=sniper?(p.weapon==='awp'?(room.botDifficulty==='easy'?.04:.10):Math.min(.38,headIntent(room.botDifficulty))):headIntent(room.botDifficulty);
+  const difficulty=botDifficultyFor(room,p),probability=sniper?(p.weapon==='awp'?(difficulty==='easy'?.04:.10):Math.min(.38,headIntent(difficulty))):headIntent(difficulty);
   p.botAI.headIntent=(room.aimRandom||Math.random)()<probability;p.botAI.aimEnemy=enemy.id;
 }
 
 export function lookAt(from,to){return {yaw:Math.atan2(-(to.x-from.x),-(to.z-from.z)),pitch:Math.atan2(to.y-from.y,Math.hypot(to.x-from.x,to.z-from.z))};}
 export function hearGunshot(room,shooter){
-  for(const p of room.players.values()){
-    if(!p.alive||p.team===shooter.team||Math.hypot(p.x-shooter.x,p.y-shooter.y,p.z-shooter.z)>35)continue;
-    // An approximate sound direction invites a visual check. It never grants
-    // a target lock, exact enemy tracking, or permission to shoot through cover.
-    const heardPoint={x:Math.round(shooter.x/2)*2,y:shooter.y+1.3,z:Math.round(shooter.z/2)*2};
-    if(p.bot&&!p.controllerId){p.botAI.heardPoint=heardPoint;p.botAI.heardAt=room.clock();}
-    reportSiteThreat(room,p.team,heardPoint,'sound');
-  }
+  return hearNoise(room,shooter,['usp','m4a1'].includes(shooter.weapon)?'suppressed':'gunshot');
 }
 // Acquisition has a field of view. Tracking never bypasses walls or smoke.
 export function visibleAimPoint(room,p,enemy,{acquire=false}={}){
@@ -51,6 +45,7 @@ export function standingAimPoint(room,raw,height=1.62){
 export function observationPoint(room,p,waypoint){
   const ai=p.botAI,now=room.clock(),from=eyePosition(p),scoped=getWeapon(p.weapon).zoomStyle==='scope';
   if(ai.lastKnown&&now-ai.lastSeenAt<1800){const to={...ai.lastKnown,y:ai.lastKnown.y+(ai.lastKnown.crouch?.92:1.62)};if(room.visibleToBot(from,to))return to;}
+  const heard=hearingPoint(room,p);if(heard&&!p.objectiveLocked&&!ai.utility){ai.action='check-'+ai.heardKind;return {...heard,y:from.y};}
   const route=(ai.path||[]).slice(0,18),ahead=[...route].reverse().find(n=>Math.hypot(n.x-p.x,n.z-p.z)>4)||waypoint;
   const moving=!!ahead&&Math.hypot(ahead.x-p.x,ahead.z-p.z)>1.5,heading=moving?lookAt(from,ahead).yaw:p.yaw||0;
   const eligible=to=>{const d=Math.hypot(to.x-p.x,to.z-p.z),angle=Math.abs(angleDifference(lookAt(from,to).yaw,heading));return d>3&&d<(scoped?75:45)&&(!moving||angle<1.15)&&Math.abs(lookAt(from,to).pitch)<.48&&room.visibleToBot(from,to);};

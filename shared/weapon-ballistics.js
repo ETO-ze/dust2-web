@@ -92,5 +92,49 @@ export const WEAPON_BALLISTICS = Object.freeze({
   "sg553": {
     "penetration": 2,
     "tracerFrequency": 3
+  },
+  "hkp2000": {
+    "penetration": 1,
+    "tracerFrequency": 1
+  },
+  "cz75a": {
+    "penetration": 1,
+    "tracerFrequency": 1
+  },
+  "revolver": {
+    "penetration": 2,
+    "tracerFrequency": 1
+  },
+  "aug": {
+    "penetration": 2,
+    "tracerFrequency": 3
+  },
+  "famas": {
+    "penetration": 2,
+    "tracerFrequency": 3
+  },
+  "g3sg1": {
+    "penetration": 2.5,
+    "tracerFrequency": 1
+  },
+  "mp5sd": {
+    "penetration": 1,
+    "tracerFrequency": 0
+  },
+  "p90": {
+    "penetration": 1,
+    "tracerFrequency": 3
+  },
+  "ump45": {
+    "penetration": 1,
+    "tracerFrequency": 3
+  },
+  "m249": {
+    "penetration": 2,
+    "tracerFrequency": 1
+  },
+  "negev": {
+    "penetration": 2,
+    "tracerFrequency": 1
   }
 });

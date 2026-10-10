@@ -2,11 +2,30 @@
 
 GPT-6 参与开发的第一人称射击项目，支持网页、Android 与 Windows 在线联机，包含服务器权威判定、战术人机与移动端操作。
 
-[进入网页版](https://cs2.duskrain.cn/) · [安装包下载](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.2.0-cdn.1) · [地图池说明](docs/PUBLIC-MAP-POOL.md) · [验证范围](docs/validation/public-map-pool.md)
+[进入网页版](https://cs2.duskrain.cn/) · [1.3.0 更新](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.3.0) · [安装包下载](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.2.0-cdn.1) · [地图池说明](docs/PUBLIC-MAP-POOL.md) · [验证范围](docs/validation/public-map-pool.md)
 
 ![公开地图池与房间配置](docs/screenshots/public-map-pool-desktop.png)
 
 *新版网页首页：地图选择、模式配置、人机数量、房间创建与联机大厅。*
+
+## 网页版 1.3.0
+
+沙二同步最新人机听觉、战术和装备系统；两张地图共用新版 HUD、键位操作、装备携带菜单与皮肤库。米拉吉保留现有地图资源、碰撞、导航、跳点和地图专用人机路线。
+
+- **装备携带：** 全部 34 把枪械可选，每方携带 15 件；CT 起始手枪可选 USP-S／P2000，配置经过服务器确认后保存在本机。
+- **皮肤库：** 50 款可选外观、35 个崭新默认外观；模型与新增动画按需加载，保留已有皮肤、手套和刀型选择。
+- **局内操作：** 护甲数值居中、拆弹器与装备位置调整；商店连续购买进入队列；重复 F 不再重置检视，R 可取消，刀具 FR 切换平滑衔接。
+- **对局反馈：** 己方全员阵亡且 C4 已安装时自动观战 C4，显示拆爆倒计时；听觉信息只提供近似位置，射击仍需视觉确认。
+
+![装备携带与全部武器选择](docs/screenshots/armory-1.3.0.png)
+
+*实际浏览器截图：阵营装备携带、分类替换与崭新默认外观。*
+
+![沙二新版 HUD 与 AUG](docs/screenshots/dust2-hud-1.3.0.png)
+
+*实际浏览器截图：新版 HUD、护甲数值、装备显示与 AUG 秋叶原之选。*
+
+本次更新面向网站与公开源码；Android／Windows 下载包保持此前版本。详细变化与验证范围见 [1.3.0 更新说明](docs/ONLINE-1.3.0.md)。
 
 ## 地图池与资源加载
 
@@ -59,7 +78,7 @@ GPT-6 参与开发的第一人称射击项目，支持网页、Android 与 Windo
 | GeckoView 测试包 | 对比 Android 浏览器内核，可与正式包共存。 | [GeckoView ARM64 APK](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0/DustII-Gecko-Test-1.2.0.apk)。 |
 | 独立离线版 | 无网络环境下与人机对战。 | [离线 0.2.0](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.2.0) · [offline-v1 源码](https://github.com/ETO-ze/dust2-web/tree/offline-v1)。 |
 
-本次地图池更新针对网页版。已发布的 Android 与 Windows 包仍使用沙二入口；下载附件未因网页更新而重新打包。在线对局仍需要网络，本地素材与 CDN 不会消除线路延迟。
+本次 1.3.0 更新针对网页版。已发布的 Android 与 Windows 包仍使用沙二入口；下载附件未因网页更新而重新打包。在线对局仍需要网络，本地素材与 CDN 不会消除线路延迟。
 
 ## 开发与验证
 

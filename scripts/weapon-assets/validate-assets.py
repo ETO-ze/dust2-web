@@ -32,9 +32,11 @@ animations=read_glb(PUBLIC/'viewmodel/animations.glb')
 names=[clip['name'] for clip in animations['animations']]
 assert len(names)==len(set(names)),'duplicate action names'
 clip_names=set(names)
+for optional in (PUBLIC/'viewmodel/optional').glob('*.glb'):
+ extra=read_glb(optional);clip_names.update(clip['name'] for clip in extra['animations'])
 specs=json.loads((ROOT/'scripts/weapon-assets/default-skins.json').read_text(encoding='utf-8'))
 manifest=json.loads((PUBLIC/'weapons/cs2-loadout/manifest.json').read_text(encoding='utf-8'))
-assert len(specs)==len(manifest['models'])==24
+assert len(specs)==len(manifest['models'])==35
 checks=[]
 for model in manifest['models']:
     spec=next(spec for spec in specs if spec['id']==model['id'])

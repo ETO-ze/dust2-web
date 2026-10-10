@@ -1,0 +1,4465 @@
+{
+  "schemaVersion": 1,
+  "team": "Vitality",
+  "source": "https://github.com/Starfie1d1272/cs2-demo-analysis-kit/tree/main/fixtures/input",
+  "matchReference": "https://www.hltv.org/matches/2389666/furia-vs-vitality-iem-krakw-2026",
+  "method": "Alive opening-place samples 10–35 seconds after freeze; release events during live rounds; 6-second utility proximity windows.",
+  "limitations": [
+    "One BO5 series; fixture filenames use export date 2026-02-09, match page is 2026-02-08.",
+    "Positions are NAV place labels, not validated browser stand points.",
+    "Cooperation windows are proximity evidence, not verified tactical intent.",
+    "No exact professional skill, full strategy imitation or trained model is claimed."
+  ],
+  "maps": {
+    "de_mirage": {
+      "map": "de_mirage",
+      "rounds": 24,
+      "inputSha256": "7bd863b5e9ac855d47718552af910f2564534b6b6ade519214160fa8c341daa8",
+      "sourceFile": "furia-vitality-mirage.zip",
+      "originalDemo": {
+        "hash": "9019e9ee6cdeee54d93a73625620f3372ee55b8560240b6381f67fdb84676cbb",
+        "sourceFileName": "furia-vs-vitality-m1-mirage.dem"
+      },
+      "players": {
+        "mezii": {
+          "ct": {
+            "openingSamples": 2213,
+            "openingPlaces": {
+              "BombsiteB": 979,
+              "Truck": 790,
+              "BombsiteA": 307,
+              "Catwalk": 137
+            },
+            "utility": {
+              "smoke": 10,
+              "flashbang": 3,
+              "hegrenade": 10,
+              "molotov": 10
+            },
+            "openingPositions": [
+              {
+                "place": "BombsiteB",
+                "samples": 979,
+                "sourcePoint": {
+                  "x": -2380,
+                  "y": 384,
+                  "z": -119
+                }
+              },
+              {
+                "place": "Truck",
+                "samples": 790,
+                "sourcePoint": {
+                  "x": -2192.0,
+                  "y": 765.0,
+                  "z": -119.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 307,
+                "sourcePoint": {
+                  "x": -315,
+                  "y": -2173,
+                  "z": -174
+                }
+              },
+              {
+                "place": "Catwalk",
+                "samples": 137,
+                "sourcePoint": {
+                  "x": -1002,
+                  "y": 130,
+                  "z": -168
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2312,
+            "openingPlaces": {
+              "TopofMid": 472,
+              "PalaceAlley": 400,
+              "Middle": 259,
+              "PalaceInterior": 229,
+              "Apartments": 221,
+              "TRamp": 200,
+              "Underpass": 168,
+              "BombsiteA": 165
+            },
+            "utility": {
+              "smoke": 5,
+              "flashbang": 9,
+              "hegrenade": 3,
+              "molotov": 4
+            },
+            "openingPositions": [
+              {
+                "place": "TopofMid",
+                "samples": 472,
+                "sourcePoint": {
+                  "x": 257.0,
+                  "y": -413.5,
+                  "z": -165.0
+                }
+              },
+              {
+                "place": "PalaceAlley",
+                "samples": 400,
+                "sourcePoint": {
+                  "x": 649.5,
+                  "y": -1398.0,
+                  "z": -256.0
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 259,
+                "sourcePoint": {
+                  "x": -297,
+                  "y": -740,
+                  "z": -256
+                }
+              },
+              {
+                "place": "PalaceInterior",
+                "samples": 229,
+                "sourcePoint": {
+                  "x": 214,
+                  "y": -2240,
+                  "z": -40
+                }
+              },
+              {
+                "place": "Apartments",
+                "samples": 221,
+                "sourcePoint": {
+                  "x": -1123,
+                  "y": 552,
+                  "z": -80
+                }
+              },
+              {
+                "place": "TRamp",
+                "samples": 200,
+                "sourcePoint": {
+                  "x": 321.0,
+                  "y": -1694.5,
+                  "z": -176.0
+                }
+              },
+              {
+                "place": "Underpass",
+                "samples": 168,
+                "sourcePoint": {
+                  "x": -875.0,
+                  "y": 456.5,
+                  "z": -365.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 165,
+                "sourcePoint": {
+                  "x": -414,
+                  "y": -1819,
+                  "z": -168
+                }
+              }
+            ]
+          }
+        },
+        "flameZ": {
+          "ct": {
+            "openingSamples": 2188,
+            "openingPlaces": {
+              "BombsiteA": 1553,
+              "PalaceInterior": 404,
+              "Stairs": 71,
+              "Scaffolding": 63,
+              "Connector": 49,
+              "Jungle": 42,
+              "Middle": 6
+            },
+            "utility": {
+              "smoke": 12,
+              "flashbang": 12,
+              "hegrenade": 7,
+              "molotov": 11
+            },
+            "openingPositions": [
+              {
+                "place": "BombsiteA",
+                "samples": 1553,
+                "sourcePoint": {
+                  "x": -166,
+                  "y": -1908,
+                  "z": -168
+                }
+              },
+              {
+                "place": "PalaceInterior",
+                "samples": 404,
+                "sourcePoint": {
+                  "x": 135.0,
+                  "y": -1933.5,
+                  "z": -125.5
+                }
+              },
+              {
+                "place": "Stairs",
+                "samples": 71,
+                "sourcePoint": {
+                  "x": -511,
+                  "y": -1459,
+                  "z": -52
+                }
+              },
+              {
+                "place": "Scaffolding",
+                "samples": 63,
+                "sourcePoint": {
+                  "x": 30,
+                  "y": -1970,
+                  "z": -40
+                }
+              },
+              {
+                "place": "Connector",
+                "samples": 49,
+                "sourcePoint": {
+                  "x": -634,
+                  "y": -954,
+                  "z": -216
+                }
+              },
+              {
+                "place": "Jungle",
+                "samples": 42,
+                "sourcePoint": {
+                  "x": -947.0,
+                  "y": -1507.5,
+                  "z": -167.0
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 6,
+                "sourcePoint": {
+                  "x": -658.5,
+                  "y": -814.5,
+                  "z": -258.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2032,
+            "openingPlaces": {
+              "TopofMid": 835,
+              "BackAlley": 200,
+              "Middle": 190,
+              "PalaceInterior": 175,
+              "BombsiteA": 169,
+              "PalaceAlley": 142,
+              "SideAlley": 121,
+              "TSpawn": 67
+            },
+            "utility": {
+              "smoke": 10,
+              "flashbang": 12,
+              "hegrenade": 3,
+              "molotov": 5
+            },
+            "openingPositions": [
+              {
+                "place": "TopofMid",
+                "samples": 835,
+                "sourcePoint": {
+                  "x": 390,
+                  "y": -563,
+                  "z": -161
+                }
+              },
+              {
+                "place": "BackAlley",
+                "samples": 200,
+                "sourcePoint": {
+                  "x": -479.5,
+                  "y": 578.5,
+                  "z": -80.0
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 190,
+                "sourcePoint": {
+                  "x": -418.5,
+                  "y": -774.5,
+                  "z": -256.0
+                }
+              },
+              {
+                "place": "PalaceInterior",
+                "samples": 175,
+                "sourcePoint": {
+                  "x": 215,
+                  "y": -2195,
+                  "z": -40
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 169,
+                "sourcePoint": {
+                  "x": -516,
+                  "y": -1971,
+                  "z": -174
+                }
+              },
+              {
+                "place": "PalaceAlley",
+                "samples": 142,
+                "sourcePoint": {
+                  "x": 595.0,
+                  "y": -1506.0,
+                  "z": -263.0
+                }
+              },
+              {
+                "place": "SideAlley",
+                "samples": 121,
+                "sourcePoint": {
+                  "x": 362,
+                  "y": 337,
+                  "z": -256
+                }
+              },
+              {
+                "place": "TSpawn",
+                "samples": 67,
+                "sourcePoint": {
+                  "x": 1160,
+                  "y": -497,
+                  "z": -208
+                }
+              }
+            ]
+          }
+        },
+        "apEX": {
+          "ct": {
+            "openingSamples": 2010,
+            "openingPlaces": {
+              "Jungle": 393,
+              "BombsiteA": 327,
+              "Middle": 286,
+              "CTSpawn": 279,
+              "SnipersNest": 269,
+              "BombsiteB": 200,
+              "Connector": 200,
+              "Underpass": 44
+            },
+            "utility": {
+              "smoke": 8,
+              "flashbang": 6,
+              "hegrenade": 11,
+              "molotov": 3
+            },
+            "openingPositions": [
+              {
+                "place": "Jungle",
+                "samples": 393,
+                "sourcePoint": {
+                  "x": -1020,
+                  "y": -1405,
+                  "z": -167
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 327,
+                "sourcePoint": {
+                  "x": -725,
+                  "y": -1501,
+                  "z": -168
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 286,
+                "sourcePoint": {
+                  "x": -801.5,
+                  "y": -910.0,
+                  "z": -168.0
+                }
+              },
+              {
+                "place": "CTSpawn",
+                "samples": 279,
+                "sourcePoint": {
+                  "x": -1213,
+                  "y": -1013,
+                  "z": -168
+                }
+              },
+              {
+                "place": "SnipersNest",
+                "samples": 269,
+                "sourcePoint": {
+                  "x": -1072,
+                  "y": -380,
+                  "z": -264
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 200,
+                "sourcePoint": {
+                  "x": -1987.0,
+                  "y": 396.0,
+                  "z": -160.0
+                }
+              },
+              {
+                "place": "Connector",
+                "samples": 200,
+                "sourcePoint": {
+                  "x": -684.0,
+                  "y": -1042.5,
+                  "z": -168.0
+                }
+              },
+              {
+                "place": "Underpass",
+                "samples": 44,
+                "sourcePoint": {
+                  "x": -1033.5,
+                  "y": -386.0,
+                  "z": -339.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2342,
+            "openingPlaces": {
+              "PalaceAlley": 465,
+              "TopofMid": 459,
+              "PalaceInterior": 351,
+              "TSpawn": 315,
+              "SideAlley": 244,
+              "Underpass": 159,
+              "BombsiteA": 77,
+              "Middle": 77
+            },
+            "utility": {
+              "smoke": 13,
+              "flashbang": 14,
+              "hegrenade": 4,
+              "molotov": 2
+            },
+            "openingPositions": [
+              {
+                "place": "PalaceAlley",
+                "samples": 465,
+                "sourcePoint": {
+                  "x": 1004,
+                  "y": -1200,
+                  "z": -109
+                }
+              },
+              {
+                "place": "TopofMid",
+                "samples": 459,
+                "sourcePoint": {
+                  "x": 245,
+                  "y": -203,
+                  "z": -166
+                }
+              },
+              {
+                "place": "PalaceInterior",
+                "samples": 351,
+                "sourcePoint": {
+                  "x": 159,
+                  "y": -2279,
+                  "z": -40
+                }
+              },
+              {
+                "place": "TSpawn",
+                "samples": 315,
+                "sourcePoint": {
+                  "x": 1236,
+                  "y": -1028,
+                  "z": -258
+                }
+              },
+              {
+                "place": "SideAlley",
+                "samples": 244,
+                "sourcePoint": {
+                  "x": 446.0,
+                  "y": 464.0,
+                  "z": -255.0
+                }
+              },
+              {
+                "place": "Underpass",
+                "samples": 159,
+                "sourcePoint": {
+                  "x": -890,
+                  "y": 365,
+                  "z": -346
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 77,
+                "sourcePoint": {
+                  "x": -260,
+                  "y": -2167,
+                  "z": -172
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 77,
+                "sourcePoint": {
+                  "x": -67,
+                  "y": -703,
+                  "z": -206
+                }
+              }
+            ]
+          }
+        },
+        "ropz": {
+          "ct": {
+            "openingSamples": 2094,
+            "openingPlaces": {
+              "Catwalk": 751,
+              "BombsiteB": 485,
+              "BombsiteA": 224,
+              "Scaffolding": 182,
+              "Underpass": 123,
+              "PalaceInterior": 103,
+              "SnipersNest": 95,
+              "CTSpawn": 92
+            },
+            "utility": {
+              "smoke": 2,
+              "flashbang": 7,
+              "hegrenade": 7,
+              "molotov": 3
+            },
+            "openingPositions": [
+              {
+                "place": "Catwalk",
+                "samples": 751,
+                "sourcePoint": {
+                  "x": -821,
+                  "y": -41,
+                  "z": -167
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 485,
+                "sourcePoint": {
+                  "x": -1492,
+                  "y": 260,
+                  "z": -167
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 224,
+                "sourcePoint": {
+                  "x": 70.5,
+                  "y": -1918.0,
+                  "z": -168.0
+                }
+              },
+              {
+                "place": "Scaffolding",
+                "samples": 182,
+                "sourcePoint": {
+                  "x": 16.0,
+                  "y": -2301.0,
+                  "z": -40.0
+                }
+              },
+              {
+                "place": "Underpass",
+                "samples": 123,
+                "sourcePoint": {
+                  "x": -808,
+                  "y": 75,
+                  "z": -166
+                }
+              },
+              {
+                "place": "PalaceInterior",
+                "samples": 103,
+                "sourcePoint": {
+                  "x": 152,
+                  "y": -2072,
+                  "z": -40
+                }
+              },
+              {
+                "place": "SnipersNest",
+                "samples": 95,
+                "sourcePoint": {
+                  "x": -1182,
+                  "y": -630,
+                  "z": -168
+                }
+              },
+              {
+                "place": "CTSpawn",
+                "samples": 92,
+                "sourcePoint": {
+                  "x": -1497.0,
+                  "y": -876.0,
+                  "z": -168.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2274,
+            "openingPlaces": {
+              "PalaceInterior": 983,
+              "PalaceAlley": 507,
+              "TRamp": 300,
+              "Apartments": 159,
+              "House": 132,
+              "SideAlley": 53,
+              "BombsiteA": 46,
+              "BackAlley": 41
+            },
+            "utility": {
+              "smoke": 8,
+              "flashbang": 4,
+              "molotov": 4
+            },
+            "openingPositions": [
+              {
+                "place": "PalaceInterior",
+                "samples": 983,
+                "sourcePoint": {
+                  "x": 403,
+                  "y": -2267,
+                  "z": -40
+                }
+              },
+              {
+                "place": "PalaceAlley",
+                "samples": 507,
+                "sourcePoint": {
+                  "x": 808,
+                  "y": -1582,
+                  "z": -109
+                }
+              },
+              {
+                "place": "TRamp",
+                "samples": 300,
+                "sourcePoint": {
+                  "x": 464.0,
+                  "y": -1689.0,
+                  "z": -244.0
+                }
+              },
+              {
+                "place": "Apartments",
+                "samples": 159,
+                "sourcePoint": {
+                  "x": -1077,
+                  "y": 372,
+                  "z": -40
+                }
+              },
+              {
+                "place": "House",
+                "samples": 132,
+                "sourcePoint": {
+                  "x": 540.0,
+                  "y": 620.0,
+                  "z": -136.0
+                }
+              },
+              {
+                "place": "SideAlley",
+                "samples": 53,
+                "sourcePoint": {
+                  "x": 480,
+                  "y": 427,
+                  "z": -252
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 46,
+                "sourcePoint": {
+                  "x": -221.0,
+                  "y": -1548.0,
+                  "z": -54.5
+                }
+              },
+              {
+                "place": "BackAlley",
+                "samples": 41,
+                "sourcePoint": {
+                  "x": -853,
+                  "y": 615,
+                  "z": -80
+                }
+              }
+            ]
+          }
+        },
+        "ZywOo": {
+          "ct": {
+            "openingSamples": 2249,
+            "openingPlaces": {
+              "CTSpawn": 896,
+              "SnipersNest": 494,
+              "BombsiteA": 267,
+              "Stairs": 240,
+              "Jungle": 132,
+              "Middle": 107,
+              "Shop": 60,
+              "Connector": 48
+            },
+            "utility": {
+              "smoke": 8,
+              "flashbang": 5,
+              "hegrenade": 6,
+              "molotov": 7
+            },
+            "openingPositions": [
+              {
+                "place": "CTSpawn",
+                "samples": 896,
+                "sourcePoint": {
+                  "x": -1194.0,
+                  "y": -1357.0,
+                  "z": -168.0
+                }
+              },
+              {
+                "place": "SnipersNest",
+                "samples": 494,
+                "sourcePoint": {
+                  "x": -1201.0,
+                  "y": -759.0,
+                  "z": -168.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 267,
+                "sourcePoint": {
+                  "x": -730,
+                  "y": -1387,
+                  "z": -168
+                }
+              },
+              {
+                "place": "Stairs",
+                "samples": 240,
+                "sourcePoint": {
+                  "x": -507.0,
+                  "y": -1525.5,
+                  "z": -40.0
+                }
+              },
+              {
+                "place": "Jungle",
+                "samples": 132,
+                "sourcePoint": {
+                  "x": -971.0,
+                  "y": -1367.0,
+                  "z": -168.0
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 107,
+                "sourcePoint": {
+                  "x": -791,
+                  "y": -763,
+                  "z": -252
+                }
+              },
+              {
+                "place": "Shop",
+                "samples": 60,
+                "sourcePoint": {
+                  "x": -1804.5,
+                  "y": -639.5,
+                  "z": -168.0
+                }
+              },
+              {
+                "place": "Connector",
+                "samples": 48,
+                "sourcePoint": {
+                  "x": -712.5,
+                  "y": -1099.0,
+                  "z": -168.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2400,
+            "openingPlaces": {
+              "TopofMid": 801,
+              "Middle": 549,
+              "SideAlley": 250,
+              "PalaceAlley": 213,
+              "BackAlley": 200,
+              "BombsiteA": 183,
+              "TRamp": 105,
+              "TSpawn": 85
+            },
+            "utility": {
+              "smoke": 6,
+              "flashbang": 8,
+              "hegrenade": 4,
+              "molotov": 5
+            },
+            "openingPositions": [
+              {
+                "place": "TopofMid",
+                "samples": 801,
+                "sourcePoint": {
+                  "x": 367,
+                  "y": -473,
+                  "z": -164
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 549,
+                "sourcePoint": {
+                  "x": -568,
+                  "y": -788,
+                  "z": -256
+                }
+              },
+              {
+                "place": "SideAlley",
+                "samples": 250,
+                "sourcePoint": {
+                  "x": 375.5,
+                  "y": 235.0,
+                  "z": -252.0
+                }
+              },
+              {
+                "place": "PalaceAlley",
+                "samples": 213,
+                "sourcePoint": {
+                  "x": 652,
+                  "y": -1435,
+                  "z": -262
+                }
+              },
+              {
+                "place": "BackAlley",
+                "samples": 200,
+                "sourcePoint": {
+                  "x": -359.5,
+                  "y": 620.0,
+                  "z": -80.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 183,
+                "sourcePoint": {
+                  "x": -562,
+                  "y": -1954,
+                  "z": -177
+                }
+              },
+              {
+                "place": "TRamp",
+                "samples": 105,
+                "sourcePoint": {
+                  "x": 415,
+                  "y": -1632,
+                  "z": -220
+                }
+              },
+              {
+                "place": "TSpawn",
+                "samples": 85,
+                "sourcePoint": {
+                  "x": 1149,
+                  "y": -467,
+                  "z": -168
+                }
+              }
+            ]
+          }
+        }
+      },
+      "cooperationWindows": 14,
+      "examples": [
+        {
+          "round": 13,
+          "firstEffectSeconds": 20.234,
+          "laterPlantSite": "a",
+          "effects": [
+            {
+              "player": "ropz",
+              "kind": "molotov",
+              "throwTick": 104464,
+              "effectTick": 104548,
+              "releaseToEffectSeconds": 1.312,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": 122,
+                "y": -2008,
+                "z": -37
+              }
+            },
+            {
+              "player": "mezii",
+              "kind": "molotov",
+              "throwTick": 104501,
+              "effectTick": 104595,
+              "releaseToEffectSeconds": 1.469,
+              "effectOffsetSeconds": 0.734,
+              "effectPositionSourceUnits": {
+                "x": -442,
+                "y": -1537,
+                "z": -38
+              }
+            },
+            {
+              "player": "mezii",
+              "kind": "smoke",
+              "throwTick": 104407,
+              "effectTick": 104602,
+              "releaseToEffectSeconds": 3.047,
+              "effectOffsetSeconds": 0.844,
+              "effectPositionSourceUnits": {
+                "x": -627,
+                "y": -1624,
+                "z": -170
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 104709,
+              "effectTick": 104709,
+              "releaseToEffectSeconds": 0.0,
+              "effectOffsetSeconds": 2.516,
+              "effectPositionSourceUnits": {
+                "x": -462,
+                "y": -1615,
+                "z": -5
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 104709,
+              "effectTick": 104813,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 4.141,
+              "effectPositionSourceUnits": {
+                "x": -451,
+                "y": -1612,
+                "z": -4
+              }
+            }
+          ]
+        },
+        {
+          "round": 15,
+          "firstEffectSeconds": 30.812,
+          "laterPlantSite": null,
+          "effects": [
+            {
+              "player": "apEX",
+              "kind": "smoke",
+              "throwTick": 117898,
+              "effectTick": 118046,
+              "releaseToEffectSeconds": 2.312,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": -973,
+                "y": -1362,
+                "z": -166
+              }
+            },
+            {
+              "player": "ropz",
+              "kind": "flashbang",
+              "throwTick": 118206,
+              "effectTick": 118310,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 4.125,
+              "effectPositionSourceUnits": {
+                "x": -757,
+                "y": -1092,
+                "z": -106
+              }
+            },
+            {
+              "player": "ZywOo",
+              "kind": "molotov",
+              "throwTick": 118240,
+              "effectTick": 118343,
+              "releaseToEffectSeconds": 1.609,
+              "effectOffsetSeconds": 4.641,
+              "effectPositionSourceUnits": {
+                "x": -877,
+                "y": 129,
+                "z": -171
+              }
+            }
+          ]
+        },
+        {
+          "round": 17,
+          "firstEffectSeconds": 21.219,
+          "laterPlantSite": "a",
+          "effects": [
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 133532,
+              "effectTick": 133636,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": -220,
+                "y": -1870,
+                "z": 210
+              }
+            },
+            {
+              "player": "ropz",
+              "kind": "molotov",
+              "throwTick": 133667,
+              "effectTick": 133717,
+              "releaseToEffectSeconds": 0.781,
+              "effectOffsetSeconds": 1.266,
+              "effectPositionSourceUnits": {
+                "x": 143,
+                "y": -1930,
+                "z": -38
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 133999,
+              "effectTick": 134013,
+              "releaseToEffectSeconds": 0.219,
+              "effectOffsetSeconds": 5.891,
+              "effectPositionSourceUnits": {
+                "x": -781,
+                "y": -1519,
+                "z": -30
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "smoke",
+              "throwTick": 133829,
+              "effectTick": 134019,
+              "releaseToEffectSeconds": 2.969,
+              "effectOffsetSeconds": 5.984,
+              "effectPositionSourceUnits": {
+                "x": -949,
+                "y": -1454,
+                "z": -166
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "de_inferno": {
+      "map": "de_inferno",
+      "rounds": 21,
+      "inputSha256": "ecc222c0ec7ca86455ccb5a72a909403e6eb5fa42edb94d7fcc02a355dd92430",
+      "sourceFile": "sample-2026-02-09_de_inferno_Team_Vitality_13-8_FURIA.zip",
+      "originalDemo": {
+        "hash": "affd22a7fb10a99d149cd343ebe29b83457a40862244a398de3cb48930110907",
+        "sourceFileName": "furia-vs-vitality-m2-inferno.dem"
+      },
+      "players": {
+        "mezii": {
+          "ct": {
+            "openingSamples": 1743,
+            "openingPlaces": {
+              "BombsiteA": 329,
+              "TopofMid": 321,
+              "CTSpawn": 232,
+              "Library": 187,
+              "Ruins": 157,
+              "Middle": 143,
+              "Balcony": 111,
+              "Arch": 110
+            },
+            "utility": {
+              "smoke": 5,
+              "flashbang": 5,
+              "hegrenade": 2
+            },
+            "openingPositions": [
+              {
+                "place": "BombsiteA",
+                "samples": 329,
+                "sourcePoint": {
+                  "x": 2210,
+                  "y": 512,
+                  "z": 157
+                }
+              },
+              {
+                "place": "TopofMid",
+                "samples": 321,
+                "sourcePoint": {
+                  "x": 1326,
+                  "y": 1185,
+                  "z": 181
+                }
+              },
+              {
+                "place": "CTSpawn",
+                "samples": 232,
+                "sourcePoint": {
+                  "x": 2120.5,
+                  "y": 2141.5,
+                  "z": 136.0
+                }
+              },
+              {
+                "place": "Library",
+                "samples": 187,
+                "sourcePoint": {
+                  "x": 2529,
+                  "y": 1262,
+                  "z": 159
+                }
+              },
+              {
+                "place": "Ruins",
+                "samples": 157,
+                "sourcePoint": {
+                  "x": 1189,
+                  "y": 2772,
+                  "z": 124
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 143,
+                "sourcePoint": {
+                  "x": 546,
+                  "y": 700,
+                  "z": 98
+                }
+              },
+              {
+                "place": "Balcony",
+                "samples": 111,
+                "sourcePoint": {
+                  "x": 2076,
+                  "y": -346,
+                  "z": 260
+                }
+              },
+              {
+                "place": "Arch",
+                "samples": 110,
+                "sourcePoint": {
+                  "x": 1814.0,
+                  "y": 1199.5,
+                  "z": 169.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2110,
+            "openingPlaces": {
+              "TRamp": 906,
+              "Banana": 542,
+              "Middle": 359,
+              "BombsiteB": 147,
+              "TopofMid": 71,
+              "BombsiteA": 35,
+              "LowerMid": 28,
+              "SecondMid": 22
+            },
+            "utility": {
+              "smoke": 1,
+              "flashbang": 5,
+              "hegrenade": 8,
+              "molotov": 12
+            },
+            "openingPositions": [
+              {
+                "place": "TRamp",
+                "samples": 906,
+                "sourcePoint": {
+                  "x": -187.0,
+                  "y": 913.0,
+                  "z": 36.0
+                }
+              },
+              {
+                "place": "Banana",
+                "samples": 542,
+                "sourcePoint": {
+                  "x": 219.0,
+                  "y": 1383.0,
+                  "z": 109.0
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 359,
+                "sourcePoint": {
+                  "x": 321,
+                  "y": 623,
+                  "z": 85
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 147,
+                "sourcePoint": {
+                  "x": 291,
+                  "y": 2944,
+                  "z": 164
+                }
+              },
+              {
+                "place": "TopofMid",
+                "samples": 71,
+                "sourcePoint": {
+                  "x": 1432,
+                  "y": 200,
+                  "z": 131
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 35,
+                "sourcePoint": {
+                  "x": 1843,
+                  "y": 52,
+                  "z": 132
+                }
+              },
+              {
+                "place": "LowerMid",
+                "samples": 28,
+                "sourcePoint": {
+                  "x": -437.5,
+                  "y": 710.0,
+                  "z": -31.0
+                }
+              },
+              {
+                "place": "SecondMid",
+                "samples": 22,
+                "sourcePoint": {
+                  "x": 864.5,
+                  "y": 364.5,
+                  "z": 95.0
+                }
+              }
+            ]
+          }
+        },
+        "flameZ": {
+          "ct": {
+            "openingSamples": 1684,
+            "openingPlaces": {
+              "BombsiteB": 753,
+              "Banana": 478,
+              "BombsiteA": 205,
+              "Apartments": 131,
+              "Ruins": 44,
+              "CTSpawn": 32,
+              "Balcony": 22,
+              "Arch": 18
+            },
+            "utility": {
+              "smoke": 6,
+              "flashbang": 4,
+              "hegrenade": 6,
+              "molotov": 6,
+              "decoy": 1
+            },
+            "openingPositions": [
+              {
+                "place": "BombsiteB",
+                "samples": 753,
+                "sourcePoint": {
+                  "x": 633,
+                  "y": 2585,
+                  "z": 161
+                }
+              },
+              {
+                "place": "Banana",
+                "samples": 478,
+                "sourcePoint": {
+                  "x": 623.5,
+                  "y": 1917.0,
+                  "z": 136.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 205,
+                "sourcePoint": {
+                  "x": 2089,
+                  "y": 21,
+                  "z": 126
+                }
+              },
+              {
+                "place": "Apartments",
+                "samples": 131,
+                "sourcePoint": {
+                  "x": 1168,
+                  "y": -210,
+                  "z": 256
+                }
+              },
+              {
+                "place": "Ruins",
+                "samples": 44,
+                "sourcePoint": {
+                  "x": 1603.0,
+                  "y": 2682.0,
+                  "z": 160.0
+                }
+              },
+              {
+                "place": "CTSpawn",
+                "samples": 32,
+                "sourcePoint": {
+                  "x": 1675.0,
+                  "y": 1718.5,
+                  "z": 160.0
+                }
+              },
+              {
+                "place": "Balcony",
+                "samples": 22,
+                "sourcePoint": {
+                  "x": 938.0,
+                  "y": -111.0,
+                  "z": 256.5
+                }
+              },
+              {
+                "place": "Arch",
+                "samples": 18,
+                "sourcePoint": {
+                  "x": 1781.0,
+                  "y": 1348.5,
+                  "z": 160.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2354,
+            "openingPlaces": {
+              "Middle": 566,
+              "SecondMid": 510,
+              "Banana": 292,
+              "TRamp": 241,
+              "Underpass": 234,
+              "BombsiteB": 141,
+              "Apartments": 139,
+              "LowerMid": 87
+            },
+            "utility": {
+              "smoke": 9,
+              "flashbang": 13,
+              "hegrenade": 2,
+              "molotov": 8
+            },
+            "openingPositions": [
+              {
+                "place": "Middle",
+                "samples": 566,
+                "sourcePoint": {
+                  "x": 522.5,
+                  "y": 619.0,
+                  "z": 94.0
+                }
+              },
+              {
+                "place": "SecondMid",
+                "samples": 510,
+                "sourcePoint": {
+                  "x": 805.0,
+                  "y": 234.0,
+                  "z": 95.0
+                }
+              },
+              {
+                "place": "Banana",
+                "samples": 292,
+                "sourcePoint": {
+                  "x": 248.5,
+                  "y": 1378.0,
+                  "z": 113.0
+                }
+              },
+              {
+                "place": "TRamp",
+                "samples": 241,
+                "sourcePoint": {
+                  "x": -189,
+                  "y": 869,
+                  "z": 46
+                }
+              },
+              {
+                "place": "Underpass",
+                "samples": 234,
+                "sourcePoint": {
+                  "x": 290.0,
+                  "y": 644.0,
+                  "z": 16.0
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 141,
+                "sourcePoint": {
+                  "x": 200,
+                  "y": 2711,
+                  "z": 167
+                }
+              },
+              {
+                "place": "Apartments",
+                "samples": 139,
+                "sourcePoint": {
+                  "x": 1089,
+                  "y": 40,
+                  "z": 256
+                }
+              },
+              {
+                "place": "LowerMid",
+                "samples": 87,
+                "sourcePoint": {
+                  "x": -620,
+                  "y": 484,
+                  "z": 40
+                }
+              }
+            ]
+          }
+        },
+        "apEX": {
+          "ct": {
+            "openingSamples": 1646,
+            "openingPlaces": {
+              "BombsiteB": 858,
+              "Ruins": 345,
+              "Banana": 163,
+              "CTSpawn": 125,
+              "BombsiteA": 104,
+              "Arch": 23,
+              "Library": 21,
+              "TopofMid": 7
+            },
+            "utility": {
+              "smoke": 5,
+              "flashbang": 11,
+              "hegrenade": 10,
+              "molotov": 9
+            },
+            "openingPositions": [
+              {
+                "place": "BombsiteB",
+                "samples": 858,
+                "sourcePoint": {
+                  "x": 662.0,
+                  "y": 2810.0,
+                  "z": 161.0
+                }
+              },
+              {
+                "place": "Ruins",
+                "samples": 345,
+                "sourcePoint": {
+                  "x": 1160,
+                  "y": 2810,
+                  "z": 128
+                }
+              },
+              {
+                "place": "Banana",
+                "samples": 163,
+                "sourcePoint": {
+                  "x": 776,
+                  "y": 1917,
+                  "z": 136
+                }
+              },
+              {
+                "place": "CTSpawn",
+                "samples": 125,
+                "sourcePoint": {
+                  "x": 1851,
+                  "y": 2703,
+                  "z": 124
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 104,
+                "sourcePoint": {
+                  "x": 2286.0,
+                  "y": 592.0,
+                  "z": 145.5
+                }
+              },
+              {
+                "place": "Arch",
+                "samples": 23,
+                "sourcePoint": {
+                  "x": 1771,
+                  "y": 1258,
+                  "z": 160
+                }
+              },
+              {
+                "place": "Library",
+                "samples": 21,
+                "sourcePoint": {
+                  "x": 2481,
+                  "y": 1345,
+                  "z": 160
+                }
+              },
+              {
+                "place": "TopofMid",
+                "samples": 7,
+                "sourcePoint": {
+                  "x": 1460,
+                  "y": 995,
+                  "z": 153
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2213,
+            "openingPlaces": {
+              "LowerMid": 786,
+              "Banana": 437,
+              "Middle": 412,
+              "TRamp": 365,
+              "Upstairs": 111,
+              "TopofMid": 59,
+              "BombsiteB": 35,
+              "SecondMid": 8
+            },
+            "utility": {
+              "smoke": 14,
+              "flashbang": 16,
+              "hegrenade": 8,
+              "molotov": 4
+            },
+            "openingPositions": [
+              {
+                "place": "LowerMid",
+                "samples": 786,
+                "sourcePoint": {
+                  "x": -620.0,
+                  "y": 484.0,
+                  "z": 40.0
+                }
+              },
+              {
+                "place": "Banana",
+                "samples": 437,
+                "sourcePoint": {
+                  "x": 227,
+                  "y": 1633,
+                  "z": 120
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 412,
+                "sourcePoint": {
+                  "x": 304.0,
+                  "y": 678.5,
+                  "z": 85.0
+                }
+              },
+              {
+                "place": "TRamp",
+                "samples": 365,
+                "sourcePoint": {
+                  "x": -78,
+                  "y": 894,
+                  "z": 71
+                }
+              },
+              {
+                "place": "Upstairs",
+                "samples": 111,
+                "sourcePoint": {
+                  "x": -564,
+                  "y": 331,
+                  "z": 91
+                }
+              },
+              {
+                "place": "TopofMid",
+                "samples": 59,
+                "sourcePoint": {
+                  "x": 1377,
+                  "y": 927,
+                  "z": 153
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 35,
+                "sourcePoint": {
+                  "x": 715,
+                  "y": 2504,
+                  "z": 140
+                }
+              },
+              {
+                "place": "SecondMid",
+                "samples": 8,
+                "sourcePoint": {
+                  "x": 854.5,
+                  "y": 394.5,
+                  "z": 96.0
+                }
+              }
+            ]
+          }
+        },
+        "ropz": {
+          "ct": {
+            "openingSamples": 1716,
+            "openingPlaces": {
+              "Apartments": 675,
+              "BombsiteA": 479,
+              "TopofMid": 291,
+              "Balcony": 63,
+              "Arch": 62,
+              "Middle": 57,
+              "Pit": 46,
+              "CTSpawn": 43
+            },
+            "utility": {
+              "smoke": 9,
+              "flashbang": 1,
+              "hegrenade": 3,
+              "molotov": 8
+            },
+            "openingPositions": [
+              {
+                "place": "Apartments",
+                "samples": 675,
+                "sourcePoint": {
+                  "x": 1189,
+                  "y": 220,
+                  "z": 172
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 479,
+                "sourcePoint": {
+                  "x": 1988,
+                  "y": 116,
+                  "z": 132
+                }
+              },
+              {
+                "place": "TopofMid",
+                "samples": 291,
+                "sourcePoint": {
+                  "x": 1439,
+                  "y": 177,
+                  "z": 132
+                }
+              },
+              {
+                "place": "Balcony",
+                "samples": 63,
+                "sourcePoint": {
+                  "x": 2029,
+                  "y": -206,
+                  "z": 258
+                }
+              },
+              {
+                "place": "Arch",
+                "samples": 62,
+                "sourcePoint": {
+                  "x": 1789.0,
+                  "y": 1224.5,
+                  "z": 162.0
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 57,
+                "sourcePoint": {
+                  "x": 1183,
+                  "y": 581,
+                  "z": 116
+                }
+              },
+              {
+                "place": "Pit",
+                "samples": 46,
+                "sourcePoint": {
+                  "x": 2472.5,
+                  "y": -55.0,
+                  "z": 106.0
+                }
+              },
+              {
+                "place": "CTSpawn",
+                "samples": 43,
+                "sourcePoint": {
+                  "x": 1673,
+                  "y": 1866,
+                  "z": 176
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2249,
+            "openingPlaces": {
+              "Apartments": 1120,
+              "SecondMid": 349,
+              "BackAlley": 331,
+              "Deck": 189,
+              "Banana": 98,
+              "TRamp": 62,
+              "LowerMid": 34,
+              "Balcony": 27
+            },
+            "utility": {
+              "smoke": 4,
+              "flashbang": 6,
+              "hegrenade": 2,
+              "molotov": 7
+            },
+            "openingPositions": [
+              {
+                "place": "Apartments",
+                "samples": 1120,
+                "sourcePoint": {
+                  "x": 1190.0,
+                  "y": -365.0,
+                  "z": 219.5
+                }
+              },
+              {
+                "place": "SecondMid",
+                "samples": 349,
+                "sourcePoint": {
+                  "x": 743,
+                  "y": -58,
+                  "z": 89
+                }
+              },
+              {
+                "place": "BackAlley",
+                "samples": 331,
+                "sourcePoint": {
+                  "x": 911,
+                  "y": -650,
+                  "z": 89
+                }
+              },
+              {
+                "place": "Deck",
+                "samples": 189,
+                "sourcePoint": {
+                  "x": 160,
+                  "y": 37,
+                  "z": 208
+                }
+              },
+              {
+                "place": "Banana",
+                "samples": 98,
+                "sourcePoint": {
+                  "x": 216.5,
+                  "y": 1324.5,
+                  "z": 108.0
+                }
+              },
+              {
+                "place": "TRamp",
+                "samples": 62,
+                "sourcePoint": {
+                  "x": -169.0,
+                  "y": 844.0,
+                  "z": 43.0
+                }
+              },
+              {
+                "place": "LowerMid",
+                "samples": 34,
+                "sourcePoint": {
+                  "x": -565.5,
+                  "y": 722.0,
+                  "z": -32.0
+                }
+              },
+              {
+                "place": "Balcony",
+                "samples": 27,
+                "sourcePoint": {
+                  "x": 948,
+                  "y": -125,
+                  "z": 257
+                }
+              }
+            ]
+          }
+        },
+        "ZywOo": {
+          "ct": {
+            "openingSamples": 1800,
+            "openingPlaces": {
+              "TopofMid": 597,
+              "Arch": 350,
+              "BombsiteB": 245,
+              "Quad": 182,
+              "BombsiteA": 155,
+              "Banana": 63,
+              "Graveyard": 54,
+              "CTSpawn": 51
+            },
+            "utility": {
+              "smoke": 8,
+              "flashbang": 3,
+              "hegrenade": 1,
+              "molotov": 1
+            },
+            "openingPositions": [
+              {
+                "place": "TopofMid",
+                "samples": 597,
+                "sourcePoint": {
+                  "x": 1462,
+                  "y": 559,
+                  "z": 132
+                }
+              },
+              {
+                "place": "Arch",
+                "samples": 350,
+                "sourcePoint": {
+                  "x": 1613.0,
+                  "y": 1214.0,
+                  "z": 177.0
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 245,
+                "sourcePoint": {
+                  "x": 531,
+                  "y": 2695,
+                  "z": 167
+                }
+              },
+              {
+                "place": "Quad",
+                "samples": 182,
+                "sourcePoint": {
+                  "x": 1533.0,
+                  "y": -90.0,
+                  "z": 142.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 155,
+                "sourcePoint": {
+                  "x": 1798,
+                  "y": 73,
+                  "z": 132
+                }
+              },
+              {
+                "place": "Banana",
+                "samples": 63,
+                "sourcePoint": {
+                  "x": 704,
+                  "y": 2172,
+                  "z": 136
+                }
+              },
+              {
+                "place": "Graveyard",
+                "samples": 54,
+                "sourcePoint": {
+                  "x": 2485.0,
+                  "y": 239.5,
+                  "z": 149.5
+                }
+              },
+              {
+                "place": "CTSpawn",
+                "samples": 51,
+                "sourcePoint": {
+                  "x": 2192,
+                  "y": 2362,
+                  "z": 133
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2168,
+            "openingPlaces": {
+              "Banana": 1014,
+              "Middle": 468,
+              "TRamp": 406,
+              "BombsiteB": 135,
+              "LowerMid": 66,
+              "TopofMid": 63,
+              "Underpass": 16
+            },
+            "utility": {
+              "smoke": 3,
+              "flashbang": 9,
+              "hegrenade": 6,
+              "molotov": 8
+            },
+            "openingPositions": [
+              {
+                "place": "Banana",
+                "samples": 1014,
+                "sourcePoint": {
+                  "x": 68.5,
+                  "y": 1418.0,
+                  "z": 104.0
+                }
+              },
+              {
+                "place": "Middle",
+                "samples": 468,
+                "sourcePoint": {
+                  "x": 450.0,
+                  "y": 676.0,
+                  "z": 96.0
+                }
+              },
+              {
+                "place": "TRamp",
+                "samples": 406,
+                "sourcePoint": {
+                  "x": -364.0,
+                  "y": 871.5,
+                  "z": -2.0
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 135,
+                "sourcePoint": {
+                  "x": 653,
+                  "y": 2934,
+                  "z": 162
+                }
+              },
+              {
+                "place": "LowerMid",
+                "samples": 66,
+                "sourcePoint": {
+                  "x": -512.0,
+                  "y": 669.0,
+                  "z": 25.0
+                }
+              },
+              {
+                "place": "TopofMid",
+                "samples": 63,
+                "sourcePoint": {
+                  "x": 1357,
+                  "y": 235,
+                  "z": 131
+                }
+              },
+              {
+                "place": "Underpass",
+                "samples": 16,
+                "sourcePoint": {
+                  "x": 288.0,
+                  "y": 663.5,
+                  "z": 20.0
+                }
+              }
+            ]
+          }
+        }
+      },
+      "cooperationWindows": 10,
+      "examples": [
+        {
+          "round": 2,
+          "firstEffectSeconds": 10.453,
+          "laterPlantSite": "b",
+          "effects": [
+            {
+              "player": "mezii",
+              "kind": "flashbang",
+              "throwTick": 9304,
+              "effectTick": 9408,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": 541,
+                "y": 1969,
+                "z": 161
+              }
+            },
+            {
+              "player": "flameZ",
+              "kind": "hegrenade",
+              "throwTick": 9377,
+              "effectTick": 9481,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 1.141,
+              "effectPositionSourceUnits": {
+                "x": 509,
+                "y": 1904,
+                "z": 198
+              }
+            },
+            {
+              "player": "mezii",
+              "kind": "molotov",
+              "throwTick": 9424,
+              "effectTick": 9539,
+              "releaseToEffectSeconds": 1.797,
+              "effectOffsetSeconds": 2.047,
+              "effectPositionSourceUnits": {
+                "x": 868,
+                "y": 1886,
+                "z": 138
+              }
+            },
+            {
+              "player": "flameZ",
+              "kind": "flashbang",
+              "throwTick": 9455,
+              "effectTick": 9559,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 2.359,
+              "effectPositionSourceUnits": {
+                "x": 772,
+                "y": 1850,
+                "z": 172
+              }
+            },
+            {
+              "player": "ropz",
+              "kind": "smoke",
+              "throwTick": 9278,
+              "effectTick": 9661,
+              "releaseToEffectSeconds": 5.984,
+              "effectOffsetSeconds": 3.953,
+              "effectPositionSourceUnits": {
+                "x": 1033,
+                "y": 2722,
+                "z": 131
+              }
+            },
+            {
+              "player": "ZywOo",
+              "kind": "molotov",
+              "throwTick": 9551,
+              "effectTick": 9680,
+              "releaseToEffectSeconds": 2.016,
+              "effectOffsetSeconds": 4.25,
+              "effectPositionSourceUnits": {
+                "x": 530,
+                "y": 2545,
+                "z": 279
+              }
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "firstEffectSeconds": 52.0,
+          "laterPlantSite": "b",
+          "effects": [
+            {
+              "player": "flameZ",
+              "kind": "smoke",
+              "throwTick": 17604,
+              "effectTick": 17970,
+              "releaseToEffectSeconds": 5.719,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": 486,
+                "y": 3145,
+                "z": 162
+              }
+            },
+            {
+              "player": "ZywOo",
+              "kind": "flashbang",
+              "throwTick": 18121,
+              "effectTick": 18225,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 3.984,
+              "effectPositionSourceUnits": {
+                "x": 756,
+                "y": 2351,
+                "z": 363
+              }
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "firstEffectSeconds": 65.672,
+          "laterPlantSite": "b",
+          "effects": [
+            {
+              "player": "flameZ",
+              "kind": "smoke",
+              "throwTick": 18477,
+              "effectTick": 18845,
+              "releaseToEffectSeconds": 5.75,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": 477,
+                "y": 3153,
+                "z": 162
+              }
+            },
+            {
+              "player": "flameZ",
+              "kind": "molotov",
+              "throwTick": 18831,
+              "effectTick": 18960,
+              "releaseToEffectSeconds": 2.016,
+              "effectOffsetSeconds": 1.797,
+              "effectPositionSourceUnits": {
+                "x": 108,
+                "y": 3112,
+                "z": 160
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "molotov",
+              "throwTick": 18930,
+              "effectTick": 19059,
+              "releaseToEffectSeconds": 2.016,
+              "effectOffsetSeconds": 3.344,
+              "effectPositionSourceUnits": {
+                "x": 402,
+                "y": 2518,
+                "z": 279
+              }
+            },
+            {
+              "player": "flameZ",
+              "kind": "flashbang",
+              "throwTick": 19035,
+              "effectTick": 19139,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 4.594,
+              "effectPositionSourceUnits": {
+                "x": 281,
+                "y": 2495,
+                "z": 345
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 19110,
+              "effectTick": 19214,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 5.766,
+              "effectPositionSourceUnits": {
+                "x": 1021,
+                "y": 2640,
+                "z": 279
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "de_nuke": {
+      "map": "de_nuke",
+      "rounds": 15,
+      "inputSha256": "c5a8007d73e0b1328b7010f50af0c1c320fbb4bda0012dbe2b3c5bdfdc1f7655",
+      "sourceFile": "sample-2026-02-09_de_nuke_FURIA_2-13_Team_Vitality.zip",
+      "originalDemo": {
+        "hash": "2b2f6f3ceeb869dccc3078c300918a1deb8b495f384ee3809d577dcb5d7da582",
+        "sourceFileName": "furia-vs-vitality-m3-nuke.dem"
+      },
+      "players": {
+        "mezii": {
+          "ct": {
+            "openingSamples": 2149,
+            "openingPlaces": {
+              "Rafters": 759,
+              "BombsiteA": 701,
+              "Heaven": 196,
+              "Catwalk": 192,
+              "Hut": 167,
+              "Lobby": 47,
+              "Control": 44,
+              "Vending": 19
+            },
+            "utility": {
+              "smoke": 6,
+              "flashbang": 3,
+              "hegrenade": 8,
+              "molotov": 11
+            },
+            "openingPositions": [
+              {
+                "place": "Rafters",
+                "samples": 759,
+                "sourcePoint": {
+                  "x": 880,
+                  "y": -318,
+                  "z": -128
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 701,
+                "sourcePoint": {
+                  "x": 852,
+                  "y": -705,
+                  "z": -406
+                }
+              },
+              {
+                "place": "Heaven",
+                "samples": 196,
+                "sourcePoint": {
+                  "x": 1056.0,
+                  "y": -410.5,
+                  "z": -128.0
+                }
+              },
+              {
+                "place": "Catwalk",
+                "samples": 192,
+                "sourcePoint": {
+                  "x": 1336.5,
+                  "y": -372.5,
+                  "z": -127.0
+                }
+              },
+              {
+                "place": "Hut",
+                "samples": 167,
+                "sourcePoint": {
+                  "x": 399,
+                  "y": -1000,
+                  "z": -392
+                }
+              },
+              {
+                "place": "Lobby",
+                "samples": 47,
+                "sourcePoint": {
+                  "x": 157,
+                  "y": -795,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Control",
+                "samples": 44,
+                "sourcePoint": {
+                  "x": 109.5,
+                  "y": 49.5,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Vending",
+                "samples": 19,
+                "sourcePoint": {
+                  "x": -88,
+                  "y": -513,
+                  "z": -416
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 600,
+            "openingPlaces": {
+              "Outside": 200,
+              "Roof": 190,
+              "Tunnels": 107,
+              "Secret": 54,
+              "Vents": 25,
+              "Lobby": 10,
+              "BombsiteA": 10,
+              "Squeaky": 4
+            },
+            "utility": {
+              "smoke": 4,
+              "flashbang": 1,
+              "hegrenade": 1,
+              "molotov": 2
+            },
+            "openingPositions": [
+              {
+                "place": "Outside",
+                "samples": 200,
+                "sourcePoint": {
+                  "x": -65.5,
+                  "y": -1973.5,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Roof",
+                "samples": 190,
+                "sourcePoint": {
+                  "x": -19.0,
+                  "y": -823.0,
+                  "z": -22.0
+                }
+              },
+              {
+                "place": "Tunnels",
+                "samples": 107,
+                "sourcePoint": {
+                  "x": 1101,
+                  "y": -1450,
+                  "z": -640
+                }
+              },
+              {
+                "place": "Secret",
+                "samples": 54,
+                "sourcePoint": {
+                  "x": 1442.0,
+                  "y": -2401.0,
+                  "z": -500.5
+                }
+              },
+              {
+                "place": "Vents",
+                "samples": 25,
+                "sourcePoint": {
+                  "x": 739,
+                  "y": -1436,
+                  "z": -608
+                }
+              },
+              {
+                "place": "Lobby",
+                "samples": 10,
+                "sourcePoint": {
+                  "x": 143.5,
+                  "y": -827.0,
+                  "z": -288.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 10,
+                "sourcePoint": {
+                  "x": 441.5,
+                  "y": -1383.5,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Squeaky",
+                "samples": 4,
+                "sourcePoint": {
+                  "x": 259.5,
+                  "y": -1279.5,
+                  "z": -415.5
+                }
+              }
+            ]
+          }
+        },
+        "flameZ": {
+          "ct": {
+            "openingSamples": 2278,
+            "openingPlaces": {
+              "BombsiteA": 1003,
+              "Outside": 238,
+              "HutRoof": 226,
+              "Mini": 216,
+              "Vents": 185,
+              "Ramp": 89,
+              "Tunnels": 67,
+              "Decon": 65
+            },
+            "utility": {
+              "smoke": 8,
+              "flashbang": 8,
+              "hegrenade": 11,
+              "molotov": 9
+            },
+            "openingPositions": [
+              {
+                "place": "BombsiteA",
+                "samples": 1003,
+                "sourcePoint": {
+                  "x": 585,
+                  "y": -1185,
+                  "z": -415
+                }
+              },
+              {
+                "place": "Outside",
+                "samples": 238,
+                "sourcePoint": {
+                  "x": 1581.0,
+                  "y": -1297.0,
+                  "z": -408.0
+                }
+              },
+              {
+                "place": "HutRoof",
+                "samples": 226,
+                "sourcePoint": {
+                  "x": 452.5,
+                  "y": -1177.0,
+                  "z": -252.0
+                }
+              },
+              {
+                "place": "Mini",
+                "samples": 216,
+                "sourcePoint": {
+                  "x": 799.5,
+                  "y": -1565.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Vents",
+                "samples": 185,
+                "sourcePoint": {
+                  "x": 488,
+                  "y": -1442,
+                  "z": -608
+                }
+              },
+              {
+                "place": "Ramp",
+                "samples": 89,
+                "sourcePoint": {
+                  "x": 471,
+                  "y": 167,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Tunnels",
+                "samples": 67,
+                "sourcePoint": {
+                  "x": 487,
+                  "y": -1552,
+                  "z": -690
+                }
+              },
+              {
+                "place": "Decon",
+                "samples": 65,
+                "sourcePoint": {
+                  "x": 166,
+                  "y": -1514,
+                  "z": -767
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 600,
+            "openingPlaces": {
+              "Silo": 196,
+              "Vending": 177,
+              "BombsiteA": 110,
+              "Vents": 72,
+              "Lobby": 16,
+              "Squeaky": 12,
+              "Trophy": 7,
+              "Mini": 6
+            },
+            "utility": {
+              "flashbang": 1
+            },
+            "openingPositions": [
+              {
+                "place": "Silo",
+                "samples": 196,
+                "sourcePoint": {
+                  "x": 158.0,
+                  "y": -1897.5,
+                  "z": -240.0
+                }
+              },
+              {
+                "place": "Vending",
+                "samples": 177,
+                "sourcePoint": {
+                  "x": -89,
+                  "y": -357,
+                  "z": -416
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 110,
+                "sourcePoint": {
+                  "x": 397.0,
+                  "y": -1472.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Vents",
+                "samples": 72,
+                "sourcePoint": {
+                  "x": 459.0,
+                  "y": -1448.5,
+                  "z": -608.0
+                }
+              },
+              {
+                "place": "Lobby",
+                "samples": 16,
+                "sourcePoint": {
+                  "x": -148.0,
+                  "y": -762.5,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Squeaky",
+                "samples": 12,
+                "sourcePoint": {
+                  "x": 199.0,
+                  "y": -1212.5,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Trophy",
+                "samples": 7,
+                "sourcePoint": {
+                  "x": 8,
+                  "y": -373,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Mini",
+                "samples": 6,
+                "sourcePoint": {
+                  "x": 760.0,
+                  "y": -1565.0,
+                  "z": -416.0
+                }
+              }
+            ]
+          }
+        },
+        "apEX": {
+          "ct": {
+            "openingSamples": 2187,
+            "openingPlaces": {
+              "Outside": 1200,
+              "Mini": 318,
+              "BombsiteA": 100,
+              "Garage": 98,
+              "Hell": 95,
+              "Ramp": 78,
+              "Tunnels": 69,
+              "Secret": 67
+            },
+            "utility": {
+              "smoke": 4,
+              "flashbang": 5,
+              "hegrenade": 12,
+              "molotov": 9
+            },
+            "openingPositions": [
+              {
+                "place": "Outside",
+                "samples": 1200,
+                "sourcePoint": {
+                  "x": 1149.5,
+                  "y": -1576.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Mini",
+                "samples": 318,
+                "sourcePoint": {
+                  "x": 808.0,
+                  "y": -1673.5,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 100,
+                "sourcePoint": {
+                  "x": 791.0,
+                  "y": -1385.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Garage",
+                "samples": 98,
+                "sourcePoint": {
+                  "x": 1356.0,
+                  "y": -1983.5,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Hell",
+                "samples": 95,
+                "sourcePoint": {
+                  "x": 1244,
+                  "y": -407,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Ramp",
+                "samples": 78,
+                "sourcePoint": {
+                  "x": 566.5,
+                  "y": 499.0,
+                  "z": -509.0
+                }
+              },
+              {
+                "place": "Tunnels",
+                "samples": 69,
+                "sourcePoint": {
+                  "x": 1117,
+                  "y": -1729,
+                  "z": -640
+                }
+              },
+              {
+                "place": "Secret",
+                "samples": 67,
+                "sourcePoint": {
+                  "x": 1519,
+                  "y": -2386,
+                  "z": -560
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 589,
+            "openingPlaces": {
+              "Outside": 314,
+              "Secret": 124,
+              "Lobby": 102,
+              "Silo": 36,
+              "Roof": 7,
+              "Vending": 6
+            },
+            "utility": {
+              "smoke": 1,
+              "flashbang": 2,
+              "molotov": 1
+            },
+            "openingPositions": [
+              {
+                "place": "Outside",
+                "samples": 314,
+                "sourcePoint": {
+                  "x": 343.0,
+                  "y": -2268.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Secret",
+                "samples": 124,
+                "sourcePoint": {
+                  "x": 1549.0,
+                  "y": -2300.5,
+                  "z": -586.5
+                }
+              },
+              {
+                "place": "Lobby",
+                "samples": 102,
+                "sourcePoint": {
+                  "x": -431.5,
+                  "y": -988.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Silo",
+                "samples": 36,
+                "sourcePoint": {
+                  "x": -36.5,
+                  "y": -1504.0,
+                  "z": -33.0
+                }
+              },
+              {
+                "place": "Roof",
+                "samples": 7,
+                "sourcePoint": {
+                  "x": 115,
+                  "y": -1425,
+                  "z": -69
+                }
+              },
+              {
+                "place": "Vending",
+                "samples": 6,
+                "sourcePoint": {
+                  "x": -79.5,
+                  "y": -582.5,
+                  "z": -416.0
+                }
+              }
+            ]
+          }
+        },
+        "ropz": {
+          "ct": {
+            "openingSamples": 2278,
+            "openingPlaces": {
+              "Ramp": 1295,
+              "Admin": 339,
+              "Control": 239,
+              "Garage": 200,
+              "Vending": 69,
+              "Trophy": 62,
+              "BombsiteB": 34,
+              "Observation": 28
+            },
+            "utility": {
+              "smoke": 10,
+              "flashbang": 2,
+              "hegrenade": 3,
+              "molotov": 9
+            },
+            "openingPositions": [
+              {
+                "place": "Ramp",
+                "samples": 1295,
+                "sourcePoint": {
+                  "x": 580,
+                  "y": 313,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Admin",
+                "samples": 339,
+                "sourcePoint": {
+                  "x": 1029,
+                  "y": 4,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Control",
+                "samples": 239,
+                "sourcePoint": {
+                  "x": 194,
+                  "y": 64,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Garage",
+                "samples": 200,
+                "sourcePoint": {
+                  "x": 1907.5,
+                  "y": -2309.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Vending",
+                "samples": 69,
+                "sourcePoint": {
+                  "x": -206,
+                  "y": -357,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Trophy",
+                "samples": 62,
+                "sourcePoint": {
+                  "x": 94.0,
+                  "y": -343.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 34,
+                "sourcePoint": {
+                  "x": 909.5,
+                  "y": -293.5,
+                  "z": -640.0
+                }
+              },
+              {
+                "place": "Observation",
+                "samples": 28,
+                "sourcePoint": {
+                  "x": 1200.5,
+                  "y": -581.5,
+                  "z": -640.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 431,
+            "openingPlaces": {
+              "Lobby": 291,
+              "Squeaky": 125,
+              "BombsiteA": 15
+            },
+            "utility": {
+              "flashbang": 1,
+              "hegrenade": 2,
+              "molotov": 1
+            },
+            "openingPositions": [
+              {
+                "place": "Lobby",
+                "samples": 291,
+                "sourcePoint": {
+                  "x": 185,
+                  "y": -904,
+                  "z": -333
+                }
+              },
+              {
+                "place": "Squeaky",
+                "samples": 125,
+                "sourcePoint": {
+                  "x": 163,
+                  "y": -1206,
+                  "z": -416
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 15,
+                "sourcePoint": {
+                  "x": 512,
+                  "y": -1401,
+                  "z": -416
+                }
+              }
+            ]
+          }
+        },
+        "ZywOo": {
+          "ct": {
+            "openingSamples": 2122,
+            "openingPlaces": {
+              "Outside": 1036,
+              "Ramp": 418,
+              "BombsiteA": 172,
+              "Garage": 140,
+              "Mini": 116,
+              "Catwalk": 70,
+              "Hell": 55,
+              "LockerRoom": 44
+            },
+            "utility": {
+              "smoke": 8,
+              "flashbang": 5,
+              "hegrenade": 7,
+              "molotov": 7
+            },
+            "openingPositions": [
+              {
+                "place": "Outside",
+                "samples": 1036,
+                "sourcePoint": {
+                  "x": 1381.0,
+                  "y": -1221.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Ramp",
+                "samples": 418,
+                "sourcePoint": {
+                  "x": 537.0,
+                  "y": 416.0,
+                  "z": -480.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 172,
+                "sourcePoint": {
+                  "x": 479.5,
+                  "y": -1379.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Garage",
+                "samples": 140,
+                "sourcePoint": {
+                  "x": 1888.0,
+                  "y": -1906.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Mini",
+                "samples": 116,
+                "sourcePoint": {
+                  "x": 671.5,
+                  "y": -1530.0,
+                  "z": -415.0
+                }
+              },
+              {
+                "place": "Catwalk",
+                "samples": 70,
+                "sourcePoint": {
+                  "x": 1326.0,
+                  "y": -380.0,
+                  "z": -128.0
+                }
+              },
+              {
+                "place": "Hell",
+                "samples": 55,
+                "sourcePoint": {
+                  "x": 1191,
+                  "y": -451,
+                  "z": -416
+                }
+              },
+              {
+                "place": "LockerRoom",
+                "samples": 44,
+                "sourcePoint": {
+                  "x": 1175.5,
+                  "y": -636.0,
+                  "z": -416.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 600,
+            "openingPlaces": {
+              "Outside": 200,
+              "Trophy": 187,
+              "Lobby": 173,
+              "Vending": 26,
+              "Squeaky": 13,
+              "BombsiteA": 1
+            },
+            "utility": {
+              "smoke": 1,
+              "flashbang": 2,
+              "molotov": 1
+            },
+            "openingPositions": [
+              {
+                "place": "Outside",
+                "samples": 200,
+                "sourcePoint": {
+                  "x": 408.0,
+                  "y": -2218.5,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Trophy",
+                "samples": 187,
+                "sourcePoint": {
+                  "x": 5,
+                  "y": -301,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Lobby",
+                "samples": 173,
+                "sourcePoint": {
+                  "x": -263,
+                  "y": -955,
+                  "z": -416
+                }
+              },
+              {
+                "place": "Vending",
+                "samples": 26,
+                "sourcePoint": {
+                  "x": -133.0,
+                  "y": -571.0,
+                  "z": -416.0
+                }
+              },
+              {
+                "place": "Squeaky",
+                "samples": 13,
+                "sourcePoint": {
+                  "x": 155,
+                  "y": -1265,
+                  "z": -416
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 1,
+                "sourcePoint": {
+                  "x": 337,
+                  "y": -1284,
+                  "z": -416
+                }
+              }
+            ]
+          }
+        }
+      },
+      "cooperationWindows": 3,
+      "examples": [
+        {
+          "round": 13,
+          "firstEffectSeconds": 28.859,
+          "laterPlantSite": "b",
+          "effects": [
+            {
+              "player": "apEX",
+              "kind": "smoke",
+              "throwTick": 100382,
+              "effectTick": 100524,
+              "releaseToEffectSeconds": 2.219,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": 632,
+                "y": -1527,
+                "z": -413
+              }
+            },
+            {
+              "player": "mezii",
+              "kind": "molotov",
+              "throwTick": 100604,
+              "effectTick": 100733,
+              "releaseToEffectSeconds": 2.016,
+              "effectOffsetSeconds": 3.266,
+              "effectPositionSourceUnits": {
+                "x": 421,
+                "y": -1024,
+                "z": -256
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 100643,
+              "effectTick": 100747,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 3.484,
+              "effectPositionSourceUnits": {
+                "x": 397,
+                "y": -1347,
+                "z": -394
+              }
+            }
+          ]
+        },
+        {
+          "round": 14,
+          "firstEffectSeconds": 8.594,
+          "laterPlantSite": null,
+          "effects": [
+            {
+              "player": "mezii",
+              "kind": "hegrenade",
+              "throwTick": 106207,
+              "effectTick": 106311,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": 245,
+                "y": -1288,
+                "z": -414
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "molotov",
+              "throwTick": 106233,
+              "effectTick": 106362,
+              "releaseToEffectSeconds": 2.016,
+              "effectOffsetSeconds": 0.797,
+              "effectPositionSourceUnits": {
+                "x": 426,
+                "y": -1135,
+                "z": -256
+              }
+            },
+            {
+              "player": "flameZ",
+              "kind": "flashbang",
+              "throwTick": 106309,
+              "effectTick": 106413,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 1.594,
+              "effectPositionSourceUnits": {
+                "x": 583,
+                "y": -1532,
+                "z": -398
+              }
+            },
+            {
+              "player": "ZywOo",
+              "kind": "flashbang",
+              "throwTick": 106412,
+              "effectTick": 106433,
+              "releaseToEffectSeconds": 0.328,
+              "effectOffsetSeconds": 1.906,
+              "effectPositionSourceUnits": {
+                "x": 608,
+                "y": -1445,
+                "z": -394
+              }
+            },
+            {
+              "player": "mezii",
+              "kind": "smoke",
+              "throwTick": 106289,
+              "effectTick": 106440,
+              "releaseToEffectSeconds": 2.359,
+              "effectOffsetSeconds": 2.016,
+              "effectPositionSourceUnits": {
+                "x": 415,
+                "y": -1319,
+                "z": -414
+              }
+            },
+            {
+              "player": "mezii",
+              "kind": "flashbang",
+              "throwTick": 106372,
+              "effectTick": 106476,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 2.578,
+              "effectPositionSourceUnits": {
+                "x": 535,
+                "y": -1619,
+                "z": -410
+              }
+            },
+            {
+              "player": "ZywOo",
+              "kind": "flashbang",
+              "throwTick": 106412,
+              "effectTick": 106516,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 3.203,
+              "effectPositionSourceUnits": {
+                "x": 692,
+                "y": -1472,
+                "z": -395
+              }
+            },
+            {
+              "player": "ropz",
+              "kind": "flashbang",
+              "throwTick": 106419,
+              "effectTick": 106523,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 3.312,
+              "effectPositionSourceUnits": {
+                "x": 891,
+                "y": -1432,
+                "z": -413
+              }
+            }
+          ]
+        },
+        {
+          "round": 15,
+          "firstEffectSeconds": 6.531,
+          "laterPlantSite": null,
+          "effects": [
+            {
+              "player": "mezii",
+              "kind": "smoke",
+              "throwTick": 110517,
+              "effectTick": 110702,
+              "releaseToEffectSeconds": 2.891,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": 989,
+                "y": -1797,
+                "z": -414
+              }
+            },
+            {
+              "player": "ropz",
+              "kind": "hegrenade",
+              "throwTick": 110751,
+              "effectTick": 110855,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 2.391,
+              "effectPositionSourceUnits": {
+                "x": 250,
+                "y": -1285,
+                "z": -414
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 110763,
+              "effectTick": 110867,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 2.578,
+              "effectPositionSourceUnits": {
+                "x": 877,
+                "y": -2115,
+                "z": -387
+              }
+            },
+            {
+              "player": "ropz",
+              "kind": "molotov",
+              "throwTick": 110844,
+              "effectTick": 110923,
+              "releaseToEffectSeconds": 1.234,
+              "effectOffsetSeconds": 3.453,
+              "effectPositionSourceUnits": {
+                "x": 643,
+                "y": -1539,
+                "z": -413
+              }
+            },
+            {
+              "player": "mezii",
+              "kind": "smoke",
+              "throwTick": 110517,
+              "effectTick": 110949,
+              "releaseToEffectSeconds": 6.75,
+              "effectOffsetSeconds": 3.859,
+              "effectPositionSourceUnits": {
+                "x": 1161,
+                "y": -2035,
+                "z": -414
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "de_overpass": {
+      "map": "de_overpass",
+      "rounds": 23,
+      "inputSha256": "5913da2a51e2d8d05a138a04c829b0a9809f99540ede4dcd2fd04fc2b6a1d9a7",
+      "sourceFile": "sample-2026-02-09_de_overpass_Team_Vitality_13-10_FURIA.zip",
+      "originalDemo": {
+        "hash": "24370e1f72c2f2ca33108f786d9c08f175c3c821c4213641e782080a869c3640",
+        "sourceFileName": "furia-vs-vitality-m4-overpass.dem"
+      },
+      "players": {
+        "mezii": {
+          "ct": {
+            "openingSamples": 2116,
+            "openingPlaces": {
+              "BombsiteB": 1133,
+              "Canal": 316,
+              "Water": 217,
+              "LowerPark": 186,
+              "UpperPark": 131,
+              "Construction": 59,
+              "Bridge": 58,
+              "Connector": 14
+            },
+            "utility": {
+              "smoke": 10,
+              "flashbang": 7,
+              "hegrenade": 8,
+              "molotov": 7
+            },
+            "openingPositions": [
+              {
+                "place": "BombsiteB",
+                "samples": 1133,
+                "sourcePoint": {
+                  "x": -817,
+                  "y": 408,
+                  "z": 100
+                }
+              },
+              {
+                "place": "Canal",
+                "samples": 316,
+                "sourcePoint": {
+                  "x": -415.5,
+                  "y": 245.5,
+                  "z": 10.0
+                }
+              },
+              {
+                "place": "Water",
+                "samples": 217,
+                "sourcePoint": {
+                  "x": -1278,
+                  "y": 128,
+                  "z": 68
+                }
+              },
+              {
+                "place": "LowerPark",
+                "samples": 186,
+                "sourcePoint": {
+                  "x": -2300.0,
+                  "y": -1206.0,
+                  "z": 437.0
+                }
+              },
+              {
+                "place": "UpperPark",
+                "samples": 131,
+                "sourcePoint": {
+                  "x": -3548,
+                  "y": -1615,
+                  "z": 524
+                }
+              },
+              {
+                "place": "Construction",
+                "samples": 59,
+                "sourcePoint": {
+                  "x": -979,
+                  "y": -504,
+                  "z": 100
+                }
+              },
+              {
+                "place": "Bridge",
+                "samples": 58,
+                "sourcePoint": {
+                  "x": -1270.5,
+                  "y": -218.0,
+                  "z": 107.0
+                }
+              },
+              {
+                "place": "Connector",
+                "samples": 14,
+                "sourcePoint": {
+                  "x": -1954.5,
+                  "y": -1226.5,
+                  "z": 248.5
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2080,
+            "openingPlaces": {
+              "Tunnels": 1021,
+              "Connector": 522,
+              "Canal": 297,
+              "Water": 65,
+              "LowerPark": 61,
+              "Fountain": 58,
+              "BombsiteB": 56
+            },
+            "utility": {
+              "smoke": 7,
+              "flashbang": 1,
+              "molotov": 11
+            },
+            "openingPositions": [
+              {
+                "place": "Tunnels",
+                "samples": 1021,
+                "sourcePoint": {
+                  "x": -1865,
+                  "y": -1720,
+                  "z": 100
+                }
+              },
+              {
+                "place": "Connector",
+                "samples": 522,
+                "sourcePoint": {
+                  "x": -1957.5,
+                  "y": -1159.5,
+                  "z": 173.0
+                }
+              },
+              {
+                "place": "Canal",
+                "samples": 297,
+                "sourcePoint": {
+                  "x": -511,
+                  "y": -736,
+                  "z": 26
+                }
+              },
+              {
+                "place": "Water",
+                "samples": 65,
+                "sourcePoint": {
+                  "x": -1345,
+                  "y": -135,
+                  "z": 11
+                }
+              },
+              {
+                "place": "LowerPark",
+                "samples": 61,
+                "sourcePoint": {
+                  "x": -2182,
+                  "y": -1231,
+                  "z": 436
+                }
+              },
+              {
+                "place": "Fountain",
+                "samples": 58,
+                "sourcePoint": {
+                  "x": -2369.5,
+                  "y": -1740.0,
+                  "z": 477.0
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 56,
+                "sourcePoint": {
+                  "x": -943.0,
+                  "y": -29.0,
+                  "z": 104.0
+                }
+              }
+            ]
+          }
+        },
+        "flameZ": {
+          "ct": {
+            "openingSamples": 1875,
+            "openingPlaces": {
+              "Water": 717,
+              "Walkway": 423,
+              "BombsiteB": 210,
+              "LowerPark": 177,
+              "Construction": 131,
+              "Bridge": 78,
+              "UnderA": 39,
+              "Connector": 34
+            },
+            "utility": {
+              "smoke": 5,
+              "flashbang": 8,
+              "hegrenade": 4,
+              "molotov": 8
+            },
+            "openingPositions": [
+              {
+                "place": "Water",
+                "samples": 717,
+                "sourcePoint": {
+                  "x": -1366,
+                  "y": 226,
+                  "z": 39
+                }
+              },
+              {
+                "place": "Walkway",
+                "samples": 423,
+                "sourcePoint": {
+                  "x": -1716,
+                  "y": -182,
+                  "z": 132
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 210,
+                "sourcePoint": {
+                  "x": -1066.0,
+                  "y": 162.5,
+                  "z": 100.0
+                }
+              },
+              {
+                "place": "LowerPark",
+                "samples": 177,
+                "sourcePoint": {
+                  "x": -2343,
+                  "y": -1241,
+                  "z": 437
+                }
+              },
+              {
+                "place": "Construction",
+                "samples": 131,
+                "sourcePoint": {
+                  "x": -1022,
+                  "y": -488,
+                  "z": 100
+                }
+              },
+              {
+                "place": "Bridge",
+                "samples": 78,
+                "sourcePoint": {
+                  "x": -1246.0,
+                  "y": -240.5,
+                  "z": 159.0
+                }
+              },
+              {
+                "place": "UnderA",
+                "samples": 39,
+                "sourcePoint": {
+                  "x": -2025,
+                  "y": 371,
+                  "z": 132
+                }
+              },
+              {
+                "place": "Connector",
+                "samples": 34,
+                "sourcePoint": {
+                  "x": -1925.5,
+                  "y": -997.5,
+                  "z": 141.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2221,
+            "openingPlaces": {
+              "Fountain": 1024,
+              "Tunnels": 406,
+              "Canal": 298,
+              "Connector": 157,
+              "Water": 125,
+              "BombsiteB": 111,
+              "LowerPark": 84,
+              "UpperPark": 16
+            },
+            "utility": {
+              "smoke": 6,
+              "flashbang": 12,
+              "hegrenade": 1,
+              "molotov": 5
+            },
+            "openingPositions": [
+              {
+                "place": "Fountain",
+                "samples": 1024,
+                "sourcePoint": {
+                  "x": -2092.0,
+                  "y": -2390.0,
+                  "z": 477.0
+                }
+              },
+              {
+                "place": "Tunnels",
+                "samples": 406,
+                "sourcePoint": {
+                  "x": -1714.5,
+                  "y": -2317.5,
+                  "z": 341.0
+                }
+              },
+              {
+                "place": "Canal",
+                "samples": 298,
+                "sourcePoint": {
+                  "x": -572.0,
+                  "y": -683.0,
+                  "z": 24.0
+                }
+              },
+              {
+                "place": "Connector",
+                "samples": 157,
+                "sourcePoint": {
+                  "x": -1945,
+                  "y": -1128,
+                  "z": 214
+                }
+              },
+              {
+                "place": "Water",
+                "samples": 125,
+                "sourcePoint": {
+                  "x": -1324,
+                  "y": 460,
+                  "z": 28
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 111,
+                "sourcePoint": {
+                  "x": -1081,
+                  "y": 264,
+                  "z": 73
+                }
+              },
+              {
+                "place": "LowerPark",
+                "samples": 84,
+                "sourcePoint": {
+                  "x": -2631.5,
+                  "y": -1139.0,
+                  "z": 438.0
+                }
+              },
+              {
+                "place": "UpperPark",
+                "samples": 16,
+                "sourcePoint": {
+                  "x": -3047.0,
+                  "y": -1526.5,
+                  "z": 526.0
+                }
+              }
+            ]
+          }
+        },
+        "apEX": {
+          "ct": {
+            "openingSamples": 2147,
+            "openingPlaces": {
+              "Walkway": 1072,
+              "Water": 389,
+              "UpperPark": 244,
+              "Bridge": 128,
+              "LowerPark": 118,
+              "SnipersNest": 114,
+              "BombsiteB": 50,
+              "UnderA": 18
+            },
+            "utility": {
+              "smoke": 9,
+              "flashbang": 10,
+              "hegrenade": 13,
+              "molotov": 5
+            },
+            "openingPositions": [
+              {
+                "place": "Walkway",
+                "samples": 1072,
+                "sourcePoint": {
+                  "x": -1739.0,
+                  "y": -194.0,
+                  "z": 132.0
+                }
+              },
+              {
+                "place": "Water",
+                "samples": 389,
+                "sourcePoint": {
+                  "x": -1286,
+                  "y": -93,
+                  "z": 145
+                }
+              },
+              {
+                "place": "UpperPark",
+                "samples": 244,
+                "sourcePoint": {
+                  "x": -3885.0,
+                  "y": -1195.0,
+                  "z": 521.0
+                }
+              },
+              {
+                "place": "Bridge",
+                "samples": 128,
+                "sourcePoint": {
+                  "x": -1290.0,
+                  "y": -213.5,
+                  "z": 107.5
+                }
+              },
+              {
+                "place": "LowerPark",
+                "samples": 118,
+                "sourcePoint": {
+                  "x": -2710.5,
+                  "y": -1057.0,
+                  "z": 437.0
+                }
+              },
+              {
+                "place": "SnipersNest",
+                "samples": 114,
+                "sourcePoint": {
+                  "x": -1598.0,
+                  "y": 532.0,
+                  "z": 260.0
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 50,
+                "sourcePoint": {
+                  "x": -1189.0,
+                  "y": -185.5,
+                  "z": 104.0
+                }
+              },
+              {
+                "place": "UnderA",
+                "samples": 18,
+                "sourcePoint": {
+                  "x": -2036.5,
+                  "y": 319.5,
+                  "z": 132.0
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2127,
+            "openingPlaces": {
+              "Alley": 966,
+              "Canal": 393,
+              "Fountain": 299,
+              "Tunnels": 158,
+              "BombsiteB": 134,
+              "LowerPark": 96,
+              "Water": 43,
+              "TStairs": 31
+            },
+            "utility": {
+              "smoke": 6,
+              "flashbang": 16,
+              "hegrenade": 7,
+              "molotov": 3
+            },
+            "openingPositions": [
+              {
+                "place": "Alley",
+                "samples": 966,
+                "sourcePoint": {
+                  "x": -640.0,
+                  "y": -1736.0,
+                  "z": 149.0
+                }
+              },
+              {
+                "place": "Canal",
+                "samples": 393,
+                "sourcePoint": {
+                  "x": -540,
+                  "y": -1103,
+                  "z": 32
+                }
+              },
+              {
+                "place": "Fountain",
+                "samples": 299,
+                "sourcePoint": {
+                  "x": -2493,
+                  "y": -2084,
+                  "z": 477
+                }
+              },
+              {
+                "place": "Tunnels",
+                "samples": 158,
+                "sourcePoint": {
+                  "x": -1710.5,
+                  "y": -2363.0,
+                  "z": 352.5
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 134,
+                "sourcePoint": {
+                  "x": -1102.5,
+                  "y": 263.0,
+                  "z": 76.5
+                }
+              },
+              {
+                "place": "LowerPark",
+                "samples": 96,
+                "sourcePoint": {
+                  "x": -2661.0,
+                  "y": -1171.0,
+                  "z": 438.0
+                }
+              },
+              {
+                "place": "Water",
+                "samples": 43,
+                "sourcePoint": {
+                  "x": -1374,
+                  "y": 470,
+                  "z": 24
+                }
+              },
+              {
+                "place": "TStairs",
+                "samples": 31,
+                "sourcePoint": {
+                  "x": -806,
+                  "y": -2156,
+                  "z": 296
+                }
+              }
+            ]
+          }
+        },
+        "ropz": {
+          "ct": {
+            "openingSamples": 2185,
+            "openingPlaces": {
+              "LowerPark": 1286,
+              "Connector": 409,
+              "BombsiteB": 133,
+              "BombsiteA": 109,
+              "Restroom": 89,
+              "Canal": 56,
+              "UpperPark": 54,
+              "Water": 29
+            },
+            "utility": {
+              "smoke": 7,
+              "flashbang": 9,
+              "hegrenade": 5,
+              "molotov": 5
+            },
+            "openingPositions": [
+              {
+                "place": "LowerPark",
+                "samples": 1286,
+                "sourcePoint": {
+                  "x": -2336.0,
+                  "y": -953.0,
+                  "z": 436.0
+                }
+              },
+              {
+                "place": "Connector",
+                "samples": 409,
+                "sourcePoint": {
+                  "x": -2016,
+                  "y": -973,
+                  "z": 180
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 133,
+                "sourcePoint": {
+                  "x": -755,
+                  "y": -131,
+                  "z": 70
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 109,
+                "sourcePoint": {
+                  "x": -2833,
+                  "y": 567,
+                  "z": 506
+                }
+              },
+              {
+                "place": "Restroom",
+                "samples": 89,
+                "sourcePoint": {
+                  "x": -2958,
+                  "y": -898,
+                  "z": 468
+                }
+              },
+              {
+                "place": "Canal",
+                "samples": 56,
+                "sourcePoint": {
+                  "x": -527.0,
+                  "y": -667.0,
+                  "z": 19.0
+                }
+              },
+              {
+                "place": "UpperPark",
+                "samples": 54,
+                "sourcePoint": {
+                  "x": -2930.5,
+                  "y": -1579.5,
+                  "z": 541.0
+                }
+              },
+              {
+                "place": "Water",
+                "samples": 29,
+                "sourcePoint": {
+                  "x": -1469,
+                  "y": -728,
+                  "z": 23
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2240,
+            "openingPlaces": {
+              "Water": 489,
+              "Pipe": 448,
+              "Fountain": 385,
+              "Alley": 348,
+              "Construction": 275,
+              "Canal": 134,
+              "Tunnels": 99,
+              "LowerPark": 36
+            },
+            "utility": {
+              "smoke": 8,
+              "flashbang": 4,
+              "hegrenade": 5,
+              "molotov": 10
+            },
+            "openingPositions": [
+              {
+                "place": "Water",
+                "samples": 489,
+                "sourcePoint": {
+                  "x": -1422,
+                  "y": -699,
+                  "z": 20
+                }
+              },
+              {
+                "place": "Pipe",
+                "samples": 448,
+                "sourcePoint": {
+                  "x": -855.0,
+                  "y": -960.0,
+                  "z": 23.0
+                }
+              },
+              {
+                "place": "Fountain",
+                "samples": 385,
+                "sourcePoint": {
+                  "x": -2328,
+                  "y": -1921,
+                  "z": 476
+                }
+              },
+              {
+                "place": "Alley",
+                "samples": 348,
+                "sourcePoint": {
+                  "x": -658.5,
+                  "y": -1467.0,
+                  "z": 150.0
+                }
+              },
+              {
+                "place": "Construction",
+                "samples": 275,
+                "sourcePoint": {
+                  "x": -1127,
+                  "y": -606,
+                  "z": 87
+                }
+              },
+              {
+                "place": "Canal",
+                "samples": 134,
+                "sourcePoint": {
+                  "x": -601.0,
+                  "y": -1069.0,
+                  "z": 45.5
+                }
+              },
+              {
+                "place": "Tunnels",
+                "samples": 99,
+                "sourcePoint": {
+                  "x": -1686,
+                  "y": -2264,
+                  "z": 348
+                }
+              },
+              {
+                "place": "LowerPark",
+                "samples": 36,
+                "sourcePoint": {
+                  "x": -2648.0,
+                  "y": -1615.0,
+                  "z": 460.5
+                }
+              }
+            ]
+          }
+        },
+        "ZywOo": {
+          "ct": {
+            "openingSamples": 2185,
+            "openingPlaces": {
+              "LowerPark": 1245,
+              "UpperPark": 345,
+              "SnipersNest": 178,
+              "BombsiteA": 117,
+              "Bridge": 103,
+              "Construction": 44,
+              "Restroom": 38,
+              "BombsiteB": 35
+            },
+            "utility": {
+              "smoke": 6,
+              "flashbang": 9,
+              "hegrenade": 7,
+              "molotov": 7
+            },
+            "openingPositions": [
+              {
+                "place": "LowerPark",
+                "samples": 1245,
+                "sourcePoint": {
+                  "x": -2410,
+                  "y": -582,
+                  "z": 437
+                }
+              },
+              {
+                "place": "UpperPark",
+                "samples": 345,
+                "sourcePoint": {
+                  "x": -3610,
+                  "y": -418,
+                  "z": 602
+                }
+              },
+              {
+                "place": "SnipersNest",
+                "samples": 178,
+                "sourcePoint": {
+                  "x": -1864.5,
+                  "y": 552.0,
+                  "z": 260.0
+                }
+              },
+              {
+                "place": "BombsiteA",
+                "samples": 117,
+                "sourcePoint": {
+                  "x": -2519,
+                  "y": 787,
+                  "z": 484
+                }
+              },
+              {
+                "place": "Bridge",
+                "samples": 103,
+                "sourcePoint": {
+                  "x": -1101,
+                  "y": -261,
+                  "z": 104
+                }
+              },
+              {
+                "place": "Construction",
+                "samples": 44,
+                "sourcePoint": {
+                  "x": -1026.5,
+                  "y": -427.0,
+                  "z": 100.0
+                }
+              },
+              {
+                "place": "Restroom",
+                "samples": 38,
+                "sourcePoint": {
+                  "x": -3244.0,
+                  "y": -851.0,
+                  "z": 492.0
+                }
+              },
+              {
+                "place": "BombsiteB",
+                "samples": 35,
+                "sourcePoint": {
+                  "x": -1213,
+                  "y": -177,
+                  "z": 105
+                }
+              }
+            ]
+          },
+          "t": {
+            "openingSamples": 2228,
+            "openingPlaces": {
+              "Fountain": 753,
+              "Tunnels": 605,
+              "Canal": 180,
+              "Playground": 155,
+              "Alley": 141,
+              "Water": 101,
+              "UpperPark": 89,
+              "Walkway": 86
+            },
+            "utility": {
+              "smoke": 8,
+              "flashbang": 14,
+              "molotov": 6
+            },
+            "openingPositions": [
+              {
+                "place": "Fountain",
+                "samples": 753,
+                "sourcePoint": {
+                  "x": -2244,
+                  "y": -2459,
+                  "z": 478
+                }
+              },
+              {
+                "place": "Tunnels",
+                "samples": 605,
+                "sourcePoint": {
+                  "x": -1708,
+                  "y": -2370,
+                  "z": 353
+                }
+              },
+              {
+                "place": "Canal",
+                "samples": 180,
+                "sourcePoint": {
+                  "x": -554.5,
+                  "y": -788.0,
+                  "z": 19.0
+                }
+              },
+              {
+                "place": "Playground",
+                "samples": 155,
+                "sourcePoint": {
+                  "x": -2463,
+                  "y": -2680,
+                  "z": 478
+                }
+              },
+              {
+                "place": "Alley",
+                "samples": 141,
+                "sourcePoint": {
+                  "x": -474,
+                  "y": -1448,
+                  "z": 148
+                }
+              },
+              {
+                "place": "Water",
+                "samples": 101,
+                "sourcePoint": {
+                  "x": -1453,
+                  "y": 229,
+                  "z": 24
+                }
+              },
+              {
+                "place": "UpperPark",
+                "samples": 89,
+                "sourcePoint": {
+                  "x": -3154,
+                  "y": -1252,
+                  "z": 526
+                }
+              },
+              {
+                "place": "Walkway",
+                "samples": 86,
+                "sourcePoint": {
+                  "x": -2019.0,
+                  "y": -416.0,
+                  "z": 132.0
+                }
+              }
+            ]
+          }
+        }
+      },
+      "cooperationWindows": 15,
+      "examples": [
+        {
+          "round": 3,
+          "firstEffectSeconds": 9.219,
+          "laterPlantSite": "b",
+          "effects": [
+            {
+              "player": "ropz",
+              "kind": "molotov",
+              "throwTick": 10317,
+              "effectTick": 10446,
+              "releaseToEffectSeconds": 2.016,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": -1017,
+                "y": -421,
+                "z": 100
+              }
+            },
+            {
+              "player": "ropz",
+              "kind": "smoke",
+              "throwTick": 10599,
+              "effectTick": 10644,
+              "releaseToEffectSeconds": 0.703,
+              "effectOffsetSeconds": 3.094,
+              "effectPositionSourceUnits": {
+                "x": -1254,
+                "y": -908,
+                "z": 16
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 10576,
+              "effectTick": 10680,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 3.656,
+              "effectPositionSourceUnits": {
+                "x": -1269,
+                "y": -1162,
+                "z": 417
+              }
+            },
+            {
+              "player": "mezii",
+              "kind": "smoke",
+              "throwTick": 10606,
+              "effectTick": 10751,
+              "releaseToEffectSeconds": 2.266,
+              "effectOffsetSeconds": 4.766,
+              "effectPositionSourceUnits": {
+                "x": -1690,
+                "y": -781,
+                "z": 102
+              }
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "firstEffectSeconds": 10.609,
+          "laterPlantSite": "b",
+          "effects": [
+            {
+              "player": "flameZ",
+              "kind": "molotov",
+              "throwTick": 10414,
+              "effectTick": 10535,
+              "releaseToEffectSeconds": 1.891,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": -2736,
+                "y": -1558,
+                "z": 440
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 10576,
+              "effectTick": 10680,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 2.266,
+              "effectPositionSourceUnits": {
+                "x": -1269,
+                "y": -1162,
+                "z": 417
+              }
+            },
+            {
+              "player": "mezii",
+              "kind": "smoke",
+              "throwTick": 10606,
+              "effectTick": 10751,
+              "releaseToEffectSeconds": 2.266,
+              "effectOffsetSeconds": 3.375,
+              "effectPositionSourceUnits": {
+                "x": -1690,
+                "y": -781,
+                "z": 102
+              }
+            },
+            {
+              "player": "ZywOo",
+              "kind": "flashbang",
+              "throwTick": 10777,
+              "effectTick": 10881,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 5.406,
+              "effectPositionSourceUnits": {
+                "x": -2745,
+                "y": -1639,
+                "z": 458
+              }
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "firstEffectSeconds": 87.531,
+          "laterPlantSite": "b",
+          "effects": [
+            {
+              "player": "mezii",
+              "kind": "molotov",
+              "throwTick": 15329,
+              "effectTick": 15458,
+              "releaseToEffectSeconds": 2.016,
+              "effectOffsetSeconds": 0.0,
+              "effectPositionSourceUnits": {
+                "x": -1843,
+                "y": -302,
+                "z": 132
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "smoke",
+              "throwTick": 15302,
+              "effectTick": 15516,
+              "releaseToEffectSeconds": 3.344,
+              "effectOffsetSeconds": 0.906,
+              "effectPositionSourceUnits": {
+                "x": -1795,
+                "y": 562,
+                "z": 262
+              }
+            },
+            {
+              "player": "flameZ",
+              "kind": "flashbang",
+              "throwTick": 15412,
+              "effectTick": 15516,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 0.906,
+              "effectPositionSourceUnits": {
+                "x": -997,
+                "y": 316,
+                "z": 111
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 15516,
+              "effectTick": 15537,
+              "releaseToEffectSeconds": 0.328,
+              "effectOffsetSeconds": 1.234,
+              "effectPositionSourceUnits": {
+                "x": -1280,
+                "y": 14,
+                "z": 184
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "flashbang",
+              "throwTick": 15516,
+              "effectTick": 15620,
+              "releaseToEffectSeconds": 1.625,
+              "effectOffsetSeconds": 2.531,
+              "effectPositionSourceUnits": {
+                "x": -1280,
+                "y": 14,
+                "z": 184
+              }
+            },
+            {
+              "player": "apEX",
+              "kind": "molotov",
+              "throwTick": 15595,
+              "effectTick": 15715,
+              "releaseToEffectSeconds": 1.875,
+              "effectOffsetSeconds": 4.016,
+              "effectPositionSourceUnits": {
+                "x": -839,
+                "y": 449,
+                "z": 102
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

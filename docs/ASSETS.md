@@ -54,6 +54,10 @@ node scripts/fetch-assets.mjs --base-url https://your-host.example/dust2/
 
 视觉参考：[Valve 的 Dust II 设计对照](https://www.counter-strike.net/dust2/)、[Valve Workshop Finishes](https://www.counter-strike.net/workshop/workshopfinishes)、[Source 2 Viewer / ValveResourceFormat](https://github.com/ValveResourceFormat/ValveResourceFormat)。网页 PBR 对金属、珠光、光照和磨损进行近似；它不等同于 Source 2 的完整材质与渲染系统。
 
+## 1.3.0 共用 HUD 素材
+
+`client/original-hud/` 中的图标来自用户已安装 CS2 的 VPK，保留原 SVG 子树并由网页 CSS 排版。来源路径与 SHA-256 记录见 [原始 HUD 来源](../client/original-hud/sources.json)。字体同样从原始包转换。素材归属 Valve；网页界面代码为本项目实现。
+
 ## 下载器验证
 
 ```sh

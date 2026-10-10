@@ -131,14 +131,14 @@ test('private pages lazily initialize the shared config before downloading the a
  globalThis.__DUST2_PRIVATE_MAP__={renderUrl:'https://game.test/review/maps/de_mirage/render/map.gltf'};
  const bytes=new TextEncoder().encode('asset data'),hash=createHash('sha256').update(bytes).digest('hex'),calls=[];
  globalThis.fetch=async value=>{const url=String(value);calls.push(url);
-  if(url==='https://game.test/review/download-config.json')return Response.json({schemaVersion:1,assetBaseURL:'https://static.test/assets/',mapBaseURL:null,fallbackToGameServer:false});
+  if(url==='https://game.test/review/download-config-1.3.0.json')return Response.json({schemaVersion:1,assetBaseURL:'https://static.test/assets/',mapBaseURL:null,fallbackToGameServer:false});
   if(url==='https://static.test/assets/asset-manifest.json')return Response.json({files:[{path:'assets/rifle.glb',sha256:hash,bytes:bytes.length,group:'weapons'}]});
   if(url==='https://static.test/assets/rifle.glb?v='+hash.slice(0,12))return new Response(bytes);
   throw Error('Unexpected download: '+url);
  };
  const {fetchCachedAsset}=await import('./client/loading.js');
  assert.equal(await (await fetchCachedAsset('assets/rifle.glb')).text(),'asset data');
- assert.deepEqual(calls,['https://game.test/review/download-config.json','https://static.test/assets/asset-manifest.json','https://static.test/assets/rifle.glb?v='+hash.slice(0,12)]);
+ assert.deepEqual(calls,['https://game.test/review/download-config-1.3.0.json','https://static.test/assets/asset-manifest.json','https://static.test/assets/rifle.glb?v='+hash.slice(0,12)]);
  `;
  const child=spawnSync(process.execPath,['--input-type=module','--eval',script],{cwd:new URL('../',import.meta.url),encoding:'utf8'});
  assert.equal(child.status,0,child.stderr||child.stdout);

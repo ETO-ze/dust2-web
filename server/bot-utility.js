@@ -46,7 +46,7 @@ export function botUtility(room,p,input,dt){
  const ai=p.botAI,now=room.clock();
  const interrupted=room.mode!=='defuse'||room.round.phase!=='live'||ai.engaging||input.interact||p.objectiveLocked||now<(p.flashBlindUntil||0)||now-(ai.hurtAt||-Infinity)<1000||!carrierCanSupport(room,p);
  if(interrupted)return ai.utility?cancel(room,p,input,'interrupted'):input;
- const safeDelay=room.botDifficulty==='hard'?900:room.botDifficulty==='easy'?1800:1200;
+ const safeDelay=['hard','vitality'].includes(room.botDifficulty)?900:room.botDifficulty==='easy'?1800:1200;
  if(!ai.utility&&now>=(ai.utilityAfter||0)&&now>=(ai.escapeUntil||0)&&now-(ai.lastSeenAt||0)>safeDelay){
   ai.utilityAfter=now+1500+(p.seat||0)*75;ai.utility=choose(room,p);ai.utilityFollowupUntil=0;
   if(ai.utility){ai.goal=ai.utility.stand;ai.path=room.planPath(p,ai.goal);}
@@ -87,6 +87,9 @@ export function botUtility(room,p,input,dt){
  u.alignedSince=aligned?(u.alignedSince||now):0;
  if(u.phase==='ready'){
   if(!aligned||now-u.alignedSince<180||now<p.nextShotAt)return input;
+  // Let the squad's released smoke BLOOM before the entry flash is primed.
+  // Failed/missing smoke effects expire; ordinary throw validation still applies.
+  if(room.botUtilityTimeline?.canPrime(p,u.weapon)===false)return input;
   const teammates=[...room.players.values()].filter(q=>u.weapon!=='flashbang'||q!==p);
   if(teammateRisk(room.grenades,p,u.result,teammates,u.weapon)){
    u.teamWaitAt||=now;if(now-u.teamWaitAt<1200)return input;return cancel(room,p,input,'team-risk');

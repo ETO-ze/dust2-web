@@ -16,7 +16,7 @@ python scripts/weapon-assets/prepare-position.py
 node scripts/weapon-assets/bake-finishes.mjs
 node scripts/weapon-assets/export-utility.mjs
 node scripts/weapon-assets/pack-utility.mjs
-python scripts/weapon-assets/pack-animations.py
+python scripts/weapon-assets/pack-animations.py --exclude=hkp2000,cz75a,revolver,aug,famas,g3sg1,mp5sd,p90,ump45,m249,negev
 node scripts/weapon-assets/export-audio.mjs
 python scripts/weapon-assets/validate-assets.py
 node scripts/weapon-assets/verify-packed-texture.mjs
@@ -27,7 +27,7 @@ node scripts/weapon-assets/verify-packed-texture.mjs
 export process sends temporary files to the H-drive artifact directory without
 changing operating-system environment variables.
 
-`default-skins.json` records all 24 chosen finishes. Every selected paintkit has an
+`default-skins.json` records all 35 chosen finishes (34 firearms and the default knife). Every selected paintkit has an
 official minimum wear below 0.07. Galil Chatterbox is deliberately replaced by
 Sugar Rush because Chatterbox begins at 0.35 and has no Factory New variant.
 
@@ -54,3 +54,17 @@ joints and firing clips. SSG 08 Dragonfire uses its matching legacy animation se
 Audio is read from the original weapon sound event definitions, exported with
 Source2Viewer and converted to MP3 at 44.1 kHz with a -3 dB gain. The exporter
 merges new banks into the existing manifest and preserves earlier feedback audio.
+
+The complete armory extension uses `complete-armory.mjs` after indexing paintkits.
+New gun animations are packaged individually in `assets/viewmodel/optional`,
+loaded only together with the selected weapon model. They are not part of the
+initial asset manifest. Use `pack-animations.py --exclude=hkp2000,cz75a,revolver,aug,famas,g3sg1,mp5sd,p90,ump45,m249,negev`
+for the shared bundle, and `--ids=<weapon> --output=optional/<weapon>` for each new gun.
+A compatible newer CLI can be selected with `SOURCE2VIEWER_CLI` for material extraction;
+export validation checks outputs because older CLI builds can report exit 0 after shader errors.
+
+After baking a selected subset, merge its manifest with
+`node scripts/weapon-assets/merge-finishes.mjs manifest-<ids>.json`, then run
+`node scripts/sync-skin-catalog.mjs`, `node scripts/build-asset-manifest.mjs`
+and `node scripts/build-asset-lock.mjs`. Keep per-gun animation bundles outside
+the initial manifest; each default finish declares its own verified bundle.

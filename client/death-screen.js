@@ -1,6 +1,7 @@
 import { WEAPONS, normalizeWeapon } from '../shared/weapons.js';
 import { getEquipment } from '../shared/equipment.js';
 import { uiIconUrl } from './ui-icons.js';
+import { canWatchBomb } from './match-view.js';
 
 // References: Valve's Spectator UI (2012-08-30) describes staying in the match
 // with player identity, weapon and team status visible while observing.
@@ -39,11 +40,13 @@ export function describeDeath(snapshot, self, { event = null, elapsed = 0, spect
     statusTitle = '等待双方玩家';
     statusDetail = '双方就绪后开始新回合';
   } else {
-    statusTitle = watched ? `正在观战 ${label(watched.name, '队友')}` : '等待下一回合';
+    statusTitle = watched ? `正在观战 ${label(watched.name, '队友')}` : canWatchBomb(self,snapshot)?'正在观战 C4':'等待下一回合';
     statusDetail = teammates.length ? `己方 ${teammates.length} 人存活 · 对局仍在继续` : '己方无人存活 · 等待回合结算';
     if (watched) {
       const heldWeapon = WEAPONS[normalizeWeapon(watched.weapon)]?.name;
       statusDetail = `己方 ${teammates.length} 人存活 · 生命 ${Math.max(0, Math.ceil(numeric(watched.health)))}${heldWeapon ? ` · ${heldWeapon}` : ''}`;
+    } else if(canWatchBomb(self,snapshot)) {
+      statusDetail='己方无人存活 · 炸弹已安装';clock=String(Math.ceil(remaining(snapshot.bomb.remaining,elapsed)));clockLabel='爆炸倒计时';
     }
   }
   return {
@@ -108,7 +111,7 @@ export class DeathScreen {
     this.parts.weapon.hidden = !state.weaponName;
     write(this.parts.status.querySelector('b'), state.statusTitle);
     write(this.parts.status.querySelector('span'), state.statusDetail);
-    write(this.parts.keys, touch ? (canTakeBot?'点击右下角「控制人机」':'右下角切换观战队友') : state.observedName
+    write(this.parts.keys, touch && state.observedName ? (canTakeBot?'点击右下角「控制人机」':'右下角切换观战队友') : state.observedName
       ? `${canTakeBot?interactKey+' 控制人机 · ':''}${nextSpectatorKey || '左键'} 下一位 · ${previousSpectatorKey || '右键'} 上一位 · ${scoreboardKey || 'Tab'} 战况`
       : `${scoreboardKey || 'Tab'} 查看战况 · ${menuKey || 'Esc'} 菜单`);
     write(this.parts.clock.querySelector('strong'), state.clock);

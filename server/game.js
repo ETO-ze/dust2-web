@@ -1,4 +1,6 @@
 import {botPeek} from './bot-peek.js';
+import {hearEvent,movementNoise,hearNoise} from './bot-hearing.js';
+import {normalizeWeaponLoadout,teamWeaponLoadout,startingPistolForTeam} from '../shared/weapon-loadout.js';
 import {adaptAfterRound,effectiveBotSkill} from './bot-adaptation.js';
 import {lootGoal} from './bot-loot.js';
 import {say,requestWeapon,donateWeapon,botSharing,privateRequests} from './team-social.js';
@@ -7,13 +9,15 @@ import {buyForTeam,settleEconomy,lossIncome} from './bot-economy.js';
 import {recordDamage,recordFlash,awardAssist,resetContributions} from './combat-credit.js';
 import {combatPhase,equipmentPhase} from '../shared/round-actions.js';
 import {controlledPlayer,releaseBot,takeBot} from './bot-control.js';
-import {visibleAimPoint,observationPoint,lookAt,hearGunshot,beginAimDuel} from './bot-perception.js';
+import {visibleAimPoint,observationPoint,lookAt,beginAimDuel} from './bot-perception.js';
 import {reportSiteThreat} from './bot-alerts.js';
 import {updateTeamVision} from './team-intel.js';
 import {selectSpawn} from './spawn-selection.js';
 import {combatMovement} from './bot-combat.js';
 import {combatSlot} from './bot-utility.js';
 import {tacticalGoal,shareSighting,botUtility,separateTeammates,coordinateFlash} from './bot-tactics.js';
+import {BotUtilityTimeline} from './bot-utility-timeline.js';
+import {syncChallengeRoster} from './bot-challenge.js';
 import {randomBytes} from 'node:crypto';
 import { MAP } from '../shared/map-data.js';
 import { createPlayerState, stepPlayer, raycastWorld, raycastWorldContact, raycastGrenadeWorld, raycastWorldHit } from '../shared/physics.js';
@@ -117,6 +121,7 @@ export class GameRoom {
     this.privateMap=privateMap; this.code = code; this.mode = mode==='deathmatch'?'deathmatch':'defuse'; this.desiredBots = botCount(bots);
     mode=this.mode;this.traceBullet=traceBullet;this.hostId=null;this.botDifficulty=normalizeBotDifficulty(botDifficulty);
     this.clock = clock; this.rules = { ...RULES, ...rules }; this.players = new Map(); this.clients = new Map();
+    this.botUtilityTimeline=new BotUtilityTimeline(clock);
     this.scores = { T: 0, CT: 0 }; this.events = []; this.eventCounter = 0; this.botCounter = 0; this.spawnCounter = { T: 0, CT: 0 };
     this.teamSides={A:'CT',B:'T'};this.lossLevels={A:1,B:1};this.teamBuys={};
     this.match={status:'live',period:'regulation',roundsPlayed:0,overtimeNumber:0,winTarget:mode==='deathmatch'?MATCH_RULES.deathmatchWinTarget:13,winnerTeamId:null};
@@ -135,7 +140,7 @@ export class GameRoom {
   }
 
   emptyBomb() { return { state: 'none', carrierId: null, x: 0, y: 0, z: 0, site: null, plantedAt: 0, explodesAt: 0, planterId: null, actorId: null, action: null, progress: 0, remaining: 0 }; }
-  emit(type, fields = {}) { this.privateBots?.onEvent(type,fields); this.events.push({ type, id: `${this.code}:${++this.eventCounter}`, time: this.clock(), ...fields }); if (this.events.length > 300) this.events.splice(0, this.events.length - 300); }
+  emit(type, fields = {}) { this.botUtilityTimeline.observe(type,fields,this.players);if(!this.privateBots)hearEvent(this,type,fields);this.privateBots?.onEvent(type,fields); this.events.push({ type, id: `${this.code}:${++this.eventCounter}`, time: this.clock(), ...fields }); if (this.events.length > 300) this.events.splice(0, this.events.length - 300); }
   count(team, humansOnly = false) { return [...this.players.values()].filter(p => p.team === team && (!humansOnly || !p.bot)).length; }
   get humanCount() { return this.clients.size; }
   get botCount(){return [...this.players.values()].filter(p=>p.bot).length;}
@@ -144,6 +149,7 @@ export class GameRoom {
   setBots(id,value){
     if(id!==this.hostId)return {ok:false,message:'只有房主可以设置机器人数量。'};
     if(!Number.isInteger(value)||value<0||value>9)return {ok:false,message:'机器人数量必须为 0–9 的整数。'};
+    if(this.botDifficulty==='vitality'&&value<5)return {ok:false,message:'挑战 Vitality 需要保留对方 5 名人机。'};
     this.desiredBots=value;this.ensureBots();this.maybeStart();
     const result={ok:true,bots:value,desiredBots:value,botCount:this.botCount,hostId:this.hostId};
     this.emit('bots_changed',result);return result;
@@ -151,8 +157,14 @@ export class GameRoom {
 
   setBotDifficulty(id,value){
     if(id!==this.hostId)return {ok:false,message:'只有房主可以设置人机难度。'};
-    if(!BOT_DIFFICULTIES.includes(value))return {ok:false,message:'人机难度应为轻松、普通或困难。'};
+    if(!BOT_DIFFICULTIES.includes(value))return {ok:false,message:'无效的人机难度。'};
+    if(value==='vitality'){
+      const host=this.players.get(this.hostId),enemyId=host.teamId==='A'?'B':'A';
+      if([...this.players.values()].some(p=>!p.bot&&p.teamId===enemyId))return {ok:false,message:'对方存在真人玩家，请在空房间创建 Vitality 挑战。'};
+      this.challengeTeamId=enemyId;this.desiredBots=Math.max(5,this.desiredBots);
+    }
     this.botDifficulty=value;
+    this.ensureBots();syncChallengeRoster(this);
     const result={ok:true,botDifficulty:value,hostId:this.hostId};
     this.emit('bot_difficulty_changed',result);return result;
   }
@@ -169,6 +181,7 @@ export class GameRoom {
   takeSeat(id,team,seat){
     const p=this.players.get(id);
     if(!p||p.bot||!['T','CT'].includes(team)||!Number.isInteger(seat)||seat<0||seat>4)return {ok:false,message:'无效的房间位置。'};
+    if(this.botDifficulty==='vitality'&&this.teamForSide(team)===this.challengeTeamId)return {ok:false,message:'Vitality 挑战席位由五名对手人机保留。'};
     if([...this.players.values()].some(other=>other.id!==id&&other.team===team&&other.seat===seat))return {ok:false,message:'这个位置已有人，请选择空位。'};
     if(p.team!==team){
       this.releaseBot(id);
@@ -176,8 +189,8 @@ export class GameRoom {
       this.cancelReload(p);this.cancelGrenade(p,'team');
       if(this.bomb.actorId===id)Object.assign(this.bomb,{actorId:null,action:null,progress:0});
       p.team=team;p.teamId=this.teamForSide(team);p.agentId=p.agents[team]||DEFAULT_AGENT_IDS[team];
-      p.inventory={};this.giveWeapon(p,team==='CT'?'usp':'pistol');this.giveWeapon(p,'knife');
-      p.weapon=team==='CT'?'usp':'pistol';p.slot=2;p.armor=0;p.helmet=false;p.defuseKit=false;p.loadoutPrimary=defaultPrimaryForTeam(team);
+      p.inventory={};this.giveWeapon(p,startingPistolForTeam(p.weaponLoadout,team));this.giveWeapon(p,'knife');
+      p.weapon=startingPistolForTeam(p.weaponLoadout,team);p.slot=2;p.armor=0;p.helmet=false;p.defuseKit=false;p.loadoutPrimary=defaultPrimaryForTeam(team);
       this.respawn(p);
       if(this.match.status==='ended'||this.mode==='defuse'&&['live','ended'].includes(this.round.phase)){p.alive=false;p.health=0;p.respawnAt=0;}
     }
@@ -186,6 +199,7 @@ export class GameRoom {
   setSeatBot(id,team,seat,enabled){
     if(id!==this.hostId)return {ok:false,message:'只有房主可以添加或移除人机。'};
     if(!['T','CT'].includes(team)||!Number.isInteger(seat)||seat<0||seat>4||typeof enabled!=='boolean')return {ok:false,message:'无效的房间位置。'};
+    if(this.botDifficulty==='vitality'&&this.teamForSide(team)===this.challengeTeamId&&!enabled)return {ok:false,message:'请先退出 Vitality 挑战难度，再移除对手人机。'};
     const occupant=[...this.players.values()].find(p=>p.team===team&&p.seat===seat);
     if(occupant&&!occupant.bot)return {ok:false,message:'玩家位置不能替换为人机。'};
     if(enabled&&!occupant){
@@ -193,25 +207,32 @@ export class GameRoom {
       if(this.match.status==='ended'||this.mode==='defuse'&&['live','ended'].includes(this.round.phase)){p.alive=false;p.health=0;}
       this.players.set(p.id,p);
     }else if(!enabled&&occupant)this.removePlayer(occupant.id);
-    this.desiredBots=this.botCount;this.maybeStart();this.emit('bots_changed',{botCount:this.botCount,desiredBots:this.desiredBots});return {ok:true,botCount:this.botCount};
+    this.desiredBots=this.botCount;syncChallengeRoster(this);this.maybeStart();this.emit('bots_changed',{botCount:this.botCount,desiredBots:this.desiredBots});return {ok:true,botCount:this.botCount};
   }
 
-  addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents, movementProtocol, shotProtocol }) {
+  addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents, weaponLoadout, movementProtocol, shotProtocol }) {
     if (this.humanCount >= MAX_PLAYERS) throw new Error('房间已满，最多 10 名玩家。');
     let assigned = team;
+    if(this.botDifficulty==='vitality'&&this.challengeTeamId){
+      const friendly=this.teamSides[this.challengeTeamId==='A'?'B':'A'];
+      if(team!=='auto'&&team!==friendly)throw new Error('Vitality 挑战只能加入玩家队伍。');
+      assigned=friendly;
+    }
     if (!['T', 'CT'].includes(assigned)) assigned = this.count('T', true) <= this.count('CT', true) ? 'T' : 'CT';
     if (this.count(assigned, true) >= 5) { if (team !== 'auto') throw new Error('该阵营已有 5 名玩家，请选择另一队。'); assigned = opposite(assigned); }
     const replaceable=[...this.players.values()].filter(p=>p.bot).sort((a,b)=>Number(!!a.controllerId)-Number(!!b.controllerId)||Number(a.alive)-Number(b.alive));
     const botToReplace=(this.count(assigned)>=5||this.players.size>=10)?replaceable.find(p=>p.team===assigned)||replaceable[0]:null;
     if (botToReplace) this.removePlayer(botToReplace.id);
     const id = `p_${randomBytes(6).toString('hex')}`;
-    const player = this.makePlayer(id, name, assigned, false, primary);
+    const player = this.makePlayer(id, name, assigned, false, primary, weaponLoadout??null);
     player.shotProtocol=shotProtocol===1?1:0;player.shotCommands=player.shotProtocol===1;
     if(movementProtocol===1){player.movementStream=new MovementStream(player.lifeId);player.movementAt=this.clock();}
     player.skins=normalizeSkinLoadout(skins);
+    player.weaponLoadout=normalizeWeaponLoadout(weaponLoadout);
     player.agents=normalizeAgentLoadout(agents);player.agentId=player.agents[assigned];
     this.players.set(id, player); this.clients.set(id, socket);
     if(!this.hostId)this.hostId=id;
+    if(this.botDifficulty==='vitality'&&!this.challengeTeamId){this.challengeTeamId=player.teamId==='A'?'B':'A';this.desiredBots=Math.max(5,this.desiredBots);}
     if (this.match.status==='ended'||(this.mode === 'defuse' && ['live', 'ended'].includes(this.round.phase))) { player.alive = false; player.health = 0; player.respawnAt = 0; }
     this.ensureBots();
     this.emit('join', { playerId: id, name, team: assigned, bot: false });
@@ -219,7 +240,7 @@ export class GameRoom {
     return player;
   }
 
-  makePlayer(id, name, team, bot, primary = 'auto') {
+  makePlayer(id, name, team, bot, primary = 'auto', weaponLoadout) {
     const player = { ...createPlayerState(this.pickSpawn(team)), id, seat:this.freeSeat(team), lifeId:1,name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
       money: this.mode === 'deathmatch' ? 16000 : 800, kills: 0, roundKills:0,lifeKills:0,killCards:[],deaths: 0, assists: 0,headshots:0, inventory: {}, skins:{...DEFAULT_SKINS}, slot: this.mode === 'deathmatch' ? 1 : 2,
       helmet:this.mode==='deathmatch',defuseKit:false,zoomLevel:0,flashBlindUntil:0,agents:{...DEFAULT_AGENT_IDS},agentId:DEFAULT_AGENT_IDS[team],
@@ -228,7 +249,8 @@ export class GameRoom {
       grenadeState:null,grenadeRequireRelease:false,pendingInteract:false,interactWasDown:false,
       botAI: { nextThinkAt: 0, targetId: null, path: [], goal: null, lastKnown: null, lastSeenAt: 0, reactionAt: 0, stuckAt: this.clock(), previous: null, wanderAt: 0, strafe: Math.random() < 0.5 ? -1 : 1 },
     };
-    this.giveWeapon(player, team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(player, 'knife');
+    if(weaponLoadout!==undefined)player.weaponLoadout=normalizeWeaponLoadout(weaponLoadout);
+    this.giveWeapon(player, startingPistolForTeam(player.weaponLoadout,team)); this.giveWeapon(player, 'knife');
     primary=normalizeWeapon(primary);
     player.loadoutPrimary=PRIMARY_WEAPONS.includes(primary)&&canTeamUseWeapon(team,primary)?primary:defaultPrimaryForTeam(team);
     if (this.mode === 'deathmatch') this.giveWeapon(player,player.loadoutPrimary);
@@ -242,14 +264,24 @@ export class GameRoom {
   ensureBots() {
     const wanted = Math.min(this.desiredBots, MAX_PLAYERS - this.humanCount);
     let bots = [...this.players.values()].filter(p => p.bot).sort((a,b)=>Number(!!b.controllerId)-Number(!!a.controllerId)||Number(b.alive)-Number(a.alive));
+    const challengeSide=this.botDifficulty==='vitality'&&this.challengeTeamId?this.teamSides[this.challengeTeamId]:null;
+    if(challengeSide){
+      // Reserve the complete opponent squad before filling friendly seats.
+      while(5-this.count(challengeSide)>wanted-bots.length){
+        const victim=[...bots].reverse().find(p=>p.team!==challengeSide&&!p.controllerId);if(!victim)break;
+        this.removePlayer(victim.id);bots=bots.filter(p=>p!==victim);
+      }
+      bots.sort((a,b)=>Number(b.team===challengeSide)-Number(a.team===challengeSide)||Number(!!b.controllerId)-Number(!!a.controllerId));
+    }
     while (bots.length > wanted) { this.removePlayer(bots.pop().id); }
     while (bots.length < wanted) {
-      const team = this.count('T') <= this.count('CT') ? 'T' : 'CT';
+      const team = challengeSide&&this.count(challengeSide)<5?challengeSide:this.count('T') <= this.count('CT') ? 'T' : 'CT';
       const number = ++this.botCounter;
       const player = this.makePlayer(`b_${number}`, `${team === 'T' ? '沙狐' : '哨兵'} BOT ${number}`, team, true);
       this.players.set(player.id, player); bots.push(player);
       if (this.match.status==='ended'||(this.mode === 'defuse' && ['live', 'ended'].includes(this.round.phase))) { player.alive = false; player.health = 0; }
     }
+    syncChallengeRoster(this);
   }
 
   removePlayer(id) {
@@ -363,6 +395,11 @@ export class GameRoom {
     return {buyAllowed:true,buyReason:''};
   }
 
+  setWeaponLoadout(id,value){
+    const p=this.players.get(id);if(!p||p.bot||p.controlledBotId)return {ok:false,message:'控制人机时无法更改个人装备配置。'};
+    if(this.mode==='defuse'&&!['waiting','freeze'].includes(this.round.phase))return {ok:false,message:'请在下一回合购买阶段更改装备配置。'};
+    p.weaponLoadout=normalizeWeaponLoadout(value);return {ok:true,weaponLoadout:p.weaponLoadout};
+  }
   buy(id, rawWeapon) {
     const p = this.controlledPlayer(id);
     if (!p?.alive) return { ok: false, message: '存活时才可以购买。' };
@@ -372,6 +409,7 @@ export class GameRoom {
     const equipment=getEquipment(weapon),gun=Object.hasOwn(WEAPONS,weapon)?WEAPONS[weapon]:null;
     if(!equipment&&(!gun||![1,2].includes(gun.slot)))return {ok:false,message:'无效的购买物品。'};
     if(equipment?!canTeamBuyEquipment(p.team,weapon):!canTeamUseWeapon(p.team,weapon))return {ok:false,message:'该装备不在当前阵营的购买清单中。'};
+    if(gun&&p.weaponLoadout&&!Object.values(teamWeaponLoadout(p.weaponLoadout,p.team)).some(ids=>ids.includes(weapon)))return {ok:false,message:'该枪械未加入你的装备携带配置。'};
     if(equipment?.slot===4&&((p.inventory[weapon]?.ammo||0)>=equipment.maxCount||grenadeCount(p.inventory)>=MAX_GRENADES))return {ok:false,message:'投掷物携带数量已达上限（同类闪光2枚，其余1枚，总计4枚）。'};
     if(weapon==='defusekit'&&p.defuseKit)return {ok:false,message:'已持有拆弹工具。'};
     if(weapon==='armor'&&p.armor>=100)return {ok:false,message:'防弹背心已完好。'};
@@ -422,20 +460,20 @@ export class GameRoom {
       if(resetMoney!==null)this.lossLevels={A:1,B:1};
       if(resetMoney!==null)for(const p of this.players.values()){
         p.inventory={};p.armor=0;p.helmet=false;p.defuseKit=false;p.money=resetMoney;p.alive=true;
-        this.giveWeapon(p,p.team==='CT'?'usp':'pistol');this.giveWeapon(p,'knife');p.weapon=p.team==='CT'?'usp':'pistol';p.slot=2;
+        this.giveWeapon(p,startingPistolForTeam(p.weaponLoadout,p.team));this.giveWeapon(p,'knife');p.weapon=startingPistolForTeam(p.weaponLoadout,p.team);p.slot=2;
         this.cancelGrenade(p,'period');
       }
     }
     this.round = { number: this.round.number + 1, phase: 'freeze', phaseEndsAt: now + this.rules.freezeSeconds * 1000, buyEndsAt: now + (this.rules.freezeSeconds + this.rules.buySeconds) * 1000, winner: null, reason: '' };
-    this.weaponRequests=new Map();this.bomb = this.emptyBomb();this.teamIntel={};this.teamSightings={};this.defensePlan=null;this.botAttackSite=null;this.utilityClaims=new Map();this.botExecutions=new Map();this.attackPlan=null;this.botFlashes=[];
+    this.weaponRequests=new Map();this.bomb = this.emptyBomb();this.teamIntel={};this.teamSightings={};this.defensePlan=null;this.botAttackSite=null;this.utilityClaims=new Map();this.botExecutions=new Map();this.attackPlan=null;this.botFlashes=[];this.botUtilityTimeline.clear();
     this.botAlerts={};this.botRotation=null;this.nextTeamVisionAt=0;
     this.grenades.clear();this.defuseKits=[];
     this.droppedWeapons.clear();
     this.poseHistory.clear();
     for (const p of this.players.values()){this.respawn(p,true);p.roundKills=0;}
-    buyForTeam(this);
+    syncChallengeRoster(this);buyForTeam(this);
     const terrorists = [...this.players.values()].filter(p => p.team === 'T');
-    const carrier = terrorists.find(p => !p.bot) || terrorists[0];
+    const carrier = terrorists.find(p => !p.bot) || terrorists.find(p=>p.challengeProfile?.id==='mezii') || terrorists[0];
     if (carrier) { this.bomb.state = 'carried'; this.bomb.carrierId = carrier.id; carrier.hasBomb = true;this.giveWeapon(carrier,'c4'); Object.assign(this.bomb, copyPoint(carrier)); }
     this.emit('round_start', { number: this.round.number, mode: this.mode });
   }
@@ -444,7 +482,7 @@ export class GameRoom {
     p.purchases={};p.lifeKills=0;p.killCards=[];p.lastKnifeAt=-Infinity;
     delete p.inventory.c4;
     const spawn = this.pickSpawn(p.team,p);
-    if (newRound && !p.alive) { p.inventory = {}; p.armor = 0;p.helmet=false;p.defuseKit=false; this.giveWeapon(p, p.team === 'CT' ? 'usp' : 'pistol'); this.giveWeapon(p, 'knife'); }
+    if (newRound && !p.alive) { p.inventory = {}; p.armor = 0;p.helmet=false;p.defuseKit=false; this.giveWeapon(p, startingPistolForTeam(p.weaponLoadout,p.team)); this.giveWeapon(p, 'knife'); }
     resetContributions(p);
     const consumedJump=p.input.jumpId||0, consumedReload=p.input.reloadId||0;
     Object.assign(p, createPlayerState(spawn), { lifeId:(p.lifeId||0)+1,objectiveLocked:false,fireQueue:[],lastJumpId:consumedJump,lastReloadId:consumedReload,alive: true, health: 100, hasBomb: false, respawnAt: 0, flashBlindUntil:0, reloadEndsAt: 0, triggerWasDown: false, pendingFire: false,pendingInteract:false,grenadeState:null,grenadeRequireRelease:true,
@@ -453,7 +491,7 @@ export class GameRoom {
     p.input.yaw = p.yaw || spawn.yaw || 0;
     p.movementStream?.reset(p.lifeId);
     p.movementAt=this.clock();
-    if (this.mode === 'deathmatch') {p.armor = 100;p.helmet=true;if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===1))this.giveWeapon(p,p.loadoutPrimary||defaultPrimaryForTeam(p.team));if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===2))this.giveWeapon(p,p.team==='CT'?'usp':'pistol');}
+    if (this.mode === 'deathmatch') {p.armor = 100;p.helmet=true;if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===1))this.giveWeapon(p,p.loadoutPrimary||defaultPrimaryForTeam(p.team));if(!Object.keys(p.inventory).some(id=>getWeapon(id).slot===2))this.giveWeapon(p,startingPistolForTeam(p.weaponLoadout,p.team));}
     for (const id of Object.keys(p.inventory)) if(!UTILITY_IDS.includes(id)){const skinId=p.inventory[id].skinId;this.giveWeapon(p,id);if(skinId)p.inventory[id].skinId=skinId;}
     p.botAI.engaging=false;p.botAI.action='advance';p.botAI.watchPoints=[];p.botAI.watchPoint=null;p.botAI.watchUntil=0;p.botAI.hurtAt=-Infinity;p.botAI.heardPoint=null;p.botAI.heardAt=0;p.botAI.utility=null;p.botAI.utilityAfter=this.clock()+6000+(p.seat||0)*400;p.botAI.lastKnown=null;p.botAI.lastSeenAt=0;p.botAI.routeKey=null;
 
@@ -682,7 +720,7 @@ export class GameRoom {
     }
     const representative=pellets.find(pellet=>pellet.hitId)||pellets[0];
     this.emit('shot',{shooterId:p.id,weapon:p.weapon,shotId:input.shotId||0,inputSeq:input.seq,zoomLevel,accuracy:accuracy.total,rewindMs:targets.rewindMs,aim:{yaw:input.yaw,pitch:input.pitch},origin,...representative,...(pellets.length>1?{pellets}: {})});
-    if(!this.privateBots)hearGunshot(this,p);if(p.bot&&w.zoomStyle==='scope')p.botAI.lastSniperShotAt=now;
+    if(p.bot&&w.zoomStyle==='scope')p.botAI.lastSniperShotAt=now;
     for(const hit of hits.values()){
       if(this.match.status==='ended')break;
       hit.victim.armor=hit.armorState.armor;
@@ -723,6 +761,7 @@ export class GameRoom {
     if(!p.reloadEndsAt&&w.slot<4&&w.magazine&&ammo&&this.clock()>=(ammo.reloadReadyAt||0)&&ammo.ammo<w.magazine&&ammo.reserve>0){
       p.reloadStartedAt=this.clock();p.reloadEndsAt=p.reloadStartedAt+w.reloadTime*1000;p.zoomLevel=0;
       p.reloadEmpty=ammo.ammo===0;p.reloadWeapon=p.weapon;p.reloadCommitted=false;
+      if(!this.privateBots)hearNoise(this,p,'reload');
       p.reloadAmmoAt=p.reloadStartedAt+(w.reloadStyle==='shell'?1:reloadProfile(p.weapon,p.reloadEmpty)?.commitFraction??1)*w.reloadTime*1000;
     }
   }
@@ -979,6 +1018,7 @@ export class GameRoom {
         // View/fire input remains immediate; queued movement never rewinds aim.
         p.yaw=input.yaw;p.pitch=input.pitch;
       }else stepPlayer(p, input, dt);
+      if(!this.privateBots)movementNoise(this,p,input);
       if (!Number.isFinite(p.x + p.y + p.z) || p.outOfWorld || p.y < (MAP.bounds?.min?.y ?? -200) - 30) { this.kill(p, null); continue; }
       if(p.reloadEndsAt&&now>=p.reloadEndsAt)this.finishReload(p);
       if (input.reload) this.reload(p);

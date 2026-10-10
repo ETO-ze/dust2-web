@@ -15,9 +15,9 @@ for(const match of eventText.matchAll(/\n\t([^\n=]+) =\s*\n\t\{/g)){
  const end=eventText.indexOf('\n\t}',match.index+match[0].length);
  events[match[1].toLowerCase()]=[...eventText.slice(match.index,end).matchAll(/"sounds\/([^"\n]+)\.vsnd"/g)].map(m=>m[1]);
 }
-const bankSources={},weapons=['elite','p250','fiveseven','deagle','nova','mag7','mp9','mp7','bizon','scar20','m4a4','ssg08','tec9','xm1014','sawedoff','mac10','galilar','sg553'];
+const bankSources={},weapons=['elite','p250','fiveseven','deagle','nova','mag7','mp9','mp7','bizon','scar20','m4a4','ssg08','tec9','xm1014','sawedoff','mac10','galilar','sg553','hkp2000','cz75a','revolver','aug','famas','g3sg1','mp5sd','p90','ump45','m249','negev'];
 for(const id of weapons){
- const eventId=id==='sg553'?'sg556':id;
+ const eventId=id==='sg553'?'sg556':id==='mp5sd'?'mp5':id;
  for(const [key,action]of [['','single'],['Far','singledistant'],['Out','clipout'],['In','clipin'],['Shell','insertshell']]){
   const files=events['weapon_'+eventId+'.'+action];if(files?.length)bankSources[id+key]=files.slice(0,2);
  }
@@ -49,6 +49,7 @@ for (const name of sourcePaths) {
 }
 const previous=JSON.parse(fs.readFileSync(path.join(output,'manifest.json'),'utf8'));
 const manifest = {
+  ...previous,
   source: 'User local installed Counter-Strike 2, Valve-owned game audio', pak,
   tool: 'Source 2 Viewer CLI 20.0.6980+a06886f7d06049052d32a7381ec05523064a2ca0',
   officialExportGuide: 'https://s2v.app/ValveResourceFormat/guides/exporting-sounds.html',

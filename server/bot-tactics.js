@@ -52,7 +52,9 @@ export function tacticalGoal(room,p){
   // can reset their route index and walk back to an already-cleared waypoint.
   const roster=[...room.players.values()].filter(q=>q.team===p.team).sort((a,b)=>a.seat-b.seat);
   const rank=Math.max(0,roster.findIndex(q=>q===p));
-  let lane=attackLane(plan,rank,p.hasBomb),diversion=plan.tempo==='fake'&&['long','short'].includes(lane)&&!p.hasBomb&&now<plan.fakeUntil&&!room.botAttackSite;
+  let lane=attackLane(plan,rank,p.hasBomb);
+  if(p.challengeProfile?.role==='flank'&&!p.hasBomb)lane=site==='B'?'mid':plan.id==='a-short'?'long':'short';
+  let diversion=plan.tempo==='fake'&&['long','short'].includes(lane)&&!p.hasBomb&&now<plan.fakeUntil&&!room.botAttackSite;
   if(diversion)site='A';
   const probing=plan.tempo==='default'&&!plan.committedSite&&!room.botAttackSite;
   if(!probing&&!diversion){
@@ -67,6 +69,7 @@ export function tacticalGoal(room,p){
   if(ai.routeKey!==key){ai.routeKey=key;ai.routeIndex=0;}
   const fighters=allies.filter(q=>!q.hasBomb),order=fighters.indexOf(p);
   ai.role=p.hasBomb?'carrier':split?'split':order===0?'entry':order===1?'trade':'utility-support';ai.site=site;ai.lane=lane;ai.execute=plan.id;ai.watchPoints=watchPoints(p,site);ai.phase=diversion?'feint':plan.tempo==='contact'&&now<plan.decisionAt&&!report?'contact':'advance';ai.stagingIndex=route.length-2;
+  if(p.challengeProfile&&!p.hasBomb)ai.role=({entry:'entry',trade:'trade',utility:'utility-support',flank:'split',sniper:'overwatch'})[p.challengeProfile.role];
   const support=supportGoal(room,p,allies,report);if(support){ai.phase='support';return support;}
   if(diversion&&ai.routeIndex>=route.length-2&&range(p,at(room,route[ai.routeIndex]))<3){ai.phase='feint';return point(p);}
   while(ai.routeIndex<route.length-1&&range(p,at(room,route[ai.routeIndex]))<3){
@@ -78,8 +81,11 @@ export function tacticalGoal(room,p){
   return at(room,route[ai.routeIndex]);
  }
  const setup=defensePlan(room),roles=setup.roles;
+ if(p.challengeProfile&&!ai.defenseRole)ai.defenseRole=({flameZ:'anchor-a',mezii:'anchor-b',apEX:'rotator',ropz:'short',ZywOo:room.round.number%2?'sniper-a':'sniper-b'})[p.challengeProfile.id];
  const roster=[...room.players.values()].filter(q=>q.bot&&q.team===p.team).sort((a,b)=>a.seat-b.seat);
- ai.defenseRole||=(getWeapon(p.weapon).zoomStyle==='scope'?(room.round.number%2?'sniper-a':'sniper-b'):roster.length===1?'rotator':roles[(Math.max(0,roster.findIndex(q=>q.id===p.id))+setup.offset)%Math.max(1,roster.length)]);ai.role=ai.defenseRole;
+ const assignedRole=roster.length===1?'rotator':roles[(Math.max(0,roster.findIndex(q=>q.id===p.id))+setup.offset)%Math.max(1,roster.length)];
+ // Buying an AWP must not move the only B anchor to A (or vice versa).
+ ai.defenseRole||=getWeapon(p.weapon).zoomStyle==='scope'?(assignedRole==='anchor-b'?'sniper-b':assignedRole==='anchor-a'?'sniper-a':room.round.number%2?'sniper-a':'sniper-b'):assignedRole;ai.role=ai.defenseRole;
  ai.site=ai.role.endsWith('-b')?'B':'A';ai.phase='hold';ai.watchPoints=watchPoints(p,ai.site);
  if(ai.role==='mid'){ai.watchPoints=['mid','catwalk','tunnels'].map(id=>{const n=at(room,id);return {...n,y:n.y+1.62};});}
  const support=supportGoal(room,p,allies,report);if(support&&(!ai.role.startsWith('anchor')||range(report,MAP.sites[ai.site])<16)){ai.phase='support';return support;}
@@ -126,6 +132,7 @@ function readyToEnter(room,p,allies,site){
  if(strategy.tempo==='fake'&&site==='B'&&now<strategy.fakeUntil&&allies.some(q=>q.botAI?.phase==='feint'))return false;
  if(!plan.releaseAt&&((near&&splitReady&&!support&&now-plan.at>700)||now-plan.at>deadline))plan.releaseAt=now;
  if(!plan.releaseAt)return false;
+ if(now-plan.at<deadline+2000&&room.botUtilityTimeline?.entryHold(p))return false;
  // Entry first, trading partner next, bomb carrier last. A bounded delay never
  // leaves survivors waiting forever for a dead or distant teammate.
  const order=[...allies.filter(q=>q.botAI?.lane===ai.lane)].sort((a,b)=>Number(a.hasBomb)-Number(b.hasBomb)||a.seat-b.seat);

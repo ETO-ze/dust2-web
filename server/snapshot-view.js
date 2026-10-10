@@ -3,6 +3,6 @@
 export function snapshotForSide(snapshot,side){
   return {...snapshot,events:(snapshot.events||[]).filter(e=>!e.audienceTeam||e.audienceTeam===side),weaponRequests:(snapshot.weaponRequests||[]).filter(r=>r.team===side),players:snapshot.players.map(player=>{
     if(player.team===side)return player;
-    const {botBuy,lossIncome,...publicPlayer}=player;return publicPlayer;
+    const {botBuy,lossIncome,weaponLoadout,...publicPlayer}=player;return publicPlayer;
   })};
 }

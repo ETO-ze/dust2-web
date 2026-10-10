@@ -27,7 +27,7 @@ async function fixture(){
     const url=new URL(key(value));
     // These fixtures exercise asset caching on an older same-origin server.
     // The new configuration probe is deliberately outside the asset counter.
-    if(url.pathname==='/dust2/download-config.json')return new Response('',{status:404});
+    if(url.pathname==='/dust2/download-config-1.3.0.json')return new Response('',{status:404});
     requests.push(url.href);
     if(options.signal?.aborted)throw options.signal.reason;
     const valueOrHandler=routes.get(url.pathname);

@@ -60,7 +60,7 @@ test('team armory, armor, scopes and server-owned utilities',{timeout:20000},asy
 
   await t.test('both 15-gun team panels enforce legal purchases and isolate pistol and primary slots',()=>{
     const {room,t:terrorist,ct}=fixture();
-    assert.equal(Object.keys(WEAPONS).length,24);
+    assert.equal(Object.keys(WEAPONS).length,35);
     for(const player of [terrorist,ct]){
       const groups=TEAM_LOADOUTS[player.team];assert.deepEqual(Object.values(groups).map(ids=>ids.length),[5,5,5]);
       for(const id of Object.values(groups).flat()){

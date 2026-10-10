@@ -39,3 +39,11 @@ test('defuse waits for the round, reports teammates and only describes allied li
   const ended = describeDeath({ ...match, round: { phase: 'ended', winner: 'CT', timeLeft: 4.6 } }, self, { elapsed: 1.8 });
   assert.equal(ended.clock, '3'); assert.equal(ended.statusTitle, '下一回合即将开始'); assert.equal(ended.statusDetail, '防守方 CT 获胜');
 });
+
+test('eliminated team sees C4 status and authoritative countdown without spectator teammate prompts',()=>{
+  const match={...snapshot,mode:'defuse',players:[self,opponent],bomb:{state:'planted',x:2,y:0,z:3,remaining:12.6}};
+  const state=describeDeath(match,self,{elapsed:.9});
+  assert.equal(state.statusTitle,'正在观战 C4');assert.equal(state.clock,'12');assert.equal(state.observedName,'');
+  assert.equal(describeDeath({...match,bomb:{...match.bomb,state:'dropped'}},self).statusTitle,'等待下一回合');
+  assert.equal(describeDeath({...match,players:[self,opponent,teammate]},self).statusTitle,'等待下一回合');
+});

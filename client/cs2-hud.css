@@ -1,37 +1,100 @@
-/* Proportions checked against local Panorama hudhealthammocenter and
-   hudteamcounter styles. Desktop centre vitals; compact touch layout retained. */
-#hud { --vitals-color: #e7dbc1; --health-ratio: 1; --ammo-ratio: 1; }
-#hud[data-team="CT"] { --vitals-color: #c5d8e8; }
-#hud .health-stat, #hud .ammo-stat { color: var(--vitals-color); font-variant-numeric: tabular-nums; text-shadow: 0 2px 3px #0009; }
-#hud[data-low-health="true"] .health-stat { color: #f39e84; }
-.cs2-vitals-emblem { display: none; }
-@media (min-width: 1101px) and (min-height: 560px) {
- body:not(.touch-device) #hud .bottom-left { left: calc(50% - 295px); bottom: 24px; display: block; }
- body:not(.touch-device) #hud .health-stat { position: relative; gap: 8px; align-items: center; height: 58px; }
- body:not(.touch-device) #hud .health-stat > b { font-size: 44px; min-width: 77px; font-weight: 600; }
- body:not(.touch-device) #hud .health-stat > span { width: 17px; opacity: .9; }
- body:not(.touch-device) #hud .health-stat > small { position: absolute; bottom: -10px; left: 26px; padding: 0; border: 0; font-size: 10px; max-width: 220px; white-space: nowrap; }
- body:not(.touch-device) #hud .health-stat::after { content: ''; position: absolute; left: 26px; bottom: 2px; width: 66px; height: 3px; background: linear-gradient(to right,currentColor calc(var(--health-ratio) * 100%),#ffffff25 0); }
- body:not(.touch-device) #hud .money-stat { position: fixed; bottom: 24px; left: 30px; font-size: 24px; font-weight: 600; text-shadow: 0 2px 4px #000; }
- body:not(.touch-device) #hud .cs2-vitals-emblem { display: grid; place-items: center; position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); width: 58px; height: 58px; border: 1px solid #e5d7b844; border-radius: 50%; background: radial-gradient(circle,#18242a7d,transparent 72%); }
- .cs2-vitals-emblem img { width: 39px; height: 39px; opacity: .85; filter: drop-shadow(0 2px 3px #0009); }
- #hud[data-team="CT"] .cs2-vitals-emblem .team-t, #hud[data-team="T"] .cs2-vitals-emblem .team-ct { display: none; }
- body:not(.touch-device) #hud .bottom-right { bottom: 84px; right: 28px; min-width: 165px; }
- body:not(.touch-device) #hud .ammo-stat { position: fixed; left: calc(50% + 188px); right: auto; bottom: 29px; min-width: 100px; justify-content: flex-start; gap: 8px; }
- body:not(.touch-device) #hud .ammo-stat > b { font-size: 44px; font-weight: 600; }
- body:not(.touch-device) #hud .ammo-stat > span { font-size: 18px; opacity: .75; }
- body:not(.touch-device) #hud .ammo-stat::after { content: ''; position: absolute; left: 0; bottom: -2px; width: 66px; height: 3px; background: linear-gradient(to right,currentColor calc(var(--ammo-ratio) * 100%),#ffffff25 0); }
- body:not(.touch-device) #hud #reload-label { position: fixed; right: calc(50% - 295px); bottom: 9px; font-size: 10px; opacity: .7; }
- body:not(.touch-device) #hud .bottom-center { left: auto; right: 25px; bottom: 20px; transform: none; justify-content: flex-end; gap: 2px; }
- body:not(.touch-device) #hud .bottom-center span { background: transparent; border: 0; padding: 3px 5px; font-size: 9px; opacity: .6; }
- body:not(.touch-device) #hud .bottom-center .selected { color: var(--vitals-color); opacity: 1; border-bottom: 1px solid currentColor; }
- body:not(.touch-device) #hud .hint-bar { display: none; }
- body:not(.touch-device) #hud .top-score { top: 5px; background: linear-gradient(#111a24b3,#111a241a); backdrop-filter: none; }
- body:not(.touch-device) #hud .round-center > b { font-size: 23px; letter-spacing: .5px; }
- body:not(.touch-device) #hud .team-rosters { top: 5px; width: 600px; }
- body:not(.touch-device) #hud .roster-player { background: #15232e66; box-shadow: none; border-bottom-width: 1px; }
+/* Web translation of installed CS2 hudhealthammocenter, hudteamcounter and
+ * hudweaponselection. Original SVGs; Panorama is not a browser runtime.
+ * Touch controls retain their independent compact, editable layout. */
+@font-face{font-family:CS2Stratum;src:url('./original-hud/stratum2_tf_bold.otf') format('opentype');font-weight:600 900;font-display:swap}
+@font-face{font-family:CS2Stratum;src:url('./original-hud/stratum2-medium.otf') format('opentype');font-weight:400 500;font-display:swap}
+.home-bot-difficulty{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0;color:#536a77;font-size:11px}
+.home-bot-difficulty select{width:180px;max-width:65%;font-size:11px}
+#hud { --vitals-color:#fff; --health-ratio:1; --ammo-ratio:1; font-family:CS2Stratum,'Microsoft YaHei',sans-serif; }
+#hud[data-team=CT] { --vitals-color:#fff; }
+#hud .health-stat, #hud .ammo-stat { color:var(--vitals-color); font-variant-numeric:tabular-nums; text-shadow:0 2px 3px #000b; }
+#hud[data-low-health=true] .health-stat { color:#ff6d60; }
+.cs2-vitals-emblem, .hud-loadout, .hud-armor { display:none; }
+#hud.is-dead .cs2-vitals-emblem, #hud.is-dead .hud-loadout, #hud.is-dead #kill-cards { visibility:hidden; }
+@media (min-width:901px) and (min-height:560px) {
+ body:not(.touch-device) #hud { --hud-edge:clamp(16px,1.6vw,32px); }
+ /* Clock above the two scores, between the portraits (84px centre). */
+ body:not(.touch-device) #hud .top-score { top:5px; width:84px; min-width:84px; max-width:84px; height:62px; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:31px 31px; background:linear-gradient(#111820d9,#11182072); backdrop-filter:none; border:0; }
+ body:not(.touch-device) #hud .round-center { display:contents; }
+ body:not(.touch-device) #hud .round-center>b { grid-column:1 / 3; grid-row:1; align-self:center; font:700 23px CS2Stratum,sans-serif; letter-spacing:.4px; }
+ body:not(.touch-device) #hud .round-center>span { display:none; }
+ body:not(.touch-device) #hud .round-center>small { top:66px; width:250px; font-size:10px; color:#e3e3d7; }
+ body:not(.touch-device) #hud .ct-score, body:not(.touch-device) #hud .t-score { grid-row:2; padding:0; min-width:0; align-items:center; justify-content:center; }
+ body:not(.touch-device) #hud .ct-score { grid-column:1; color:#b7ddf3; }
+ body:not(.touch-device) #hud .t-score { grid-column:2; color:#f4d583; }
+ body:not(.touch-device) #hud .ct-score>b, body:not(.touch-device) #hud .t-score>b { font:700 23px CS2Stratum,sans-serif; }
+ body:not(.touch-device) #hud .team-rosters { top:5px; width:652px; }
+ body:not(.touch-device) #hud .team-roster { gap:2px; }
+ body:not(.touch-device) #hud .roster-player { width:54px; height:62px; border:0; background:linear-gradient(#7289a366,#15253480); box-shadow:inset 0 0 0 1px #b7d3e333; }
+ body:not(.touch-device) #hud .roster-player[data-team=T] { background:linear-gradient(#916d4166,#352b1980); box-shadow:inset 0 0 0 1px #e7cb7733; }
+ body:not(.touch-device) #hud .roster-portrait { height:60px; object-position:50% 15%; }
+ body:not(.touch-device) #hud .roster-player>span { display:none; }
+ body:not(.touch-device) #hud[data-phase=freeze] .roster-player>span, body:not(.touch-device) #hud[data-phase=ended] .roster-player>span, body:not(.touch-device) #hud.is-dead .roster-player>span { display:block; bottom:3px; background:#0009; font-size:8px; }
+ body:not(.touch-device) #hud .roster-player>i { height:3px; background:#e2f0d3; }
+ body:not(.touch-device) #hud .roster-player.self { outline:2px solid #f5f5e6; outline-offset:-2px; }
+ body:not(.touch-device) #hud .roster-player>.cs2-icon { width:32px; height:38px; left:11px; top:10px; }
+ body:not(.touch-device) #hud .roster-player .roster-bomb { width:15px; height:17px; top:2px; right:2px; left:auto; }
+ body:not(.touch-device) #hud .roster-player.dead { background:#14181c65; box-shadow:none; }
+ body:not(.touch-device) #hud .roster-player.dead .roster-portrait { opacity:.12; }
+ body:not(.touch-device) #hud .roster-player .roster-death { opacity:.85; }
+ body:not(.touch-device) #hud .radar-block { top:18px; left:var(--hud-edge); width:clamp(155px,14.5vw,250px); }
+ body:not(.touch-device) #hud #radar { width:100%; height:auto; aspect-ratio:1; border:1px solid #dbded052; background:#10192198; box-shadow:none; }
+ body:not(.touch-device) #hud .location-label { font-size:14px; color:var(--vitals-color); }
+ body:not(.touch-device) #hud #network-status { position:fixed; right:var(--hud-edge); bottom:8px; font-size:9px; color:#d9e6ce; }
+ body:not(.touch-device) #hud .room-label { opacity:.7; font-size:9px; }
+ /* Centre vitals: 42px numerals, 65px bars, 64px team emblem. */
+ body:not(.touch-device) #hud .bottom-left { left:auto;right:calc(50% + 200px); bottom:18px; display:block; }
+ body:not(.touch-device) #hud .health-stat { position:relative; height:64px; gap:10px; align-items:center; }
+ body:not(.touch-device) #hud .health-stat>b { font:700 42px CS2Stratum,sans-serif; min-width:70px; text-align:center;order:2; }
+ body:not(.touch-device) #hud .health-stat>span { display:none; }
+ body:not(.touch-device) #hud .health-stat>small { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+ body:not(.touch-device) #hud .health-stat::after { content:''; position:absolute; right:2px; bottom:4px; width:65px; height:8px; background:linear-gradient(to right,currentColor calc(var(--health-ratio)*100%),#7a000065 0); border:1px solid #000; }
+ body:not(.touch-device) #hud .hud-armor { display:flex; align-items:center; gap:16px; color:var(--vitals-color); font:700 16px CS2Stratum,sans-serif;order:1; }
+ body:not(.touch-device) #hud .hud-armor-stat {display:grid;place-items:center;width:48px;height:48px;flex:none;isolation:isolate;}
+ body:not(.touch-device) #hud .hud-armor-stat>.cs2-icon {grid-area:1/1;width:48px;height:48px;object-fit:contain;}
+ body:not(.touch-device) #hud .hud-armor-stat>span {grid-area:1/1;z-index:1;white-space:nowrap;line-height:1;text-align:center;font-variant-numeric:tabular-nums;text-shadow:0 1px 3px #000,0 0 3px #000;}
+ body:not(.touch-device) #hud .hud-defusekit {width:30px;height:30px;object-fit:contain;flex:none;}
+ body:not(.touch-device) #hud .hud-defusekit[hidden] {display:none;}
+ body:not(.touch-device) #hud .money-stat { position:fixed; left:var(--hud-edge); bottom:25px; font:600 27px Arial,sans-serif; color:var(--vitals-color); padding:0; }
+ body:not(.touch-device) #hud .cs2-vitals-emblem { display:grid; place-items:center; position:absolute; left:50%; bottom:18px; transform:translateX(-50%); width:64px; height:64px; border:2px solid var(--vitals-color); border-radius:50%; background:#14202770; box-shadow:0 1px 5px #0004; }
+ body:not(.touch-device) #hud .cs2-vitals-emblem::before, body:not(.touch-device) #hud .cs2-vitals-emblem::after { content:''; position:absolute; top:50%; width:65px; height:1px; background:linear-gradient(90deg,transparent,var(--vitals-color)); right:calc(100% + 16px); opacity:.5; }
+ body:not(.touch-device) #hud .cs2-vitals-emblem::after { left:calc(100% + 16px); right:auto; transform:rotate(180deg); }
+ .cs2-vitals-emblem img { width:40px; height:40px; filter:drop-shadow(0 1px 2px #0006); }
+ #hud[data-team=CT] .cs2-vitals-emblem .team-t, #hud[data-team=T] .cs2-vitals-emblem .team-ct { display:none; }
+ body:not(.touch-device) #hud .bottom-right { bottom:230px; right:var(--hud-edge); min-width:180px; }
+ body:not(.touch-device) #hud .bottom-right>#active-weapon-icon { display:none; }
+ body:not(.touch-device) #hud #weapon-name { font:500 13px Arial,sans-serif; letter-spacing:0; }
+ body:not(.touch-device) #hud #weapon-skin { font-size:10px; color:#e3dcc4; }
+ body:not(.touch-device) #hud .ammo-stat { position:fixed; left:calc(50% + 200px); bottom:18px; height:64px; min-width:140px; align-items:center; justify-content:flex-start; gap:5px; margin:0; }
+ body:not(.touch-device) #hud .ammo-stat>b { font:700 42px CS2Stratum,sans-serif; width:65px; text-align:center; }
+ body:not(.touch-device) #hud .ammo-stat>span { font:500 32px CS2Stratum,sans-serif; opacity:.8; }
+ body:not(.touch-device) #hud .ammo-stat::after { content:''; position:absolute; left:0; bottom:4px; width:65px; height:4px; background:linear-gradient(to right,currentColor calc(var(--ammo-ratio)*100%),#ffffff24 0); border:1px solid #0005; }
+ body:not(.touch-device) #hud[data-ammo-visible=false] .ammo-stat { visibility:hidden; }
+ body:not(.touch-device) #hud #reload-label { position:fixed; left:calc(50% + 200px); bottom:3px; font-size:9px; opacity:.65; max-width:250px; white-space:nowrap; }
+ body:not(.touch-device) #hud .bottom-center, body:not(.touch-device) #hud .utility-belt, body:not(.touch-device) #hud .hint-bar { display:none; }
+ body:not(.touch-device) #hud .hud-loadout { display:grid;grid-template-columns:repeat(5,1fr);position:absolute; right:var(--hud-edge); bottom:22px; width:230px; gap:2px; color:#fff; }
+ .hud-loadout-row { display:flex; align-items:center; justify-content:flex-end; gap:7px; height:48px; opacity:.45;grid-column:1/-1; }
+ .hud-loadout-row.selected { opacity:1; filter:drop-shadow(0 0 5px #fff4); }
+ .hud-loadout-row>.cs2-icon { width:125px; height:36px; object-fit:contain; }
+ .hud-loadout-row .hud-loadout-name { position:absolute; width:1px; height:1px; clip-path:inset(50%); overflow:hidden; }
+ .hud-loadout-row>small { font-size:12px; width:12px; text-align:right; align-self:flex-start; margin-top:6px; }
+ .hud-loadout-row>b { font-size:10px; font-weight:400; min-width:14px; }
+ .hud-loadout-row.grenade {grid-column:auto;grid-row:4;height:45px;gap:0;}
+ .hud-loadout-row.grenade>small {display:none}
+ .hud-loadout-row[data-slot="5"], .hud-loadout-row[data-slot=kit] {grid-column:1;grid-row:5;height:32px;}
+ .hud-loadout-row[data-slot=kit] {grid-column:5}
+ body:not(.touch-device) #hud .hud-loadout-row[data-slot=kit] {display:none}
+ .hud-loadout-row.grenade>.cs2-icon, .hud-loadout-row[data-slot="5"]>.cs2-icon, .hud-loadout-row[data-slot=kit]>.cs2-icon { width:45px; height:27px; }
+ body:not(.touch-device) #hud #kill-feed { top:82px; right:var(--hud-edge); }
+ body:not(.touch-device) #hud .kill-entry { border-radius:2px; background:#10141dde; min-height:28px; padding:3px 8px; box-shadow:none; }
+ body:not(.touch-device) #hud #kill-cards { bottom:-10px; }
+ body:not(.touch-device) #hud #kill-cards[data-count="0"] { visibility:hidden; }
+ body:not(.touch-device) #hud .kill-card-total { font-size:9px; letter-spacing:1px; }
+ body:not(.touch-device) #hud .kill-card-total>b { font-size:17px; }
+ body:not(.touch-device) #hud #kill-confirm { bottom:198px; }
+ body:not(.touch-device) #hud #center-message { top:24%; gap:6px; }
+ body:not(.touch-device) #hud #center-message>b { font-size:26px; font-weight:500; color:var(--vitals-color); letter-spacing:1px; }
+ body:not(.touch-device) #hud #center-message>span { font-size:11px; }
+ body:not(.touch-device) #hud[data-bomb-planted=true] .round-center>b { color:#ff8d68!important; }
 }
-@media (max-width: 1100px) {
- .touch-device #hud .ammo-stat, .touch-device #hud .health-stat { filter: drop-shadow(0 1px 2px #0008); }
- .touch-device #hud .ammo-stat > b, .touch-device #hud .health-stat > b { font-weight: 600; }
-}
+@media (max-width:1100px) { .touch-device #hud .ammo-stat, .touch-device #hud .health-stat { filter:drop-shadow(0 1px 2px #0008); } }

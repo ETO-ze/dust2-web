@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {GameAudio} from '../client/audio.js';
+import {startingPistolForTeam} from '../shared/weapon-loadout.js';
 
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};};
 const source=await readFile(new URL('../client/main.js',import.meta.url),'utf8');
@@ -17,7 +18,7 @@ function fixture({download=async()=>{},privateMap=false,map=async()=>({positions
   modelsReady:true,mapResultCache:privateMap?null:{positions:[]},createMapScene:map,
   diagnostics:{event:()=>{}},audio:{start:async()=>events.push('audio-samples')},
   loadModels:async()=>{},loadAgent:async()=>{},agentsUI:{loadout:{T:'t-phoenix',CT:'ct-sas'}},
-  skins:{loadout:{}},primary:'ak47',loadSkin:async()=>{},$:()=>element,
+  skins:{loadout:{}},armory:{loadout:null},startingPistolForTeam,primary:'ak47',loadSkin:async()=>{},$:()=>element,
   initPhysics:()=>{},viewWeapon:{},applyQuality:()=>{},scene:{},gunScene:{},gunCamera:{},
   renderer:{compileAsync:async()=>{}},camera:{position:{set:()=>{}}},
   MAP:{spawns:{T:[{x:0,y:0,z:0}],CT:[{x:0,y:0,z:0}]}},

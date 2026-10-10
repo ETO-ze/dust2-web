@@ -1,8 +1,9 @@
-import { readFile,writeFile } from 'node:fs/promises';
+import { readFile,writeFile,stat } from 'node:fs/promises';
 import { SKINS } from '../shared/skins.js';
 const root='assets/weapons/cs2-loadout/';
 const manifest=JSON.parse(await readFile('public/'+root+'manifest.json','utf8'));
 const defaults=manifest.models.map(m=>({id:m.file.replace(/\.glb$/,''),weapon:m.id,name:m.chineseName,englishName:m.name,model:root+m.file,preview:root+m.preview.file,bytes:m.bytes,sha256:m.sha256,isDefault:true,condition:'Factory New',wear:m.parameters.wear,wearMin:m.wearMin,paintkit:m.paintkit,previewBytes:m.preview.bytes,previewSha256:m.preview.sha256}));
+for(const skin of defaults){const file=`assets/viewmodel/optional/${skin.weapon}.glb`;if(await stat('public/'+file).catch(()=>null)){const a=JSON.parse(await readFile('public/'+file.replace('.glb','-manifest.json'),'utf8'));skin.animation={model:file,bytes:a.bytes,sha256:a.sha256};}}
 const ids=new Set(defaults.map(s=>s.id));
 const catalog=[...defaults,...SKINS.filter(s=>!ids.has(s.id)).map(s=>({...s,isDefault:false}))];
 const current=await readFile('shared/skins.js','utf8');

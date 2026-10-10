@@ -14,6 +14,8 @@ const sources={ak47:'rifle/rifle_ak/reload_ak',m4a1:'rifle/_default_rifle/reload
 for(const id of ['elite','p250','fiveseven','deagle','nova','mag7','mp9','mp7','bizon','scar20','m4a4','ssg08','tec9','xm1014','sawedoff','mac10','galilar','sg553']){
  const stem=id==='sg553'?'sg556':id,type=['elite','p250','fiveseven','deagle','tec9'].includes(id)?'pistol':'rifle';sources[id]=`${type}/${type}_${stem}/reload_${stem}${id==='ssg08'?'_lgcy':''}`;
 }
+const expansion=JSON.parse(fs.readFileSync(path.join(root,'artifacts/weapon-expansion/source-index.json'),'utf8'));
+for(const spec of expansion.weapons)sources[spec.id]=spec.animationDirectory.replace('animation/anims/viewmodel/','')+'/'+spec.clips.reload;
 function run(resource,output,args=[]){
  if(!index.has(resource))throw Error('Missing installed resource '+resource);
  fs.mkdirSync(path.dirname(output),{recursive:true});const log=fs.openSync(output+'.log','w');
@@ -24,7 +26,7 @@ try{
  if(process.argv.includes('--metadata')){
   const rows={};
   for(const [id,base]of Object.entries(sources)){
-   rows[id]={};for(const [mode,stem]of [['reload',base],['reloadEmpty',base.replace('/reload_','/reload_empty_')]]){
+   rows[id]={};for(const [mode,stem]of [['reload',base],['reloadEmpty',id==='negev'?base.replace('/reload_','/empty_reload_'):base.replace('/reload_','/reload_empty_')]]){
     const resource='animation/anims/viewmodel/'+stem+'.vnmclip_c';if(!index.has(resource))continue;
     const output=path.join(stage,'metadata',`${id}-${mode}`);run(resource,output,['-b','DATA']);const text=fs.readFileSync(output+'.log','utf8');
     const duration=Number(text.match(/m_flDuration = ([\d.]+)/)?.[1]);if(!duration)throw Error('Missing clip duration '+id);

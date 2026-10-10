@@ -1,6 +1,7 @@
 import {getWeapon} from '../shared/weapons.js';
 import {EQUIPMENT,equipmentPrice} from '../shared/equipment.js';
 import {MAP} from '../shared/map-data.js';
+import {challengeUtilityOrder} from './bot-challenge.js';
 
 export const BUY_LABELS=Object.freeze({pistol:'手枪局',full:'全起',force:'强起',half:'半起',eco:'ECO'});
 const primary=p=>Object.keys(p.inventory||{}).find(id=>getWeapon(id).slot===1);
@@ -27,8 +28,8 @@ export function buyForTeam(room){
   if(room.mode!=='defuse')return;
   for(const team of ['CT','T']){
     const plan=planTeamBuy(room,team);room.teamBuys[team]=plan;
-    const bots=[...room.players.values()].filter(p=>p.bot&&p.team===team).sort((a,b)=>a.seat-b.seat);
-    const existingSniper=[...room.players.values()].some(p=>p.team===team&&primary(p)&&getWeapon(primary(p)).zoomStyle==='scope');const sniper=existingSniper?null:[...bots].sort((a,b)=>b.money-a.money||b.seat-a.seat)[0];
+    const bots=[...room.players.values()].filter(p=>p.bot&&!p.controllerId&&!p.controlledBy&&p.team===team).sort((a,b)=>a.seat-b.seat);
+    const existingSniper=[...room.players.values()].some(p=>p.team===team&&primary(p)&&getWeapon(primary(p)).zoomStyle==='scope');const sniper=existingSniper?null:bots.find(p=>p.challengeProfile?.role==='sniper')||[...bots].sort((a,b)=>b.money-a.money||b.seat-a.seat)[0];
     for(const [rank,p]of bots.entries()){
       const floor=p.money-plan.budgets[p.id];p.botAI.buyPlan=plan.kind;
       const buy=id=>{
@@ -49,7 +50,7 @@ export function buyForTeam(room){
         if(p.armor<80)buy('armor');
         if(plan.kind==='full'||plan.kind==='force')buy('helmet');
         if(team==='CT'&&plan.kind!=='half'&&[...room.players.values()].filter(q=>q.team==='CT'&&q.defuseKit).length<2)buy('defusekit');
-        for(const id of ['smokegrenade','flashbang',team==='T'?'molotov':'incgrenade','hegrenade'])buy(id);
+        for(const id of p.challengeProfile?challengeUtilityOrder(room,p):['smokegrenade','flashbang',team==='T'?'molotov':'incgrenade','hegrenade'])buy(id);
       }
       room.selectSlot(p,primary(p)?1:2);p.input.slot=p.slot;
     }

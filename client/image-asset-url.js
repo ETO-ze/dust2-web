@@ -12,7 +12,7 @@ export function hydrateHomeImages(root=document){
  for(const image of root.querySelectorAll('img[data-game-src]'))image.src=imageAssetURL(image.dataset.gameSrc);
 }
 export async function initHomeImages(){
- if(!bundled&&!getDownloadOrigin())await initDownloadOrigin({pageURL:document.baseURI});
+ if(!bundled&&!getDownloadOrigin())await initDownloadOrigin({configURL:'download-config-1.3.0.json',pageURL:document.baseURI});
  hydrateHomeImages();
 }
 // Hidden <img> still download. Assign map art only after Start/Join, never on

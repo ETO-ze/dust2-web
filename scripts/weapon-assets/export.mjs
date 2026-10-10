@@ -17,14 +17,24 @@ const rows=[
   ['bizon','smg','rifle'],['scar20','snip','rifle'],['m4a4','rif','rifle'],['ssg08','snip','rifle'],
   ['tec9','pist','pistol'],['xm1014','shot','rifle'],['sawedoff','shot','rifle'],['mac10','smg','rifle'],
   ['galilar','rif','rifle'],['sg553','rif','rifle','sg556'],
+  ['hkp2000','pist','pistol'],['cz75a','pist','pistol'],['revolver','pist','pistol'],
+  ['aug','rif','rifle'],['famas','rif','rifle'],['g3sg1','snip','rifle'],
+  ['mp5sd','smg','rifle'],['p90','smg','rifle'],['ump45','smg','rifle'],
+  ['m249','mach','rifle'],['negev','mach','rifle'],
 ];
 const entries=new Map(readVpkIndex(vpk).entries.map(entry=>[entry.path,entry]));
 const manifest=rows.map(([id,type,animationType,sourceId=id])=>{
   const model=`weapons/models/${sourceId}/weapon_${type}_${sourceId}.vmdl_c`;
   const directory=`animation/anims/viewmodel/${animationType}/${animationType}_${sourceId}`;
   const clips={draw:`draw_${sourceId}`,idle:`idle_${sourceId}`,reload:`reload_${sourceId}`,shoot:`shoot1_${sourceId}`,inspect:`lookat01_${sourceId}`};
+  if(id==='hkp2000')for(const action of Object.keys(clips))clips[action]=clips[action].replaceAll('hkp2000','hkp');
+  if(['g3sg1','m249'].includes(id))clips.idle=`idle1_${id}`;
+  if(id==='negev')clips.reloadEmpty='empty_reload_negev';
+  if(id==='aug')clips.aimShoot='ironsight_shoot_aug';
+  if(id==='revolver'){clips.prepare='prepare_shoot_revolver';clips.shoot2='shoot_alt1_revolver';}
   if(id==='elite'){clips.shoot=`shoot_right1_${sourceId}`;clips.shoot2=`shoot_left1_${sourceId}`;}
-  if(entries.has(`${directory}/reload_empty_${sourceId}.vnmclip_c`))clips.reloadEmpty=`reload_empty_${sourceId}`;
+  const emptyStem=id==='hkp2000'?'reload_empty_hkp':`reload_empty_${sourceId}`;
+  if(entries.has(`${directory}/${emptyStem}.vnmclip_c`))clips.reloadEmpty=emptyStem;
   if(id==='ssg08')for(const [action,stem]of Object.entries({...clips}))if(entries.has(`${directory}/${stem}_lgcy.vnmclip_c`))clips[action+'Legacy']=stem+'_lgcy';
   if(!entries.has(model))throw Error('Missing model '+model);
   for(const stem of Object.values(clips))if(!entries.has(`${directory}/${stem}.vnmclip_c`))throw Error('Missing original animation '+directory+'/'+stem);

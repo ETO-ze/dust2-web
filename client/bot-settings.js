@@ -5,6 +5,8 @@ export function mountBotSettings(settingsUI,{getState,onChange}){
  tab.dataset.tab='bots';tab.textContent='人机';panel.dataset.panel='bots';panel.hidden=true;
  panel.innerHTML='<h3>人机难度</h3><label class="config-row">难度<select id="bot-difficulty"><option value="easy">轻松 · 手机入门</option><option value="normal">普通 · 默认</option><option value="hard">困难 · 加强配合与枪法</option></select></label><p id="bot-difficulty-status" role="status"></p><p>轻松：反应较慢、瞄准更宽容，连败不会增强。普通保持原有枪法；困难的反应与瞄准精度参数增强约 30%。三档均需要看见目标，平滑转向后开火。</p><p>普通／困难同队连输 2 回合增强一次 50%，连续赢 2 回合恢复。守点位置随回合变化；听到枪声或收到队友报告后分人回防，另一点留人防守。</p><p>进攻包含 A 小集结、A 大夹击、B 区爆弹等路线。携包者只有在时间充足、附近有持枪队友且尚未进入包点时才会辅助投掷。</p><small>创建房间前的选择自动保存在本机。房间内由房主统一设置双方人机；新进攻方案从下一回合采用。</small>';
  modal.querySelector('.config-tabs').append(tab);modal.querySelector('.config-scroll').append(panel);
+ const challengeOption=document.createElement('option');challengeOption.value='vitality';challengeOption.textContent='挑战 Vitality 全队 · 职业风格模拟';panel.querySelector('select').append(challengeOption);
+ const challengeInfo=document.createElement('p');challengeInfo.className='bot-challenge-description';challengeInfo.textContent='Vitality 挑战：对方保留 flameZ、mezii、apEX、ropz、ZywOo 五名人机；好友加入玩家队伍。沙二采用适配战术；本次保留米拉吉现有路线与地图策略。ZywOo 优先购买狙击枪，apEX 组织道具，flameZ 先行进点，mezii 补枪／守点，ropz 侧翼控图。枪法略高于困难，依然只凭视觉与声音行动，不会瞬间锁头。';panel.append(challengeInfo);
  const select=panel.querySelector('select'),status=panel.querySelector('[role="status"]');let pending=false,timer;
  function refresh(){
   const state=getState();if(!pending)select.value=normalizeBotDifficulty(state.value);

@@ -20,13 +20,14 @@ export class KillCards {
   for(let i=0;i<count;i++){
    let card=this.fan.children[i];if(card)continue;
    card=document.createElement('div');card.className='kill-card';
-   const detail=state.cards[i]||{},icon=detail.weapon==='knife'?'knife':detail.headshot?'headshot':['hegrenade','molotov','incgrenade'].includes(detail.weapon)?detail.weapon:'kill';
+   const detail=state.cards[i]||{},icon=detail.headshot?'killHeadshot':detail.weapon==='knife'?'killPipslash':detail.weapon==='hegrenade'?'killPipblast':['molotov','incgrenade'].includes(detail.weapon)?'killPipburn':'kill';
    card.dataset.kind=icon;card.setAttribute('aria-label',`第 ${i+1} 次击杀${detail.headshot?' · 爆头':detail.weapon==='knife'?' · 近战':''}`);
-   const rank=document.createElement('b');rank.textContent=i===0?'A':String(i+1);const suit=document.createElement('small');suit.textContent='♠';
-   card.append(rank,uiIcon(icon),suit);this.fan.append(card);
+   // Panorama overlays the original number-card and kill-type pip at identical
+   // bounds. These are original SVG paths, not a newly drawn playing card.
+   card.append(uiIcon(`killCard${i+1}`,'','kill-card-original'),uiIcon(icon,'','kill-card-pip'));this.fan.append(card);
    if(!newRound&&i>=(previous?.count||0)){card.classList.add('earned');card.style.animationDelay=`${Math.max(0,i-previous.count)*90}ms`;}
   }
-  [...this.fan.children].forEach((card,i)=>{card.style.setProperty('--angle',`${(i-(count-1)/2)*7}deg`);card.style.setProperty('--lift',`${Math.abs(i-(count-1)/2)*3}px`);});
+  [...this.fan.children].forEach((card,i)=>{card.style.setProperty('--angle',`${(i-(count-1)/2)*12}deg`);card.style.setProperty('--lift',`${(count-1-i)*2}px`);card.style.setProperty('--shift',`${(i-(count-1)/2)*3.5}px`);});
  }
  reset(){this.signature=null;this.state=null;this.fan.replaceChildren();this.total.textContent='0';this.element.dataset.count='0';}
 }

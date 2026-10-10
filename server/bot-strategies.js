@@ -30,9 +30,13 @@ export function attackPlan(room){
   const roster=[...room.players.values()].filter(p=>p.team==='T'),rich=roster.filter(p=>Object.keys(p.inventory||{}).some(id=>getWeapon(id).slot===1)).length;
   const history=room.strategyHistory||=[],lowBuy=rich<Math.ceil(roster.length/2);
   const selected=choose(room,ATTACK_STRATEGIES,history,p=>lowBuy&&['a-short','b-contact','a-long'].includes(p.id)?1.7:1);
-  const began=start(room),plan={...selected,round:room.round.number,coordinated:room.botDifficulty==='hard',startAt:began,
+  const began=start(room),plan={...selected,round:room.round.number,coordinated:['hard','vitality'].includes(room.botDifficulty),startAt:began,
     offset:Math.floor(random(room)*5),holdOffset:Math.floor(random(room)*4),decisionAt:began+10000+random(room)*6000,
     fakeUntil:began+21000+random(room)*6000,committedSite:selected.site};
+  plan.economy=room.teamBuys?.T?.kind||'unknown';
+  // An ECO takes a close-range grouped contact, rather than spending time on
+  // a grenade execute that the team cannot afford. Preserve round variation.
+  if(plan.economy==='eco'){plan.tempo='contact';plan.site=plan.committedSite=plan.holdOffset%2?'B':'A';plan.lanes=Array(5).fill(plan.site==='B'?'tunnels':'short');plan.name='ECO 集体接触';}
   room.strategyHistory=[...history,{round:plan.round,id:plan.id}].slice(-6);return room.attackPlan=plan;
 }
 export function defensePlan(room){
@@ -42,6 +46,7 @@ export function defensePlan(room){
   room.defenseHistory=[...history,{round:plan.round,id:plan.id}].slice(-4);return room.defensePlan=plan;
 }
 export function attackLane(plan,rank,carrier=false){
+  if(plan.economy==='eco')return plan.lanes[0];
   // The carrier never takes a solo diversion or a mid-to-B flank.
   const lane=plan.lanes[(rank+plan.offset)%plan.lanes.length];
   return carrier?(plan.committedSite==='B'?'tunnels':plan.committedSite==='A'?(plan.id==='a-short'?'short':'long'):'mid'):lane;

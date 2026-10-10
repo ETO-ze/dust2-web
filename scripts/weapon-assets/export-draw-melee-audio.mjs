@@ -13,6 +13,7 @@ function resolve(name,seen=new Set()){
  return [...new Set((events[name.toLowerCase()]||[]).flatMap(v=>v.startsWith('sounds/')&&v.endsWith('.vsnd')?[v+'_c']:events[v.toLowerCase()]?resolve(v,seen):[]))];
 }
 const weapons={ak47:'AK47',m4a1:'M4A1',awp:'AWP',glock:'Glock',usp:'USP',elite:'ELITE',p250:'P250',fiveseven:'FiveSeven',deagle:'DEagle',nova:'Nova',mag7:'Mag7',mp9:'MP9',mp7:'MP7',bizon:'bizon',scar20:'SCAR20',m4a4:'M4A1',ssg08:'SSG08',tec9:'tec9',xm1014:'XM1014',sawedoff:'Sawedoff',mac10:'MAC10',galilar:'GalilAR',sg553:'SG556'};
+Object.assign(weapons,{hkp2000:'hkp2000',cz75a:'CZ',revolver:'Revolver',aug:'AUG',famas:'FAMAS',g3sg1:'G3SG1',mp5sd:'MP5',p90:'P90',ump45:'UMP45',m249:'M249',negev:'Negev'});
 const bankEvents=Object.fromEntries(Object.entries(weapons).map(([id,name])=>[id+'Draw','Weapon_'+name+'.Draw']));
 Object.assign(bankEvents,{molotovDraw:'Molotov.Draw',incgrenadeDraw:'IncGrenade.Draw',decoyDraw:'Decoy.Draw',molotovThrow:'Molotov.Throw',incgrenadeThrow:'IncGrenade.Throw',decoyThrow:'Decoy.Throw',fireStart:'Molotov.Smash',fireLoop:'Molotov.Loop',fireExtinguish:'Molotov.Extinguish',knifeDraw:'Weapon_Knife.Draw.Small',knifeHeavySwing:'Weapon_Knife.Swish.Heavy',knifeHeavyHit:'Weapon_Knife.Hit.Heavy',hegrenadeDraw:'HEGrenade.Draw',flashbangDraw:'Flashbang.Draw',smokegrenadeDraw:'SmokeGrenade.Draw'});
 const banks=Object.fromEntries(Object.entries(bankEvents).map(([bank,event])=>{const files=resolve(event).filter(f=>index.has(f)).slice(0,2);if(!files.length)throw Error('No samples for '+event);return[bank,files];}));
@@ -28,7 +29,9 @@ for(const source of sources){const stem=source.replace(/\.vsnd_c$/,''),input=['.
  const bytes=fs.readFileSync(destination);files.push({file,source,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),sourceCrc32:index.get(source).crc.toString(16)});destinations.set(source,file);
 }
 const manifestFile=path.join(root,'public/assets/audio/cs2/manifest.json'),manifest=JSON.parse(fs.readFileSync(manifestFile,'utf8'));
-manifest.banks={...manifest.banks,...Object.fromEntries(Object.entries(banks).map(([bank,list])=>[bank,list.map(s=>destinations.get(s))]))};
+// The utility exporter selects each event's primary layer, excluding shared
+// gear Foley. Refreshing gun draws must not overwrite those curated banks.
+manifest.banks={...manifest.banks,...Object.fromEntries(Object.entries(banks).filter(([bank])=>!manifest.utilityEvents?.[bank]).map(([bank,list])=>[bank,list.map(s=>destinations.get(s))]))};
 manifest.files=[...manifest.files.filter(f=>!files.some(n=>n.file===f.file)),...files];manifest.drawMeleeEvents=bankEvents;
 fs.writeFileSync(manifestFile,JSON.stringify(manifest,null,2));fs.writeFileSync(path.join(stage,'proof.json'),JSON.stringify({bankEvents,banks,files},null,2));
 console.log(JSON.stringify({banks:Object.keys(banks).length,files:files.length,bytes:files.reduce((n,f)=>n+f.bytes,0)}));

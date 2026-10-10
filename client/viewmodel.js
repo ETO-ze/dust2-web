@@ -10,6 +10,7 @@ import { loadedSkin, requestSkin, retainSkin, releaseSkin } from './skin-assets.
 import { disposeInstanceAnimation, disposeInstanceSkeletons } from './resource-lifecycle.js';
 import {DEFAULT_AGENT_IDS,getAgent} from '../shared/agents.js';
 import {loadAgentArms,loadedAgentArms,requestAgentArms,retainAgentArms,releaseAgentArms} from './agent-arms.js';
+import {playWeaponAction,beginWeaponInspect,cancelWeaponInspect} from './viewmodel-animation.js';
 
 const loader = gameGLTFLoader();
 let animationSource;
@@ -83,7 +84,7 @@ export class ViewWeapon {
     });
     const mixer = new THREE.AnimationMixer(root), actions = {};
     const family=getSkin(skinId)?.animationFamily||id;
-    for (const original of (family===id?animationSource:source).animations) {
+    for (const original of (getSkin(skinId)?.animation?source:family===id?animationSource:source).animations) {
       if (!original.name.startsWith(`${family}/`)) continue;
       const clip = original.clone();
       clip.tracks = clip.tracks.filter(track => names.has(THREE.PropertyBinding.parseTrackName(track.name).nodeName));
@@ -98,7 +99,7 @@ export class ViewWeapon {
     mixer.addEventListener('finished', event => {
       if (item.current !== event.action) return;
       if(item.actionName==='pullpin'&&this.utilityPrimed){this.playOn(item,this.utilityHoldName(),.055);return;}
-      this.playOn(item, this.opticActive&&id==='sg553'?'aimIdle':'idle', .055);
+      this.playOn(item, this.opticActive&&['sg553','aug'].includes(id)?'aimIdle':'idle', .055);
     });
 
     // The flash lives on the weapon's original bone so it follows recoil and
@@ -119,16 +120,7 @@ export class ViewWeapon {
   }
 
   playOn(item, name, fade=.035, duration=0) {
-    const action = item.actions[name] || item.actions.idle;
-    if (!action) return;
-    const previous = item.current;
-    if (previous && previous !== action) previous.fadeOut(fade);
-    action.reset().setEffectiveTimeScale(duration > 0 ? action.getClip().duration / duration : 1).setEffectiveWeight(1);
-    const looping=name==='idle'||name==='aimIdle'||name.startsWith('hold');
-    action.setLoop(looping ? THREE.LoopRepeat : THREE.LoopOnce, looping ? Infinity : 1);
-    action.clampWhenFinished = !looping;
-    if (fade && previous !== action) action.fadeIn(fade);
-    action.play(); item.current=action; item.actionName=name;
+    return playWeaponAction(item,name,fade,duration);
   }
 
   set(id,skinId,agentId=this.agentId||'ct-sas') {
@@ -138,7 +130,7 @@ export class ViewWeapon {
     const fallback=DEFAULT_AGENT_IDS[getAgent(agentId).team];requestAgentArms(fallback);
     const visibleAgent=loadedAgentArms(agentId)?agentId:fallback;
     requestSkin(skinId);const visibleSkin=loadedSkin(skinId)?skinId:UTILITY_IDS.includes(id)||id==='c4'?id:DEFAULT_SKINS[id],cacheKey=id+':'+visibleSkin+':'+visibleAgent;
-    if(!loadedSkin(visibleSkin)||!loadedAgentArms(visibleAgent)){this.waiting=true;return;}this.waiting=false;
+    if(!loadedSkin(visibleSkin)||!loadedAgentArms(visibleAgent)){this.waiting=true;this.rig.visible=false;return;}this.waiting=false;this.rig.visible=true;
     if (id === this.id && this.skinId===visibleSkin && this.agentId===visibleAgent) return;
     if (this.active) { this.rig.remove(this.active.root); this.active.flash.visible=false; this.active.light.intensity=0; }
     this.id=id;this.skinId=visibleSkin;this.agentId=visibleAgent;
@@ -157,14 +149,18 @@ export class ViewWeapon {
     if (!this.active) return;
     const heavy=options === true || options?.heavy;
     const mode=options?.mode||this.utilityMode;
-    const name=UTILITY_IDS.includes(this.id)?(['underhand','under','low','drop'].includes(mode)?'throwUnderhand':'throw'):this.id==='knife' ? (heavy ? 'heavy' : (this.slash++%2 ? 'shoot2':'shoot')) : this.id==='elite' ? (this.slash++%2?'shoot2':'shoot') : this.opticActive&&this.id==='sg553'?'aimShoot':'shoot';
+    const name=UTILITY_IDS.includes(this.id)?(['underhand','under','low','drop'].includes(mode)?'throwUnderhand':'throw'):this.id==='knife' ? (heavy ? 'heavy' : (this.slash++%2 ? 'shoot2':'shoot')) : this.id==='elite' ? (this.slash++%2?'shoot2':'shoot') : this.opticActive&&['sg553','aug'].includes(this.id)?'aimShoot':'shoot';
     this.utilityPrimed=false;this.utilityReleased=UTILITY_IDS.includes(this.id);
     this.playOn(this.active,name,.025,getWeapon(this.id).unzoomsAfterShot?getWeapon(this.id).fireInterval:0);
     this.flashTime=UTILITY_IDS.includes(this.id)||this.id==='knife'||this.id==='m4a1'||this.id==='usp' ? 0 : .045;
   }
 
   inspect() {
-    if (this.active && !this.reloadActive&&!this.utilityPrimed) this.playOn(this.active,'inspect',.08);
+    return beginWeaponInspect(this.active,{blocked:this.waiting||this.reloadActive||this.utilityPrimed||this.planting});
+  }
+
+  cancelInspect() {
+    return cancelWeaponInspect(this.active,{optic:this.opticActive});
   }
 
   primeUtility(state){
@@ -202,7 +198,7 @@ export class ViewWeapon {
     if(p?.weapon)this.set(p.weapon,p.skinId,p.agentId||DEFAULT_AGENT_IDS[p.team]||'ct-sas');
     this.group.visible=Boolean(p?.alive&&!scoped&&!this.waiting&&this.id===p?.weapon);
     if(!p||!this.active)return;
-    if(this.opticActive!==optic){this.opticActive=optic;if(this.id==='sg553')this.playOn(this.active,optic?'aimIdle':'idle',.1);}
+    if(this.opticActive!==optic){this.opticActive=optic;if(['sg553','aug'].includes(this.id))this.playOn(this.active,optic?'aimIdle':'idle',.1);}
     this.aimBlend=THREE.MathUtils.lerp(this.aimBlend,optic?1:0,1-Math.exp(-(optic?10:8)*dt));
     const aimedFov=cs2FovToVertical(45),gunFov=THREE.MathUtils.lerp(68,aimedFov,this.aimBlend);
     if(Math.abs(this.camera.fov-gunFov)>.01){this.camera.fov=gunFov;this.camera.updateProjectionMatrix();}

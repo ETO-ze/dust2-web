@@ -12,3 +12,6 @@
 *.png binary
 *.webp binary
 *.jpg binary
+
+# Preserve extracted Valve SVG bytes, including authored whitespace.
+client/original-hud/*.svg -text whitespace=-trailing-space

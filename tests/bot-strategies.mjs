@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ATTACK_STRATEGIES,attackPlan,defensePlan} from '../server/bot-strategies.js';
+import {ATTACK_STRATEGIES,attackPlan,defensePlan,attackLane} from '../server/bot-strategies.js';
 import {tacticalGoal,shareSighting} from '../server/bot-tactics.js';
 function fixture(){let now=100000,seed=19271;const players=Array.from({length:10},(_,seat)=>({id:'p'+seat,seat:seat%5,bot:true,alive:true,team:seat<5?'T':'CT',hasBomb:seat===2,x:0,y:0,z:20,inventory:{ak47:{ammo:30}},botAI:{}}));
  const room={code:'TEST',botDifficulty:'hard',strategyRandom:()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32),clock:()=>now,round:{number:1,phase:'live'},bomb:{state:'carried'},players:new Map(players.map(p=>[p.id,p])),nearestNav:p=>p,siteAt:()=>null};
@@ -27,4 +27,10 @@ test('the A diversion has a deadline and rejoins B without taking the bomb to th
  const {room,players,advance}=fixture();room.attackPlan={...ATTACK_STRATEGIES.find(p=>p.id==='fake-a-b'),round:1,offset:0,holdOffset:0,committedSite:'B',fakeUntil:121000};
  players.slice(0,5).forEach(p=>tacticalGoal(room,p));assert.equal(players[2].botAI.site,'B');assert.equal(players[3].botAI.phase,'feint');assert.equal(players[4].botAI.site,'A');
  advance(21001);players.slice(0,5).forEach(p=>tacticalGoal(room,p));assert.ok(players.slice(0,5).every(p=>p.botAI.site==='B'));assert.ok(players.slice(0,5).every(p=>['tunnels','mid'].includes(p.botAI.lane)));
+});
+
+test('ECO contact keeps the bomb carrier in the close-range group instead of a solo long diversion',()=>{
+ const {room}=fixture();room.teamBuys={T:{kind:'eco'}};const plan=attackPlan(room);
+ assert.equal(plan.tempo,'contact');assert.equal(new Set(plan.lanes).size,1);
+ for(let i=0;i<5;i++){assert.equal(attackLane(plan,i),plan.lanes[0]);assert.equal(attackLane(plan,i,true),plan.lanes[0]);}
 });

@@ -2,7 +2,7 @@ import {getWeapon} from '../shared/weapons.js';
 import {eyePosition} from '../shared/aim.js';
 import {floorHeight} from '../shared/physics.js';
 const range=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
-const ranks={awp:100,scar20:85,g3sg1:85,ak47:85,m4a1:85,m4a4:85,sg553:80,aug:80,galilar:65,famas:65,ssg08:60,mp9:45,mac10:45,mp7:40,bizon:35,nova:30,mag7:35,xm1014:40,sawedoff:25,deagle:28,tec9:22,fiveseven:22,p250:20,elite:16,usp:15,pistol:12};
+const ranks={awp:100,scar20:85,g3sg1:85,ak47:85,m4a1:85,m4a4:85,sg553:80,aug:80,galilar:65,famas:65,ssg08:60,mp9:45,mac10:45,mp7:40,mp5sd:40,p90:50,ump45:40,m249:55,negev:50,hkp2000:15,cz75a:22,revolver:25,bizon:35,nova:30,mag7:35,xm1014:40,sawedoff:25,deagle:28,tec9:22,fiveseven:22,p250:20,elite:16,usp:15,pistol:12};
 const current=(p,slot)=>Object.keys(p.inventory).find(id=>getWeapon(id).slot===slot);
 export function shouldLoot(p,item){
  const gun=getWeapon(item.weaponId),old=current(p,gun.slot);if(![1,2].includes(gun.slot)||item.ammo+item.reserve<=0)return false;if(!old)return true;

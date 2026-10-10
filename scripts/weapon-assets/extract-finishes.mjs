@@ -5,7 +5,8 @@ import {readVpkIndex} from '../../tools/vpk-index.mjs';
 
 const root=path.resolve(import.meta.dirname,'../..');
 const game=process.env.CS2_GAME_DIR||'E:/steam/steamapps/common/Counter-Strike Global Offensive/game/csgo';
-const specs=JSON.parse(fs.readFileSync(path.join(import.meta.dirname,'default-skins.json'),'utf8'));
+const selection=process.argv.find(a=>a.startsWith('--ids='))?.slice(6).split(',');
+const specs=JSON.parse(fs.readFileSync(path.join(import.meta.dirname,'default-skins.json'),'utf8')).filter(s=>!selection||selection.includes(s.id));
 const vpk=path.join(game,'pak01_dir.vpk');
 const entries=new Set(readVpkIndex(vpk).entries.map(e=>e.path));
 const source=path.join(root,'artifacts/weapon-expansion/source');
@@ -17,9 +18,10 @@ const lockPath=path.join(root,'artifacts/s2v-export.lock');
 const lock=fs.openSync(lockPath,'wx');fs.writeFileSync(lock,JSON.stringify({pid:process.pid,task:'weapon-finishes',startedAt:new Date().toISOString()}));
 try{
  const log=fs.openSync(path.join(root,'artifacts/weapon-expansion/extract-finishes.log'),'w');
- const result=spawnSync(path.join(root,'tools/source2viewer/Source2Viewer-CLI.exe'),['-i',vpk,'-f',filters.join(','),'-o',source,'-d'],{stdio:['ignore',log,log],windowsHide:true,env:{...process.env,TEMP:temp,TMP:temp},timeout:600000});
+ const result=spawnSync(process.env.SOURCE2VIEWER_CLI||path.join(root,'tools/source2viewer/Source2Viewer-CLI.exe'),['-i',vpk,'-f',filters.join(','),'-o',source,'-d'],{stdio:['ignore',log,log],windowsHide:true,env:{...process.env,TEMP:temp,TMP:temp},timeout:600000});
  fs.closeSync(log);
  if(result.error)throw result.error;
  if(result.status)throw Error('Source2Viewer exit '+result.status);
+ for(const s of specs)for(const file of [s.material.replace(/_c$/,''),s.input])if(!fs.existsSync(path.join(source,file)))throw Error('Exporter did not produce '+file+'; inspect extract-finishes.log');
  console.log('Extracted '+specs.length+' original finishes and previews.');
 }finally{fs.closeSync(lock);fs.unlinkSync(lockPath);}

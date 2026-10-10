@@ -7,7 +7,7 @@ import {privateMapDownloads,privateMapFetcher} from './private-map-download.js';
 async function bootstrap(){
  const request=async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('私有地图配置暂不可用 ('+r.status+')');return r.json();};
  const originalConfig=privateConfig(await request(new URL('private-map.json',location.href)),location.href);
- const delivery=await initDownloadOrigin({configURL:new URL('../../../download-config.json',originalConfig.renderUrl),pageURL:location.href});
+ const delivery=await initDownloadOrigin({configURL:new URL('../../../download-config-1.3.0.json',originalConfig.renderUrl),pageURL:location.href});
  const config=privateMapDownloads(originalConfig,delivery),mapFetch=privateMapFetcher(config);
  const jumpLinks=config.id==='de_mirage'?MIRAGE_JUMP_LINKS:[];
  const jumpDigest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(jumpLinks)))),byte=>byte.toString(16).padStart(2,'0')).join('');

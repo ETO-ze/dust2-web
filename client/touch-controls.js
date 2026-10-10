@@ -49,7 +49,7 @@ export class TouchControls {
  update(state){
   this.state=state;document.body.classList.toggle('touch-spectator',state.spectator);document.body.classList.toggle('touch-utility',state.slot===4);if(!this.enabled||!this.active)return;
   for(const b of this.buttons){const a=b.dataset.action;const combat=['fire','altFire','reload'].includes(a),movement=['jump','crouch','walk'].includes(a),equipment=['primary','secondary','knife','utility','bomb','drop','interact'].includes(a);
-   b.disabled=(combat&&!state.combat&&!(state.spectator&&['fire','altFire'].includes(a)))||(movement&&!state.moving)||(equipment&&!state.equipment&&!(a==='interact'&&state.canTakeBot))||(a==='buy'&&!state.alive);
+   b.disabled=(combat&&!state.combat&&!(state.spectator&&state.canCycle!==false&&['fire','altFire'].includes(a)))||(movement&&!state.moving)||(equipment&&!state.equipment&&!(a==='interact'&&state.canTakeBot))||(a==='buy'&&!state.alive);
    if(b.dataset.slot){const slot=Number(b.dataset.slot);b.disabled||=!state.slots.includes(slot);b.classList.toggle('selected',state.slot===slot);}
   }
   this.element.querySelector('.touch-fire').textContent=state.spectator?'下一位':state.slot===4?'投掷':state.slot===5?'下包':'开火';

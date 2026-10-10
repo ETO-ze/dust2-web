@@ -417,7 +417,7 @@ export const RELOAD_PROFILES=Object.freeze({
       "source": "animation/anims/viewmodel/pistol/pistol_deagle/reload_deagle.vnmclip_c",
       "sounds": [
         {
-          "fraction": 0.060606,
+          "fraction": 0.151515,
           "event": "Weapon_DEagle.Clipout",
           "bank": "anim_weapon_deagle_clipout"
         },
@@ -740,7 +740,7 @@ export const RELOAD_PROFILES=Object.freeze({
     "reload": {
       "commitFraction": 0.540541,
       "sourceDuration": 3.7,
-      "source": "animation/anims/viewmodel/rifle/rifle_ssg08/reload_ssg08_lgcy.vnmclip_c",
+      "source": "animation/anims/viewmodel/rifle/rifle_ssg08/reload_ssg08.vnmclip_c",
       "sounds": [
         {
           "fraction": 0.081081,
@@ -970,6 +970,546 @@ export const RELOAD_PROFILES=Object.freeze({
           "fraction": 0.759036,
           "event": "Weapon_sg556.BoltForward",
           "bank": "anim_weapon_sg556_boltforward"
+        }
+      ]
+    }
+  },
+  "hkp2000": {
+    "reload": {
+      "commitFraction": 0.411765,
+      "sourceDuration": 2.2667,
+      "source": "animation/anims/viewmodel/pistol/pistol_hkp2000/reload_hkp.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.161765,
+          "event": "Weapon_hkp2000.Clipout",
+          "bank": "anim_weapon_hkp2000_clipout"
+        },
+        {
+          "fraction": 0.367647,
+          "event": "Weapon_hkp2000.Clipin",
+          "bank": "anim_weapon_hkp2000_clipin"
+        },
+        {
+          "fraction": 0.411765,
+          "event": "Weapon_hkp2000.AddAmmo",
+          "bank": "anim_weapon_hkp2000_addammo"
+        },
+        {
+          "fraction": 0.632353,
+          "event": "Weapon_hkp2000.Slideback",
+          "bank": "anim_weapon_hkp2000_slideback"
+        },
+        {
+          "fraction": 0.720588,
+          "event": "Weapon_hkp2000.Sliderelease",
+          "bank": "anim_weapon_hkp2000_sliderelease"
+        }
+      ]
+    },
+    "reloadEmpty": {
+      "commitFraction": 0.529412,
+      "sourceDuration": 2.2667,
+      "source": "animation/anims/viewmodel/pistol/pistol_hkp2000/reload_empty_hkp.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.191176,
+          "event": "Weapon_hkp2000.Clipout",
+          "bank": "anim_weapon_hkp2000_clipout"
+        },
+        {
+          "fraction": 0.5,
+          "event": "Weapon_hkp2000.Clipin",
+          "bank": "anim_weapon_hkp2000_clipin"
+        },
+        {
+          "fraction": 0.529412,
+          "event": "Weapon_hkp2000.AddAmmo",
+          "bank": "anim_weapon_hkp2000_addammo"
+        },
+        {
+          "fraction": 0.705882,
+          "event": "Weapon_hkp2000.Sliderelease",
+          "bank": "anim_weapon_hkp2000_sliderelease"
+        }
+      ]
+    }
+  },
+  "cz75a": {
+    "reload": {
+      "commitFraction": 0.573171,
+      "sourceDuration": 2.7333,
+      "source": "animation/anims/viewmodel/pistol/pistol_cz75a/reload_cz75a.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.134146,
+          "event": "Weapon_CZ.Clipout",
+          "bank": "anim_weapon_cz_clipout"
+        },
+        {
+          "fraction": 0.268293,
+          "event": "Weapon_CZ.Clipout2",
+          "bank": "anim_weapon_cz_clipout2"
+        },
+        {
+          "fraction": 0.5,
+          "event": "Weapon_CZ.ClipinSlide",
+          "bank": "anim_weapon_cz_clipinslide"
+        },
+        {
+          "fraction": 0.512195,
+          "event": "Weapon_CZ.Clipin",
+          "bank": "anim_weapon_cz_clipin"
+        },
+        {
+          "fraction": 0.573171,
+          "event": "Weapon_CZ.AddAmmo",
+          "bank": "anim_weapon_cz_addammo"
+        },
+        {
+          "fraction": 0.731707,
+          "event": "Weapon_CZ.Slideback",
+          "bank": "anim_weapon_cz_slideback"
+        },
+        {
+          "fraction": 0.792683,
+          "event": "Weapon_CZ.Sliderelease",
+          "bank": "anim_weapon_cz_sliderelease"
+        }
+      ]
+    },
+    "reloadEmpty": {
+      "commitFraction": 0.609756,
+      "sourceDuration": 2.7333,
+      "source": "animation/anims/viewmodel/pistol/pistol_cz75a/reload_empty_cz75a.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.146341,
+          "event": "Weapon_CZ.Clipout",
+          "bank": "anim_weapon_cz_clipout"
+        },
+        {
+          "fraction": 0.317073,
+          "event": "Weapon_CZ.Clipout2",
+          "bank": "anim_weapon_cz_clipout2"
+        },
+        {
+          "fraction": 0.52439,
+          "event": "Weapon_CZ.Clipin",
+          "bank": "anim_weapon_cz_clipin"
+        },
+        {
+          "fraction": 0.536585,
+          "event": "Weapon_CZ.ClipinSlide",
+          "bank": "anim_weapon_cz_clipinslide"
+        },
+        {
+          "fraction": 0.609756,
+          "event": "Weapon_CZ.AddAmmo",
+          "bank": "anim_weapon_cz_addammo"
+        },
+        {
+          "fraction": 0.707317,
+          "event": "Weapon_CZ.Sliderelease",
+          "bank": "anim_weapon_cz_sliderelease"
+        }
+      ]
+    }
+  },
+  "revolver": {
+    "reload": {
+      "commitFraction": 0.867647,
+      "sourceDuration": 2.2667,
+      "source": "animation/anims/viewmodel/pistol/pistol_revolver/reload_revolver.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.044118,
+          "event": "Weapon_Revolver.BarrelRoll",
+          "bank": "anim_weapon_revolver_barrelroll"
+        },
+        {
+          "fraction": 0.044118,
+          "event": "Weapon_Revolver.Siderelease",
+          "bank": "anim_weapon_revolver_siderelease"
+        },
+        {
+          "fraction": 0.279412,
+          "event": "Weapon_Revolver.Siderelease",
+          "bank": "anim_weapon_revolver_siderelease"
+        },
+        {
+          "fraction": 0.308824,
+          "event": "Weapon_Revolver.Clipout",
+          "bank": "anim_weapon_revolver_clipout"
+        },
+        {
+          "fraction": 0.529412,
+          "event": "Weapon_Revolver.Clipin",
+          "bank": "anim_weapon_revolver_clipin"
+        },
+        {
+          "fraction": 0.691176,
+          "event": "Weapon_Revolver.BarrelRoll",
+          "bank": "anim_weapon_revolver_barrelroll"
+        },
+        {
+          "fraction": 0.867647,
+          "event": "Weapon_Revolver.Sideback",
+          "bank": "anim_weapon_revolver_sideback"
+        }
+      ]
+    }
+  },
+  "aug": {
+    "reload": {
+      "commitFraction": 0.4375,
+      "sourceDuration": 3.2,
+      "source": "animation/anims/viewmodel/rifle/rifle_aug/reload_aug.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.15625,
+          "event": "Weapon_AUG.Clipout",
+          "bank": "anim_weapon_aug_clipout"
+        },
+        {
+          "fraction": 0.416667,
+          "event": "Weapon_AUG.Clipin",
+          "bank": "anim_weapon_aug_clipin"
+        },
+        {
+          "fraction": 0.4375,
+          "event": "Weapon_AUG.AddAmmo",
+          "bank": "anim_weapon_aug_addammo"
+        },
+        {
+          "fraction": 0.645833,
+          "event": "Weapon_AUG.Boltpull",
+          "bank": "anim_weapon_aug_boltpull"
+        },
+        {
+          "fraction": 0.697917,
+          "event": "Weapon_AUG.Boltrelease",
+          "bank": "anim_weapon_aug_boltrelease"
+        }
+      ]
+    }
+  },
+  "famas": {
+    "reload": {
+      "commitFraction": 0.50505,
+      "sourceDuration": 3.3,
+      "source": "animation/anims/viewmodel/rifle/rifle_famas/reload_famas.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.181818,
+          "event": "Weapon_FAMAS.Clipout",
+          "bank": "anim_weapon_famas_clipout"
+        },
+        {
+          "fraction": 0.474747,
+          "event": "Weapon_FAMAS.Clipin",
+          "bank": "anim_weapon_famas_clipin"
+        },
+        {
+          "fraction": 0.50505,
+          "event": "Weapon_FAMAS.AddAmmo",
+          "bank": "anim_weapon_famas_addammo"
+        },
+        {
+          "fraction": 0.646465,
+          "event": "Weapon_FAMAS.ClipHit",
+          "bank": "anim_weapon_famas_cliphit"
+        },
+        {
+          "fraction": 0.787879,
+          "event": "Weapon_FAMAS.BoltBack",
+          "bank": "anim_weapon_famas_boltback"
+        },
+        {
+          "fraction": 0.808081,
+          "event": "Weapon_FAMAS.BoltForward",
+          "bank": "anim_weapon_famas_boltforward"
+        }
+      ]
+    }
+  },
+  "g3sg1": {
+    "reload": {
+      "commitFraction": 0.571429,
+      "sourceDuration": 4.6667,
+      "source": "animation/anims/viewmodel/rifle/rifle_g3sg1/reload_g3sg1.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.042857,
+          "event": "Weapon_G3SG1.Draw",
+          "bank": "anim_weapon_g3sg1_draw"
+        },
+        {
+          "fraction": 0.114286,
+          "event": "Weapon_G3SG1.SlideBack",
+          "bank": "anim_weapon_g3sg1_slideback"
+        },
+        {
+          "fraction": 0.292857,
+          "event": "Weapon_G3SG1.Clipout",
+          "bank": "anim_weapon_g3sg1_clipout"
+        },
+        {
+          "fraction": 0.55,
+          "event": "Weapon_G3SG1.Clipin",
+          "bank": "anim_weapon_g3sg1_clipin"
+        },
+        {
+          "fraction": 0.571429,
+          "event": "Weapon_G3SG1.AddAmmo",
+          "bank": "anim_weapon_g3sg1_addammo"
+        },
+        {
+          "fraction": 0.707143,
+          "event": "Weapon_G3SG1.SlideForward",
+          "bank": "anim_weapon_g3sg1_slideforward"
+        },
+        {
+          "fraction": 0.8,
+          "event": "Weapon_G3SG1.Draw",
+          "bank": "anim_weapon_g3sg1_draw"
+        }
+      ]
+    }
+  },
+  "mp5sd": {
+    "reload": {
+      "commitFraction": 0.674157,
+      "sourceDuration": 2.9667,
+      "source": "animation/anims/viewmodel/rifle/rifle_mp5sd/reload_mp5sd.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.067416,
+          "event": "Weapon_MP5.Slideback",
+          "bank": "anim_weapon_mp5_slideback"
+        },
+        {
+          "fraction": 0.157303,
+          "event": "Weapon_MP5.Handle",
+          "bank": "anim_weapon_mp5_handle"
+        },
+        {
+          "fraction": 0.235955,
+          "event": "Weapon_MP5.Clipout",
+          "bank": "anim_weapon_mp5_clipout"
+        },
+        {
+          "fraction": 0.617977,
+          "event": "Weapon_MP5.Clipin",
+          "bank": "anim_weapon_mp5_clipin"
+        },
+        {
+          "fraction": 0.674157,
+          "event": "Weapon_MP5.AddAmmo",
+          "bank": "anim_weapon_mp5_addammo"
+        },
+        {
+          "fraction": 0.831461,
+          "event": "Weapon_MP5.Hit",
+          "bank": "anim_weapon_mp5_hit"
+        }
+      ]
+    }
+  },
+  "p90": {
+    "reload": {
+      "commitFraction": 0.594059,
+      "sourceDuration": 3.3667,
+      "source": "animation/anims/viewmodel/rifle/rifle_p90/reload_p90.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.108911,
+          "event": "Weapon_P90.Cliprelease",
+          "bank": "anim_weapon_p90_cliprelease"
+        },
+        {
+          "fraction": 0.138614,
+          "event": "Weapon_P90.Clipout",
+          "bank": "anim_weapon_p90_clipout"
+        },
+        {
+          "fraction": 0.425743,
+          "event": "Weapon_P90.Clipin",
+          "bank": "anim_weapon_p90_clipin"
+        },
+        {
+          "fraction": 0.594059,
+          "event": "Weapon_P90.ClipHit",
+          "bank": "anim_weapon_p90_cliphit"
+        },
+        {
+          "fraction": 0.831683,
+          "event": "Weapon_P90.BoltBack",
+          "bank": "anim_weapon_p90_boltback"
+        },
+        {
+          "fraction": 0.90099,
+          "event": "Weapon_P90.BoltForward",
+          "bank": "anim_weapon_p90_boltforward"
+        }
+      ]
+    }
+  },
+  "ump45": {
+    "reload": {
+      "commitFraction": 0.446602,
+      "sourceDuration": 3.4333,
+      "source": "animation/anims/viewmodel/rifle/rifle_ump45/reload_ump45.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.135922,
+          "event": "Weapon_UMP45.Clipout",
+          "bank": "anim_weapon_ump45_clipout"
+        },
+        {
+          "fraction": 0.417476,
+          "event": "Weapon_UMP45.Clipin",
+          "bank": "anim_weapon_ump45_clipin"
+        },
+        {
+          "fraction": 0.446602,
+          "event": "Weapon_UMP45.AddAmmo",
+          "bank": "anim_weapon_ump45_addammo"
+        },
+        {
+          "fraction": 0.631068,
+          "event": "Weapon_UMP45.BoltBack",
+          "bank": "anim_weapon_ump45_boltback"
+        },
+        {
+          "fraction": 0.699029,
+          "event": "Weapon_UMP45.BoltForward",
+          "bank": "anim_weapon_ump45_boltforward"
+        }
+      ]
+    }
+  },
+  "m249": {
+    "reload": {
+      "commitFraction": 0.654971,
+      "sourceDuration": 5.7,
+      "source": "animation/anims/viewmodel/rifle/rifle_m249/reload_m249.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.099415,
+          "event": "Weapon_M249.Coverup",
+          "bank": "anim_weapon_m249_coverup"
+        },
+        {
+          "fraction": 0.137427,
+          "event": "Weapon_M249.Chain",
+          "bank": "anim_weapon_m249_chain"
+        },
+        {
+          "fraction": 0.233918,
+          "event": "Weapon_M249.Boxout",
+          "bank": "anim_weapon_m249_boxout"
+        },
+        {
+          "fraction": 0.400585,
+          "event": "Weapon_M249.Chain",
+          "bank": "anim_weapon_m249_chain"
+        },
+        {
+          "fraction": 0.464912,
+          "event": "Weapon_M249.Boxin",
+          "bank": "anim_weapon_m249_boxin"
+        },
+        {
+          "fraction": 0.517544,
+          "event": "Weapon_M249.Chain",
+          "bank": "anim_weapon_m249_chain"
+        },
+        {
+          "fraction": 0.654971,
+          "event": "Weapon_M249.Coverdown",
+          "bank": "anim_weapon_m249_coverdown"
+        },
+        {
+          "fraction": 0.777778,
+          "event": "Weapon_M249.pump",
+          "bank": "anim_weapon_m249_pump"
+        }
+      ]
+    }
+  },
+  "negev": {
+    "reload": {
+      "commitFraction": 0.672515,
+      "sourceDuration": 5.7,
+      "source": "animation/anims/viewmodel/rifle/rifle_negev/reload_negev.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.105263,
+          "event": "Weapon_Negev.Coverup",
+          "bank": "anim_weapon_negev_coverup"
+        },
+        {
+          "fraction": 0.239766,
+          "event": "Weapon_Negev.Boxout",
+          "bank": "anim_weapon_negev_boxout"
+        },
+        {
+          "fraction": 0.473684,
+          "event": "Weapon_Negev.Boxin",
+          "bank": "anim_weapon_negev_boxin"
+        },
+        {
+          "fraction": 0.526316,
+          "event": "Weapon_Negev.Chain",
+          "bank": "anim_weapon_negev_chain"
+        },
+        {
+          "fraction": 0.672515,
+          "event": "Weapon_Negev.Coverdown",
+          "bank": "anim_weapon_negev_coverdown"
+        },
+        {
+          "fraction": 0.80117,
+          "event": "Weapon_Negev.Pump",
+          "bank": "anim_weapon_negev_pump"
+        }
+      ]
+    },
+    "reloadEmpty": {
+      "commitFraction": 0.672515,
+      "sourceDuration": 5.7,
+      "source": "animation/anims/viewmodel/rifle/rifle_negev/empty_reload_negev.vnmclip_c",
+      "sounds": [
+        {
+          "fraction": 0.105263,
+          "event": "Weapon_Negev.Coverup",
+          "bank": "anim_weapon_negev_coverup"
+        },
+        {
+          "fraction": 0.22807,
+          "event": "Weapon_Negev.Boxout",
+          "bank": "anim_weapon_negev_boxout"
+        },
+        {
+          "fraction": 0.461988,
+          "event": "Weapon_Negev.Boxin",
+          "bank": "anim_weapon_negev_boxin"
+        },
+        {
+          "fraction": 0.526316,
+          "event": "Weapon_Negev.Chain",
+          "bank": "anim_weapon_negev_chain"
+        },
+        {
+          "fraction": 0.666667,
+          "event": "Weapon_Negev.Coverdown",
+          "bank": "anim_weapon_negev_coverdown"
+        },
+        {
+          "fraction": 0.789474,
+          "event": "Weapon_Negev.Pump",
+          "bank": "anim_weapon_negev_pump"
         }
       ]
     }

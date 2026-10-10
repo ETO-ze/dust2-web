@@ -2,11 +2,12 @@
 // connection belong in this project; the only data source is the R2 binding.
 export const RELEASE_ID = '20261004-cdn-01';
 export const RELEASE_PREFIX = `releases/${RELEASE_ID}/`;
+export const RELEASES = Object.freeze([RELEASE_ID, '20261011-armory-01', '20261011-armory-02']);
 export const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable, no-transform';
 const ORIGINS = new Set(['https://cs2.duskrain.cn', 'https://cs2.duskrain.cn:8443']);
 const METHODS = 'GET, HEAD, OPTIONS';
 const REQUEST_HEADERS = new Set(['range', 'if-range', 'if-match', 'if-none-match', 'if-modified-since', 'if-unmodified-since']);
-const TYPES = Object.freeze({bin: 'application/octet-stream', f32: 'application/octet-stream',
+const TYPES = Object.freeze({bin: 'application/octet-stream', f32: 'application/octet-stream', u8: 'application/octet-stream',
   glb: 'model/gltf-binary', gltf: 'model/gltf+json', gz: 'application/octet-stream', hdr: 'application/octet-stream',
   json: 'application/json; charset=utf-8', mp3: 'audio/mpeg', ogg: 'audio/ogg', png: 'image/png',
   svg: 'image/svg+xml', webp: 'image/webp'});
@@ -15,8 +16,11 @@ export function permittedKey(url) {
   // Existing clients retain either the short resource hash or full map hash.
   // Only that exact cache-buster is accepted; it never changes an object key.
   if ((url.search && !/^\?v=(?:[a-f0-9]{12}|[a-f0-9]{64})$/i.test(url.search)) || url.hash
-      || url.pathname.length > 1024 || !url.pathname.startsWith(`/${RELEASE_PREFIX}`)) return null;
-  const key = url.pathname.slice(1), tail = key.slice(RELEASE_PREFIX.length);
+      || url.pathname.length > 1024) return null;
+  const prefix = RELEASES.map(id => `releases/${id}/`).find(value => url.pathname.startsWith('/' + value));
+  if (!prefix) return null;
+  const key = url.pathname.slice(1), tail = key.slice(prefix.length);
+  if (prefix !== RELEASE_PREFIX && !tail.startsWith('assets/') && tail !== 'release-manifest.json') return null;
   if (tail === 'release-manifest.json') return key;
   if (!/^(?:assets\/|maps\/(?:de_dust2|de_mirage|de_inferno)\/)[a-zA-Z0-9._/-]+$/.test(tail)) return null;
   if (tail.split('/').some(part => !part || part.startsWith('.'))

@@ -20,7 +20,7 @@ async function ensureDownloadOrigin(signal){
   check(signal);const configured=getDownloadOrigin();if(configured)return configured;
   const render=globalThis.__DUST2_PRIVATE_MAP__?.renderUrl;
   const installed=bundled&&base().origin==='https://cs2.duskrain.cn'&&base().pathname.startsWith('/__installed__/');
-  const configURL=render?new URL('../../../download-config.json',render):new URL(installed?'/download-config.json':'download-config.json',base());
+  const configURL=render?new URL('../../../download-config-1.3.0.json',render):new URL(installed?'/download-config.json':bundled?'download-config.json':'download-config-1.3.0.json',base());
   return initDownloadOrigin({configURL,pageURL:document.baseURI,signal});
 }
 async function stores(){try{if(!globalThis.caches)return null;const n=cacheNames();return{assets:await caches.open(n.assets),meta:await caches.open(n.meta)};}catch{return null;}}

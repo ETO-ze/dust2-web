@@ -3,12 +3,13 @@ import { UTILITY_IDS, EQUIPMENT } from '../shared/equipment.js';
 import { getWeapon } from '../shared/weapons.js';
 import { getSkin, DEFAULT_SKINS } from '../shared/skins.js';
 import { AGENT_ASSETS } from '../shared/agent-assets.js';
-import { uiIcon } from './ui-icons.js';
+import { uiIcon, uiIconUrl } from './ui-icons.js';
 import {imageAssetURL} from './image-asset-url.js';
 import { DeathScreen } from './death-screen.js';
 import './death-screen.css';
 import {KillCards} from './kill-cards.js';
 import './kill-cards.css';
+import {HudLoadout} from './hud-loadout.js';
 
 const TEAM_COLORS = { CT: '#6f9ce6', T: '#eabe54' };
 const LOCATION_NAMES = {
@@ -49,6 +50,13 @@ export class HUD {
     this.myId = null;
     this.deathScreen = new DeathScreen(document.getElementById('hud'));
     this.killCards = new KillCards(document.getElementById('hud'));
+    this.loadout = new HudLoadout(document.getElementById('hud'));
+    this.armorDisplay = document.createElement('div');this.armorDisplay.className='hud-armor';
+    this.armorStat=document.createElement('div');this.armorStat.className='hud-armor-stat';
+    this.armorIcon=uiIcon('hudArmor');this.armorValue=document.createElement('span');
+    this.armorStat.append(this.armorIcon,this.armorValue);
+    this.kitIcon=uiIcon('defusekit','拆弹工具');this.kitIcon.classList.add('hud-defusekit');this.armorDisplay.append(this.kitIcon,this.armorStat);
+    document.querySelector('.health-stat')?.append(this.armorDisplay);
     this.snapshotTime = null;
     this.receivedAt = now();
     this.lastRadar = -Infinity;
@@ -87,6 +95,7 @@ export class HUD {
     this.lastSelf = self;
     this.myId = self.id;
     this.killCards.update(snapshot,self);
+    this.loadout.update(self);
     const elapsed = Math.max(0, (time - this.receivedAt) / 1000);
     this.deathScreen.update(snapshot, self, { elapsed, spectating, interactKey,canTakeBot,touch,scoreboardKey, menuKey, nextSpectatorKey, previousSpectatorKey });
     const round = snapshot.round || {};
@@ -105,8 +114,11 @@ export class HUD {
     if (network) network.style.color = time - this.receivedAt > 2500 ? '#f09b83' : '';
     this.text('health', Math.ceil(clamp(self.health, 0, 999)));
     const hud=document.getElementById('hud');
-    if(hud){hud.style.setProperty('--health-ratio',String(clamp(self.health,0,100)/100));hud.style.setProperty('--ammo-ratio',String(weapon.magazine?clamp(number(self.ammo)/weapon.magazine,0,1):0));hud.dataset.lowHealth=String(self.alive&&number(self.health)<=25);}
+    if(hud){hud.style.setProperty('--health-ratio',String(clamp(self.health,0,100)/100));hud.style.setProperty('--ammo-ratio',String(weapon.magazine?clamp(number(self.ammo)/weapon.magazine,0,1):0));hud.dataset.lowHealth=String(self.alive&&number(self.health)<=25);hud.dataset.phase=snapshot.round?.phase||'waiting';hud.dataset.bombPlanted=String(snapshot.bomb?.state==='planted');hud.dataset.ammoVisible=String(weapon.slot<3);}
     this.text('armor', `护甲 ${Math.round(clamp(self.armor, 0, 999))}${self.helmet?' · 头盔':''}${self.defuseKit?' · 拆弹器':''}`);
+    this.armorValue.textContent=String(Math.round(clamp(self.armor,0,999)));this.armorDisplay.setAttribute('aria-label',this.elements.armor?.textContent||'');
+    if(this.armorHelmet!==!!self.helmet){this.armorHelmet=!!self.helmet;this.armorIcon.src=uiIconUrl(self.helmet?'hudHelmet':'hudArmor');}
+    this.kitIcon.hidden=!self.defuseKit;
     this.text('money', `$ ${Math.max(0, Math.round(number(self.money))).toLocaleString('en-US')}`);
     const heldSkin=getSkin(self.skinId||DEFAULT_SKINS[self.weapon]),knifeName=self.weapon==='knife'&&heldSkin?.animationFamily?heldSkin.name.split(' · ')[0]:weapon.name;
     this.text('weapon-name', knifeName);this.text('slot3',self.weapon==='knife'?'3 '+knifeName:'3 近战武器');

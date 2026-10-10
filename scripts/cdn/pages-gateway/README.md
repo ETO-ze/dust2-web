@@ -47,6 +47,8 @@ plan rather than replacing it.
 
 CORS is not access control. Enabling production makes these asset URLs readable
 by anyone who knows them, including through the production `pages.dev` address.
+The existing map release stays at `20261004-cdn-01`; the 1.3.0 common asset catalog uses `20261011-armory-02`. The gateway retains the earlier common asset namespace for compatibility and exposes no maps under either armory prefix.
+
 It does not publish game HTML, WSS endpoints, local manifests or the private
 game-entry path. Decide whether the three maps' asset bytes may be publicly
 addressable before enabling. If they must remain restricted, add and test an

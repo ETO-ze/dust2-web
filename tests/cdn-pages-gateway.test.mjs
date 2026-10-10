@@ -324,3 +324,11 @@ test('actual loopback HTTP passes the existing complete public acceptance verifi
   assert.equal(report.verifiedFiles, 2); assert.equal(report.publicManifest.ok, true);
   assert.equal(report.browserAcceptance.status, 'not-run'); assert.equal(report.operatorDownloadConfig.fallbackToGameServer, false);
 });
+
+test('armory release serves common assets only and preserves the existing map release',()=>{
+ assert.equal(permittedKey(new URL('releases/20261011-armory-01/assets/weapons/test.glb',baseURL)),'releases/20261011-armory-01/assets/weapons/test.glb');
+ assert.equal(permittedKey(new URL('releases/20261011-armory-01/maps/de_mirage/map.json',baseURL)),null);
+ assert.equal(permittedKey(new URL('releases/20261011-armory-02/assets/weapons/test.glb',baseURL)),'releases/20261011-armory-02/assets/weapons/test.glb');
+ assert.equal(permittedKey(new URL('releases/20261011-armory-02/maps/de_mirage/map.json',baseURL)),null);
+ assert.equal(permittedKey(new URL('releases/20261004-cdn-01/maps/de_mirage/map.json',baseURL)),'releases/20261004-cdn-01/maps/de_mirage/map.json');
+});

@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
-  "version": "5a82c6eead18b7e0",
-  "baseURL": "https://cs2.duskrain.cn/",
-  "baseManifestVersion": "00c733fb22f60bd0",
-  "totalBytes": 465989836,
+  "version": "75faa91f691be9f9",
+  "baseURL": "https://downloads.duskrain.cn/releases/20261011-armory-02/",
+  "baseManifestVersion": "8959d1b507b5efe0",
+  "totalBytes": 510077100,
   "files": [
     {
       "path": "assets/asset-manifest-mobile.json",
-      "bytes": 155531,
-      "sha256": "dc41d963ad8ead756212cbab22efa7dd430a32efb8b2135c3bf727880fe826eb",
+      "bytes": 179223,
+      "sha256": "303e6a03b44831cb5396dcffed8d5ead0579f6fa6b7c287ea1308ebea818e91c",
       "group": "metadata"
     },
     {
       "path": "assets/asset-manifest.json",
-      "bytes": 154439,
-      "sha256": "ad0b7b5a853838244e0fb6e9ce6f9785a13d73ee91d3de1a9f18f1da52eed560",
+      "bytes": 178131,
+      "sha256": "62f30518f72c32f6e69eedc2440a44c3814d6c65bc8cfbec2cb207657dab465b",
       "group": "metadata"
     },
     {
@@ -51,6 +51,36 @@
       "path": "assets/audio/cs2/ak47_distant.mp3",
       "bytes": 22654,
       "sha256": "31b176401c173c2c536a5200f5005c67ab250e441857e7babe4ac5d97d3ae48f",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/aug_01.mp3",
+      "bytes": 37084,
+      "sha256": "88969e9c61bbd587316ef0d6e9a81201ff15180915dfda1d34635e651e329d0b",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/aug_02.mp3",
+      "bytes": 33327,
+      "sha256": "9aa1427f486ea71f75cff82b4df8f4f7b1a0602b4738b41a4a195a66a82c0f6d",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/aug_clipin_01.mp3",
+      "bytes": 4035,
+      "sha256": "83689f9f31f4769152598891867c55143c959c204df4bdabd5bf7cde48628b09",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/aug_clipout.mp3",
+      "bytes": 3461,
+      "sha256": "82472dda9d92aeacfc475cccae0d8fcb879dbeed21cf672ad1dc13eeba76dc2c",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/aug_distant.mp3",
+      "bytes": 16670,
+      "sha256": "37df917d7b675961c8ed6e34dc38040532d4de3efcacdde8411ae24bce5411e7",
       "group": "audio"
     },
     {
@@ -126,6 +156,24 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/cz75_01.mp3",
+      "bytes": 26250,
+      "sha256": "e966d202832fa844770ced98508210f693ef1c806e11f6dd303f4972c16794b4",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/cz75_02.mp3",
+      "bytes": 27270,
+      "sha256": "f2b0c629cb7dc56a8fc4978f8954805b2ee9fca5b8180c74f9ce5b650faa86d1",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/cz75a-1-distant.mp3",
+      "bytes": 15032,
+      "sha256": "3d9aa011f09a318e5a65d498f60586773c835653bb480251500cfbebaac346d2",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/de_clipout.mp3",
       "bytes": 4870,
       "sha256": "a86c11f015063ff8c3405d521b8d398bba5a81783e2f5735bef4656d9a092bc6",
@@ -186,6 +234,36 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/famas_01.mp3",
+      "bytes": 34891,
+      "sha256": "69ceb7267f1ee89a6bb178439ea21f80fb58a167b6ecf77197738f16365262c6",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/famas_02.mp3",
+      "bytes": 41851,
+      "sha256": "9a58e81f3ca052eada1724e9f9541f11f0442cb133d37cfce0c7f750ed3ccfa9",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/famas_clipin.mp3",
+      "bytes": 5413,
+      "sha256": "a820578be901e435f99560d428e9a6a6759a1e1b9b9652cecadf21ceec30a610",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/famas_clipout.mp3",
+      "bytes": 7841,
+      "sha256": "492d09dfb4f759b4f40388d4aa1b31a64525ad219cb13475450d053598e11427",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/famas_distant_01.mp3",
+      "bytes": 17724,
+      "sha256": "e143541784923575e5f1c19a637f645b27beb58141ee8f61c154ef9726b266b6",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/fiveseven_01.mp3",
       "bytes": 28578,
       "sha256": "daa82754a9d2fc86e9f4352d8372c067c8a48d4afeb309da593ec0b992e6d5a0",
@@ -219,6 +297,42 @@
       "path": "assets/audio/cs2/flashbang_explode2.mp3",
       "bytes": 35143,
       "sha256": "95f7ee37479dc6a53bf7bc62f9c6488060cc47a1ea86f19aab0a63586fa563f6",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/g3sg1_01.mp3",
+      "bytes": 51475,
+      "sha256": "ff57ab9993d1706ec64aab55371ef851ea4255ee0324f91e93aa62ba6e901c39",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/g3sg1_02.mp3",
+      "bytes": 50954,
+      "sha256": "63461b83628c682440649cedfc69f7db63324811e3ef7db53b2b5b0f50fce1ae",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/g3sg1_clipin.mp3",
+      "bytes": 4714,
+      "sha256": "9810fa48c44334b4a564ce2823f44d48ba19859aaf441fb0c982e6cd9abdc26e",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/g3sg1_clipout.mp3",
+      "bytes": 5911,
+      "sha256": "2740a7ab9692d447590ca0862c4852a42da6097351fc9c97ed825c905bc1f707",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/g3sg1_distant_01.mp3",
+      "bytes": 31597,
+      "sha256": "d18132f3895407607258c93a3d93a9d1ee908b71ca4f057adfbf7316d7bdbe73",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/g3sg1_distant_02.mp3",
+      "bytes": 35748,
+      "sha256": "b0645752cde91ff8df1f66f4bef050bffee9e0a05ede8e4487beed57df94c593",
       "group": "audio"
     },
     {
@@ -330,6 +444,36 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/hkp2000_01.mp3",
+      "bytes": 32540,
+      "sha256": "0b4615fb73b496645b9285920d9766a7eda1aeca4e210c0501be6fd7138168d2",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/hkp2000_02.mp3",
+      "bytes": 31960,
+      "sha256": "a1a538d4a2feabeeda6d2c63166f7fe72573276f369401bec92f04a824e8139e",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/hkp2000_clipin.mp3",
+      "bytes": 2418,
+      "sha256": "b0d0c054e8f526db70dab157f7607de5cae5fbaab2c7ecdb306e8ed5819a751a",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/hkp2000_clipout.mp3",
+      "bytes": 4584,
+      "sha256": "a96b0311f17bb43e6c4e3585223c3659b8111262d698a4e82d5afadbca33d770",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/hkp2000-1-distant.mp3",
+      "bytes": 15711,
+      "sha256": "d760dd90db8d99faab56c24401300ff01c6a7296f9057084dd66604b5effb1d4",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/kevlar_01.mp3",
       "bytes": 4660,
       "sha256": "1f6e180a82dd234f58dbf0cc372bebaa8b53259050b11146fd11c0867a11a2bd",
@@ -387,6 +531,24 @@
       "path": "assets/audio/cs2/knife_swish_light_03.mp3",
       "bytes": 4505,
       "sha256": "73852bf73d7550680cec8031e58b8a8fef60fcfb6fc91ce6976f1112a9ba9b5b",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/m249_01.mp3",
+      "bytes": 20799,
+      "sha256": "45152908ecd191a0c95c343f169dceeb213476a944ddf9aa9a13a53618e949dd",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/m249_02.mp3",
+      "bytes": 18842,
+      "sha256": "bc1b81e9782e589419254385864e0cb526423d9bd598647ce0cca609a4224bb3",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/m249-1-distant.mp3",
+      "bytes": 14300,
+      "sha256": "8a8629c7c2600e8e347202786b6907ae16225efd7554a6e1494ad5b3a00290a0",
       "group": "audio"
     },
     {
@@ -517,8 +679,26 @@
     },
     {
       "path": "assets/audio/cs2/manifest.json",
-      "bytes": 146226,
-      "sha256": "6227f0c7a9c92b526e365eafd824406a1c424af33324b324fcfd97985a200dcd",
+      "bytes": 194502,
+      "sha256": "13c7189ec5d7dcb20878c5ac00fc22b9d6749bc66d146eef39c3c0ad9e5827d7",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/mp5_01.mp3",
+      "bytes": 18161,
+      "sha256": "614fd695db160c4a2940b52232c20e539d25a7661dc1216353ba21267c67ec3d",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/mp5_clipin.mp3",
+      "bytes": 2105,
+      "sha256": "8f57e2cca5c9bf9c5fd6af70a1edaecc9ad8e1e54c8d2fd9855eee2836588d3e",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/mp5_clipout.mp3",
+      "bytes": 3956,
+      "sha256": "a1235338bef9f93e1c67035ad1d5082d87d338fc209585a88c639dd918f1d881",
       "group": "audio"
     },
     {
@@ -600,6 +780,24 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/negev_01.mp3",
+      "bytes": 62345,
+      "sha256": "23d567dfd17da02c5f61b9688b8449374e71b38dd71fe3d708eedb70103af723",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/negev_02.mp3",
+      "bytes": 56438,
+      "sha256": "be0d7a571a26bbb8d5ac576fc9ee87cee5317109159fd6aba126287b3a78b9d0",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/negev-1-distant.mp3",
+      "bytes": 15109,
+      "sha256": "31e8e3e388a5123a297be0a232dbb412aa95260528438b0b5bf4fe9d786b9c81",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/nova_insertshell_01.mp3",
       "bytes": 5860,
       "sha256": "0004ea44edd69b7e4b0c35aa4e7eed7aeb5eb33d42e7eea7a1057a9472015812",
@@ -648,6 +846,36 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/p90_01.mp3",
+      "bytes": 21952,
+      "sha256": "ea0225287795171d5089ade9bcca7a584c5d02908da87a76441a896bbbbd6a0d",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/p90_02.mp3",
+      "bytes": 23438,
+      "sha256": "e6e921de4050d72f243fe5d0d999862b170fc000ad768223387273e9052c16e0",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/p90_clipin.mp3",
+      "bytes": 7426,
+      "sha256": "f4159dac0a33b43ff3010f01e60c491eeaab57e32f7be1b655400a3e2ea37fba",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/p90_clipout.mp3",
+      "bytes": 4662,
+      "sha256": "cb940f04d69d225f9457036540671dc9e10da3c723448cfa6137322625260642",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/p90-1-distant.mp3",
+      "bytes": 18546,
+      "sha256": "584dd5245b4b88faf21c47566f448f5ec91042774828b92fba3d5766473bb77b",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/physics_glass_glass_bottle_impact_hard1.mp3",
       "bytes": 4783,
       "sha256": "9890765885750c6c439e67166e67490253b908ed157b8e0df48294004d1b02dc",
@@ -669,6 +897,30 @@
       "path": "assets/audio/cs2/physics_weapons_weapon_incendiary_impact_02.mp3",
       "bytes": 4764,
       "sha256": "a119e54d3f5ef8d6847b6e7933f4a2dd578dd1c1b32fa3dbcae0515705dda990",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/revolver_clipin.mp3",
+      "bytes": 8520,
+      "sha256": "51ef9a3f8552a08c91544fdb63c86ec4abd479dbfcbdaf1cfe7153bc7d977201",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/revolver_clipout.mp3",
+      "bytes": 9774,
+      "sha256": "c44b99767b0426b589c00e48c0dfff4b272fcb355fbeea2f20daaec420282e8a",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/revolver-1_01.mp3",
+      "bytes": 53768,
+      "sha256": "e030fd42e2f23912c57dadc3280b236e43d77fc634b7267f2f24fd3e60ed3557",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/revolver-1_distant.mp3",
+      "bytes": 21958,
+      "sha256": "5cf07f661d49661b4704803f67a560d4f1f5b115e6291bed15a5790dcf88698a",
       "group": "audio"
     },
     {
@@ -810,6 +1062,30 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/ump45_02.mp3",
+      "bytes": 30168,
+      "sha256": "42fa54596b84ae07d04ea6c190ec7fc3f3935451c4369f660bbeb0a76b7716ae",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/ump45_clipin.mp3",
+      "bytes": 2835,
+      "sha256": "1195a6d5e5a471bd024a7c3608f657d0f11c7bbc555d5a3d2fda6df4763b0baa",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/ump45_clipout.mp3",
+      "bytes": 4504,
+      "sha256": "98652e8a4cfe12992441078e55d47cdcaa7c37b874b02e23aa2d677c72324f4c",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/ump45-1-distant.mp3",
+      "bytes": 19663,
+      "sha256": "f0c9ddeb3bc4e5beb57117cf381070a83adc81d2df97bfa775c2a25baedbbb69",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/usp_01.mp3",
       "bytes": 29934,
       "sha256": "c6c678d047d520cdcd337d6d7f474621aec36a1aa99ca225a4ef49bb08278991",
@@ -915,6 +1191,42 @@
       "path": "assets/audio/cs2/weapons_ak47_ak47_inspect_f245.mp3",
       "bytes": 9539,
       "sha256": "6d6b1da23ef5ef465b7317f628e73fe6b18f8580f92a6aa9f8983d703901bf0d",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_aug_aug_addammo_01.mp3",
+      "bytes": 5704,
+      "sha256": "59323f807c4a0aa05bfb6714ac845d25cacfc7bcd4439c4560f270df3e80b500",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_aug_aug_boltpull.mp3",
+      "bytes": 4061,
+      "sha256": "f928d49cfed0272dd58fe6f4304aee4db0bbe9602a42fa89563248d52eba1209",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_aug_aug_boltrelease.mp3",
+      "bytes": 5832,
+      "sha256": "6e89d872819b8f05faaa0a994bde9ee83b1ce5c95ec99f31928851f856dd58d9",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_aug_aug_clipin_01.mp3",
+      "bytes": 4035,
+      "sha256": "83689f9f31f4769152598891867c55143c959c204df4bdabd5bf7cde48628b09",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_aug_aug_clipout.mp3",
+      "bytes": 3461,
+      "sha256": "82472dda9d92aeacfc475cccae0d8fcb879dbeed21cf672ad1dc13eeba76dc2c",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_aug_aug_draw.mp3",
+      "bytes": 13451,
+      "sha256": "732d11615304fcc135f249719a86c2f3e95b0b08ca65051c4e94079f132a9047",
       "group": "audio"
     },
     {
@@ -1062,6 +1374,18 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/weapons_cz75a_cz75_addammo_01.mp3",
+      "bytes": 2520,
+      "sha256": "3f86071d47aecbf50fe80502e7cbcd377cc4a2808a50a5848bef416dfe96db02",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_cz75a_cz75_clipin_01.mp3",
+      "bytes": 2626,
+      "sha256": "6664474b78989e3eb28f7ceeded7b02b143638bb37b238fc4b1ae7fc4ff6c550",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/weapons_deagle_de_clipout.mp3",
       "bytes": 4870,
       "sha256": "a86c11f015063ff8c3405d521b8d398bba5a81783e2f5735bef4656d9a092bc6",
@@ -1170,6 +1494,48 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/weapons_famas_famas_addammo.mp3",
+      "bytes": 2132,
+      "sha256": "010842652a01ff0646578417ebd77b62b6fe481226daae2cf4b685d94116f976",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_famas_famas_boltback.mp3",
+      "bytes": 4348,
+      "sha256": "89d03d6b4f7d610d701642ec64514ee2c41af5f3836196f253ffac50c371d057",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_famas_famas_boltforward.mp3",
+      "bytes": 3722,
+      "sha256": "f708aedcb6f2b4105198536059424cff7ee3aa98b56a6e1ce3d3a98b1c3b2ec1",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_famas_famas_cliphit.mp3",
+      "bytes": 3614,
+      "sha256": "b9d56a7185f5e0ca4a548931df871782f94d654278075514143243f13e27a608",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_famas_famas_clipin.mp3",
+      "bytes": 5413,
+      "sha256": "a820578be901e435f99560d428e9a6a6759a1e1b9b9652cecadf21ceec30a610",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_famas_famas_clipout.mp3",
+      "bytes": 7841,
+      "sha256": "492d09dfb4f759b4f40388d4aa1b31a64525ad219cb13475450d053598e11427",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_famas_famas_draw.mp3",
+      "bytes": 12591,
+      "sha256": "13b54bad411100bbf44cff760c82cf6e05a8b90b7a3dd2831ca11af31171c911",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/weapons_fiveseven_fiveseven_addammo_01.mp3",
       "bytes": 3120,
       "sha256": "f4bdc413e8a06f426cfd5c0d9acb214f63801df3dac71c1be644c09c78d86482",
@@ -1245,6 +1611,42 @@
       "path": "assets/audio/cs2/weapons_foley_gear_throw_10.mp3",
       "bytes": 12952,
       "sha256": "46f27129ef23157ad9332c8670ca8f3585911c9ff135709aa7917a0ef47afb9b",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_g3sg1_g3sg1_addammo_01.mp3",
+      "bytes": 2625,
+      "sha256": "4ef2aedc016dacbbe30331674f1297ab24552a9de5a9d951a59b8061a3456ab7",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_g3sg1_g3sg1_clipin.mp3",
+      "bytes": 4714,
+      "sha256": "9810fa48c44334b4a564ce2823f44d48ba19859aaf441fb0c982e6cd9abdc26e",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_g3sg1_g3sg1_clipout.mp3",
+      "bytes": 5911,
+      "sha256": "2740a7ab9692d447590ca0862c4852a42da6097351fc9c97ed825c905bc1f707",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_g3sg1_g3sg1_draw.mp3",
+      "bytes": 8593,
+      "sha256": "9ae31d66e4c57ba085165aaaca03f8b9218b3c216040b7e1a89b921f209d3d5e",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_g3sg1_g3sg1_slideback.mp3",
+      "bytes": 3670,
+      "sha256": "6fa223bd3084988da05f8f634e204359bb609b72f6c36a96c2447100f1b1177f",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_g3sg1_g3sg1_slideforward.mp3",
+      "bytes": 6587,
+      "sha256": "60ce2b8ae03185742d24bbb6d101b33d23c1d9d69b2dae74765ba811db892f9f",
       "group": "audio"
     },
     {
@@ -1326,6 +1728,42 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/weapons_hkp2000_hkp2000_addammo_01.mp3",
+      "bytes": 2704,
+      "sha256": "bc63a725fcbf9a1a802fbef472289373e4233e1c24e0673d24c5d548b64d89bc",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_hkp2000_hkp2000_clipin.mp3",
+      "bytes": 2418,
+      "sha256": "b0d0c054e8f526db70dab157f7607de5cae5fbaab2c7ecdb306e8ed5819a751a",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_hkp2000_hkp2000_clipout.mp3",
+      "bytes": 4584,
+      "sha256": "a96b0311f17bb43e6c4e3585223c3659b8111262d698a4e82d5afadbca33d770",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_hkp2000_hkp2000_draw.mp3",
+      "bytes": 15039,
+      "sha256": "270f82a413bf9d86c48bbb060c9497bf0cd9b2b442c0db9027325fa4e3bef29b",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_hkp2000_hkp2000_slideback.mp3",
+      "bytes": 4711,
+      "sha256": "f131f2167bb87d9fa3254d6ea1d6d6708cca2ad93a85157c20a276c427dc8566",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_hkp2000_hkp2000_sliderelease.mp3",
+      "bytes": 3097,
+      "sha256": "153d2d1561ca9bb38e937da4f301486d537021152f9c1e91662ec7904e6a7903",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/weapons_incgrenade_inc_grenade_detonate_1.mp3",
       "bytes": 63321,
       "sha256": "18bab420a08c7c1807a6587f8250306a967daa3e19445f2afdabc40c6598c31b",
@@ -1401,6 +1839,48 @@
       "path": "assets/audio/cs2/weapons_knife_weapon_knife_draw_small_clean_02.mp3",
       "bytes": 8863,
       "sha256": "77db0f0b4d34d16f57f446a0e3641f385d39434f4976a8a7672aa8d699e21c1f",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_m249_m249_boxin.mp3",
+      "bytes": 10709,
+      "sha256": "929771bfebf2ef0fd3749f5ca8eecadb2c9c08643bdc281613df16b16bb55925",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_m249_m249_boxout.mp3",
+      "bytes": 3617,
+      "sha256": "b18316d56243889d8141ac4c1e89991b57c98f9ac5423fb8c4e335a62297e2ef",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_m249_m249_chain.mp3",
+      "bytes": 12072,
+      "sha256": "453688813011211675de108a6d24ab1e9e35d617fecaabf896f54ef17749a6cd",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_m249_m249_coverdown.mp3",
+      "bytes": 4400,
+      "sha256": "ef7819c2b76420a73165c8af532a9f20f471dd4548d5453f6061938049dca789",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_m249_m249_coverup.mp3",
+      "bytes": 4713,
+      "sha256": "b2276c89501d1aba56ccd73ff80665a0ce61a285ce85d5a9b0684e4907a9de67",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_m249_m249_draw.mp3",
+      "bytes": 6539,
+      "sha256": "c4a62d3c1dd3a7c3752123754987f845bde16618a8b7d33d7d483812bb04eea8",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_m249_m249_pump.mp3",
+      "bytes": 8025,
+      "sha256": "fd207911b8673779b53729a2d22585f511d005863e4ae7a914b534381136154b",
       "group": "audio"
     },
     {
@@ -1578,6 +2058,42 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/weapons_mp5_mp5_addammo_01.mp3",
+      "bytes": 2052,
+      "sha256": "fb2976324511cd6dc3472e067277e5bd9c15e5750ba8d8e5d0ec9748aa577d49",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_mp5_mp5_clipin.mp3",
+      "bytes": 2105,
+      "sha256": "8f57e2cca5c9bf9c5fd6af70a1edaecc9ad8e1e54c8d2fd9855eee2836588d3e",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_mp5_mp5_clipout.mp3",
+      "bytes": 3956,
+      "sha256": "a1235338bef9f93e1c67035ad1d5082d87d338fc209585a88c639dd918f1d881",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_mp5_mp5_draw.mp3",
+      "bytes": 12121,
+      "sha256": "88c381d91e070c588881c7eb4bd6f683b93f4a29505229cd8db3a04a4e5dc14c",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_mp5_mp5_hit.mp3",
+      "bytes": 3721,
+      "sha256": "1dc2b52b097742ba2d66c1cfffcd3967ea749cd15f88a0c5e2136b93677644be",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_mp5_mp5_slideback.mp3",
+      "bytes": 3174,
+      "sha256": "d6e17ca19c023e79c11cd4f05b8c7ddd450236e3df9910fc2fc9616c5f65273c",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/weapons_mp7_mp7_addammo_01.mp3",
       "bytes": 3509,
       "sha256": "3ffc6858b1c91ec9800df79b07fa6917aa7c2b9e9df77c2659098fecbbf391c4",
@@ -1650,6 +2166,48 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/weapons_negev_negev_boxin.mp3",
+      "bytes": 10552,
+      "sha256": "cf0047c2e99f5222e033c06b46910def3a49feb8083e561b20363735cecc60a6",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_negev_negev_boxout.mp3",
+      "bytes": 3617,
+      "sha256": "b18316d56243889d8141ac4c1e89991b57c98f9ac5423fb8c4e335a62297e2ef",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_negev_negev_chain.mp3",
+      "bytes": 12072,
+      "sha256": "453688813011211675de108a6d24ab1e9e35d617fecaabf896f54ef17749a6cd",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_negev_negev_coverdown.mp3",
+      "bytes": 4400,
+      "sha256": "ef7819c2b76420a73165c8af532a9f20f471dd4548d5453f6061938049dca789",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_negev_negev_coverup.mp3",
+      "bytes": 4713,
+      "sha256": "b2276c89501d1aba56ccd73ff80665a0ce61a285ce85d5a9b0684e4907a9de67",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_negev_negev_draw.mp3",
+      "bytes": 6539,
+      "sha256": "c4a62d3c1dd3a7c3752123754987f845bde16618a8b7d33d7d483812bb04eea8",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_negev_negev_pump.mp3",
+      "bytes": 8025,
+      "sha256": "fd207911b8673779b53729a2d22585f511d005863e4ae7a914b534381136154b",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/weapons_nova_nova_addammo_01.mp3",
       "bytes": 2052,
       "sha256": "79376ed1e880b5bac32f456bdd5a83defc12c37caf85002dea95e25b3bc72377",
@@ -1719,6 +2277,84 @@
       "path": "assets/audio/cs2/weapons_p250_p250_sliderelease.mp3",
       "bytes": 2991,
       "sha256": "4b8c2688313b7a5fd1525d4be96d00b1404bcbb3fea34a4bbd98649cefb1cf0d",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_p90_p90_boltback.mp3",
+      "bytes": 3410,
+      "sha256": "ad225182d578eb674cbec4a946da0ef0efc16d5279b7939a9472f202108cfef8",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_p90_p90_boltforward.mp3",
+      "bytes": 3826,
+      "sha256": "023fa8680d3bad50e668a599d8393ae733b3c63b8099e1889cbf6b9fc4435a0d",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_p90_p90_cliphit.mp3",
+      "bytes": 3018,
+      "sha256": "699bdd9b7be334e82052e52918ca1bc6df5ef1e54534ccdf2a0b36e15e1fce7c",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_p90_p90_clipin.mp3",
+      "bytes": 7426,
+      "sha256": "f4159dac0a33b43ff3010f01e60c491eeaab57e32f7be1b655400a3e2ea37fba",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_p90_p90_clipout.mp3",
+      "bytes": 4662,
+      "sha256": "cb940f04d69d225f9457036540671dc9e10da3c723448cfa6137322625260642",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_p90_p90_cliprelease.mp3",
+      "bytes": 4270,
+      "sha256": "ed17326c010248e8c412b9666df6b8e1fe89a0aed71aabdde41427e9b714cc60",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_p90_p90_draw.mp3",
+      "bytes": 12378,
+      "sha256": "a6436eda056d8f01c51eeb6608fbffa6b2cdd0d0d5efcc91b3e33a5fbc949020",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_revolver_revolver_clipin.mp3",
+      "bytes": 8520,
+      "sha256": "51ef9a3f8552a08c91544fdb63c86ec4abd479dbfcbdaf1cfe7153bc7d977201",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_revolver_revolver_clipout.mp3",
+      "bytes": 9774,
+      "sha256": "c44b99767b0426b589c00e48c0dfff4b272fcb355fbeea2f20daaec420282e8a",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_revolver_revolver_draw.mp3",
+      "bytes": 9119,
+      "sha256": "557d96c5134466d84f55e9ef01af0e4cc71a93afc7b9b2ac3a09ca75f9bcac8e",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_revolver_revolver_prepare.mp3",
+      "bytes": 5497,
+      "sha256": "7fb81272ff43426681127887d4ee3bdf06f390231f57fd3bcf383f296a4a7562",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_revolver_revolver_sideback.mp3",
+      "bytes": 8123,
+      "sha256": "477972f33238a04fad6e936b9e9e52534be08faf12175a9c25e981f4efd6dbbd",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_revolver_revolver_siderelease.mp3",
+      "bytes": 5391,
+      "sha256": "9c3d606eb848afe2150d0f68742cbcd5954e722adff4383f20ae9c34dd806c14",
       "group": "audio"
     },
     {
@@ -1956,6 +2592,42 @@
       "group": "audio"
     },
     {
+      "path": "assets/audio/cs2/weapons_ump45_ump45_addammo_01.mp3",
+      "bytes": 3511,
+      "sha256": "9489af88cc4527bcfbfbfb08432019a4ef94fbcdf3d8b89d1bce9997603132ca",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_ump45_ump45_boltback.mp3",
+      "bytes": 3723,
+      "sha256": "e280a87a2e4adbb6b3de201cbab066aa54214e4c7ca4aeb7afe261c2409ca988",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_ump45_ump45_boltforward.mp3",
+      "bytes": 3097,
+      "sha256": "c5336d585142d72cde4b0f4a14f006b15c3b479e21603137171eed6965a48f93",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_ump45_ump45_clipin.mp3",
+      "bytes": 2835,
+      "sha256": "1195a6d5e5a471bd024a7c3608f657d0f11c7bbc555d5a3d2fda6df4763b0baa",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_ump45_ump45_clipout.mp3",
+      "bytes": 4504,
+      "sha256": "98652e8a4cfe12992441078e55d47cdcaa7c37b874b02e23aa2d677c72324f4c",
+      "group": "audio"
+    },
+    {
+      "path": "assets/audio/cs2/weapons_ump45_ump45_draw.mp3",
+      "bytes": 11544,
+      "sha256": "2b2652f324b0c3fe83e84760c035a3b90b42357ae48b9ea88a8af72357655f25",
+      "group": "audio"
+    },
+    {
       "path": "assets/audio/cs2/weapons_usp_usp_addammo_01.mp3",
       "bytes": 3066,
       "sha256": "f242373e2fa7184269b007df6354925c4422e04df3a4194a3027ad400c86aa71",
@@ -2113,117 +2785,9 @@
     },
     {
       "path": "assets/audio/music/manifest.json",
-      "bytes": 15580,
-      "sha256": "4b725a7b07eb84ad212e465139d406d6ac7184e36bfd27d915ffa5926ca550e9",
+      "bytes": 7077,
+      "sha256": "1fd7fce0b117076e89be885ab6420f6bcec6c77504a95a6f6226162fddaf48db",
       "group": "audio"
-    },
-    {
-      "path": "assets/audio/music/optional/blitzkids_01/bombplanted.mp3",
-      "bytes": 644040,
-      "sha256": "97b9974cabb2fba6adf85df24aac0d833d7f693f4274359e196bdc95189a3d63",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/blitzkids_01/bombtenseccount.mp3",
-      "bytes": 195501,
-      "sha256": "687ffd8c59a5a34ef8dec870ef7d592a1644ef891419975b9c4e6f33c6f5c7e4",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/blitzkids_01/deathcam.mp3",
-      "bytes": 73883,
-      "sha256": "430a51990ecacb8352b6bcfb6e40be7868698ec6c63e3112822dbdf9f672943c",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/blitzkids_01/endofmatch.mp3",
-      "bytes": 971579,
-      "sha256": "947e5044c468d014c68c654bf1a8e92c7b437ba5a3b590fbe1661097dbba8d9f",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/blitzkids_01/lostround.mp3",
-      "bytes": 151079,
-      "sha256": "9ddc3065a93af9948f7aa0ffb04d521f4d91cea78656a5d41529d18b930ad04b",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/blitzkids_01/roundmvpanthem_01.mp3",
-      "bytes": 146159,
-      "sha256": "3f1312d1225c1ac6544f5246c8e75391010f6feee6f9c4333ef6c81ce490b422",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/blitzkids_01/roundtenseccount.mp3",
-      "bytes": 196423,
-      "sha256": "4387a05ee7265c41a6808385cc2e50648dd8ca9796c20494185deecd34db44a2",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/blitzkids_01/startround_01.mp3",
-      "bytes": 252640,
-      "sha256": "57625c5640854dfa735910aa9c0fc9d4bc2fd13d35f58f6d697e9ed7d75fc13a",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/blitzkids_01/wonround.mp3",
-      "bytes": 157033,
-      "sha256": "f32cd30874deb0840cfd0495f65e85ff05f1a6f0c18653824c7f5553ac924ebf",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/isoxo_01/bombplanted.mp3",
-      "bytes": 855357,
-      "sha256": "e7e59fa1e8c89d6566a70bc1d9d0a931d928cb160e7c62b8f4927d09b84c12f9",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/isoxo_01/bombtenseccount.mp3",
-      "bytes": 185288,
-      "sha256": "a2a947ece3db040807c293e875cf01d2932abd2aadf9917923b071b8152f7663",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/isoxo_01/deathcam.mp3",
-      "bytes": 144033,
-      "sha256": "d7312cbf6fcb77a3edb7629eee15c256288003c0d89783ea01af8099198d9c85",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/isoxo_01/endofmatch.mp3",
-      "bytes": 817462,
-      "sha256": "eae02fe88e0f400a22286d8547e3e9e92003a32deea3d42673db697d2335950b",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/isoxo_01/lostround.mp3",
-      "bytes": 284063,
-      "sha256": "2d0ed2c191285e9af3c9e66ed33c5d9964cf45008929b7b349513034474f5468",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/isoxo_01/roundmvpanthem_01.mp3",
-      "bytes": 212359,
-      "sha256": "987930ca41d2b26841783426ec34ec43fccd43815efc01408932e620a09d8524",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/isoxo_01/roundtenseccount.mp3",
-      "bytes": 319851,
-      "sha256": "e768521241ec1164b5988640b665d2168a6f74afdf4657d0ff03154b8e84b78c",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/isoxo_01/startround_01.mp3",
-      "bytes": 550582,
-      "sha256": "7f3f08d4e446b064d82d3607d04fe4cfd42afb188954727f49ae2881f5d743f5",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/isoxo_01/wonround.mp3",
-      "bytes": 295578,
-      "sha256": "f868f54c3371631e8157537593c0fd8f032403066dc82be0487ef852d1fca025",
-      "group": "music"
     },
     {
       "path": "assets/audio/music/optional/neckdeep_01/bombplanted.mp3",
@@ -2283,60 +2847,6 @@
       "path": "assets/audio/music/optional/neckdeep_01/wonround.mp3",
       "bytes": 204787,
       "sha256": "04d1e1441a249670f46bd57a1d1dbd2dde5e4a0e9d5e1c134331c0d0f9f4c5a7",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/neckdeep_02/bombplanted.mp3",
-      "bytes": 715002,
-      "sha256": "d239f49f82c7c1c75f576fcd05db0bb89541815514e1eb5545e9118458201d60",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/neckdeep_02/bombtenseccount.mp3",
-      "bytes": 212505,
-      "sha256": "388567543584a655656cb7cb13680d8fc9a8988f811dcf1d2b010106864c4a2a",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/neckdeep_02/deathcam.mp3",
-      "bytes": 129652,
-      "sha256": "06344236c8087de52f05347dd6354a6df74fc316ea8a4e737ffced61fae554ae",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/neckdeep_02/endofmatch.mp3",
-      "bytes": 855082,
-      "sha256": "bfa9bdab0b385723b62e52bcb65ea1c663ede62a877ae123bf14b377bacf9aa5",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/neckdeep_02/lostround.mp3",
-      "bytes": 105732,
-      "sha256": "ee3fb77f8a4da396ea4385692e4db707e31bf1e5b137fcc13ef35e263bf14072",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/neckdeep_02/roundmvpanthem_01.mp3",
-      "bytes": 232172,
-      "sha256": "5cb28ab223d574f8c264366c67fb554717d468847cd5757850231649d9ce2e74",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/neckdeep_02/roundtenseccount.mp3",
-      "bytes": 196767,
-      "sha256": "4548adda2317299f62f3c4dbeb6e06f97164d3a2932d4b215f273bc177ab855e",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/neckdeep_02/startround_01.mp3",
-      "bytes": 306272,
-      "sha256": "ea773d8e133945f705c7f623ef91d464ab4b43fe629b9ab71c82113cdcf865d3",
-      "group": "music"
-    },
-    {
-      "path": "assets/audio/music/optional/neckdeep_02/wonround.mp3",
-      "bytes": 148431,
-      "sha256": "3538c5063de41341e8453e3c9ca1e3a728feea9d866764ebeb5a4fa5d1bb9486",
       "group": "music"
     },
     {
@@ -8688,6 +9198,12 @@
       "group": "interface"
     },
     {
+      "path": "assets/ui-cs2/aug.svg",
+      "bytes": 4935,
+      "sha256": "c9257fcd32aaa43b3c804370bbe05e1666d5e1ef14f9b7b7fda49cb91775b1f5",
+      "group": "interface"
+    },
+    {
       "path": "assets/ui-cs2/awp.svg",
       "bytes": 4659,
       "sha256": "869800ac1a07c5f76833f880476e5b08e1caf71a6e8db30e7ea275d49166f66e",
@@ -8706,6 +9222,12 @@
       "group": "interface"
     },
     {
+      "path": "assets/ui-cs2/botAvatar.svg",
+      "bytes": 2656,
+      "sha256": "4d6d48e1acdb4e0c8c08666c5b13c932f614fe1cbfc556bf0312f834afd64d0d",
+      "group": "interface"
+    },
+    {
       "path": "assets/ui-cs2/c4.svg",
       "bytes": 6533,
       "sha256": "d5d6ee8b101e92e49f3d46ec027b2d61a2c0a49145d5eb2db57aa7ea560fc755",
@@ -8715,6 +9237,12 @@
       "path": "assets/ui-cs2/CT.svg",
       "bytes": 12290,
       "sha256": "6952a8b00f30849244f8a7f1e7429e34130d6c33fd2c120453e3f886d9511810",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/cz75a.svg",
+      "bytes": 4726,
+      "sha256": "feae2477362a0745068422184f9005a09854181c5acd0b9cddac235946156a97",
       "group": "interface"
     },
     {
@@ -8748,6 +9276,12 @@
       "group": "interface"
     },
     {
+      "path": "assets/ui-cs2/famas.svg",
+      "bytes": 5174,
+      "sha256": "c5482c68991ddca1271346b4e2984f29c46654a6b96d5c1ecbfc2962f1cb03e5",
+      "group": "interface"
+    },
+    {
       "path": "assets/ui-cs2/fiveseven.svg",
       "bytes": 3122,
       "sha256": "39d334c1da7947980920b2819a5a3f092f084128a810db5227793d917fa5d9d5",
@@ -8757,6 +9291,12 @@
       "path": "assets/ui-cs2/flashbang.svg",
       "bytes": 1421,
       "sha256": "a2b6d5bc726b4af9eb2f64dc2b484e14b752a25dd5cbb93e3385e8189d50e267",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/g3sg1.svg",
+      "bytes": 8315,
+      "sha256": "d5b8d5c4f6882ee626e7f41a418224d498017f0d42a782e9e151787d178546fe",
       "group": "interface"
     },
     {
@@ -8790,6 +9330,24 @@
       "group": "interface"
     },
     {
+      "path": "assets/ui-cs2/hkp2000.svg",
+      "bytes": 2803,
+      "sha256": "defd5f95682412e1ff3610f9869aceb6aeb66017fb233c4b61edd660eadb2384",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/hudArmor.svg",
+      "bytes": 9444,
+      "sha256": "d0cb0b0fc3e5ef4dda1305998c98f0484b86c55310631485bbe8e01c2cf3ffca",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/hudHelmet.svg",
+      "bytes": 12849,
+      "sha256": "4d84ac7ae7fa1d1f4527ce6c46b646d0eb103b1d0fd24b2d97bfd728f017c3ff",
+      "group": "interface"
+    },
+    {
       "path": "assets/ui-cs2/incgrenade.svg",
       "bytes": 13523,
       "sha256": "81b74b9af559ca2cc0e1b936ace1307fb152be0366467393da3c18baa937075d",
@@ -8802,15 +9360,99 @@
       "group": "interface"
     },
     {
+      "path": "assets/ui-cs2/killCard1.svg",
+      "bytes": 2392,
+      "sha256": "9a24842610ef1ffb8bcd40e95c4cf1e32b0d7d871e16db1111a524f59506ddb4",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/killCard2.svg",
+      "bytes": 2896,
+      "sha256": "7fc8df7fc63f19c5cdee25ebc102fc901ebcea6380863c81c604e68b0c7206f6",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/killCard3.svg",
+      "bytes": 3032,
+      "sha256": "04c9e7b5b1b96c2bd09620c4095b85404dc8fc82ce62616cfb21be0ce5321951",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/killCard4.svg",
+      "bytes": 2465,
+      "sha256": "15f901ce094f0517d12b3a64ed8c3cd5ee1eea7cc9fad03ea445b3ffcc6c2c6a",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/killCard5.svg",
+      "bytes": 4836,
+      "sha256": "54689183aeb9ec4447c15a06b4a6e14267cb3024d676d132995395451ff1eb9c",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/killCardextra.svg",
+      "bytes": 6619,
+      "sha256": "a824c0df6aceda63d9a3fb1de77fbef60e3b794b88bcd8255ab04ae67156d21d",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/killCardmask.svg",
+      "bytes": 1852,
+      "sha256": "9a65dfd007f6c47fdcf650d801e6ac352c223a8abc5d275e1e74bae1ba0475d6",
+      "group": "interface"
+    },
+    {
       "path": "assets/ui-cs2/killHeadshot.svg",
       "bytes": 4577,
       "sha256": "674387e426550c5fc27d33ec564e59b809d0fdc94404494980e16cfa3caa7785",
       "group": "interface"
     },
     {
+      "path": "assets/ui-cs2/killPipblast.svg",
+      "bytes": 1795,
+      "sha256": "60df52198277ad095ae4ecf9801af9855d0252aa0b9ee2224cb056e250d69fee",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/killPipburn.svg",
+      "bytes": 975,
+      "sha256": "76ec00c43e1e944d4af80d685dadaa28332b011a96ff1705e459f90ac30446a0",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/killPipshock.svg",
+      "bytes": 362,
+      "sha256": "d351b897d3e80b38151a8989d3a9b3430540dd65fa51a129825f629938e47712",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/killPipslash.svg",
+      "bytes": 728,
+      "sha256": "658233c9f99e16bdd760b5a05e5adf0c6e534ba4550c2a9b15eecebc00f60bc3",
+      "group": "interface"
+    },
+    {
       "path": "assets/ui-cs2/knife.svg",
       "bytes": 4116,
       "sha256": "c654277ee374b25efccb237550fa5b466afc1455a772ecf6ecbe1a2ae37a4f8f",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/knifeButterfly.svg",
+      "bytes": 7800,
+      "sha256": "ef8103d047f65b6f026b95f3d749364cb35072f0c9585cff5b253c26f48bd558",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/knifeM9.svg",
+      "bytes": 4199,
+      "sha256": "d93d21ee03468dd678c838e50d3ff0c0b2461822f6f22b1654646e2ee45ae34a",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/m249.svg",
+      "bytes": 7308,
+      "sha256": "5f9b6271e42c62295bab6a736593de1548ca3ce06e97af8f2b253a056d5f2a0c",
       "group": "interface"
     },
     {
@@ -8839,14 +9481,20 @@
     },
     {
       "path": "assets/ui-cs2/manifest.json",
-      "bytes": 16186,
-      "sha256": "cffde6cbedfa00c7cc651c909930f62ba7885fdcb04085731a4df187d6bf6c4b",
+      "bytes": 24957,
+      "sha256": "271184d3a0362711ddffe4f65d57115fe832503304200ca350c3d50b10f0355a",
       "group": "metadata"
     },
     {
       "path": "assets/ui-cs2/molotov.svg",
       "bytes": 3012,
       "sha256": "141797d4f65368ff48f971f52859ddf905946dbefb8f413109def54c8467d6da",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/mp5sd.svg",
+      "bytes": 3208,
+      "sha256": "a3e173845523eb4e0d96ec563e8a9beef0fb41e06e2a2482f5dc02fc12769836",
       "group": "interface"
     },
     {
@@ -8859,6 +9507,12 @@
       "path": "assets/ui-cs2/mp9.svg",
       "bytes": 23590,
       "sha256": "a61120d696a23093594a566e88473e381ecab9b52b6a5980b1dc623d689b362d",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/negev.svg",
+      "bytes": 45010,
+      "sha256": "933f0354a1ae3f0e9dca4e0a8aae769219920f694e0223b567d09f006f2c30e4",
       "group": "interface"
     },
     {
@@ -8880,9 +9534,21 @@
       "group": "interface"
     },
     {
+      "path": "assets/ui-cs2/p90.svg",
+      "bytes": 4397,
+      "sha256": "ea5ded1d759a97fc9c96436731015241caca55a60b510f2185611f3a670baa14",
+      "group": "interface"
+    },
+    {
       "path": "assets/ui-cs2/pistol.svg",
       "bytes": 3046,
       "sha256": "56932dffa12f3a321749c4f5855e56045d882052fac50f614eb038127c23d9ad",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/revolver.svg",
+      "bytes": 5408,
+      "sha256": "eec6c25dd9ac2ff82be8e741dc22db83dd76f015e63ee7955a7cfc16031547e8",
       "group": "interface"
     },
     {
@@ -8937,6 +9603,12 @@
       "path": "assets/ui-cs2/timer.svg",
       "bytes": 2462,
       "sha256": "4f63c0480d1ea07949ded73deb26471c3ed92f23698f2b488d98b5cf7c3d9031",
+      "group": "interface"
+    },
+    {
+      "path": "assets/ui-cs2/ump45.svg",
+      "bytes": 8505,
+      "sha256": "bc4ee9cf252f3a21fff673440fe9334d83a2e7ac0d9f3938cefce709a15024dd",
       "group": "interface"
     },
     {
@@ -9012,9 +9684,81 @@
       "group": "metadata"
     },
     {
+      "path": "assets/viewmodel/optional/aug.glb",
+      "bytes": 761164,
+      "sha256": "dda70bc54fd3271fd7b4034b00f8d63b75cdf0c50eca54f2980ed580f6797522",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/cz75a.glb",
+      "bytes": 987188,
+      "sha256": "53f8a6b3bc96ddd3e9bf84d9460a90e9115465e9cb5f8ad1d1d3939eed16b0d1",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/famas.glb",
+      "bytes": 634092,
+      "sha256": "747e6d07d46e85e56d7eedb6b20267ea2836407045010b68b1d00d58faf7ac24",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/g3sg1.glb",
+      "bytes": 743152,
+      "sha256": "a9819021fb4af42adef66fc7191b2da28ca4d85d9cb284836e1d9f2bef9cbf59",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/hkp2000.glb",
+      "bytes": 910008,
+      "sha256": "d6e5632695296d283cc24d4b45c6949cbfb8fc3abc880b5c6ecb9638a44821f7",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/m249.glb",
+      "bytes": 1588908,
+      "sha256": "fa12544e8ff4414eeae4cad3c1ff0e4327171373ae5bdde599b4322c2ae4541c",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/mp5sd.glb",
+      "bytes": 647824,
+      "sha256": "b265a89ee325597b692d78379ea1e85eb5d0c8a28d588d5b68a1e299b0744aa8",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/negev.glb",
+      "bytes": 1620004,
+      "sha256": "1a3ac49e6dffe327eabec43251510e4ebf11e3b94ff8c6254b41d2859c236393",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/p90.glb",
+      "bytes": 742360,
+      "sha256": "54fe07690ccd4395caa551e59756660d97d7d889133679d0201b12790dfcffb5",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/revolver.glb",
+      "bytes": 1082788,
+      "sha256": "12077abaa414434abb75461b5e2943393aa8c1830fa48757a2a5cb694b69984a",
+      "group": "skin"
+    },
+    {
+      "path": "assets/viewmodel/optional/ump45.glb",
+      "bytes": 782176,
+      "sha256": "277b59af3a2c4e44c5111772eb752436c9244df623f589bf1c0c1e013a36b2ff",
+      "group": "skin"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/ak47-vulcan.glb",
       "bytes": 2807216,
       "sha256": "46c540e3869bb2737d633a67c578ce9e2665eae63f1c07544793ecf8de4f558c",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/aug-akihabara-accept.glb",
+      "bytes": 3454856,
+      "sha256": "f909aa30b2e718c9b5d142bb50098072c21a8698cef9811231afae93874b4f08",
       "group": "skin"
     },
     {
@@ -9030,6 +9774,12 @@
       "group": "skin"
     },
     {
+      "path": "assets/weapons/cs2-loadout/cz75a-xiangliu.glb",
+      "bytes": 4345120,
+      "sha256": "886058b5633cc97b0fa90e063f1df2150a275f91dc521327ca7f49d48ceb0fc5",
+      "group": "skin"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/deagle-printstream.glb",
       "bytes": 2023160,
       "sha256": "68ecf39917c72ddb87f1a9704eadd1401c149a56123166dba6020493efefbe02",
@@ -9042,9 +9792,21 @@
       "group": "skin"
     },
     {
+      "path": "assets/weapons/cs2-loadout/famas-roll-cage.glb",
+      "bytes": 3048440,
+      "sha256": "8694df5b3820d85fc760983dfc76b90b25b1f5641cac3bc474b102bad4d6cf1c",
+      "group": "skin"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/fiveseven-hyper-beast.glb",
       "bytes": 3847564,
       "sha256": "e754a0bef2d29d85e97333211f9bf3e4d16f263731661b8f7c95b02882029b6d",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/g3sg1-flux.glb",
+      "bytes": 3646084,
+      "sha256": "a249971907395469445702ccbcbe0ceeb49fa6a8e86bbdf6904d8bc1e1637484",
       "group": "skin"
     },
     {
@@ -9054,9 +9816,21 @@
       "group": "skin"
     },
     {
+      "path": "assets/weapons/cs2-loadout/hkp2000-fire-elemental.glb",
+      "bytes": 2737140,
+      "sha256": "4e92bf726029c3abe3f875a9239f5c10b7013672ea94e4b6a2fcc3bf9d9f0397",
+      "group": "skin"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/karambit-sapphire.glb",
       "bytes": 2877116,
       "sha256": "a07db7b66f7bfda4174f44b95cfb32281db8102cd9bbb488fb6165728dc5cb1a",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/m249-nebula-crusader.glb",
+      "bytes": 4996296,
+      "sha256": "23386da18f9dddd1ad221f5b132232abb707f8ed5dcae3ed62a13af748ec3ce0",
       "group": "skin"
     },
     {
@@ -9085,9 +9859,15 @@
     },
     {
       "path": "assets/weapons/cs2-loadout/manifest.json",
-      "bytes": 185271,
-      "sha256": "8a4214b087d34e3f4fc3de91e3c31bc6a39c77f0bb9363b2cbf6b0555dab7f98",
+      "bytes": 287655,
+      "sha256": "0ef706037229632bdbd03a6e1faca1e01d34d1e19dc876c6188e8f3ad98117d2",
       "group": "metadata"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/mp5sd-phosphor.glb",
+      "bytes": 3993640,
+      "sha256": "8003c6df5ea9462663f05f39bd91b3cb28d8095fd89b49dc5677347c5d02dc3d",
+      "group": "skin"
     },
     {
       "path": "assets/weapons/cs2-loadout/mp7-bloodsport.glb",
@@ -9099,6 +9879,12 @@
       "path": "assets/weapons/cs2-loadout/mp9-wild-lily.glb",
       "bytes": 3496372,
       "sha256": "3d6ae1994edf369fda608140e06e94fdf4f81f354d13ba4a515847bf5d3d5558",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/negev-power-loader.glb",
+      "bytes": 5603552,
+      "sha256": "a67429a78c612053bd8a7590f1a516bd9bbeb8abc6edd03d28d1f4346a1db066",
       "group": "skin"
     },
     {
@@ -9114,6 +9900,12 @@
       "group": "skin"
     },
     {
+      "path": "assets/weapons/cs2-loadout/p90-asiimov.glb",
+      "bytes": 2826880,
+      "sha256": "b8403a04bc2e0c12d21f8cc20fe4d015167e70e04d77bad537c2e847016134ce",
+      "group": "skin"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/pistol-fade.glb",
       "bytes": 2919120,
       "sha256": "50915dc3c0ca29df1aed18044b255c2f74a3c11bbe06033082aba43d31f6a439",
@@ -9123,6 +9915,12 @@
       "path": "assets/weapons/cs2-loadout/previews/ak47-vulcan.webp",
       "bytes": 17244,
       "sha256": "0440efdc1c0e1a8b1c831d90687e5adab5b734837a2ba079cb88011a9c8789dc",
+      "group": "preview"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/previews/aug-akihabara-accept.webp",
+      "bytes": 24438,
+      "sha256": "347b2e8be0ce4d2ca7e5ebba6848e0886bff27f7ac8befb743bb6f055394b708",
       "group": "preview"
     },
     {
@@ -9138,6 +9936,12 @@
       "group": "preview"
     },
     {
+      "path": "assets/weapons/cs2-loadout/previews/cz75a-xiangliu.webp",
+      "bytes": 24788,
+      "sha256": "5795a99f2c86379f8b80ae20983ec7fd5fba9961faa3d747cdb1ff06aa2235c2",
+      "group": "preview"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/previews/deagle-printstream.webp",
       "bytes": 15800,
       "sha256": "c701cd1d3e0e8ca50150058a415a4848fda21ebb5fc77476160f5b292eef6974",
@@ -9150,9 +9954,21 @@
       "group": "preview"
     },
     {
+      "path": "assets/weapons/cs2-loadout/previews/famas-roll-cage.webp",
+      "bytes": 20946,
+      "sha256": "f1f358578d8c0ac0f754ee5a826257e6bf1d6cfad5878d2d475a28976979b6bb",
+      "group": "preview"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/previews/fiveseven-hyper-beast.webp",
       "bytes": 26774,
       "sha256": "8b882a31795fd959e7f9e76197a13731a654f4c954b74e1ceb737c71083044a7",
+      "group": "preview"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/previews/g3sg1-flux.webp",
+      "bytes": 15272,
+      "sha256": "5b0d30a47426fa9b1691c5e7b0a73d3547c5f8a80f2ac1907345fc23292d8e4f",
       "group": "preview"
     },
     {
@@ -9162,9 +9978,21 @@
       "group": "preview"
     },
     {
+      "path": "assets/weapons/cs2-loadout/previews/hkp2000-fire-elemental.webp",
+      "bytes": 22974,
+      "sha256": "4288a0c9779e6d228e6daa125853f2284d569859a0cab3d1da1ea631bc5a290f",
+      "group": "preview"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/previews/karambit-sapphire.webp",
       "bytes": 17588,
       "sha256": "1a6cb599b0de3932d9ba0f6c59fe106f12586e39a8c3579e2c071b122d684f40",
+      "group": "preview"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/previews/m249-nebula-crusader.webp",
+      "bytes": 20686,
+      "sha256": "1c854f8eecdf072e0feb3d80e13a3b1e16929c1fb1aef60c22789cddb263298e",
       "group": "preview"
     },
     {
@@ -9192,6 +10020,12 @@
       "group": "preview"
     },
     {
+      "path": "assets/weapons/cs2-loadout/previews/mp5sd-phosphor.webp",
+      "bytes": 19466,
+      "sha256": "f6c31161a30574a793fdefad9d2076456dfa38516053ae0d4d2b6e7de90e2c6d",
+      "group": "preview"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/previews/mp7-bloodsport.webp",
       "bytes": 25248,
       "sha256": "ea1150a88210fcbc0c71b82506d904a4d6609b7144c011a45f53609ae46d1ed8",
@@ -9201,6 +10035,12 @@
       "path": "assets/weapons/cs2-loadout/previews/mp9-wild-lily.webp",
       "bytes": 26948,
       "sha256": "5482342c570b629a1ce05b95df775d7a9c97137d16d23809dbc81f8db1760805",
+      "group": "preview"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/previews/negev-power-loader.webp",
+      "bytes": 25354,
+      "sha256": "cc429414560b834f75ca50e08fca3dbe0af661edde01b88f0637c15488768071",
       "group": "preview"
     },
     {
@@ -9216,9 +10056,21 @@
       "group": "preview"
     },
     {
+      "path": "assets/weapons/cs2-loadout/previews/p90-asiimov.webp",
+      "bytes": 25118,
+      "sha256": "784ed16a4907bd9409853e5c96f02fd5249c92a97a4ef4d59d84c7f10627259a",
+      "group": "preview"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/previews/pistol-fade.webp",
       "bytes": 14378,
       "sha256": "b2c5ab97afbbaabaf37cb653f1ac30753e1e69ee4bf2cd0b868d6511aedcdca6",
+      "group": "preview"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/previews/revolver-reboot.webp",
+      "bytes": 18210,
+      "sha256": "f4fd2cc4e02db5dc8e9fd657f9ded584c73d24fd24a529b21e37ff6a65efd49f",
       "group": "preview"
     },
     {
@@ -9252,6 +10104,12 @@
       "group": "preview"
     },
     {
+      "path": "assets/weapons/cs2-loadout/previews/ump45-primal-saber.webp",
+      "bytes": 28094,
+      "sha256": "bb5c3faf4f3f442f3f536e12b699d786561bceabb87d91c2769965d700c18f07",
+      "group": "preview"
+    },
+    {
       "path": "assets/weapons/cs2-loadout/previews/usp-kill-confirmed.webp",
       "bytes": 23068,
       "sha256": "8eaffb2a6739683053675d94bfd54d62e9bc428205ff176f322e9dca4949f40b",
@@ -9262,6 +10120,12 @@
       "bytes": 16446,
       "sha256": "5f11d9a6809ff504722b6cc699159efb76c543e39c1f6f93051dba44f0b99448",
       "group": "preview"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/revolver-reboot.glb",
+      "bytes": 3439728,
+      "sha256": "c7c95fd9428bbae541d93b2ed17a1b86a7462476b2bfd5263422bad717fc252a",
+      "group": "skin"
     },
     {
       "path": "assets/weapons/cs2-loadout/sawedoff-the-kraken.glb",
@@ -9291,6 +10155,12 @@
       "path": "assets/weapons/cs2-loadout/tec9-fuel-injector.glb",
       "bytes": 3600660,
       "sha256": "4ed5e6c4e44951bbe1257120818e2f5d2ef94e24428c178253990f06efec649c",
+      "group": "skin"
+    },
+    {
+      "path": "assets/weapons/cs2-loadout/ump45-primal-saber.glb",
+      "bytes": 2876592,
+      "sha256": "4904fabb4df486162a7a21caeff7b128919c8fd259bc7ffb3b35049a5cd294e3",
       "group": "skin"
     },
     {
@@ -9511,8 +10381,8 @@
     },
     {
       "path": "assets/weapons/cs2-utility/manifest.json",
-      "bytes": 4245,
-      "sha256": "e145e86113136d0bedf032a37f8d5e84111abbc52ccf79d015fd028a1c17e440",
+      "bytes": 4211,
+      "sha256": "a478eaf1ae62aed5074039b02691d2796c3ec8108181a02c4bb4fec6068aad4e",
       "group": "metadata"
     },
     {

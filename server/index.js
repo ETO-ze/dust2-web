@@ -50,10 +50,10 @@ function joinSettings(msg) {
   const mode = msg.mode === 'deathmatch' ? 'deathmatch' : 'defuse';
   const team = ['T', 'CT'].includes(msg.team) ? msg.team : 'auto';
   if(msg.bots!==undefined&&(!Number.isInteger(msg.bots)||msg.bots<0||msg.bots>9))return {error:'机器人数量必须为 0–9 的整数。'};
-  if(msg.botDifficulty!==undefined&&!BOT_DIFFICULTIES.includes(msg.botDifficulty))return {error:'人机难度应为轻松、普通或困难。'};
+  if(msg.botDifficulty!==undefined&&!BOT_DIFFICULTIES.includes(msg.botDifficulty))return {error:'无效的人机难度。'};
   const bots = botCount(msg.bots),botDifficulty=normalizeBotDifficulty(msg.botDifficulty);
   const primary = PRIMARY_WEAPONS.includes(msg.primary) ? msg.primary : 'auto';
-  return { name, room, mode, team, bots, botDifficulty, primary, skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0,shotProtocol:msg.shotProtocol===1?1:0 };
+  return { name, room, mode, team, bots, botDifficulty, primary, weaponLoadout:msg.weaponLoadout,skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0,shotProtocol:msg.shotProtocol===1?1:0 };
 }
 
 /** Start the authoritative server after loading collision geometry. No external services. */
@@ -153,6 +153,10 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         if(now-(socket.seatAt||0)<300){error(socket,'SEAT_RATE','请稍后再操作席位。');return;}
         socket.seatAt=now;const result=msg.type==='takeSeat'?room.takeSeat(socket.playerId,msg.team,msg.seat):room.setSeatBot(socket.playerId,msg.team,msg.seat,msg.enabled);
         if(!result.ok)error(socket,'SEAT_REJECTED',result.message);else send(socket,{type:'seatUpdated',...result});
+      } else if(msg.type==='setWeaponLoadout'){
+        if(now-(socket.setLoadoutAt||0)<500){error(socket,'LOADOUT_RATE','设置过于频繁，请稍后重试。');return;}
+        socket.setLoadoutAt=now;const result=room.setWeaponLoadout(socket.playerId,msg.weaponLoadout);
+        if(!result.ok)error(socket,'LOADOUT_REJECTED',result.message);else send(socket,{type:'weaponLoadoutUpdated',...result});
       } else if(msg.type==='setBotDifficulty'){
         if(now-(socket.setDifficultyAt||0)<250){error(socket,'BOT_DIFFICULTY_RATE','设置过于频繁，请稍后重试。');return;}
         socket.setDifficultyAt=now;const result=room.setBotDifficulty(socket.playerId,msg.botDifficulty);

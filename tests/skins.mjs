@@ -5,10 +5,10 @@ import crypto from 'node:crypto';
 import {SKINS,DEFAULT_SKINS,getSkin,normalizeSkinLoadout} from '../shared/skins.js';
 import {WEAPONS} from '../shared/weapons.js';
 
-test('all 23 guns and the knife have exactly one valid Factory New default',()=>{
+test('all 34 guns and the knife have exactly one valid Factory New default',()=>{
   const specs=JSON.parse(fs.readFileSync(new URL('../scripts/weapon-assets/default-skins.json',import.meta.url),'utf8'));
-  assert.equal(Object.keys(WEAPONS).length,24);
-  assert.equal(Object.keys(DEFAULT_SKINS).length,24);
+  assert.equal(Object.keys(WEAPONS).length,35);
+  assert.equal(Object.keys(DEFAULT_SKINS).length,35);
   assert.equal(new Set(SKINS.map(s=>s.id)).size,SKINS.length);
   for(const weapon of Object.keys(WEAPONS)){
     const entries=SKINS.filter(s=>s.weapon===weapon);
@@ -50,6 +50,11 @@ test('catalog assets exist, are self-contained GLBs, and match advertised sizes/
     const image=fs.readFileSync(new URL('../public/'+skin.preview,import.meta.url));
     assert.equal(image.length,skin.previewBytes);
     assert.equal(crypto.createHash('sha256').update(image).digest('hex'),skin.previewSha256);
+    if(skin.animation){
+      const animation=fs.readFileSync(new URL('../public/'+skin.animation.model,import.meta.url));
+      assert.equal(animation.length,skin.animation.bytes);
+      assert.equal(crypto.createHash('sha256').update(animation).digest('hex'),skin.animation.sha256);
+    }
   }
 });
 
