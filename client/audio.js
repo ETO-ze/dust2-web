@@ -77,7 +77,13 @@ export class GameAudio {
     this.sampleCount=this.decoded.size;this.decodedBytes=bytes;return true;
   }
   pumpDecoders(){while(this.activeDecoders<2&&this.decodeJobs.length){this.activeDecoders++;this.decodeJobs.shift()().finally(()=>{this.activeDecoders--;this.pumpDecoders();});}}
-  prepareWeapon(id){const prefix=this.weaponId(id),utility=new Set(Object.values(UTILITY_AUDIO[id]||{}));for(const bank of Object.keys(this.sampleManifest?.banks||{}))if(bank.toLowerCase().startsWith(prefix.toLowerCase())||utility.has(bank))this.loadBank(bank).catch(()=>{});}
+  prepareWeapon(id){
+    const prefix=this.weaponId(id),extra=new Set(Object.values(UTILITY_AUDIO[id]||{}));
+    // Animation events use anim_weapon_* names, which do not share the gun's prefix.
+    for(const empty of [false,true])for(const {bank} of reloadProfile(getWeapon(id).id,empty)?.sounds||[])extra.add(bank);
+    for(const bank of Object.keys(this.sampleManifest?.banks||{}))if(bank.toLowerCase().startsWith(prefix.toLowerCase())||extra.has(bank))this.loadBank(bank).catch(()=>{});
+  }
+  prepareRevolver(){this.cancelChannel('revolver-prepare');return this.play('anim_weapon_revolver_barrelroll',{level:.5,channel:'revolver-prepare'});}
 
   utilityEvent(event,listener,myId){
     if((event.type==='grenade_cancelled'&&event.playerId===myId)||(event.type==='grenade_thrown'&&event.shooterId===myId))this.cancelChannel('utility-pin');

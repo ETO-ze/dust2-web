@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {TouchInput,joystickVector,touchLookDelta,normalizeTouch} from '../shared/touch-input.js';
+import {TouchInput,joystickVector,touchLookDelta,normalizeTouch,touchActionKind} from '../shared/touch-input.js';
 import {GameControls} from '../client/controls.js';
 test('analog joystick deadzone, direction and diagonal speed remain bounded',()=>{
  assert.deepEqual(joystickVector(2,-3),{right:0,forward:0});assert.equal(joystickVector(0,-100).forward,1);
@@ -26,7 +26,28 @@ test('touch cancellation resets every finger and cancels a held grenade instead 
 });
 test('touch aim uses CSS-distance sensitivity and slows down under magnification',()=>{
  const normal=touchLookDelta(50,-10,390,1,90),zoom=touchLookDelta(50,-10,390,1,10);assert.ok(normal.yaw<0&&normal.pitch>0);assert.ok(Math.abs(zoom.yaw)<Math.abs(normal.yaw)/5);
- assert.equal(touchLookDelta(50,-10,390,2,90).yaw,normal.yaw*2);assert.deepEqual(normalizeTouch({mode:'invalid',size:100,sensitivity:-1}),{mode:'auto',size:1.15,sensitivity:.4});
+ assert.equal(touchLookDelta(50,-10,390,2,90).yaw,normal.yaw*2);assert.deepEqual(normalizeTouch({mode:'invalid',size:100,sensitivity:-1}),{mode:'auto',size:1.15,sensitivity:.4,zoomSensitivity:1});
+});
+
+test('touch scoped sensitivity can be tuned independently and old saved settings keep their aiming scale',()=>{
+ const old=normalizeTouch({sensitivity:1.4});assert.equal(old.zoomSensitivity,1);
+ const base=touchLookDelta(50,10,390,old.sensitivity,40),half=touchLookDelta(50,10,390,old.sensitivity,40,.5);
+ assert.equal(half.yaw,base.yaw*.5);assert.equal(half.pitch,base.pitch*.5);
+ assert.deepEqual(touchLookDelta(50,10,390,1.4,90,.5),touchLookDelta(50,10,390,1.4,90,2));
+ assert.equal(normalizeTouch({zoomSensitivity:-10}).zoomSensitivity,.2);
+ assert.equal(normalizeTouch({zoomSensitivity:10}).zoomSensitivity,2.5);
+ const saved=normalizeTouch(JSON.parse(JSON.stringify(normalizeTouch({zoomSensitivity:.75}))));assert.equal(saved.zoomSensitivity,.75);
+});
+
+test('R8 alternate fire can drag aim while movement and primary aim keep independent pointers',()=>{
+ const c=new GameControls({target:new EventTarget(),storage:null}),look=[];
+ const input=new TouchInput({onAction:(a,p,id)=>c.setVirtual(a,p,id),onLook:(...d)=>look.push(d)});
+ input.begin(1,'move',0,0);input.move(1,0,-52);
+ input.begin(2,touchActionKind('altFire','revolver'),200,100,{actions:['altFire']});input.move(2,212,94);
+ assert.equal(c.down('altFire'),true);assert.deepEqual(look,[[12,-6]]);assert.equal(input.axes.forward,1);
+ input.end(2);assert.equal(c.down('altFire'),false);assert.equal(input.axes.forward,1);
+ for(const weapon of ['awp','knife','ak47'])assert.equal(touchActionKind('altFire',weapon),'button');
+ assert.equal(touchActionKind('fire','ak47'),'fire');c.destroy();
 });
 test('a second joystick finger cannot steal or reset the first joystick',()=>{
  const input=new TouchInput();assert.equal(input.begin(1,'move',0,0),true);input.move(1,0,-52);assert.equal(input.begin(2,'move',100,100),false);input.end(2,true);assert.equal(input.axes.forward,1);

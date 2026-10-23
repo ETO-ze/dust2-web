@@ -6,6 +6,7 @@ export function controlledPlayer(room,id){
 }
 
 function clearCommands(room,body,owner=null){
+  room.resetRevolverTrigger?.(body,'control');
   if(body.botAI?.utility&&!body.botAI.utility.released)room.utilityClaims?.delete(body.botAI.utility.key);
   room.cancelGrenade(body,'control');
   if(room.bomb.actorId===body.id)Object.assign(room.bomb,{actorId:null,action:null,progress:0});

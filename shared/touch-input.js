@@ -7,10 +7,11 @@ export function joystickVector(dx,dy,radius=52,deadzone=.12){
  const length=Math.hypot(dx,dy),strength=clamp((length/radius-deadzone)/(1-deadzone),0,1);
  return length?{right:dx/length*strength,forward:-dy/length*strength}:{right:0,forward:0};
 }
-export function touchLookDelta(dx,dy,shortSide,sensitivity=1,fov=90){
- const scale=Math.PI*.8/Math.max(240,shortSide)*sensitivity*Math.max(.06,Math.min(1,fov/90));
+export function touchLookDelta(dx,dy,shortSide,sensitivity=1,fov=90,zoomSensitivity=1){
+ const scale=Math.PI*.8/Math.max(240,shortSide)*sensitivity*Math.max(.06,Math.min(1,fov/90))*(fov<90?zoomSensitivity:1);
  return {yaw:-dx*scale,pitch:-dy*scale};
 }
+export function touchActionKind(action,weapon){return action==='fire'||action==='altFire'&&weapon==='revolver'?'fire':'button';}
 /** Pointer identity, not one global touch: movement, aim and fire can coexist. */
 export class TouchInput {
  constructor({onAction=()=>{},onLook=()=>{},onCancel=()=>{}}={}){Object.assign(this,{onAction,onLook,onCancel});this.pointers=new Map();this.axes={forward:0,right:0};}
@@ -34,5 +35,5 @@ export class TouchInput {
  clear(){const had=this.pointers.size;this.pointers.clear();this.axes={forward:0,right:0};if(had)this.onCancel();}
 }
 export function normalizeTouch(value={}){
- return {mode:['on','off'].includes(value.mode)?value.mode:'auto',sensitivity:clamp(Number(value.sensitivity)||1,.4,2.5),size:clamp(Number(value.size)||1,.85,1.15)};
+ return {mode:['on','off'].includes(value.mode)?value.mode:'auto',sensitivity:clamp(Number(value.sensitivity)||1,.4,2.5),zoomSensitivity:clamp(Number(value.zoomSensitivity)||1,.2,2.5),size:clamp(Number(value.size)||1,.85,1.15)};
 }
