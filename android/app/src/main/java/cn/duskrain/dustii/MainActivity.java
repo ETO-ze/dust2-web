@@ -242,11 +242,10 @@ public final class MainActivity extends Activity {
         if (uri==null || !"https".equals(uri.getScheme()) || !"cs2.duskrain.cn".equals(uri.getHost())) return;
         String room=uri.getQueryParameter("room");if (room==null || !room.matches("[A-Za-z0-9]{1,12}")) return;
         pauseInput();startUrl=HOME+"?room="+room;
-        if(game!=null)game.loadUrl(startUrl);else assetLoader=new WebViewAssetLoader.Builder().setDomain("cs2.duskrain.cn").addPathHandler("/__installed__/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
-        if(WebViewFeature.isFeatureSupported(WebViewFeature.SERVICE_WORKER_BASIC_USAGE))ServiceWorkerControllerCompat.getInstance().setServiceWorkerClient(new ServiceWorkerClientCompat(){
-            @Override public WebResourceResponse shouldInterceptRequest(WebResourceRequest request){return assetLoader.shouldInterceptRequest(request.getUrl());}
-        });
-        createGame();immersive();
+        // onCreate already owns asset interception. Reuse the live renderer so
+        // an invitation navigates once; only rebuild after a renderer exit.
+        if(game!=null)game.loadUrl(startUrl);else createGame();
+        immersive();
     }
     @Override protected void onDestroy() {
         if(motion!=null)motion.close();
