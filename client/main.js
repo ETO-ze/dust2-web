@@ -6,6 +6,7 @@ import {CLIENT_BUILD,RULES_VERSION,ASSET_VERSION,compatibilityError} from '../sh
 import {GameChat} from './chat.js';
 import {combatPhase,equipmentPhase} from '../shared/round-actions.js';
 import {ShotPrediction} from './shot-prediction.js';
+import {RevolverTrigger,REVOLVER_PRIMARY_FIRE_DELAY_MS,weaponFireInterval} from '../shared/revolver.js';
 import {normalizeClarity,renderPixelRatio} from '../shared/render-quality.js';
 import {mobileDevice} from './device-profile.js';
 import './mobile-layout.css';
@@ -110,6 +111,7 @@ const handledEvents=new Set();
 let previousWeapon=null,previousReload=0;
 let modelsReady=false,mapResultCache=null;
 const shotPrediction=new ShotPrediction();
+const revolverTrigger=new RevolverTrigger();
 let serverAmmo=0,lastSnapshotAt=0,lastShotWarning=0,lastSentInputSeq=-1,shotId=0,lastShotEvidence=null;
 let storedSettings=preferences.readJSON('dust2.cs-settings.v1');
 let mobileClarity=normalizeClarity(storedSettings.mobileClarity);
@@ -230,7 +232,8 @@ function loadError(error){
 const paint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 function send(data){if(socket?.readyState!==WebSocket.OPEN)return false;socket.send(JSON.stringify(data));return true;}
 function sendInput(input){if(input.seq<=lastSentInputSeq||socket?.readyState!==WebSocket.OPEN)return false;lastSentInputSeq=input.seq;return send({type:'input',bodyId:myId,lifeId:self?.lifeId,...input,...(movementSupported?{moves:movementPrediction.packet(),moveId:movementPrediction.nextId}: {})});}
-function clearGameInput(){touchControls?.clear();mobileAim.clear();controls.clear();mouseFire=false;pendingFirePress=false;pendingAltFirePress=false;shotPrediction.triggered=false;}
+function cancelRevolverPrepare(){revolverTrigger.reset();viewWeapon?.prepareRevolver(false);audio.cancelChannel('revolver-prepare');}
+function clearGameInput(){touchControls?.clear();mobileAim.clear();controls.clear();mouseFire=false;pendingFirePress=false;pendingAltFirePress=false;shotPrediction.triggered=false;cancelRevolverPrepare();}
 function inputCaptured(){return document.pointerLockElement===canvas||!!(touchControls?.enabled&&touchPlaying);}
 function gameSurfaceActive(){return connected&&!chat.opened&&inputCaptured()&&!contextLost&&!document.hidden&&!['menu','pause-menu','buy-menu','room-menu','settings-menu','skin-menu','loadout-menu','agent-menu','offline-menu','touch-layout-editor'].some(id=>$(id)?.hidden===false);}
 function controlsEnabled(){return gameSurfaceActive()&&self?.alive&&combatPhase(snapshot?.round?.phase);}
@@ -245,7 +248,7 @@ function currentInput(){
   // until simulation consumes it, just as jump/reload IDs survive between ticks.
   const utility=slot===4;
   if(!enabled||utility)pendingFirePress=false;else if(firePressed)pendingFirePress=true;
-  return {seq:++seq,forward:moving?THREE.MathUtils.clamp(Number(controls.down('forward'))-Number(controls.down('back'))+(touchControls?.axes.forward||0),-1,1):0,right:moving?THREE.MathUtils.clamp(Number(controls.down('right'))-Number(controls.down('left'))+(touchControls?.axes.right||0),-1,1):0,yaw:lookYaw,pitch:aimPitch(lookPitch,recoil),jump:moving&&controls.down('jump'),jumpId,crouch:moving&&controls.down('crouch'),walk:moving&&controls.down('walk'),fire:enabled&&(utility?controls.down('fire'):(mouseFire||pendingFirePress)),fire2:enabled&&(utility||self?.weapon==='knife')&&(controls.down('altFire')||pendingAltFirePress),cancelGrenade:!enabled,reload:enabled&&controls.down('reload'),reloadId,slot,utilityId,zoomLevel,speedScale:weaponSpeedScale(self?.weapon,zoomLevel),interact:equipmentControlsEnabled()&&controls.down('interact'),viewTime:remotePlayers.viewTime||null};
+  return {seq:++seq,forward:moving?THREE.MathUtils.clamp(Number(controls.down('forward'))-Number(controls.down('back'))+(touchControls?.axes.forward||0),-1,1):0,right:moving?THREE.MathUtils.clamp(Number(controls.down('right'))-Number(controls.down('left'))+(touchControls?.axes.right||0),-1,1):0,yaw:lookYaw,pitch:aimPitch(lookPitch,recoil),jump:moving&&controls.down('jump'),jumpId,crouch:moving&&controls.down('crouch'),walk:moving&&controls.down('walk'),fire:enabled&&(utility?controls.down('fire'):(mouseFire||pendingFirePress)),fire2:enabled&&(utility||self?.weapon==='knife'||self?.weapon==='revolver')&&(controls.down('altFire')||pendingAltFirePress),cancelGrenade:!enabled,reload:enabled&&controls.down('reload'),reloadId,slot,utilityId,zoomLevel,speedScale:weaponSpeedScale(self?.weapon,zoomLevel),interact:equipmentControlsEnabled()&&controls.down('interact'),viewTime:remotePlayers.viewTime||null};
 }
 function resetScope(){zoomLevel=0;scoped=false;resumeZoom=0;zoomResumeAt=0;}
 function zoomFov(){return getWeapon(self?.weapon).zoomFovs?.[zoomLevel]||CS2_BASE_FOV;}
@@ -253,7 +256,7 @@ function selectUtility(){const owned=UTILITY_IDS.filter(id=>(self?.utilityCounts
 function selectSlot(next){
   if(next===4&&!(self?.utilityCounts?.[utilityId]>0))utilityId=UTILITY_IDS.find(id=>self?.utilityCounts?.[id]>0)||'hegrenade';
   if(!self?.inventory?.some(id=>getWeapon(id).slot===next)||next===slot)return;
-  lastSlot=slot;slot=next;fireTimer=Math.max(fireTimer,.2);resetScope();audio.cancelReload();
+  cancelRevolverPrepare();lastSlot=slot;slot=next;fireTimer=Math.max(fireTimer,.2);resetScope();audio.cancelReload();
 }
 function takeoverTarget(){return matchView.takeoverTarget(self,snapshot,performance.now());}
 function controlAction(action,{pressed,event,source}){
@@ -264,11 +267,11 @@ function controlAction(action,{pressed,event,source}){
     mouseFire=pressed&&controlsEnabled();
     if(slot>=4)sendInput({...currentInput(),...(source==='clear'?{cancelGrenade:true}:{} )});
     else if(mouseFire)localShoot(currentInput(),0);
-    else {pendingFirePress=false;shotPrediction.triggered=false;sendInput(currentInput());}
+    else {pendingFirePress=false;shotPrediction.triggered=false;cancelRevolverPrepare();sendInput(currentInput());}
     return;
   }
   if(action==='altFire'&&slot===4){sendInput({...currentInput(),...(source==='clear'?{cancelGrenade:true}:{} )});return;}
-  if(action==='altFire'&&slot===3){if(pressed)pendingAltFirePress=true;if(source==='clear')pendingAltFirePress=false;sendInput(currentInput());return;}
+  if(action==='altFire'&&(slot===3||self?.weapon==='revolver')){if(pressed)pendingAltFirePress=true;if(source==='clear')pendingAltFirePress=false;if(self?.weapon==='revolver'){cancelRevolverPrepare();if(pressed)localShoot(currentInput(),0);else sendInput(currentInput());}else sendInput(currentInput());return;}
   if(action==='interact'){sendInput(currentInput());return;}
   if(action==='scoreboard'){$('scoreboard').hidden=!pressed;return;}
   if(!pressed)return;
@@ -422,7 +425,7 @@ function handleSnapshot(data){
   }
   shotPrediction.reconcile(p);
   serverAmmo=p.ammo;
-  if(previousWeapon!==p.weapon||!p.alive){audio.cancelReload();audio.cancelDraw();if(p.alive){audio.prepareWeapon(p.weapon);audio.draw(p.weapon);}resetScope();}
+  if(previousWeapon!==p.weapon||!p.alive){cancelRevolverPrepare();audio.cancelReload();audio.cancelDraw();if(p.alive){audio.prepareWeapon(p.weapon);audio.draw(p.weapon);}resetScope();}
   if(p.alive&&p.reloadRemaining>0&&(previousReload<=0||previousWeapon!==p.weapon||getWeapon(p.weapon).reloadStyle==='shell'&&p.reloadRemaining>previousReload+.05))audio.weaponReload(p.weapon,{team:p.team,duration:p.reloadDuration||p.reloadRemaining,elapsed:p.reloadElapsed,empty:p.reloadEmpty});
   if(previousWeapon&&getWeapon(previousWeapon).slot>=4&&getWeapon(p.weapon).slot<4){slot=p.slot;mouseFire=false;pendingFirePress=false;pendingAltFirePress=false;}
   if(!p.inventory.some(id=>getWeapon(id).slot===slot))slot=p.slot;
@@ -470,7 +473,8 @@ function handleEvent(e){
   if(e.type==='grenade_thrown'&&e.shooterId===(spectating?.id||myId))viewWeapon?.shoot({mode:e.mode});
   if(e.type==='grenade_thrown'&&e.shooterId===myId){slot=self?.inventory?.some(id=>getWeapon(id).slot===1)?1:self?.inventory?.some(id=>getWeapon(id).slot===2)?2:3;mouseFire=false;shotPrediction.triggered=false;pendingFirePress=false;pendingAltFirePress=false;resetScope();sendInput(currentInput());}
   if(e.type==='shot'){
-    if(e.shooterId===myId)lastShotEvidence={weapon:e.weapon,shotId:e.shotId,heavy:!!e.heavy,backstab:!!e.backstab,zoomLevel:e.zoomLevel,accuracy:e.accuracy,rewindMs:e.rewindMs,aim:e.aim,origin:e.origin,end:e.end,hitId:e.hitId,at:performance.now()};
+    if(spectating&&e.shooterId===spectating.id)viewWeapon?.shoot({heavy:e.heavy,fireMode:e.fireMode});
+    if(e.shooterId===myId)lastShotEvidence={weapon:e.weapon,shotId:e.shotId,fireMode:e.fireMode,heavy:!!e.heavy,backstab:!!e.backstab,zoomLevel:e.zoomLevel,accuracy:e.accuracy,rewindMs:e.rewindMs,aim:e.aim,origin:e.origin,end:e.end,hitId:e.hitId,at:performance.now()};
     if(e.weapon!=='knife'&&e.origin&&e.end){const own=e.shooterId===(spectating?.id||myId),muzzle=own?viewWeapon?.getMuzzleWorldPosition(new THREE.Vector3(),camera):null;for(const pellet of e.pellets?.length?e.pellets:[e])effects.shot(e.origin,pellet.end||e.end,own,{weapon:e.weapon,shooterId:e.shooterId,muzzle,hitWorld:pellet.hitWorld??e.hitWorld,segments:pellet.segments||e.segments||[]});}
     if(e.weapon==='knife'&&e.shooterId===myId&&e.hitWorld)audio.knife('wall');
     if(e.shooterId!==myId&&self&&e.origin){const listener=spectating?camera.position:self,listenerYaw=spectating?camera.rotation.y:lookYaw;const dx=e.origin.x-listener.x,dz=e.origin.z-listener.z;const distance=Math.hypot(dx,dz);const pan=(dx*Math.cos(listenerYaw)-dz*Math.sin(listenerYaw))/Math.max(1,distance);audio.shot(e.weapon,distance,pan,{remote:true,heavy:e.heavy,team:snapshot.players.find(p=>p.id===e.shooterId)?.team});}
@@ -483,27 +487,43 @@ function handleEvent(e){
 function localShoot(input,dt){
   pendingFirePress=false;pendingAltFirePress=false;
   fireTimer=Math.max(0,fireTimer-dt);
-  if(!self?.alive||self.objectiveLocked)return;
-  const w=getWeapon(self.weapon),melee=w.id==='knife',heavy=melee&&input.fire2;
+  if(!self?.alive||self.objectiveLocked){cancelRevolverPrepare();return;}
+  const w=getWeapon(self.weapon),melee=w.id==='knife',heavy=melee&&input.fire2,revolver=w.id==='revolver';
   if(w.slot>=4||self.bombAction){shotPrediction.triggered=false;return;}
   const now=performance.now();shotPrediction.expire(now,ping);
-  const triggerReady=shotPrediction.triggerReady(input.fire||heavy,w.automatic||melee);
-  if(!triggerReady)return;
+  const triggerReady=shotPrediction.triggerReady(input.fire||heavy||revolver&&input.fire2,w.automatic||melee);
+  if(!triggerReady){cancelRevolverPrepare();return;}
   // Keep a held semi-automatic trigger until the switch/reload is actually ready.
   // Only a sent command may produce recoil, sound or an ammunition reservation.
   if(socket?.readyState!==WebSocket.OPEN||now-lastSnapshotAt>1500){
+    cancelRevolverPrepare();
     if(now-lastShotWarning>4000){lastShotWarning=now;hud.toast('网络响应中断 · 正在等待服务器确认');}
     return;
   }
-  if(self.slot!==slot||fireTimer>1e-8||self.fireReadyRemaining>0||self.reloadRemaining>0&&!(w.reloadStyle==='shell'&&self.ammo>0)||!melee&&self.ammo-shotPrediction.pending.length<=0)return;
+  if(self.slot!==slot||self.fireReadyRemaining>0||revolver&&input.reload||self.reloadRemaining>0&&!(w.reloadStyle==='shell'&&self.ammo>0)||!melee&&self.ammo-shotPrediction.pending.length<=0){cancelRevolverPrepare();return;}
+  let fireMode='primary';
+  if(revolver){
+    // Preserve the discharge pose until the last preparation window of cooldown.
+    if(!input.fire2&&revolverTrigger.startedAt===null&&fireTimer>REVOLVER_PRIMARY_FIRE_DELAY_MS/1000+1e-8)return;
+    const startedAt=revolverTrigger.startedAt;
+    fireMode=revolverTrigger.update(input,now);
+    if(revolverTrigger.startedAt!==null&&startedAt===null){
+      // Tell the authority when the trigger starts; a shot ID is sent only on discharge.
+      sendInput(input);viewWeapon?.prepareRevolver(true,REVOLVER_PRIMARY_FIRE_DELAY_MS/1000);audio.prepareRevolver();
+    }
+    if(input.fire2){viewWeapon?.prepareRevolver(false);audio.cancelChannel('revolver-prepare');}
+    if(!fireMode)return;
+  }else cancelRevolverPrepare();
+  if(fireTimer>1e-8)return;
   const nextShot=shotId+1;
   if(!sendInput({...input,shotId:nextShot,shotWeapon:w.id}))return;
   shotId=nextShot;shotPrediction.triggered=true;
+  if(revolver)cancelRevolverPrepare();
   if(!melee)shotPrediction.reserve(shotId,now,w.id);
   if(w.reloadStyle==='shell'&&self.reloadRemaining>0){audio.cancelReload();self.reloadRemaining=0;}
-  audio.cancelDraw();fireTimer=melee?knifeInterval(heavy):w.fireInterval;lastShot=now;
+  audio.cancelDraw();fireTimer=melee?knifeInterval(heavy):weaponFireInterval(w,fireMode);lastShot=now;
   if(w.unzoomsAfterShot){resumeZoom=zoomLevel;zoomResumeAt=now+w.fireInterval*1000;zoomLevel=0;scoped=false;}
-  viewWeapon?.shoot({heavy});audio.shot(w.id,0,0,{team:self.team,heavy});recoil=Math.min(.10,recoil+w.recoil*.55);lookPitch=Math.min(1.48,lookPitch+w.recoil*.35);
+  viewWeapon?.shoot({heavy,fireMode});audio.shot(w.id,0,0,{team:self.team,heavy});recoil=Math.min(.10,recoil+w.recoil*.55);lookPitch=Math.min(1.48,lookPitch+w.recoil*.35);
 }
 
 async function lockPointer(){if(!connected||!self||contextLost||snapshot?.match?.status==='ended')return;canvas.focus({preventScroll:true});$('pause-menu').hidden=true;$('buy-menu').hidden=true;clearGameInput();if(touchControls?.enabled){mobileShell?.enter();const motionPermission=mobileAim.authorize();touchPlaying=true;await audio.start();await motionPermission;syncTouchSurface();return;}try{await audio.start();await canvas.requestPointerLock({unadjustedMovement:true});}catch{try{await canvas.requestPointerLock();}catch{$('pause-menu').hidden=false;hud.toast('请点击继续游戏以启用鼠标控制。');}}}
@@ -620,7 +640,7 @@ function frame(now){
   for(const p of renderPlayers){if(p.id===myId)continue;const actor=actors.get(p.id);if(!actor)continue;actorBounds.center.set(p.x,p.y+.9,p.z);const visible=visibilityFrustum.intersectsSphere(actorBounds);actor.group.visible=visible;const distance=camera.position.distanceTo(actorBounds.center);actor.update(p,renderDt,{exactPosition:true,animationRate:visible?(distance<25?60:30):12});}
   const actorMs=performance.now()-actorStart;
   viewWeapon?.update(renderDt,viewed,fullScope,{optic});if(!fullScope)weaponLighting.update(scene,camera);effects.update(renderDt);mapResultCache?.breakables?.update(renderDt);utilityEffects.update(renderDt,camera,self.alive||!!spectating);audio.utilityAmbient(snapshot,camera.position);bombView.update(snapshot.bomb,now);matchAudio.update(snapshot,camera.position,now);
-  if(hudAcc>.075){hudAcc=0;touchControls?.update({alive:self.alive,moving:movementControlsEnabled(),combat:controlsEnabled(),equipment:equipmentControlsEnabled(),canTakeBot:!!takeoverTarget(),spectator:!self.alive,canCycle:matchView.candidates(self,snapshot).length>0,slot,hasBomb:self.hasBomb&&snapshot.round?.phase==='live',planted:snapshot.round?.phase==='live'&&snapshot.bomb?.state==='planted',slots:[...new Set((self.inventory||[]).map(id=>getWeapon(id).slot))]});hud.update(snapshot,self,{ping,fps:Math.round(fps),spectating,touch:!!touchControls?.enabled,interactKey:touchControls?.enabled?'点击右侧按钮':formatBinding(controls.getBindings().interact[0]),canTakeBot:!!takeoverTarget(),scoreboardKey:formatBinding(controls.getBindings().scoreboard[0]),menuKey:formatBinding(controls.getBindings().menu[0]),nextSpectatorKey:touchControls?.enabled?'右侧「下一位」':formatBinding(controls.getBindings().fire[0]),previousSpectatorKey:touchControls?.enabled?'「上一位」':formatBinding(controls.getBindings().altFire[0])});$('weapon-skin').textContent=getWeapon(self.weapon).slot>=4?'原厂装备':getSkin(self.skinId)?.name||getWeapon(self.weapon).skin;if(!$('buy-menu').hidden)shop.update({player:{...self,skins:skins.loadout,weaponLoadout:myId===connectionId?armory.loadout:null},mode,round:snapshot.round,time:snapshot.time,requests:snapshot.weaponRequests});}
+  if(hudAcc>.075){hudAcc=0;touchControls?.update({alive:self.alive,moving:movementControlsEnabled(),combat:controlsEnabled(),equipment:equipmentControlsEnabled(),canTakeBot:!!takeoverTarget(),spectator:!self.alive,canCycle:matchView.candidates(self,snapshot).length>0,slot,weapon:self.weapon,hasBomb:self.hasBomb&&snapshot.round?.phase==='live',planted:snapshot.round?.phase==='live'&&snapshot.bomb?.state==='planted',slots:[...new Set((self.inventory||[]).map(id=>getWeapon(id).slot))]});hud.update(snapshot,self,{ping,fps:Math.round(fps),spectating,touch:!!touchControls?.enabled,interactKey:touchControls?.enabled?'点击右侧按钮':formatBinding(controls.getBindings().interact[0]),canTakeBot:!!takeoverTarget(),scoreboardKey:formatBinding(controls.getBindings().scoreboard[0]),menuKey:formatBinding(controls.getBindings().menu[0]),nextSpectatorKey:touchControls?.enabled?'右侧「下一位」':formatBinding(controls.getBindings().fire[0]),previousSpectatorKey:touchControls?.enabled?'「上一位」':formatBinding(controls.getBindings().altFire[0])});$('weapon-skin').textContent=getWeapon(self.weapon).slot>=4?'原厂装备':getSkin(self.skinId)?.name||getWeapon(self.weapon).skin;if(!$('buy-menu').hidden)shop.update({player:{...self,skins:skins.loadout,weaponLoadout:myId===connectionId?armory.loadout:null},mode,round:snapshot.round,time:snapshot.time,requests:snapshot.weaponRequests});}
   droppedWeapons.update(self,camera,equipmentControlsEnabled(),formatBinding(controls.getBindings().interact[0]));
   const observedActor=spectating&&actors.get(spectating.id);if(observedActor)observedActor.group.visible=false;
   const renderStart=performance.now();renderer.info.reset();renderer.autoClear=true;renderer.render(scene,camera);

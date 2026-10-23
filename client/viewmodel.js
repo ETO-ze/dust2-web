@@ -98,6 +98,7 @@ export class ViewWeapon {
     const item = { root, arms, weapon, mount, mixer, actions, wpn, current:null, actionName:'',skinId,agentId };
     mixer.addEventListener('finished', event => {
       if (item.current !== event.action) return;
+      if(item.actionName==='prepare'&&this.revolverPreparing)return;
       if(item.actionName==='pullpin'&&this.utilityPrimed){this.playOn(item,this.utilityHoldName(),.055);return;}
       this.playOn(item, this.opticActive&&['sg553','aug'].includes(id)?'aimIdle':'idle', .055);
     });
@@ -141,7 +142,7 @@ export class ViewWeapon {
     this.active.mixer.stopAllAction();
     this.playOn(this.active,'draw',0);
     this.active.mixer.update(0);
-    this.flashTime=0; this.planting=false;this.reloadActive=false;this.utilityPrimed=false;this.utilityReleased=false;
+    this.flashTime=0; this.planting=false;this.reloadActive=false;this.utilityPrimed=false;this.utilityReleased=false;this.revolverPreparing=false;
     this.syncAttachment();
   }
 
@@ -149,14 +150,22 @@ export class ViewWeapon {
     if (!this.active) return;
     const heavy=options === true || options?.heavy;
     const mode=options?.mode||this.utilityMode;
-    const name=UTILITY_IDS.includes(this.id)?(['underhand','under','low','drop'].includes(mode)?'throwUnderhand':'throw'):this.id==='knife' ? (heavy ? 'heavy' : (this.slash++%2 ? 'shoot2':'shoot')) : this.id==='elite' ? (this.slash++%2?'shoot2':'shoot') : this.opticActive&&['sg553','aug'].includes(this.id)?'aimShoot':'shoot';
+    const name=UTILITY_IDS.includes(this.id)?(['underhand','under','low','drop'].includes(mode)?'throwUnderhand':'throw'):this.id==='knife' ? (heavy ? 'heavy' : (this.slash++%2 ? 'shoot2':'shoot')) : this.id==='revolver'&&options?.fireMode==='secondary'?'shoot2':this.id==='elite' ? (this.slash++%2?'shoot2':'shoot') : this.opticActive&&['sg553','aug'].includes(this.id)?'aimShoot':'shoot';
+    this.revolverPreparing=false;
     this.utilityPrimed=false;this.utilityReleased=UTILITY_IDS.includes(this.id);
     this.playOn(this.active,name,.025,getWeapon(this.id).unzoomsAfterShot?getWeapon(this.id).fireInterval:0);
     this.flashTime=UTILITY_IDS.includes(this.id)||this.id==='knife'||this.id==='m4a1'||this.id==='usp' ? 0 : .045;
   }
 
   inspect() {
-    return beginWeaponInspect(this.active,{blocked:this.waiting||this.reloadActive||this.utilityPrimed||this.planting});
+    return beginWeaponInspect(this.active,{blocked:this.waiting||this.reloadActive||this.utilityPrimed||this.planting||this.revolverPreparing});
+  }
+
+  prepareRevolver(preparing,duration=.25){
+    if(this.id!=='revolver'||!this.active)return;
+    if(preparing&&!this.revolverPreparing)this.playOn(this.active,'prepare',.025,duration);
+    else if(!preparing&&this.revolverPreparing&&this.active.actionName==='prepare')this.playOn(this.active,'idle',.025);
+    this.revolverPreparing=preparing;
   }
 
   cancelInspect() {

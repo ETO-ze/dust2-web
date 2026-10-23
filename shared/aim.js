@@ -3,9 +3,9 @@ export const STANDING_EYE_HEIGHT=1.62;
 export const CROUCH_EYE_HEIGHT=.95;
 export const aimPitch=(look,punch=0)=>Math.max(-1.48,Math.min(1.48,look+punch));
 export function eyePosition(player){return {x:player.x,y:player.y+(player.crouch?CROUCH_EYE_HEIGHT:STANDING_EYE_HEIGHT),z:player.z};}
-export function accuracyForShot(weapon,player,zoomLevel=0){
+export function accuracyForShot(weapon,player,zoomLevel=0,fireMode='primary'){
  const source=WEAPON_ACCURACY[weapon.id];if(!source)return {spread:0,inaccuracy:0,total:0,moving:0};
- const index=(weapon.zoomFovs.length>1&&zoomLevel>0)||['m4a1','usp'].includes(weapon.id)?1:0;
+ const index=(weapon.id==='revolver'&&fireMode==='secondary')||(weapon.zoomFovs.length>1&&zoomLevel>0)||['m4a1','usp'].includes(weapon.id)?1:0;
  const speed=Math.hypot(player.vx||0,player.vz||0),maxSpeed=(zoomLevel>0?weapon.scopedMaxSpeed:weapon.maxSpeed)||6;
  // Browser approximation: gradual velocity penalty, never the old full-cone
  // jump at 0.8 m/s. Retain the original per-stance and per-mode accuracy arrays.

@@ -52,7 +52,8 @@ test('all firearms purchase and shoot on the authoritative server after configur
   const index=['usp','hkp2000','pistol'].includes(id)?0:w.category==='pistols'?1:0;
   assert(room.setWeaponLoadout(p.id,replaceLoadoutSlot(null,team,w.category,index,id)).ok,id);
   room.mode='defuse';room.round.phase='freeze';room.round.buyEndsAt=now+30000;p.money=16000;assert(room.buy(p.id,id).ok,id);assert.equal(p.money,16000-w.price,id);
-  now+=5000;p.protectionUntil=0;p.triggerWasDown=false;room.events=[];
+  now+=5000;p.protectionUntil=0;p.triggerWasDown=false;room.events=[];room.round.phase='live';
+  if(id==='revolver'){room.fire(p,{fire:true,yaw:0,pitch:0});assert.equal(p.inventory[id].ammo,w.magazine);now+=250;}
   room.fire(p,{fire:true,yaw:0,pitch:0});assert.equal(p.inventory[id].ammo,w.magazine-1,id);assert(room.events.some(e=>e.type==='shot'&&e.weapon===id),id);
   assert(loadoutCandidates(team,w.category).includes(id));
  }

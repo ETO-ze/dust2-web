@@ -53,7 +53,7 @@ export class TouchControls {
    if(b.dataset.slot){const slot=Number(b.dataset.slot);b.disabled||=!state.slots.includes(slot);b.classList.toggle('selected',state.slot===slot);}
   }
   this.element.querySelector('.touch-fire').textContent=state.spectator?'下一位':state.slot===4?'投掷':state.slot===5?'下包':'开火';
-  this.element.querySelector('.touch-alt').textContent=state.spectator?'上一位':state.slot===3?'重刀':'开镜';
+   this.element.querySelector('.touch-alt').textContent=state.spectator?'上一位':state.slot===3?'重刀':state.weapon==='revolver'?'扳锤射击':'开镜';
   this.element.querySelector('.touch-alt').disabled||=state.slot===4;
   this.element.querySelector('.touch-use').textContent=state.canTakeBot?'控制人机':state.hasBomb?'下包':state.planted?'拆包 / 用':'拾取 / 用';
   this.element.querySelector('.touch-throw').hidden=state.slot!==4||!state.alive;
