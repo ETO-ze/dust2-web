@@ -26,6 +26,17 @@ test('map downloads move to the mirror while the websocket and original cache UR
   assert.equal(privateMapDownloadURL(url,config).href,url);
 });
 
+test('content-addressed gameplay files reuse the HTTP cache only on the performance route', async () => {
+ const optionsFor = async (config, suffix) => {
+   const fetcher = privateMapFetcher(config, {fetcher: (_url, options) => options});
+   return fetcher(new URL('physics.f32' + suffix, base.renderUrl), {cache:'no-store'});
+ };
+ const current = '?v=' + sha('current gameplay bytes');
+ assert.equal((await optionsFor({...base, flatOnly:true}, current)).cache, 'default');
+ assert.equal((await optionsFor({...base, flatOnly:true}, '')).cache, 'no-store');
+ assert.equal((await optionsFor(base, current)).cache, 'no-store');
+});
+
 test('a mirror outage does not send the large transfer to the game server by default',async()=>{
  const requested=[],config=privateMapDownloads(base,delivery);
  const reader=privateMapFetcher(config,{fetcher:async(url,options)=>{

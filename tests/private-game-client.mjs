@@ -5,7 +5,7 @@ import {privateConfig,privateCompatibilityError,clientAssetManifest,privateMapMe
 import {decodePrivateMapCollision} from '../shared/private-map-collision.js';
 const sha=buffer=>crypto.createHash('sha256').update(buffer).digest('hex');
 const signature='a'.repeat(64);
-const config=()=>({private:true,id:'de_mirage',mapId:'de_mirage',mapSignature:signature,sourceSha256:signature,physicsSha256:signature,maskSha256:signature,policySha256:signature,navigationSha256:signature,metadataSha256:signature,jumpLinksSha256:signature,movementModel:'source-air-private-v1',
+const config=()=>({private:true,id:'de_mirage',mapId:'de_mirage',mapSignature:signature,sourceSha256:signature,physicsSha256:signature,maskSha256:signature,policySha256:signature,navigationSha256:signature,metadataSha256:signature,jumpLinksSha256:signature,laddersSha256:signature,movementModel:'source-air-ladders-v2',
  metadataUrl:'maps/de_mirage/map.json',navUrl:'maps/de_mirage/nav.json',physicsUrl:'maps/de_mirage/physics.f32',maskUrl:'maps/de_mirage/physics-mask.u8',groupsUrl:'maps/de_mirage/physics-groups.json',policyUrl:'maps/de_mirage/entity-collision-policy.json',renderUrl:'/review/maps/de_mirage/render/map.gltf',socketPath:'ws'});
 const page='https://cs2.example:8443/review/play/de_mirage/';
 

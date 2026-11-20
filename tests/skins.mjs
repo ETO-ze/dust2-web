@@ -4,6 +4,35 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import {SKINS,DEFAULT_SKINS,getSkin,normalizeSkinLoadout} from '../shared/skins.js';
 import {WEAPONS} from '../shared/weapons.js';
+import {filterSkins} from '../client/skin-library.js';
+import {packagedSkinAssets} from '../shared/packaged-skin-assets.js';
+
+test('stock models and three distinct market-selected finishes are available per firearm',()=>{
+  const staged=new Set(packagedSkinAssets(SKINS).map(file=>file.path));
+  const popular=filterSkins({availability:'popular'});
+  for(const weapon of Object.keys(WEAPONS).filter(id=>id!=='knife')){
+    const originals=filterSkins({weapon,availability:'vanilla'});
+    assert.equal(originals.length,1,weapon);
+    const skins=popular.filter(s=>s.weapon===weapon);
+    assert.equal(skins.length,3,weapon);
+    const allPaints=SKINS.filter(s=>s.weapon===weapon&&s.paintkit!=null).map(s=>s.paintkit);
+    assert.equal(new Set(allPaints).size,allPaints.length,weapon);
+    for(const skin of skins){
+      assert.equal(skin.condition,'Factory New');
+      assert.ok(skin.wear>=0&&skin.wear<.07);
+    }
+    for(const skin of [...skins,...originals]){
+      assert.ok(staged.has(skin.model)&&staged.has(skin.preview),skin.id);
+      assert.equal(normalizeSkinLoadout({[weapon]:skin.id})[weapon],skin.id);
+    }
+  }
+  const knives=filterSkins({weapon:'knife',availability:'vanilla'});
+  assert.equal(new Set(knives.map(s=>s.animationFamily)).size,22);
+  for(const skin of knives){
+    assert.ok(skin.downloadRequired&&skin.animation?.bytes,skin.id);
+    assert.equal(normalizeSkinLoadout({knife:skin.id}).knife,skin.id);
+  }
+});
 
 test('all 34 guns and the knife have exactly one valid Factory New default',()=>{
   const specs=JSON.parse(fs.readFileSync(new URL('../scripts/weapon-assets/default-skins.json',import.meta.url),'utf8'));
@@ -42,7 +71,7 @@ test('catalog assets exist, are self-contained GLBs, and match advertised sizes/
     assert.ok(json.nodes.some(n=>n.name==='normalization'));assert.ok(json.skins.length);
     assert.ok(json.images.every(i=>i.bufferView!==undefined&&!i.uri));
     assert.ok(json.buffers.every(b=>!b.uri));
-    if(skin.isDefault){
+    if(skin.paintkit){
       const paint=json.materials.find(m=>m.extras?.paintkit===skin.paintkit)?.extras;
       assert.ok(paint,`${skin.id}: rendered material carries the selected paintkit`);
       assert.equal(paint.wear,skin.wear,`${skin.id}: rendered wear agrees with the catalog`);
@@ -55,6 +84,16 @@ test('catalog assets exist, are self-contained GLBs, and match advertised sizes/
       assert.equal(animation.length,skin.animation.bytes);
       assert.equal(crypto.createHash('sha256').update(animation).digest('hex'),skin.animation.sha256);
     }
+  }
+});
+
+test('nonzero official minimums use the corresponding wear bake and valid exterior',()=>{
+  const fireSerpent=getSkin('ak47-fire-serpent'),asiimov=getSkin('awp-asiimov');
+  assert.equal(fireSerpent.wear,.06);assert.equal(fireSerpent.condition,'Factory New');
+  assert.equal(asiimov.wear,.18);assert.equal(asiimov.condition,'Field-Tested');
+  for(const skin of [fireSerpent,asiimov]){
+    assert.equal(skin.wear,skin.wearMin);
+    assert.match(skin.model,/official-wear/);
   }
 });
 

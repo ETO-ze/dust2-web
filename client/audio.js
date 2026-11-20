@@ -9,7 +9,7 @@ export class GameAudio {
   constructor({context=null}={}) {
     this.ctx = context; this.volume = 0.6; this.ready = false; this.buffers = [];
     this.banks = new Map(); this.voices = new Set(); this.loading = null;
-    this.channelEpochs=new Map();this.playEpoch=0;
+    this.burstVoices=new Map();this.channelEpochs=new Map();this.playEpoch=0;
     this.lastWeapon = 'ak47'; this.lastTeam = 'T'; this.lastHitAt = -Infinity; this.lastKillAt = -Infinity;
   }
 
@@ -131,7 +131,15 @@ export class GameAudio {
     const bank = remote && gap >= 26 && this.banks.has(farBank) ? farBank : weapon;
     const base = { ak47: 0.66, m4a1: 0.65, awp: 0.72, glock: 0.65, usp: 0.70 }[weapon] || 0.6;
     const level = remote ? base * 0.80 / (1 + gap * 0.045) : base;
-    this.play(bank, { level, distance: remote ? gap : 0, pan: remote ? pan : 0, rate: 0.99 + Math.random() * 0.02, channel: remote ? 'remote' : 'shot' });
+    let delay=0;
+    if(options.burstIndex&&options.shooterId){
+      // A snapshot may contain two rounds. Preserve their spacing on the audio clock.
+      const now=this.ctx.currentTime,previous=this.burstVoices.get(options.shooterId)??0;
+      if(options.burstIndex>1)delay=Math.max(0,previous+getWeapon(id).burstShotInterval-now);
+      for(const [shooter,at] of this.burstVoices)if(at<now-1)this.burstVoices.delete(shooter);
+      this.burstVoices.set(options.shooterId,now+delay);
+    }
+    this.play(bank, { level, delay, distance: remote ? gap : 0, pan: remote ? pan : 0, rate: 0.99 + Math.random() * 0.02, channel: remote ? 'remote' : 'shot' });
     if (weapon === 'awp' && !remote) {
       this.play('awpBack', { level: 0.36, delay: 0.43, channel: 'bolt' });
       this.play('awpForward', { level: 0.36, delay: 0.81, channel: 'bolt' });
@@ -201,7 +209,7 @@ export class GameAudio {
     this.releaseVoice(voice);
   }
   cancelReload() {this.cancelChannel('reload');this.cancelChannel('bolt');}
-  stopAll() {this.playEpoch++;for (const voice of [...this.voices]) this.stopVoice(voice); this.lastHitAt = this.lastKillAt = -Infinity; }
+  stopAll() {this.burstVoices.clear();this.playEpoch++;for (const voice of [...this.voices]) this.stopVoice(voice); this.lastHitAt = this.lastKillAt = -Infinity; }
 
   step() {
     if (!this.ready || !this.buffers.length) return;

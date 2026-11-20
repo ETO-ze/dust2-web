@@ -5,17 +5,22 @@ import {createRequire} from 'node:module';
 import {Matrix4,Vector3,Quaternion} from '../../node_modules/three/build/three.module.js';
 import {pristinePaintCoverage} from './pristine-coverage.mjs';
 import {resizePackedRgba} from './packed-texture.mjs';
-const require=createRequire('C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/package.json');
+const require=createRequire(import.meta.url);
 const sharp=require('sharp');
 const legacyCatalog=process.argv.includes('--legacy');
+const expansionCatalog=process.argv.includes('--expansion');
+const popularCatalog=process.argv.includes('--popular');
+if ([legacyCatalog,expansionCatalog,popularCatalog].filter(Boolean).length > 1) throw Error('Select one finish catalogue.');
 const extraction=path.resolve(legacyCatalog?'output/cs2-skins':'artifacts/weapon-expansion');
 const source=path.join(extraction,'source');
-const out=path.resolve(legacyCatalog?'public/assets/weapons/cs2-skins':'public/assets/weapons/cs2-loadout');
+const out=path.resolve(popularCatalog?'public/assets/weapons/cs2-skins/popular':expansionCatalog?'public/assets/weapons/cs2-skins/expansion':legacyCatalog?'public/assets/weapons/cs2-skins':'public/assets/weapons/cs2-loadout');
 const paintdir=path.join(source,'materials/models/weapons/customization/paints/vmats');
 const legacy='materials/models/weapons/customization/';
-const allSpecs=JSON.parse(fs.readFileSync(new URL(legacyCatalog?'./legacy-skins.json':'./default-skins.json',import.meta.url),'utf8'));
+const allSpecs=JSON.parse(fs.readFileSync(new URL(popularCatalog?'./popular-skins.json':expansionCatalog?'./expansion-skins.json':legacyCatalog?'./legacy-skins.json':'./default-skins.json',import.meta.url),'utf8'));
 const filter=process.argv.find(a=>a.startsWith('--ids='))?.slice(6).split(',');
-const specs=allSpecs.filter(s=>!filter||filter.includes(s.id));
+const chosenKits=process.argv.find(a=>a.startsWith('--paintkits='))?.slice(12).split(',').map(Number);
+const specs=allSpecs.filter(s=>(!filter||filter.includes(s.id))&&(!chosenKits||chosenKits.includes(s.paintkit)));
+const selection=chosenKits&&filter?[...filter,...chosenKits].join('-'):chosenKits?chosenKits.join('-'):filter?.join('-');
 fs.mkdirSync(out,{recursive:true});
 function params(file){return Object.fromEntries([...fs.readFileSync(file,'utf8').matchAll(/"([^"\n]+)"\s+"([^"\n]*)"/g)].map(x=>[x[1],x[2]]));}
 const local=(dir,p)=>path.join(dir,path.basename(p));
@@ -41,7 +46,31 @@ async function bake(spec){
   }
   const base=inputs.TextureColor1,mask=inputs.TextureMasks1,ao=inputs.TextureAmbientOcclusion1,metal=inputs.TextureMetalness1,rough=inputs.TextureRoughness1;
   const separate=q.F_SEPARATE_CHANNEL_INPUTS==='1';
-  const style=Number(p.F_PAINT_STYLE),brightness=Number(p.g_flColorBrightness||1),scale=Number(p.g_flPatternTexCoordScale||1),angle=Number(p.g_flPatternTexCoordRotation||0)*Math.PI/180;
+  const style=Number(p.F_PAINT_STYLE),brightness=Number(p.g_flColorBrightness||1);
+  // csgo_customweapon scales UV-mapped paints by the model's own UV scale.
+  // The separate position-mapped finish retains its position-map projection.
+  const modelScale=p.g_bIgnoreWeaponSizeScale==='0'?Number(q.g_flUvScale1||1):1;
+  function uvSampler(kind,size) {
+    const round=v=>Math.floor((v+.005)*100)/100;
+    const scale=round(Number(p['g_fl'+kind+'TexCoordScale']||1)*modelScale);
+    const angle=round(Number(p['g_fl'+kind+'TexCoordRotation']||0))*Math.PI/180;
+    const offsets=vec(p['g_v'+kind+'TexCoordOffset']);
+    const c=Math.cos(angle),s=Math.sin(angle);
+    const half=.5/(scale||1),x=half*Math.cos(-angle)-half*Math.sin(-angle);
+    const y=x*Math.sin(-angle)+half*Math.cos(-angle);
+    const dx=scale*c*x-scale*s*y+round(offsets[0]||0)-.5;
+    const dy=scale*s*x+scale*c*y+round(offsets[1]||0)-.5;
+    const wrap=value=>Math.floor((value-Math.floor(value))*size);
+    return (u,v)=>(wrap((u*s+v*c)*scale+dy)*size+wrap((u*c-v*s)*scale+dx))*4;
+  }
+  const samplePattern=uvSampler('Pattern',pn),sampleWear=uvSampler('Wear',n);
+  const wear=spec.wearMin;
+  let wearMask=null;
+  if(wear>0){
+    if(separate||!p.TextureWear)throw Error('Unsupported wear-mask input: '+spec.name);
+    const wearFile=local(paintdir,p.TextureWear);used.push(wearFile);
+    wearMask=await rgba(wearFile,n);
+  }
   const positionFile=path.join(extraction,'glock-position.f32');
   const positionBytes=style===5?fs.readFileSync(positionFile):null;
   if(positionBytes)used.push(positionFile);
@@ -50,16 +79,9 @@ async function bake(spec){
   // parameters have Expression(SrgbGammaToLinear(this)); pattern masks are linear.
   const colors=Array.from({length:4},(_,i)=>vec(p['g_vColor'+i]).slice(0,3).map(srgbToLinear));
   const albedo=Buffer.alloc(n*n*3),orm=Buffer.alloc(n*n*3),coverage=Buffer.alloc(n*n);
-  const c=Math.cos(angle),s=Math.sin(angle),baseRough=Number(p.g_flPaintRoughness||.5);
-  function pixel(u,v){
-    // Valve's IgnoreWeaponSizeScale is enabled for every selected finish.
-    // A deterministic zero offset is used; no CS2 seed-number equivalence is claimed.
-    const px=Math.floor((((u*c-v*s)*scale)%1+1)%1*pn)%pn;
-    const py=Math.floor((((u*s+v*c)*scale)%1+1)%1*pn)%pn;
-    return (py*pn+px)*4;
-  }
+  const baseRough=Number(p.g_flPaintRoughness||.5);
   for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-    const t=y*n+x,i=t*4,j=t*3,k=position?((Math.floor(pn*.5)*pn+Math.floor(clamp(position[j+1],0,.99999)*pn))*4):pixel((x+.5)/n,(y+.5)/n);
+    const u=(x+.5)/n,v=(y+.5)/n,t=y*n+x,i=t*4,j=t*3,k=position?((Math.floor(pn*.5)*pn+Math.floor(clamp(position[j+1],0,.99999)*pn))*4):samplePattern(u,v);
     const pa=pattern[k+3],originalMetal=metal[i]/255;
     // Installed CS2 composite shader packs TextureNoPaint1 into A for all paint styles.
     const noPaint=(separate?inputs.TextureNoPaint1?.[i]??0:ao[i+3])/255;
@@ -68,7 +90,10 @@ async function bake(spec){
     // protect pristine artwork (not blend scratches back over white finishes).
     // Anodized styles use this range for roughness and keep their own handling.
     const durability=style===6?Math.min(1,pa/128):1;
-    let strength=pristinePaintCoverage(noPaint*durability);
+    // csgo_customweapon combines the source wear texture R with the AO pack's
+    // exposure R and no-paint A. Preserve the pristine endpoint for zero wear.
+    const wearInput=wearMask?(noPaint+wearMask[sampleWear(u,v)]/255*(ao[i]/255))*(1+6*wear):noPaint;
+    let strength=pristinePaintCoverage(wearInput*durability);
     // Alpha near 196 masks paint; 128 and 255 retain default coverage.
     // This is the documented pristine endpoint, not Valve's entire wear simulation.
     if(pa>128){const remove=1-Math.abs(pa-191.5)/63.5;strength*=1-clamp(remove);}
@@ -120,7 +145,7 @@ async function bake(spec){
 const reports=[];
 for(const spec of specs){
   const previewSource=path.join(source,'panorama/images/econ/default_generated',spec.inventory+'_light_png.png');
-  const previewTarget=path.join(out,spec.previewOutput||'previews/'+spec.file+'.webp');fs.mkdirSync(path.dirname(previewTarget),{recursive:true});
+  const previewTarget=path.join(out,spec.previewOutput||(legacyCatalog&&spec.preview)||'previews/'+spec.file+'.webp');fs.mkdirSync(path.dirname(previewTarget),{recursive:true});
   await sharp(previewSource).resize(512,384,{fit:'inside',withoutEnlargement:true}).webp({quality:92}).toFile(previewTarget);
   const bakeResult=await bake(spec);const {p,q}=bakeResult;
   const input=path.resolve(spec.rawGLB),bytes=fs.readFileSync(input),jsonLength=bytes.readUInt32LE(12);
@@ -152,7 +177,7 @@ for(const spec of specs){
       m=structuredClone(original);delete m.extras;
       for(const ref of [m.pbrMetallicRoughness?.baseColorTexture,m.pbrMetallicRoughness?.metallicRoughnessTexture,m.normalTexture,m.occlusionTexture].filter(Boolean))ref.index=await texture(originalTexture(ref));
     }else{
-      m={name:spec.name,pbrMetallicRoughness:{baseColorTexture:{index:await texture(bakeResult.albedoFile,2048)},metallicRoughnessTexture:{index:await texture(bakeResult.ormFile)},metallicFactor:1,roughnessFactor:1},occlusionTexture:{index:await texture(bakeResult.ormFile),strength:1},normalTexture:{index:await texture(bakeResult.normalFile||originalTexture(original.normalTexture))},extras:{sourceMaterial:original.name,paintkit:spec.paintkit,paintKey:spec.paint,sourceUVBody:spec.body,wear:0,materialFidelity:'Original Valve pattern/UV/masks/parameters; browser PBR approximation of Source2 composite shader.'}};
+      m={name:spec.name,pbrMetallicRoughness:{baseColorTexture:{index:await texture(bakeResult.albedoFile,2048)},metallicRoughnessTexture:{index:await texture(bakeResult.ormFile)},metallicFactor:1,roughnessFactor:1},occlusionTexture:{index:await texture(bakeResult.ormFile),strength:1},normalTexture:{index:await texture(bakeResult.normalFile||originalTexture(original.normalTexture))},extras:{sourceMaterial:original.name,paintkit:spec.paintkit,paintKey:spec.paint,sourceUVBody:spec.body,wear:spec.wearMin,materialFidelity:'Original Valve pattern/UV/masks/parameters; browser PBR approximation of Source2 composite shader.'}};
       if(bakeResult.pearlFile){
         result.extensionsUsed=['KHR_materials_iridescence','KHR_materials_clearcoat'];
         m.extensions={KHR_materials_iridescence:{iridescenceFactor:.3,iridescenceIor:1.3,iridescenceThicknessMinimum:250,iridescenceThicknessMaximum:380,iridescenceTexture:{index:await texture(bakeResult.pearlFile)}},KHR_materials_clearcoat:{clearcoatFactor:.4,clearcoatRoughnessFactor:.22}};
@@ -191,8 +216,13 @@ for(const spec of specs){
   for(const index of doc.scenes[doc.scene||0].nodes)walk(index,new Matrix4());
   const joints=result.skins[0].joints.map(index=>({name:doc.nodes[index].name,index,sourcePosition:new Vector3().setFromMatrixPosition(worlds.get(index)).toArray(),normalizedPosition:new Vector3().setFromMatrixPosition(normalization.clone().multiply(worlds.get(index))).toArray()}));
   const previewFile=previewTarget;
-  reports.push({id:spec.id,name:spec.name,file:spec.file+'.glb',paintkit:spec.paintkit,paintKey:spec.paint,bytes:output.length,sha256:hash(filename),triangles,sizeMetres:size,sourceBounds:{minimum,maximum,center},up:'+Y',forward:'-Z',normalizationNode:'normalization',sourceToNormalized:normalization.toArray(),normalizedToSource:normalization.clone().invert().toArray(),sourceScale:1,sourceForward:'+Z',sourceUp:'+Y',sourceUVBody:spec.body,sourceMesh:selected.name,rawGLB:rel(input),rawGLBSha256:hash(input),animations:[],joints,wearMin:spec.wearMin,wearMax:spec.wearMax,condition:'Factory New',chineseName:spec.chineseName,englishName:spec.englishName,preview:{file:spec.previewOutput||'previews/'+spec.file+'.webp',sourceVpkPath:'panorama/images/econ/default_generated/'+spec.inventory+'_light_png.vtex_c',bytes:fs.statSync(previewFile).size,sha256:hash(previewFile)},parameters:{paintStyle:Number(p.F_PAINT_STYLE),patternScale:Number(p.g_flPatternTexCoordScale),patternRotation:Number(p.g_flPatternTexCoordRotation),patternOffset:[0,0],seedEquivalentToCS2:false,wear:0,paintRoughness:Number(p.g_flPaintRoughness),pearlescentScale:Number(p.g_flPearlescentScale),colors:[0,1,2,3].filter(i=>p['g_vColor'+i]).map(i=>vec(p['g_vColor'+i]))},sourceFiles:bakeResult.used.map(file=>({file:rel(file),sha256:hash(file)}))});
+  reports.push({id:spec.id,name:spec.name,...(popularCatalog?{marketVolume30d:spec.marketVolume30d}:{}),file:spec.file+'.glb',paintkit:spec.paintkit,paintKey:spec.paint,bytes:output.length,sha256:hash(filename),triangles,sizeMetres:size,sourceBounds:{minimum,maximum,center},up:'+Y',forward:'-Z',normalizationNode:'normalization',sourceToNormalized:normalization.toArray(),normalizedToSource:normalization.clone().invert().toArray(),sourceScale:1,sourceForward:'+Z',sourceUp:'+Y',sourceUVBody:spec.body,sourceMesh:selected.name,rawGLB:rel(input),rawGLBSha256:hash(input),animations:[],joints,wearMin:spec.wearMin,wearMax:spec.wearMax,condition:spec.wearMin<.07?'Factory New':spec.wearMin<.15?'Minimal Wear':'Field-Tested',chineseName:spec.chineseName,englishName:spec.englishName,preview:{file:spec.previewOutput||(legacyCatalog&&spec.preview)||'previews/'+spec.file+'.webp',sourceVpkPath:'panorama/images/econ/default_generated/'+spec.inventory+'_light_png.vtex_c',bytes:fs.statSync(previewFile).size,sha256:hash(previewFile)},parameters:{paintStyle:Number(p.F_PAINT_STYLE),patternScale:Number(p.g_flPatternTexCoordScale),patternRotation:Number(p.g_flPatternTexCoordRotation),patternOffset:[0,0],seedEquivalentToCS2:false,wear:spec.wearMin,paintRoughness:Number(p.g_flPaintRoughness),pearlescentScale:Number(p.g_flPearlescentScale),colors:[0,1,2,3].filter(i=>p['g_vColor'+i]).map(i=>vec(p['g_vColor'+i]))},sourceFiles:bakeResult.used.map(file=>({file:rel(file),sha256:hash(file)}))});
   console.log(spec.id,output.length,'bytes',triangles,'triangles',joints.length,'joints',spec.body);
 }
-fs.writeFileSync(path.join(out,filter?'manifest-'+filter.join('-')+'.json':legacyCatalog?'legacy-manifest.json':'manifest.json'),JSON.stringify({version:1,extractedAt:new Date().toISOString(),source:'Local owned Counter-Strike 2 installation; pak01_dir.vpk; Valve and workshop creators retain rights.',fidelity:'Original source geometry, correct paintkit UV body, original skin textures, normals, paint masks and parameters. Local pristine PBR bake; Source2 wear randomization, exact composite shader and pearlescence are not reproduced exactly.',tools:{exporter:'Source2Viewer-CLI 20.0.6980',baker:rel(new URL(import.meta.url).pathname.slice(1)),bakerSha256:hash(new URL(import.meta.url))},models:reports},null,2)+'\n');
-fs.writeFileSync(path.join(out,filter?'SHA256SUMS-'+filter.join('-')+'.txt':legacyCatalog?'LEGACY-SHA256SUMS.txt':'SHA256SUMS.txt'),reports.flatMap(m=>[m.sha256+'  '+m.file,m.preview.sha256+'  '+m.preview.file]).join('\n')+'\n');
+const reportDir=process.env.BAKE_REPORT_DIR || out;
+fs.mkdirSync(reportDir,{recursive:true});
+const sourceLabel = expansionCatalog || popularCatalog
+  ? 'Valve CS2 Steam depot 2347770 (manifest 8225060435969537482) paint materials and inventory icons, combined with original local CS2 geometry and composite input exports. Valve and workshop creators retain rights.'
+  : 'Local owned Counter-Strike 2 installation; pak01_dir.vpk; Valve and workshop creators retain rights.';
+fs.writeFileSync(path.join(reportDir,selection?'manifest-'+selection+'.json':legacyCatalog?'legacy-manifest.json':'manifest.json'),JSON.stringify({version:1,extractedAt:new Date().toISOString(),...(popularCatalog?{selection:{source:'https://api.skinport.com/v1/sales/history?app_id=730&currency=USD',retrieved:'2026-11-20',window:'last_30_days',measure:'Sum of sale volumes across wear variants, including StatTrak and Souvenir. Three popular Factory New finishes per weapon among supported, previously absent paint kits.'}}:{}),source:sourceLabel,fidelity:'Original source geometry, correct paintkit UV body, original skin textures, normals, paint masks and parameters. Local pristine PBR bake; Source2 wear randomization, exact composite shader and pearlescence are not reproduced exactly.',tools:{exporter:(expansionCatalog||popularCatalog)?'Source2Viewer-CLI 20.0.7308':'Source2Viewer-CLI 20.0.6980',baker:rel(new URL(import.meta.url).pathname.slice(1)),bakerSha256:hash(new URL(import.meta.url))},models:reports},null,2)+'\n');
+fs.writeFileSync(path.join(reportDir,selection?'SHA256SUMS-'+selection+'.txt':legacyCatalog?'LEGACY-SHA256SUMS.txt':'SHA256SUMS.txt'),reports.flatMap(m=>[m.sha256+'  '+m.file,m.preview.sha256+'  '+m.preview.file]).join('\n')+'\n');

@@ -1,3 +1,4 @@
+import {laddersForMap,PRIVATE_MOVEMENT_MODEL} from '../shared/ladder-movement.js';
 import {configurePrivateMap} from '../shared/private-map-context.js';
 import {privateConfig} from './private-game-config.js';
 import {MIRAGE_JUMP_LINKS} from '../shared/private-map-jump-links.js';
@@ -7,7 +8,7 @@ import {privateMapDownloads,privateMapFetcher} from './private-map-download.js';
 async function bootstrap(){
  const request=async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('私有地图配置暂不可用 ('+r.status+')');return r.json();};
  const originalConfig=privateConfig(await request(new URL('private-map.json',location.href)),location.href);
- const delivery=await initDownloadOrigin({configURL:new URL('../../../download-config-1.3.0.json',originalConfig.renderUrl),pageURL:location.href});
+ const delivery=await initDownloadOrigin({configURL:new URL('../../../download-config.json',originalConfig.renderUrl),pageURL:location.href});
  const config=privateMapDownloads(originalConfig,delivery),mapFetch=privateMapFetcher(config);
  const jumpLinks=config.id==='de_mirage'?MIRAGE_JUMP_LINKS:[];
  const jumpDigest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(jumpLinks)))),byte=>byte.toString(16).padStart(2,'0')).join('');
@@ -15,6 +16,11 @@ async function bootstrap(){
  const verifiedJSON=async(url,expected,label)=>{const r=await mapFetch(url,{cache:'no-store'});if(!r.ok)throw Error(label+'暂不可用');const bytes=await r.arrayBuffer();const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),n=>n.toString(16).padStart(2,'0')).join('');if(hash!==expected)throw Error(label+'与服务器版本不同');return JSON.parse(new TextDecoder().decode(bytes));};
  const [meta,nav]=await Promise.all([verifiedJSON(config.metadataUrl,config.metadataSha256,'出生与包点信息'),verifiedJSON(config.navUrl,config.navigationSha256,'导航')]);
  if(meta.id!==config.id||meta.public!==false||meta.sourceSha256!==config.sourceSha256)throw Error('原始地图版本与服务器不一致');
+ if(config.movementModel===PRIVATE_MOVEMENT_MODEL){
+  const ladderBytes=new TextEncoder().encode(JSON.stringify(laddersForMap(meta)));
+  const ladderHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',ladderBytes)),b=>b.toString(16).padStart(2,'0')).join('');
+  if(ladderHash!==config.laddersSha256)throw Error('梯子数据与服务器版本不同');
+ }
  const map=configurePrivateMap(meta,nav,config);
  const radarBase=new URL('../../../radars/',config.renderUrl),transforms=await request(new URL('transforms.json',radarBase));
  const radar=transforms[map.id];if(!radar||![radar.pos_x,radar.pos_y,radar.scale].every(Number.isFinite))throw Error('地图雷达标定缺失');
@@ -41,7 +47,16 @@ async function bootstrap(){
  body.private-game .pause-map-switch{width:100%;min-height:42px;margin-top:5px}body.private-game .pause-actions{flex-wrap:wrap}
  @media(max-width:760px){body.private-game .private-map-switch{min-height:36px;padding:7px 11px;font-size:11px}body.private-game .play-bar>.private-map-switch span{display:none}body.private-game .play-bar{gap:12px;flex-wrap:wrap}body.private-game .play-bar>span:nth-child(2){max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
  `;document.head.append(style);
- for(const back of document.querySelectorAll('[data-map-library]'))back.href=new URL('../../',location.href).href;
+ const modeLibrary=config.flatOnly||config.graphicsMode==='quality';
+ for(const back of document.querySelectorAll('[data-map-library]'))back.href=modeLibrary?'/perf/':new URL('../../',location.href).href;
+ if(modeLibrary){
+  const modeName=config.flatOnly?'高帧率':'高画质';
+  document.title=map.name+' · '+modeName+'对战';
+  const cards=document.querySelector('.home-map-grid');
+  if(cards){const link=document.createElement('a');link.className='private-map-switch';link.href='/perf/';link.textContent='更换地图';cards.replaceChildren(link);}
+  if(banner)banner.textContent=map.nameZh+(config.flatOnly?' · 低多边形场景':' · 原版地图材质');
+  const promo=document.querySelector('.menu-profile span');if(promo)promo.textContent=modeName;
+ }
  return import('./main.js');
 }
 export const ready=bootstrap().catch(error=>{console.error(error);const status=document.getElementById('menu-status');if(status)status.textContent='无法启动地图：'+error.message;for(const id of ['start-button','join-button']){const button=document.getElementById(id);if(button)button.disabled=true;}throw error;});

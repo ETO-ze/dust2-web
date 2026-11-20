@@ -1,3 +1,4 @@
+import {playerAnimationClips} from './player-animation-clips.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
@@ -13,37 +14,50 @@ export { ViewWeapon } from './viewmodel.js';
 const loader=new GLTFLoader();
 const library={};
 const sourceBasisInverse=new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion(-.5,-.5,-.5,.5)).invert();
-export async function loadModels(options={}){
+export async function loadModels(){
   const agents=await loadPlayerAssets(loader);library.swat=agents.CT;library.hoodie=agents.T;
   await loadViewModels(library);
 }
 
 function box(w,h,d,color){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.8}));}
 
+// The two dagger blades occupy a shared bind pose and follow separate hands.
+function worldGripBindings(visual,arms){
+  const bindings=[];
+  visual.traverse(bone=>{
+    const grip=bone.userData.cs2WorldGrip;
+    const hand=grip&&arms[grip.hand]?.Wrist;
+    if(hand)bindings.push({bone,hand,offset:new THREE.Matrix4().fromArray(grip.offset),local:new THREE.Matrix4()});
+  });
+  return bindings;
+}
+
+function updateWorldGrips(bindings){
+  for(const {bone,hand,offset,local} of bindings){
+    hand.updateWorldMatrix(true,false);
+    bone.parent.updateWorldMatrix(true,false);
+    local.copy(bone.parent.matrixWorld).invert().multiply(hand.matrixWorld).multiply(offset);
+    local.decompose(bone.position,bone.quaternion,bone.scale);
+    bone.updateWorldMatrix(false,true);
+  }
+}
+
 export class PlayerModel{
-  constructor(team,scene,agentId){
+  constructor(team,scene,agentId,{weaponId,skinId}={}){
     this.group=new THREE.Group();this.team=team;scene.add(this.group);this.current='';this.dead=false;this.ownedResources=new Set();this.disposed=false;
     this.agentId=agentId||(team==='CT'?'ct-sas':'t-phoenix');const source=loadedPlayerAsset(this.agentId)||library[team==='CT'?'swat':'hoodie'];
-    if(source){this.model=clone(source.scene);this.nativeAgent=!!source.scene.userData.cs2DefaultAgent;this.model.rotation.y=Math.PI;this.group.add(this.model);this.mixer=new THREE.AnimationMixer(this.model);this.actions={};source.animations.forEach(a=>this.actions[a.name]=this.mixer.clipAction(a));this.model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}if(/pistol/i.test(o.name))o.visible=false;});this.animate(this.nativeAgent?'rifle/idle':'Idle_Gun_Pointing');}
+    if(source){this.model=clone(source.scene);this.nativeAgent=!!source.scene.userData.cs2DefaultAgent;this.model.rotation.y=Math.PI;this.group.add(this.model);this.mixer=new THREE.AnimationMixer(this.model);this.clips=playerAnimationClips(source);this.actions={};this.model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}if(/pistol/i.test(o.name))o.visible=false;});this.animate(this.nativeAgent?'rifle/idle':'Idle_Gun_Pointing');}
     else{this.model=new THREE.Group();this.group.add(this.model);const torso=box(.55,.7,.33,team==='CT'?0x3c5662:0x967746);torso.position.y=1.04;this.model.add(torso);const head=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),new THREE.MeshStandardMaterial({color:0xa78b70}));head.position.y=1.61;this.model.add(head);for(const x of [-.15,.15]){const leg=box(.2,.7,.2,0x344036);leg.position.set(x,.35,0);this.model.add(leg);}this.model.traverse(o=>{if(o.isMesh){this.ownedResources.add(o.geometry);for(const material of [].concat(o.material))this.ownedResources.add(material);}});}
     const ring=new THREE.Mesh(new THREE.RingGeometry(.32,.37,24),new THREE.MeshBasicMaterial({color:team==='CT'?0x82bac9:0xdcbf77,side:THREE.DoubleSide,transparent:true,opacity:.45,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.025;this.group.add(ring);this.ring=ring;this.ownedResources.add(ring.geometry);this.ownedResources.add(ring.material);
     this.gun=new THREE.Group();this.group.add(this.gun);this.weaponCache=new Map();this.weaponId='';
     this.nativeWeaponAnchor=this.model.getObjectByName('wpn');this.nativeAimBone=this.model.getObjectByName('spine_3');
     this.upperActions={};
-    if(this.nativeAgent&&source){
-      const upperNames=new Set();this.nativeAimBone?.traverse(o=>upperNames.add(o.name));this.model.getObjectByName('wpnPivot')?.traverse(o=>upperNames.add(o.name));
-      const isUpper=track=>upperNames.has(THREE.PropertyBinding.parseTrackName(track.name).nodeName);
-      for(const original of source.animations){
-        if(original.name.startsWith('grenade/')){const clip=original.clone();clip.tracks=clip.tracks.filter(isUpper);if(/\/(idle|crouchIdle)$/.test(clip.name)){clip.blendMode=THREE.AdditiveAnimationBlendMode;for(const track of clip.tracks)if(track.name.endsWith('.scale'))for(let i=0;i<track.values.length;i++)track.values[i]-=1;}this.upperActions[original.name.split('/')[1]]=this.mixer.clipAction(clip);delete this.actions[original.name];}
-        else if(original.name.startsWith('knife/')){const clip=original.clone();clip.name='lower/'+clip.name;clip.tracks=clip.tracks.filter(t=>!isUpper(t));this.actions[clip.name]=this.mixer.clipAction(clip);}
-      }
-    }
     this.arms={};const bones=new Map();this.model.traverse(o=>{if(o.isBone){const name=o.name.replace(/[^a-z0-9]/gi,'').toLowerCase();bones.set(name,o);for(const side of ['L','R'])for(const key of ['UpperArm','LowerArm','Wrist'])if(name===(key+side).toLowerCase()||name===({UpperArm:'armupper',LowerArm:'armlower',Wrist:'hand'}[key]+side).toLowerCase()){this.arms[side]??={};this.arms[side][key]=o;}}});
     this.supportFingers=[];for(const [name,bone] of bones){if(/^(index|middle|ring|pinky|thumb)\dr$/.test(name)){const left=bones.get(name.slice(0,-1)+'l');if(left)this.supportFingers.push([left,bone]);}}
     // The original pistol aiming pose provides a stable hand orientation. Arm IK is applied after each animation update.
     this.mixer?.update(.2);this.group.updateMatrixWorld(true);this.handReference={};
     if(this.arms.R?.Wrist){const q=this.arms.R.Wrist.getWorldQuaternion(new THREE.Quaternion());this.handReference.R=q;this.handReference.L=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.PI).multiply(q);}
-    this.setWeapon(team==='CT'?'m4a1':'ak47');
+    this.setWeapon(weaponId||(team==='CT'?'m4a1':'ak47'),skinId);
   }
   setWeapon(id,skinId){
     id=WEAPONS[id]||UTILITY_IDS.includes(id)||id==='c4'?id:'knife';
@@ -60,7 +74,7 @@ export class PlayerModel{
         if(id==='knife'){part(.033,.014,.19,0xb8bfb5,0,0,-.045);part(.045,.032,.09,0x30392e,0,0,.095);part(.085,.021,.015,0x65705b,0,0,.045);}
         else{part(.055,.065,spec.length*.48,0x31382f,0,0,.01);part(.022,.022,spec.length*.36,0x222923,0,.017,-spec.length*.32);part(.035,.10,.045,0x383d31,...spec.grip);}
       }
-      if(!this.nativeAgent)visual.position.set(...spec.grip).multiplyScalar(-1);visual.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});retainSkin(visibleSkin);this.weaponCache.set(cacheKey,{...spec,visual,resources,skinId:visibleSkin});
+      if(!this.nativeAgent)visual.position.set(...spec.grip).multiplyScalar(-1);visual.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});retainSkin(visibleSkin);this.weaponCache.set(cacheKey,{...spec,visual,resources,skinId:visibleSkin,worldGrips:worldGripBindings(visual,this.arms)});
     }
     this.weaponSpec=this.weaponCache.get(cacheKey);this.gun.add(this.weaponSpec.visual);
     this.weaponCache.delete(cacheKey);this.weaponCache.set(cacheKey,this.weaponSpec);
@@ -98,7 +112,7 @@ export class PlayerModel{
         anchor.premultiply(aimMatrix);
       }
       new THREE.Matrix4().copy(this.group.matrixWorld).invert().multiply(anchor).multiply(sourceBasisInverse).decompose(this.gun.position,this.gun.quaternion,this.gun.scale);
-      this.gun.updateWorldMatrix(false,true);return;
+      this.gun.updateWorldMatrix(false,true);updateWorldGrips(this.weaponSpec.worldGrips);return;
     }
     const pitch=Number.isFinite(p.pitch)?p.pitch:0,aim=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),pitch);this.gun.quaternion.copy(aim);
     const scale=this.nativeAgent?(p.crouch?.66:1):this.model.scale.y,pistol=getWeapon(this.weaponId).slot===2,knife=this.weaponId==='knife',pivot=new THREE.Vector3(0,1.35*scale,0);
@@ -111,10 +125,11 @@ export class PlayerModel{
       this.gun.updateWorldMatrix(false,true);
       if(this.weaponSpec.support&&this.arms.L?.Wrist){for(const [left,right] of this.supportFingers){const q=right.quaternion;left.quaternion.set(q.x,-q.y,-q.z,q.w);}const leftQ=groupQuaternion.multiply(aim).multiply(this.handReference.L),leftPalm=new THREE.Vector3(0,.07,0).applyQuaternion(leftQ);const support=this.gun.localToWorld(new THREE.Vector3(...this.weaponSpec.support));this.solveArm('L',support.sub(leftPalm),leftQ);}
     }else this.gun.position.copy(grip);
+    updateWorldGrips(this.weaponSpec.worldGrips);
   }
-  animate(name){if(!this.actions||this.current===name)return;const action=this.actions[name]||this.actions.Idle_Gun||Object.values(this.actions)[0];if(!action)return;for(const a of Object.values(this.actions))if(a!==action)a.fadeOut(.16);action.reset().fadeIn(.16);if(name==='Death'||name==='death'){action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;}else action.setLoop(THREE.LoopRepeat,Infinity);action.play();this.current=name;}
+  animate(name){if(!this.actions||this.current===name)return;const clip=this.clips.body.get(name)||this.clips.body.get('Idle_Gun')||this.clips.body.values().next().value;if(!clip)return;const action=this.actions[clip.name]??=this.mixer.clipAction(clip);for(const a of Object.values(this.actions))if(a!==action)a.fadeOut(.16);action.reset().fadeIn(.16);if(name==='Death'||name==='death'){action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;}else action.setLoop(THREE.LoopRepeat,Infinity);action.play();this.current=name;}
   grenadePose(name,once=false,force=false){
-    const action=this.upperActions[name];if(!action||this.upperName===name&&!force)return;
+    const clip=this.clips?.upper.get(name);if(!clip||this.upperName===name&&!force)return;const action=this.upperActions[name]??=this.mixer.clipAction(clip);
     for(const a of Object.values(this.upperActions))if(a!==action)a.fadeOut(.08);
     action.reset().setEffectiveWeight(1).setEffectiveTimeScale(1).fadeIn(.08).setLoop(once?THREE.LoopOnce:THREE.LoopRepeat,once?1:Infinity);action.clampWhenFinished=once;action.play();this.upperName=name;
   }

@@ -14,7 +14,7 @@ function fixture({download=async()=>{},privateMap=false,map=async()=>({positions
  const context=vm.createContext({
   AbortController,DOMException,setTimeout,clearTimeout,performance,Promise,
   loaded:false,privateMap,downloadAbort:null,downloadProgress:()=>{},privateLoadProgress:()=>{},
-  downloadAssets:download,setLoadStage:()=>{},mobileDevice:()=>false,paint:async()=>{},
+  flatMapSelected:()=>false,downloadAssets:download,setLoadStage:()=>{},mobileDevice:()=>false,paint:async()=>{},
   modelsReady:true,mapResultCache:privateMap?null:{positions:[]},createMapScene:map,
   diagnostics:{event:()=>{}},audio:{start:async()=>events.push('audio-samples')},
   loadModels:async()=>{},loadAgent:async()=>{},agentsUI:{loadout:{T:'t-phoenix',CT:'ct-sas'}},

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>完整皮肤清单 · DUSKRAIN</title>
+<style>
+:root{color-scheme:dark;font:15px/1.5 "Segoe UI","Microsoft YaHei",sans-serif;color:#eeeae0;background:#191c1d}*{box-sizing:border-box}body{margin:0}header,main{max-width:1280px;margin:auto;padding:0 clamp(16px,4vw,52px)}header{height:60px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #434843}header strong{font:italic 800 20px/1 "Arial Narrow",sans-serif;letter-spacing:.04em;color:#f4be58}header small,.muted,.source{color:#b6bab4}main{padding-bottom:32px}h1{font-size:clamp(26px,3.3vw,44px);margin:28px 0 3px}p{margin:4px 0 18px}button,input,select{font:inherit}button,a,select{cursor:pointer}button,input,select,.export{color:inherit;background:#282c2c;border:1px solid #505651;border-radius:3px;padding:7px 12px}button:disabled{opacity:.42;cursor:default}button[aria-pressed=true]{border-color:#e9b451;color:#ffd787;background:#393328}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #ffda86;outline-offset:2px}.tabs,.filters,.pager{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.tabs{margin:22px 0 12px}.filters{margin-bottom:14px}.filters input{min-width:130px;flex:1;max-width:320px}.export{margin-left:auto;text-decoration:none;color:#f3c773}.scroll{overflow:auto;border:1px solid #3c4240;border-radius:3px}table{width:100%;border-collapse:collapse;text-align:left;font-variant-numeric:tabular-nums}td,th{padding:9px 15px;white-space:nowrap;border-bottom:1px solid #353a37}th{font-size:12px;color:#b9bfb8;letter-spacing:.035em;background:#252b29}tr:last-child td{border-bottom:none}td small{display:block;color:#a9b0aa}td.new{color:#ecca85}.pager{justify-content:flex-end;margin:13px 0}.pager span{margin-right:auto;font-size:13px;color:#b9bfb8}.source{margin:18px 0 0;font-size:12px}.source a{color:#e7c885}@media(max-width:600px){header{height:48px}.tabs{margin-top:15px}.filters{gap:5px}.filters input{flex-basis:100%;max-width:none}.export{font-size:13px}td,th{padding:8px 10px}}
+</style></head><body><header><strong>DUSKRAIN</strong><small>装备数据库</small></header><main>
+<h1>完整皮肤清单</h1><p id="summary" class="muted"></p>
+<div class="tabs" aria-label="清单范围"><button id="actual" aria-pressed="true">网页实装</button><button id="all" aria-pressed="false">Valve 涂装总表</button></div>
+<div class="filters"><input id="search" type="search" aria-label="搜索皮肤" placeholder="搜索中英文名称、阶段、涂装编号"><select id="category" aria-label="装备类型"><option value="">全部类型</option><option>枪械</option><option>刀具</option><option>手套</option><option>电击枪</option></select><select id="state" aria-label="收录状态"><option value="">全部状态</option><option value="added">本次新增</option><option>默认装备</option><option>可选装备</option><option>随探员装备</option><option id="referenceOnly">仅参考</option></select><a id="csv" class="export" download>下载完整 CSV ↓</a></div>
+<div class="scroll"><table><thead><tr><th>装备</th><th>皮肤</th><th>Paint Kit</th><th>官方磨损范围</th><th id="wearHeading">当前外观</th><th>网页状态</th></tr></thead><tbody></tbody></table></div>
+<div class="pager"><span role="status" id="count"></span><button id="prev">上一页</button><button id="next">下一页</button></div>
+<p class="source" id="source"></p></main>
+<script>
+const catalog=/*__LIBRARY_DATA__*/;
+const $=id=>document.getElementById(id), tbody=document.querySelector('tbody');
+let all=false,page=0;
+const pageSize=40;
+function cell(row,text,detail){
+ const c=row.insertCell();c.textContent=text;
+ if(detail){const small=document.createElement('small');small.textContent=detail;c.append(small)}
+ return c;
+}
+function draw(){
+ const term=$('search').value.trim().toLocaleLowerCase();
+ const category=$('category').value,state=$('state').value;
+ const result=(all?catalog.rows:catalog.actual).filter(r=>{
+  const search=[r.weapon,r.weaponEn,r.name,r.english,r.phase,r.gameName,r.id,r.kit].join(' ').toLocaleLowerCase();
+  return (!category||r.category===category)&&(!state||(state==='added'?r.added:r.state===state))&&search.includes(term);
+ });
+ const pages=Math.max(1,Math.ceil(result.length/pageSize));page=Math.min(page,pages-1);
+ const body=document.createDocumentFragment();
+ for(const r of result.slice(page*pageSize,(page+1)*pageSize)){
+  const tr=document.createElement('tr');
+  cell(tr,r.weapon,r.weaponEn);cell(tr,r.name+(r.phase?' · '+r.phase:''),r.english);cell(tr,r.kit??'—');
+  cell(tr,r.min!=null?r.min.toFixed(2)+' – '+r.max.toFixed(2):'无磨损');
+  if(!all)cell(tr,r.condition,r.wear!=null?r.wear.toFixed(3):'');
+  cell(tr,r.state,r.marketVolume30d!=null?'热门 · 近 30 天成交 '+r.marketVolume30d+' 件':r.added?'本次新增':'').className=r.added?'new':'';
+  body.append(tr);
+ }
+ if(!result.length){const tr=document.createElement('tr');const td=cell(tr,'没有符合条件的皮肤');td.colSpan=all?5:6;body.append(tr)}
+ tbody.replaceChildren(body);
+ $('count').textContent=result.length+' 项 · 第 '+(page+1)+' / '+pages+' 页';
+ $('prev').disabled=page===0;$('next').disabled=page>=pages-1;
+ $('actual').setAttribute('aria-pressed',String(!all));$('all').setAttribute('aria-pressed',String(all));
+ $('wearHeading').hidden=all;$('referenceOnly').hidden=!all;
+ $('csv').href=all?'reference.csv':'loadout.csv';
+ $('summary').textContent=all?'共 '+catalog.rows.length+' 种武器或手套与涂装的组合，按物品和涂装编号计数。':'可在武器库选择 '+catalog.equipped+' 款外观，另有 1 款随探员装备的默认手套。';
+}
+for(const [id,value] of [['actual',false],['all',true]])$(id).onclick=()=>{all=value;page=0;if(!all&&$('state').value==='仅参考')$('state').value='';draw()};
+for(const id of ['search','category','state'])$(id).addEventListener('input',()=>{page=0;draw()});
+$('prev').onclick=()=>{page--;draw()};$('next').onclick=()=>{page++;draw()};
+$('source').textContent='数据版本 '+catalog.date+' · Steam Depot 2347770 · Manifest '+catalog.manifest+'。枪械、电击枪按收藏品或掉落配对核对，刀具与手套按物品定义、涂装和库存图核对。网页实装使用原始材质在浏览器中烘焙呈现。';
+draw();
+</script></body></html>

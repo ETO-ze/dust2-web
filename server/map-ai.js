@@ -4,6 +4,8 @@ import {GrenadeSimulation} from './grenades.js';
 import {usefulThrow,teammateRisk} from './bot-trajectory.js';
 import {smoothBotAim} from './bot-aim.js';
 import {stepPlayer} from '../shared/physics.js';
+import {challengeOpeningPost} from './bot-challenge.js';
+import {attackPlan} from './bot-strategies.js';
 
 const pos=p=>({x:p.x,y:p.y,z:p.z});
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
@@ -48,7 +50,7 @@ export class MapPerception {
   const from=eye(observer),target={x:enemy.x,y:enemy.y+(enemy.crouch?.72:1.2),z:enemy.z};
   const pitch=Math.atan2(target.y-from.y,Math.hypot(target.x-from.x,target.z-from.z));
   if(distance(from,target)>70||Math.abs(angle(facing(from,target),observer.yaw||0))>this.horizontalFov/2||Math.abs(pitch-(observer.pitch||0))>this.verticalFov/2||!this.clearSight(from,target)||this.smokeBlocked(from,target))return null;
-  return this.publish(observer.team,{kind:'visual',point:pos(target),enemyId:enemy.id,confidence:1,uncertainty:.3,listenerId:observer.id,ttl:2200});
+  return this.publish(observer.team,{kind:'visual',point:pos(target),lifeId:enemy.lifeId,enemyId:enemy.id,confidence:1,uncertainty:.3,listenerId:observer.id,ttl:2200});
  }
  casualty(player){if(this.reports[player.team])this.publish(player.team,{kind:'casualty',point:pos(player),confidence:.6,uncertainty:3,listenerId:player.id,ttl:6000});}
  snapshot(team){this.prune();return(this.reports[team]||[]).map(({ttl,listenerId,...r})=>({...r,point:{...r.point},confidence:r.confidence*Math.max(0,(r.expiresAt-this.clock())/(r.expiresAt-r.at))}));}
@@ -58,23 +60,54 @@ export class MapPerception {
  * one available support player, while the far site's anchor remains assigned. */
 export class MapSquadDirector {
  constructor(graph,{clock=()=>0,perception}={}){Object.assign(this,{graph,clock,perception});this.orders=new Map();this.nextReview=0;this.events=[];}
- begin(players,{round=1,site=round%2?'A':'B'}={}){
-  this.orders.clear();this.site=site;this.round=round;
+ begin(players,{round=1,site=round%2?'A':'B',room=null}={}){
+  this.orders.clear();this.site=site;this.round=round;this.room=room;
+  const strategy=room?attackPlan(room):null;
+  if(strategy)site=strategy.committedSite||site;
+  this.strategy=strategy;
   for(const team of ['T','CT']){
    const bots=players.filter(p=>automated(p)&&p.team===team);
    const lanes=team==='T'&&bots.length?this.graph.alternatives(bots[0],this.graph.map.sites[site],3):[];
    bots.forEach((p,i)=>{
-    const hold=team==='CT'?(i%2?'B':'A'):site,role=team==='T'?['entry','trade','utility','carrier','flank'][i%5]:i<2?'anchor':'rotator';
+    let hold=team==='CT'?(i%2?'B':'A'):site,role=team==='T'?(p.hasBomb?'carrier':['entry','trade','utility','flank'][i%4]):i<2?'anchor':'rotator';
+    if(p.challengeProfile)role=team==='T'?(p.hasBomb?'carrier':p.challengeProfile.role):['mezii','flameZ'].includes(p.challengeProfile.id)?'anchor':'rotator';
     const guard=team==='CT'?this.graph.guards(hold,round,5)[Math.floor(i/2)]:null;
-    const goal=guard||this.graph.map.sites[hold];let route=this.graph.route(p,goal),lane=0;
-    if(team==='T'&&lanes.length){lane=((round-1)+(role==='flank'&&lanes.length>1?1:0))%lanes.length;const ingress=this.graph.route(p,lanes[lane][0]);if(ingress)route=[...ingress,...lanes[lane].slice(1)];}
-    this.orders.set(p.id,{playerId:p.id,team,role,site:hold,home:hold,lane,goal:pos(goal),route:route||[],revision:1,state:route?'advance':'await-valid-route',buddyId:role==='trade'?bots[0]?.id:null});
+    let goal=guard||this.graph.map.sites[hold],route=this.graph.route(p,goal),lane=0;
+    if(team==='T'&&lanes.length){lane=((round-1)+(strategy?.tempo==='fast'||strategy?.economy==='eco'?0:i%lanes.length))%lanes.length;const ingress=this.graph.route(p,lanes[lane][0]);if(ingress)route=[...ingress,...lanes[lane].slice(1)];}
+    const opening=room&&challengeOpeningPost(room,p,this.graph);
+    const executeGoal=pos(goal),executeRoute=route;
+    let stage=null;
+    if(team==='T'&&strategy&&['default','fake'].includes(strategy.tempo)){
+     const diversion=strategy.tempo==='fake'&&!p.hasBomb&&i>=Math.max(2,bots.length-2);
+     const probeSite=diversion?(site==='A'?'B':'A'):strategy.tempo==='default'?(i%2?'B':'A'):site;
+     const probe=this.graph.route(p,this.graph.map.sites[probeSite]);
+     const stageNode=probe?.[Math.max(0,Math.min(probe.length-1,Math.floor(probe.length*(diversion?.78:.55))))];
+     if(stageNode){goal=stageNode;route=this.graph.route(p,goal);hold=probeSite;stage={stageUntil:strategy.tempo==='fake'?strategy.fakeUntil:strategy.decisionAt,executeSite:site,diversion,stageKind:diversion?'feint':strategy.tempo==='default'?'default':'gather'};}
+    }
+    if(opening&&!stage){goal=opening.node;route=opening.route;if(team==='CT')hold=distance(goal,this.graph.map.sites.A)<distance(goal,this.graph.map.sites.B)?'A':'B';}
+    this.orders.set(p.id,{playerId:p.id,team,role,site:hold,home:hold,lane,goal:pos(goal),route:route||[],revision:1,state:route?'advance':'await-valid-route',buddyId:role==='trade'?bots.find(q=>q.challengeProfile?.role==='entry')?.id||bots[0]?.id:null,
+     ...(stage?{...stage,state:stage.stageKind}:{}),...(opening&&!stage?{openingPlace:opening.place,...(team==='T'?{openingUntil:(room.round.phase==='freeze'?room.round.phaseEndsAt:this.clock())+10000,executeGoal,executeRoute}: {})}: {})});
    });
   }return this.orders;
  }
  update(players){
   for(const [id,o]of this.orders){const p=players.find(p=>p.id===id);if(!p||!automated(p)){this.orders.delete(id);this.events.push({kind:'control-released',playerId:id,t:this.clock()});}}
   if(this.clock()<this.nextReview)return;this.nextReview=this.clock()+900;
+  for(const o of this.orders.values())if(o.stageUntil&&this.clock()>=o.stageUntil){
+   if(this.strategy?.tempo==='default'&&!this.strategy.committedSite){
+    const reports=this.perception.snapshot('T').filter(r=>r.kind==='visual');
+    const counts={A:0,B:0};for(const r of reports)counts[distance(r.point,this.graph.map.sites.A)<distance(r.point,this.graph.map.sites.B)?'A':'B']++;
+    this.strategy.committedSite=counts.A>counts.B?'B':counts.B>counts.A?'A':o.executeSite;
+   }
+   const site=this.strategy?.committedSite||o.executeSite,goal=this.graph.map.sites[site],p=players.find(p=>p.id===o.playerId),route=p&&this.graph.route(p,goal);
+   if(route)Object.assign(o,{stageUntil:0,diversion:false,site,goal:pos(goal),route,revision:o.revision+1,state:'advance'});
+   else{o.stageUntil=this.clock()+2500;o.state='await-valid-route';}
+  }
+  for(const o of this.orders.values())if(o.openingUntil&&this.clock()>=o.openingUntil){
+   const p=players.find(p=>p.id===o.playerId),route=p&&this.graph.route(p,o.executeGoal);
+   if(route)Object.assign(o,{openingUntil:0,goal:o.executeGoal,route,revision:o.revision+1,state:'advance'});
+   else{o.openingUntil=this.clock()+2500;o.state='await-valid-route';}
+  }
   const reports=this.perception.snapshot('CT'),bySite={A:[],B:[]};
   for(const r of reports){const a=distance(r.point,this.graph.map.sites.A),b=distance(r.point,this.graph.map.sites.B);if(Math.min(a,b)<28)bySite[a<b?'A':'B'].push(r);}
   const threat=Object.entries(bySite).map(([site,items])=>({site,items,score:items.reduce((s,r)=>s+r.confidence*(r.kind==='visual'?3:1),0)})).sort((a,b)=>b.score-a.score)[0];

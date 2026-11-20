@@ -1,4 +1,4 @@
-import {c4Display} from './c4-display.js';
+import {alignC4Viewmodel,c4Display,c4KeypadText} from './c4-display.js';
 import * as THREE from 'three';
 import {gameGLTFLoader} from './gltf-loader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
@@ -69,6 +69,7 @@ export class ViewWeapon {
       normalization.scale.set(1,1,1);
       normalization.updateMatrix();
     }
+    if(id==='c4')alignC4Viewmodel(weapon);
     root.add(arms, mount); mount.add(weapon);
     const names = new Set();
     root.traverse(o => {
@@ -98,6 +99,7 @@ export class ViewWeapon {
     const item = { root, arms, weapon, mount, mixer, actions, wpn, current:null, actionName:'',skinId,agentId };
     mixer.addEventListener('finished', event => {
       if (item.current !== event.action) return;
+      if (item.actionName === 'plant' && this.planting) return; // Hold the lowered pose until the server resolves the action.
       if(item.actionName==='pullpin'&&this.utilityPrimed){this.playOn(item,this.utilityHoldName(),.055);return;}
       this.playOn(item, this.opticActive&&['sg553','aug'].includes(id)?'aimIdle':'idle', .055);
     });
@@ -204,9 +206,14 @@ export class ViewWeapon {
     if(Math.abs(this.camera.fov-gunFov)>.01){this.camera.fov=gunFov;this.camera.updateProjectionMatrix();}
     this.primeUtility(p.grenadeState);
     const planting=this.id==='c4'&&p.bombAction==='plant';
-    if(planting&&!this.planting){this.playOn(this.active,'plant',.04,p.bombActionDuration||3);this.active.current.time=(p.bombProgress||0)*this.active.current.getClip().duration;}
-    else if(!planting&&this.planting&&this.active.actionName==='plant')this.playOn(this.active,'idle',.06);
-    this.planting=planting;this.active.display?.update(planting?'7355608'.slice(0,Math.min(7,Math.floor((p.bombProgress||0)*8))):'');
+    if(planting){
+      if(!this.planting)this.playOn(this.active,'plant',.04,p.bombActionDuration||3);
+      // Catch up after delayed frames or joining a spectator view mid-action.
+      // A repeated snapshot must not rewind the fingers between key presses.
+      const action=this.active.current,progress=THREE.MathUtils.clamp(p.bombProgress||0,0,1);
+      action.time=Math.max(action.time,progress*action.getClip().duration);
+    }else if(this.planting&&this.active.actionName==='plant')this.playOn(this.active,'idle',.06);
+    this.planting=planting;
     const reloading=p.reloadRemaining>0;
     if(reloading&&(!this.reloadActive||getWeapon(p.weapon).reloadStyle==='shell'&&p.reloadRemaining>this.lastReload+.1)){
       const duration=p.reloadDuration||p.reloadRemaining,name=p.reloadEmpty&&this.active.actions.reloadEmpty?'reloadEmpty':'reload';
@@ -214,6 +221,10 @@ export class ViewWeapon {
     }else if(!reloading&&this.reloadActive&&this.active.actionName.startsWith('reload'))this.playOn(this.active,'idle',.06);
     this.reloadActive=reloading;this.lastReload=p.reloadRemaining;
     this.active.mixer.update(dt);
+    if(this.active.display){
+      const clip=this.active.current;
+      this.active.display.update(planting?c4KeypadText(clip.time/clip.getClip().duration):'');
+    }
     const moving=Math.min(1,Math.hypot(p.vx||0,p.vz||0)/5),narrow=Math.max(0,1.35-(this.camera.aspect||1));
     // A subtle locomotion layer leaves the authored wrist/finger poses intact.
     this.group.position.set((Math.sin(this.clock*9)*.0025*moving-narrow*.045)*(1-this.aimBlend),Math.abs(Math.cos(this.clock*9))*.003*moving*(1-this.aimBlend),-narrow*.10*(1-this.aimBlend)+.2032*this.aimBlend);

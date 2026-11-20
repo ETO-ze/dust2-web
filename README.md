@@ -2,7 +2,21 @@
 
 GPT-6 参与开发的第一人称射击项目，支持网页、Android 与 Windows 在线联机，包含服务器权威判定、战术人机与移动端操作。
 
-[进入网页版](https://cs2.duskrain.cn/) · [1.3.0 更新](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.3.0) · [安装包下载](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.2.0-cdn.1) · [地图池说明](docs/PUBLIC-MAP-POOL.md) · [验证范围](docs/validation/public-map-pool.md)
+[网页版](https://cs2.duskrain.cn/) · [九图发行包](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.4.0-perf.4-216) · [九图运行说明](docs/NINE-MAPS-216.md) · [Android 与 Windows 安装包](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.2.0-cdn.1)
+
+## 九图地图池与 216 款外观
+
+高帧率模式包含沙二、米拉吉、炼狱小镇、核子危机、远古遗迹、阿努比斯、死城之谜、列车停放站和殒命大厦。选图后可预览场景，再创建房间或加入对局。
+
+皮肤库收录 **216 款可装备外观**。本轮增加 156 款，包括 34 款枪械原厂外观、102 款热门涂装和 20 款原厂刀型。现在每把枪都有原厂外观和三款按成交数据选取的涂装。刀具栏共有 22 款原厂刀型。固定的“树篱迷宫”手套单独列在装备清单中。
+
+加入已有房间时，客户端先核对房内装备，预载手持武器的模型、贴图与动作，再发送入房请求。备用武器按设备预算解码，重复资源按 SHA-256 复用。装备在加载期间发生变化时，客户端复用已完成的工作，补齐所需资源。
+
+![装备菜单中保存的 M4A1-S 原厂外观](docs/screenshots/216-skin-equipped.png)
+
+发行附件提供游戏程序、九图地图包和 SHA-256 校验清单。安装、从源码运行以及高画质资源要求见[九图运行说明](docs/NINE-MAPS-216.md)。
+
+## 经典两图网页版
 
 ![公开地图池与房间配置](docs/screenshots/public-map-pool-desktop.png)
 

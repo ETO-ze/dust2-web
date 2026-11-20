@@ -1,3 +1,6 @@
+import {flattenMapDocument} from './flat-map-materials.js';
+import {applyFlatMaterials} from './flat-map-renderer.js';
+import {prepareFlatSky} from './flat-sky.js';
 import {repairMapOverlays} from './map-overlays.js';
 import {mobileDevice} from './device-profile.js';
 import * as THREE from 'three';
@@ -14,19 +17,26 @@ const assetUrl=path=>new URL(path.replace(/^\//,''),document.baseURI).href;
  * separately sourced reduced collision mesh for deterministic multiplayer;
  * render/collision alignment is checked by map-render-validate.mjs.
  */
-export async function createMapScene(scene,{onProgress=()=>{},signal}={}) {
-  if(globalThis.__DUST2_PRIVATE_MAP__)return (await import('./private-map-scene.js')).createPrivateMapScene(scene,{onProgress,signal});
-  onProgress('载入 CS2 原版 Dust II 场景…');
+export async function createMapScene(scene,{onProgress=()=>{},signal,flat=false}={}) {
+  if(globalThis.__DUST2_PRIVATE_MAP__)return (await import('./private-map-scene.js')).createPrivateMapScene(scene,{onProgress,signal,flat});
+  onProgress(flat?'载入 Dust II 极简场景…':'载入 CS2 原版 Dust II 场景…');
   const manager=new THREE.LoadingManager();
   useDownloadedAssets(manager);
   manager.onProgress=(_url,loaded,total)=>{
-    if(total>5)onProgress(`载入原版材质 ${Math.min(loaded,total)} / ${total}…`);
+    if(!flat&&total>5)onProgress(`载入原版材质 ${Math.min(loaded,total)} / ${total}…`);
   };
-  const loader=gameGLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder);
+  const loader=gameGLTFLoader(manager,{signal}).setMeshoptDecoder(MeshoptDecoder);
+  const mapURL = assetUrl(mobileDevice()?'assets/map-mobile/dust2-clear.gltf':'assets/map-cs2/dust2-web.gltf?v=e4f2b2d3903c');
+  const readMap = async () => {
+    if (!flat) return loader.loadAsync(mapURL);
+    const response = await fetch(assetURL(mapURL), {signal});
+    if (!response.ok) throw Error('极简场景读取失败 (' + response.status + ')');
+    return loader.parseAsync(flattenMapDocument(await response.json()), new URL('.', mapURL).href);
+  };
   const [gltf,response,sky]=await Promise.all([
-    loader.loadAsync(assetUrl(mobileDevice()?'assets/map-mobile/dust2-clear.gltf':'assets/map-cs2/dust2-web.gltf?v=e4f2b2d3903c')),
+    readMap(),
     fetch(assetURL(assetUrl(MAP.geometryUrl))),
-    new HDRLoader(manager).loadAsync(assetUrl('assets/sky/daylight.hdr?v=5244534e9cf5')),
+    flat?null:new HDRLoader(manager).loadAsync(assetUrl('assets/sky/daylight.hdr?v=5244534e9cf5')),
   ]);
   if(!response.ok)throw new Error(`地图碰撞下载失败 (${response.status})`);
   const positions=new Float32Array(await response.arrayBuffer());
@@ -68,6 +78,7 @@ export async function createMapScene(scene,{onProgress=()=>{},signal}={}) {
       }
     }
   });
+  if(flat)applyFlatMaterials(group);
   for(const texture of textures)texture.anisotropy=4;
 
   // Keep the exported sun direction. Web lighting approximates Source 2's
@@ -80,14 +91,18 @@ export async function createMapScene(scene,{onProgress=()=>{},signal}={}) {
     if(target.distanceToSquared(origin)>1e-8)sunDirection.subVectors(target,origin).normalize();
   }
   for(const light of originalLights)light.removeFromParent();
+  const flatSky = flat ? await prepareFlatSky('de_dust2', {signal}) : null;
   scene.add(group);
   // The map is static: retain its already-computed transforms instead of
   // multiplying every imported object matrix on every animation frame.
   group.traverse(object=>{object.matrixAutoUpdate=false;object.matrixWorldAutoUpdate=false;});
-  sky.mapping=THREE.EquirectangularReflectionMapping;
-  scene.background=sky;scene.backgroundIntensity=.8;
-  scene.backgroundRotation.y=1.2;
-  scene.userData.sky={source:'Poly Haven / Kloofendal 48d Partly Cloudy',resolution:'2048 × 1024',downloadBytes:5451493};
+  if(flat)flatSky.mount(scene);
+  else {
+    sky.mapping=THREE.EquirectangularReflectionMapping;
+    scene.background=sky;scene.backgroundIntensity=.8;
+    scene.backgroundRotation.y=1.2;
+    scene.userData.sky={source:'Poly Haven / Kloofendal 48d Partly Cloudy',resolution:'2048 × 1024',downloadBytes:5451493};
+  }
   scene.fog=new THREE.Fog(0xc9d8de,140,300);
   const hemisphere=new THREE.HemisphereLight(0xd5e9ff,0x99805f,2.15);
   hemisphere.name='dust2-web-sky';
@@ -96,12 +111,12 @@ export async function createMapScene(scene,{onProgress=()=>{},signal}={}) {
   const center=new THREE.Vector3(-5,0,-25);
   sun.target.position.copy(center);
   sun.position.copy(center).addScaledVector(sunDirection,-110);
-  sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+  sun.castShadow=!flat;sun.shadow.mapSize.set(2048,2048);
   Object.assign(sun.shadow.camera,{left:-78,right:78,top:78,bottom:-78,near:1,far:230});
   sun.shadow.normalBias=.035;sun.shadow.bias=-.00012;
   scene.add(hemisphere,sun,sun.target);
-  group.userData.renderStats={meshCount,triangles,materials:materials.size,textures:textures.size,originalCS2Materials:true,overlayRepair};
-  onProgress('CS2 原版 Dust II 场景就绪');
+  group.userData.renderStats={meshCount,triangles,materials:materials.size,textures:textures.size,originalCS2Materials:!flat,style:flat?'flat':'original',overlayRepair};
+  onProgress(flat?'Dust II 极简场景就绪':'CS2 原版 Dust II 场景就绪');
   return {mapData:MAP,positions,group,lights:[hemisphere,sun],spawn:MAP.spawns.T[0]};
 }
 

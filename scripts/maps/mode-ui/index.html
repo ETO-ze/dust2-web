@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#171a1b">
+  <title>地图与画面 · DUSKRAIN 对战平台</title>
+  <link rel="icon" type="image/png" href="/perf/ui/icon.png">
+  <link rel="stylesheet" href="/perf/ui/screen.css">
+  <script type="module" src="/perf/ui/screen.js"></script>
+</head>
+<body>
+  <header class="top"><div class="wrap mast">
+    <div class="brand"><span class="emblem" aria-hidden="true"><i></i><i></i><i></i></span><strong>DUSKRAIN</strong><span class="brand-divider"></span><span class="brand-sub">对战平台</span></div>
+    <span class="environment" id="environment" hidden><i></i>本地预览</span>
+  </div></header>
+  <main class="wrap">
+    <div class="heading"><h1>地图与画面</h1><button id="reset" class="quiet" type="button" hidden><span aria-hidden="true">↺</span> 恢复默认</button></div>
+    <div id="loading" class="loading" role="status">正在读取地图池…</div>
+    <div id="problem" hidden role="alert">地图目录读取失败。 <button id="retry" class="quiet" type="button">重新加载</button></div>
+    <div id="setup" hidden>
+      <div class="workspace">
+        <section class="scene" id="scene" aria-label="所选地图预览">
+          <div class="scene-art" id="sceneArt">
+            <div class="radar-art" id="radarArt" hidden><img id="largeRadar" alt=""></div>
+            <img class="world" id="world" alt="" hidden>
+            <img class="world after" id="after" alt="" hidden>
+          </div>
+          <div class="shade"></div>
+          <div class="scene-tools"><span class="scene-type"><i class="viewfinder" aria-hidden="true"></i><span id="sceneType">场景预览</span></span>
+            <button class="compare" type="button" id="compare" aria-pressed="false" hidden><i class="split-icon" aria-hidden="true"></i><span>画面对比</span></button>
+          </div>
+          <div class="wipe" id="wipe" hidden>
+            <div class="seam"><b aria-hidden="true">‹ ›</b></div>
+            <input type="range" id="split" min="0" max="100" value="50" aria-label="高画质画面占比">
+            <div class="wipe-labels" aria-hidden="true"><span>高画质</span><span>高帧率</span></div>
+          </div>
+          <div class="map-caption"><div class="cn-name"><i></i><span id="mapZh"></span></div><h2 id="mapName" lang="en"></h2></div>
+        </section>
+        <section class="settings" aria-labelledby="modeTitle">
+          <h2 id="modeTitle">画面模式</h2>
+          <fieldset id="modes"><legend class="sr">选择画面模式</legend>
+            <label class="mode quality"><input type="radio" name="mode" value="quality"><span class="mode-icon layers" aria-hidden="true"><i></i><i></i><i></i></span><span class="mode-copy"><strong>高画质</strong><small id="qualityNote">原版地图材质与场景细节</small></span><span class="dotmark" aria-hidden="true"></span></label>
+            <label class="mode performance"><input type="radio" name="mode" value="performance"><span class="mode-icon bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="mode-copy"><strong>高帧率</strong><small>低多边形场景，减轻渲染负载</small></span><span class="dotmark" aria-hidden="true"></span></label>
+          </fieldset>
+          <dl class="details"><div><dt>角色与武器</dt><dd>完整材质</dd></div><div><dt>地图资源</dt><dd>按需加载</dd></div></dl>
+          <a class="enter" id="enter"><span>进入对战</span><span class="arrow-long" aria-hidden="true"></span></a>
+        </section>
+      </div>
+      <section class="pool" aria-labelledby="poolTitle">
+        <div class="pool-heading"><div class="title-count"><h2 id="poolTitle">地图池</h2><span id="mapCount"></span></div>
+          <div class="pool-actions"><label class="filter"><input type="checkbox" id="filter"><span class="toggle" aria-hidden="true"></span>仅看双模式</label><div class="pages"><button id="back" type="button" aria-label="向左浏览地图">‹</button><button id="next" type="button" aria-label="向右浏览地图">›</button></div></div>
+        </div>
+        <div class="rail" id="rail" role="group" aria-label="选择对战地图"></div>
+      </section>
+    </div>
+    <noscript>请启用 JavaScript 以选择地图和画面模式。</noscript>
+    <span id="announce" role="status" class="sr"></span>
+  </main>
+</body>
+</html>

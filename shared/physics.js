@@ -2,6 +2,7 @@ import { BufferGeometry, BufferAttribute, Float32BufferAttribute, Vector3, Ray, 
 import { MeshBVH, CENTER } from 'three-mesh-bvh';
 import {HullContact} from './hull-collision.js';
 import {patchMapCollision} from './map-collision-patch.js';
+import {laddersForMap,stepLadder} from './ladder-movement.js';
 
 export const PLAYER_RADIUS = 0.30;
 export const STAND_HEIGHT = 1.80;
@@ -18,6 +19,13 @@ export const CROUCH_JUMP_LIFT = 18 * .0254;
 export const AIR_WISH_SPEED = 30 * .0254;
 export const AIR_ACCELERATION = 12;
 let world = null;
+let ladders=[];
+const ladderIO={radius:PLAYER_RADIUS,landings:new Map(),floor:floorHeight,clear:isHullClear,
+  move(p,dx,dy,dz){
+    const hull=hullFor(p);
+    hull.translate(motion.set(dx,dy,dz));collide(hull,p);
+    p.x=(hull.min.x+hull.max.x)/2;p.y=hull.min.y;p.z=(hull.min.z+hull.max.z)/2;
+  }};
 let bulletWorld = null, grenadeWorld = null;
 let sourceAirMovement = false;
 let worldBounds = new Box3();
@@ -67,7 +75,9 @@ class MapCollision {
   }
 }
 
-export function initPhysics(positions, surfaceMaterials = null, {mapPatches=true,bulletPositions=null,grenadePositions=null,copyPositions=true,airMovement='legacy',triangleEnabled=null}={}) {
+export function initPhysics(positions, surfaceMaterials = null, {mapPatches=true,bulletPositions=null,grenadePositions=null,copyPositions=true,airMovement='legacy',triangleEnabled=null,map=null,collisionKey=null}={}) {
+  ladders=map?laddersForMap(map):[];ladderIO.landings.clear();
+  ladderIO.collisionKey=collisionKey;
   sourceAirMovement=airMovement==='source';
   if(mapPatches){const patched=patchMapCollision(positions,surfaceMaterials);positions=patched.positions;surfaceMaterials=patched.materials;}
   for(const old of new Set([world,bulletWorld,grenadeWorld]))old?.geometry?.dispose();
@@ -86,7 +96,7 @@ export function initPhysics(positions, surfaceMaterials = null, {mapPatches=true
 export function createPlayerState(spawn = {}) {
   return { x:spawn.x||0, y:spawn.y||0, z:spawn.z||0, vx:0,vy:0,vz:0,
     yaw:spawn.yaw||0,pitch:0,grounded:false,crouch:false,height:STAND_HEIGHT,
-    lastJump:false,lastJumpId:0,jumpBufferRemaining:0,stepDistance:0 };
+    lastJump:false,lastJumpId:0,jumpBufferRemaining:0,stepDistance:0,ladderId:0,ladderCooldown:0,ladderExit:0 };
 }
 
 export function hullFor(p, height=p.crouch?CROUCH_HEIGHT:STAND_HEIGHT) {
@@ -181,7 +191,7 @@ function updateCrouch(p,wanted){
   if(Boolean(wanted)===p.crouch)return;
   const oldHeight=p.crouch?CROUCH_HEIGHT:STAND_HEIGHT,newHeight=wanted?CROUCH_HEIGHT:STAND_HEIGHT;
   const lift=Math.sign(oldHeight-newHeight)*Math.min(Math.abs(oldHeight-newHeight),CROUCH_JUMP_LIFT);
-  const y=p.y+(p.grounded?0:lift);
+  const y=p.y+(p.grounded||p.ladderId?0:lift);
   const candidate={...p,y,crouch:Boolean(wanted)};
   const test=hullFor(candidate,newHeight);
   // Raising feet in air retracts the legs. Releasing crouch performs the
@@ -217,7 +227,7 @@ export function stepPlayer(p,input={},dt=1/60) {
     if(p.grounded&&p.jumpBufferRemaining>0){p.vy=JUMP_SPEED;p.grounded=false;p.jumpBufferRemaining=0;jumped=true;return true;}
     return false;
   };
-  tryJump();
+  if(!p.ladderId)tryJump();
   updateCrouch(p,input.crouch);
   p.height=p.crouch?CROUCH_HEIGHT:STAND_HEIGHT;
   const forward=Math.max(-1,Math.min(1,Number(input.forward)||0));
@@ -225,6 +235,8 @@ export function stepPlayer(p,input={},dt=1/60) {
   const len=Math.max(1,Math.hypot(forward,right));
   const mx=(-Math.sin(p.yaw)*forward+Math.cos(p.yaw)*right)/len;
   const mz=(-Math.cos(p.yaw)*forward-Math.sin(p.yaw)*right)/len;
+  if(stepLadder(p,input,dt,ladders,ladderIO,mx,mz))return p;
+  tryJump();
   const speed=(p.crouch?2.15:input.walk?2.7:6.0)*(input.speedScale||1);
   if(p.grounded){
     const t=Math.min(1,12*dt);

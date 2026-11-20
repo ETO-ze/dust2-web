@@ -31,14 +31,14 @@ async function assetFixture(t){
  Object.defineProperty(globalThis,'navigator',{configurable:true,value:{onLine:true}});
  globalThis.fetch=async(value,options={})=>{
   options.signal?.throwIfAborted();const url=new URL(urlKey(value));
-  if(url.pathname.endsWith('/download-config-1.3.0.json'))return new Response('',{status:404});
+  if(url.pathname.endsWith('/download-config.json'))return new Response('',{status:404});
   requests.push(url.href);const body=routes.get(url.pathname);if(body===undefined)throw new TypeError('Network request was not permitted');return new Response(body);
  };
  return {caches,requests,routes,load:()=>import('../client/loading.js?public-cache='+ ++sequence)};
 }
 
 test('only the exact public pool paths share the root cache directory',()=>{
- for(const path of ['/','/play/de_dust2/','/play/de_mirage/?room=ABCD'])assert.equal(publicPoolAssetCacheBase('https://cache.test'+path).href,'https://cache.test/');
+ for(const path of ['/','/perf/','/play/de_dust2/','/play/de_mirage/?room=ABCD'])assert.equal(publicPoolAssetCacheBase('https://cache.test'+path).href,'https://cache.test/');
  for(const path of ['/review/play/de_mirage/','/__installed__/','/portable/','/play/de_inferno/','/other/play/de_mirage/'])assert.equal(publicPoolAssetCacheBase('https://cache.test'+path).pathname,path);
  assert.equal(publicPoolAssetCacheBase('https://cache.test/play/de_mirage/',{installed:true}).pathname,'/play/de_mirage/');
 });
@@ -163,7 +163,7 @@ test('a controlling root worker passes map pages and bootstrap APIs through with
   f.routes.set(f.base+path,new Response('<title>Another game</title>'));
   assert.equal(await f.dispatch(path,'navigate'),undefined,path);
  }
- for(const path of ['api/rooms','ws','health','config/client','public-map.json','private-map.json','map-pool.json','download-config-1.3.0.json','catalog.json','maps/de_mirage/render-manifest.json'])assert.equal(await f.dispatch(path),undefined,path);
+ for(const path of ['api/rooms','ws','health','config/client','public-map.json','private-map.json','map-pool.json','download-config.json','catalog.json','maps/de_mirage/render-manifest.json'])assert.equal(await f.dispatch(path),undefined,path);
  assert.equal(f.requests.length,before,'pass-through must not invoke the worker fetch/cache path');
  assert.match(await(await shell.match(f.base)).text(),/Root lobby/);
  f.routes.clear();assert.match(await(await f.dispatch('./','navigate')).text(),/Root lobby/);

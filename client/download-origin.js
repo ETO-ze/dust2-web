@@ -1,4 +1,5 @@
 import {validateDownloadConfig} from '../shared/download-config.js';
+import {isPackagedSkinPath} from '../shared/packaged-skin-assets.js';
 
 const DEFAULT_CONFIG=Object.freeze({schemaVersion:1,assetBaseURL:null,mapBaseURL:null,fallbackToGameServer:false});
 const AVAILABILITY_STATUS=new Set([404,408,429,500,502,503,504]);
@@ -37,6 +38,10 @@ export function assetDownloadURL(value,{pageURL=defaultPageURL(),config=download
  const relative=url.pathname.slice(prefix.pathname.length);
  if(!relative||relative.split('/').some(part=>!part||part==='.'||part==='..')||/%(?:2e|2f|5c)/i.test(relative)||relative.includes('\\'))
   throw Error('Asset download path is outside the source assets directory');
+ // A private map server may already carry newly verified skin models in its package.
+ const map=globalThis.__DUST2_PRIVATE_MAP__;
+ const assetPath='assets/'+relative;
+ if((map?.flatOnly||map?.graphicsMode==='quality')&&isPackagedSkinPath(assetPath)&&Array.isArray(map.localSkinPaths)&&map.localSkinPaths.includes(assetPath))return url;
  const remote=new URL('./'+relative,config.assetBaseURL);
  remote.search=url.search;
  return remote;

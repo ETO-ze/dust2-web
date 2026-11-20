@@ -68,3 +68,16 @@ After baking a selected subset, merge its manifest with
 `node scripts/sync-skin-catalog.mjs`, `node scripts/build-asset-manifest.mjs`
 and `node scripts/build-asset-lock.mjs`. Keep per-gun animation bundles outside
 the initial manifest; each default finish declares its own verified bundle.
+
+The room catalogue contains 216 selectable appearances across 34 firearms and the knife slot.
+Each firearm has one stock model and three market-selected finishes. There are 22 unpainted knife models and 35 default appearances.
+Baking the extracted materials requires the optional Node package sharp. The packed AWP Asiimov uses its original minimum float of
+0.18 (Field-Tested). AK-47 Fire Serpent uses 0.06 (Factory New), inherited from
+the default paint kit in Valve's items schema. These two bakes use the extracted
+wear texture, source exposure mask and the CS2 shader's wear threshold at those
+floats. The browser's PBR result is an approximation.
+
+To generate a server preload list, run
+`node scripts/weapon-assets/official-preload.mjs artifacts/official-skins/preload.json`.
+It verifies the shipped models, inventory previews, optional animations and
+extracted source hashes. The client downloads only the selected room assets.

@@ -1,4 +1,5 @@
 import {bundled,bundledEntry,bundledManifest,remoteAsset} from './bundled-assets.js';
+import {cutoutImagePaths,flatMatchManifest} from './flat-map-materials.js';
 import {assetManifestName} from './device-profile.js';
 import { DefaultLoadingManager } from 'three';
 import {clientAssetManifest} from './private-game-config.js';
@@ -20,7 +21,7 @@ async function ensureDownloadOrigin(signal){
   check(signal);const configured=getDownloadOrigin();if(configured)return configured;
   const render=globalThis.__DUST2_PRIVATE_MAP__?.renderUrl;
   const installed=bundled&&base().origin==='https://cs2.duskrain.cn'&&base().pathname.startsWith('/__installed__/');
-  const configURL=render?new URL('../../../download-config-1.3.0.json',render):new URL(installed?'/download-config.json':bundled?'download-config.json':'download-config-1.3.0.json',base());
+  const configURL=render?new URL('../../../download-config.json',render):new URL(installed?'/download-config.json':'download-config.json',base());
   return initDownloadOrigin({configURL,pageURL:document.baseURI,signal});
 }
 async function stores(){try{if(!globalThis.caches)return null;const n=cacheNames();return{assets:await caches.open(n.assets),meta:await caches.open(n.meta)};}catch{return null;}}
@@ -96,10 +97,18 @@ async function loadManifest({signal,refresh=true}={}){
   }catch(error){check(signal);const hit=await cache?.meta.match(manifestURL());if(hit){manifestMemory=clientAssetManifest(await hit.json(),!!globalThis.__DUST2_PRIVATE_MAP__);manifestChecked=true;return manifestMemory;}throw error;}
 }
 
-async function collectAssets({signal,onProgress,makeBlobs=false}={}){
+async function matchManifest(manifest, flat, signal) {
+  if (!flat) return manifest;
+  const sceneFile = manifest.files.find(file => /\/dust2-(web|clear)\.gltf$/.test(file.path));
+  if (!sceneFile) return flatMatchManifest(manifest);
+  const response = await fetchCachedAsset(sceneFile.path, {...sceneFile, signal});
+  return flatMatchManifest(manifest, cutoutImagePaths(await response.json(), sceneFile.path));
+}
+
+async function collectAssets({signal,onProgress,makeBlobs=false,flat=false}={}){
   if(makeBlobs)releaseDownloads();const controller=new AbortController(),parent=signal,abort=()=>controller.abort(parent?.reason);
   parent?.addEventListener('abort',abort,{once:true});if(parent?.aborted)abort();signal=controller.signal;let workers=[];
-  try{const manifest=await loadManifest({signal}),total=manifest.files.reduce((n,f)=>n+f.bytes,0);
+  try{const manifest=await matchManifest(await loadManifest({signal}),flat,signal),total=manifest.files.reduce((n,f)=>n+f.bytes,0);
     let next=0,complete=0,bytes=0,lastBytes=0,lastTime=performance.now(),rate=0,cachedFiles=0;
     const tick=current=>{const now=performance.now(),elapsed=(now-lastTime)/1000;if(elapsed>.35){rate=(bytes-lastBytes)/elapsed;lastTime=now;lastBytes=bytes;}onProgress?.({bytes,total,complete,count:manifest.files.length,rate,current,cachedFiles});};tick('准备地图资源');
     workers=Array.from({length:2},async()=>{while(next<manifest.files.length){check(signal);const file=manifest.files[next++],url=absolute(file.path);url.searchParams.set('v',file.sha256.slice(0,12));let seen=0,fromCache=false;
@@ -110,7 +119,7 @@ async function collectAssets({signal,onProgress,makeBlobs=false}={}){
   finally{parent?.removeEventListener('abort',abort);}
 }
 export async function downloadAssets(options={}){
-  if(bundled){const manifest=await loadManifest({signal:options.signal});const installed=await bundledManifest();const files=new Map(installed.files.map(f=>[f.path,f]));if(!manifest.files.every(f=>files.get(f.path)?.sha256===f.sha256))throw Error('基础资源不完整，请下载完整客户端。');options.onProgress?.({bytes:manifest.totalBytes,total:manifest.totalBytes,complete:manifest.files.length,count:manifest.files.length,rate:0,current:'读取已安装资源'});return manifest;}
+  if(bundled){const manifest=await matchManifest(await loadManifest({signal:options.signal}),options.flat,options.signal);const installed=await bundledManifest();const files=new Map(installed.files.map(f=>[f.path,f]));if(!manifest.files.every(f=>files.get(f.path)?.sha256===f.sha256))throw Error('基础资源不完整，请下载完整客户端。');options.onProgress?.({bytes:manifest.totalBytes,total:manifest.totalBytes,complete:manifest.files.length,count:manifest.files.length,rate:0,current:'读取已安装资源'});return manifest;}
   // A worker serves verified asset entries only in its own document directory.
   // The root worker deliberately passes /play/ through; those map pages need
   // Blob URLs so GLTF/texture readers reuse the bytes just fetched from CDN.

@@ -4,9 +4,11 @@ import {spawnSync} from 'node:child_process';
 import {readVpkIndex} from '../../tools/vpk-index.mjs';
 
 const root=path.resolve(import.meta.dirname,'../..');
-const game=process.env.CS2_GAME_DIR||'E:/steam/steamapps/common/Counter-Strike Global Offensive/game/csgo';
+const game=process.env.CS2_GAME_DIR;
+if(!game)throw Error('Set CS2_GAME_DIR to the installed game/csgo directory.');
 const selection=process.argv.find(a=>a.startsWith('--ids='))?.slice(6).split(',');
-const specs=JSON.parse(fs.readFileSync(path.join(import.meta.dirname,'default-skins.json'),'utf8')).filter(s=>!selection||selection.includes(s.id));
+const specFile = process.argv.includes('--popular') ? 'popular-skins.json' : process.argv.includes('--expansion') ? 'expansion-skins.json' : 'default-skins.json';
+const specs=JSON.parse(fs.readFileSync(path.join(import.meta.dirname,specFile),'utf8')).filter(s=>!selection||selection.includes(s.id));
 const vpk=path.join(game,'pak01_dir.vpk');
 const entries=new Set(readVpkIndex(vpk).entries.map(e=>e.path));
 const source=path.join(root,'artifacts/weapon-expansion/source');

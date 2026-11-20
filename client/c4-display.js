@@ -1,5 +1,21 @@
 import * as THREE from 'three';
 
+// The distributed C4 mesh is in its ground-model bind space. The original
+// first-person clip puts the weapon joint at its origin. Remove the VMDL
+// weapon bind translation, in Source inches, permuted into glTF metres.
+const weaponBindInches = [-.196636796, -4.000021458, 3.049481869];
+export function alignC4Viewmodel(weapon){
+  const [x,y,z]=weaponBindInches;
+  weapon.position.set(-y,-z,-x).multiplyScalar(.0254);
+}
+
+// Normalized key-contact frames in the shipped plant_c4.vnmclip (120 intervals).
+const keyframes = [20, 29, 37, 44, 50, 59, 65];
+export function c4KeypadText(progress){
+  const frame=progress*120;
+  return '7355608'.slice(0,keyframes.filter(key=>frame>=key).length);
+}
+
 // Reuse the authored, skinned LCD surface. Only its UVs and material belong to
 // this instance; the original weapon body and shared asset stay untouched.
 export function c4Display(root){

@@ -1,120 +1,146 @@
 import { DEFAULT_CROSSHAIR, normalizeCrosshair } from '../shared/cs2-settings.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const COLORS = [[255, 0, 0], [0, 255, 0], [255, 255, 0], [0, 0, 255], [0, 255, 255]];
-const bounded = (n, fallback, min, max) => Number.isFinite(Number(n))
-  ? Math.max(min, Math.min(max, Number(n))) : fallback;
+const COLORS = [[255,0,0], [0,255,0], [255,255,0], [0,0,255], [0,255,255]];
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-/**
- * Classic crosshair geometry in CSS pixels, scaled from a 480-line reference.
- * This browser rasterisation is a reproduction, not Valve's closed-source HUD.
- * spread is extra CSS pixels supplied by gameplay, never applied to style 4.
- */
-export function crosshairGeometry(settings, { viewportHeight = 1080, spread = 0, weaponGap = 4 } = {}) {
+// Classic share codes predate CS2's September 2026 pixel-based settings.
+// The old engine's line dimensions round ties to even; its gap is an integer
+// pixel offset from the edge of the perpendicular bar, independent of height.
+function roundEven(value) {
+  const lower = Math.floor(value);
+  return value - lower === .5 ? lower + (lower % 2) : Math.round(value);
+}
+
+export function crosshairGeometry(settings, state = {}) {
   const s = normalizeCrosshair(settings);
-  const scale = bounded(viewportHeight, 1080, 120, 8640) / 480;
-  const thickness = Math.max(1, Math.round(s.thickness * scale));
-  const length = Math.max(0, Math.round(s.size * scale));
-  const dynamic = [2, 3, 5].includes(s.style) ? bounded(spread, 0, 0, 100) : 0;
-  const baseGap = s.gapUseWeaponValue ? bounded(weaponGap, 4, 0, 20) : 4;
-  const gap = Math.round((s.gap + baseGap) * scale + dynamic);
-  const half = thickness / 2;
-  const inner = half + gap;
-  const rects = [];
+  const scale = clamp(Number(state.viewportHeight) || 1080, 1, 16384) / 480;
+  const sx = state.stretchX || 1, sy = state.stretchY || 1;
+  const thickness = Math.max(1, roundEven(s.thickness * scale));
+  const length = Math.max(0, roundEven(s.size * scale));
+  const base = s.gapUseWeaponValue ? (state.weaponGap ?? 4) : 4;
+  const spread = [2,3,5].includes(s.style) ? Math.max(0, state.spread || 0) : 0;
+  const gap = Math.trunc(base + s.gap) + Math.round(spread);
+  const w = Math.max(1, Math.round(thickness * sx)), h = Math.max(1, Math.round(thickness * sy));
+  const lx = length ? Math.max(1, Math.round(length * sx)) : 0;
+  const ly = length ? Math.max(1, Math.round(length * sy)) : 0;
+  const gx = Math.round(gap * sx), gy = Math.round(gap * sy);
+  const x = -Math.floor(w / 2), y = -Math.floor(h / 2), rects = [];
   if (length) {
-    if (!s.tStyle) rects.push({ x: -half, y: -inner - length, width: thickness, height: length });
-    rects.push({ x: -half, y: inner, width: thickness, height: length });
-    rects.push({ x: -inner - length, y: -half, width: length, height: thickness });
-    rects.push({ x: inner, y: -half, width: length, height: thickness });
+    if (!s.tStyle) rects.push({x, y:y - gy - ly, width:w, height:ly});
+    rects.push({x, y:y + h + gy, width:w, height:ly});
+    rects.push({x:x - gx - lx, y, width:lx, height:h});
+    rects.push({x:x + w + gx, y, width:lx, height:h});
   }
-  if (s.dot) rects.push({ x: -half, y: -half, width: thickness, height: thickness });
-  return { rects, outline: s.outline ? s.outlineThickness * scale : 0,
-    color: s.color === 5 ? [s.red, s.green, s.blue] : COLORS[s.color],
-    opacity: s.useAlpha ? s.alpha / 255 : 1 };
+  if (s.dot) rects.push({x, y, width:w, height:h});
+  const outline = s.outline && s.outlineThickness > 0 ? Math.max(1, Math.round(s.outlineThickness)) : 0;
+  return {rects, outline, outlineX:outline && Math.max(1, Math.round(outline * sx)),
+    outlineY:outline && Math.max(1, Math.round(outline * sy)),
+    color:s.color === 5 ? [s.red,s.green,s.blue] : COLORS[s.color], opacity:s.useAlpha ? s.alpha / 255 : 1};
+}
+
+export function showsWeaponCrosshair({alive = true, scoped = false, zoomStyle = '', bombCamera = false} = {}) {
+  return alive && !bombCamera && !scoped && zoomStyle !== 'scope';
 }
 
 function svgFor(document) {
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('viewBox', '-128 -128 256 256');
-  svg.setAttribute('width', '256');
-  svg.setAttribute('height', '256');
   svg.setAttribute('shape-rendering', 'crispEdges');
-  Object.assign(svg.style, { position: 'absolute', left: '50%', top: '50%',
-    width: '256px', height: '256px', overflow: 'visible', pointerEvents: 'none',
-    transform: 'translate(-50%, -50%)', filter: 'none', boxShadow: 'none' });
+  svg.setAttribute('preserveAspectRatio', 'none');
+  Object.assign(svg.style, {position:'absolute', overflow:'visible', pointerEvents:'none', filter:'none'});
+  svg.append(document.createElementNS(SVG_NS, 'g'));
   return svg;
 }
 
-function draw(svg, settings, state) {
-  const geometry = crosshairGeometry(settings, state);
-  const group = svg.ownerDocument.createElementNS(SVG_NS, 'g');
-  group.setAttribute('opacity', String(geometry.opacity));
-  const add = (rect, color, padding = 0) => {
-    const node = svg.ownerDocument.createElementNS(SVG_NS, 'rect');
-    node.setAttribute('x', String(rect.x - padding));
-    node.setAttribute('y', String(rect.y - padding));
-    node.setAttribute('width', String(rect.width + padding * 2));
-    node.setAttribute('height', String(rect.height + padding * 2));
-    node.setAttribute('fill', color);
-    group.append(node);
-  };
-  if (geometry.outline > 0) geometry.rects.forEach(rect => add(rect, '#000', geometry.outline));
-  geometry.rects.forEach(rect => add(rect, `rgb(${geometry.color.join(',')})`));
-  svg.replaceChildren(group);
+function draw(svg, geometry, dpr, offsetX, offsetY) {
+  const {rects, outlineX, outlineY, color, opacity} = geometry;
+  const group = svg.firstElementChild, outlines = outlineX > 0;
+  const packed = rgb => 'rgb(' + rgb.join(',') + ')';
+  group.setAttribute('opacity', opacity);
+  // The SVG coordinate system is physical display pixels. Its small bounding
+  // box is aligned to whole pixels, outside the HUD's stretched transform.
+  let radiusX = 1, radiusY = 1;
+  for (const r of rects) {
+    radiusX = Math.max(radiusX, -r.x + outlineX, r.x + r.width + outlineX);
+    radiusY = Math.max(radiusY, -r.y + outlineY, r.y + r.height + outlineY);
+  }
+  svg.setAttribute('viewBox', [-radiusX,-radiusY,radiusX * 2,radiusY * 2].join(' '));
+  Object.assign(svg.style, {left:(offsetX - radiusX / dpr) + 'px', top:(offsetY - radiusY / dpr) + 'px',
+    width:(radiusX * 2 / dpr) + 'px', height:(radiusY * 2 / dpr) + 'px'});
+  const count = rects.length * (outlines ? 2 : 1);
+  while (group.childElementCount < count) group.append(svg.ownerDocument.createElementNS(SVG_NS, 'rect'));
+  while (group.childElementCount > count) group.lastElementChild.remove();
+  for (let i = 0; i < count; i++) {
+    const stroke = outlines && i < rects.length, r = rects[i % rects.length];
+    const px = stroke ? outlineX : 0, py = stroke ? outlineY : 0, node = group.children[i];
+    node.setAttribute('x', r.x - px);
+    node.setAttribute('y', r.y - py);
+    node.setAttribute('width', r.width + 2 * px);
+    node.setAttribute('height', r.height + 2 * py);
+    node.setAttribute('fill', stroke ? '#000' : packed(color));
+  }
 }
 
 export class Crosshair {
-  constructor(container, { settings = DEFAULT_CROSSHAIR } = {}) {
+  constructor(container, {settings = DEFAULT_CROSSHAIR, getViewport} = {}) {
     if (!container?.ownerDocument) throw new TypeError('Crosshair needs a DOM container');
     this.container = container;
+    this.window = container.ownerDocument.defaultView;
+    this.getViewport = getViewport || (() => ({height:this.window.innerHeight, width:this.window.innerWidth}));
     this.settings = normalizeCrosshair(settings);
-    this.state = { scoped: false, alive: true, spread: 0 };
+    this.state = {alive:true, scoped:false, spread:0};
     this.svg = svgFor(container.ownerDocument);
     container.replaceChildren(this.svg);
-    this.onResize = () => this.render();
-    this.window = container.ownerDocument.defaultView;
+    this.onResize = () => this.refreshLayout();
     this.window?.addEventListener('resize', this.onResize);
-    this.render();
+    this.refreshLayout();
+  }
+
+  refreshLayout() {
+    const v = this.getViewport(), dpr = this.window?.devicePixelRatio || 1;
+    const {left,top} = this.container.getBoundingClientRect();
+    this.layout = {dpr, viewportHeight:Math.round(v.height * dpr), stretchX:(v.displayWidth || v.width) / v.width,
+      stretchY:(v.displayHeight || v.height) / v.height,
+      offsetX:Math.floor(left * dpr + 1e-6) / dpr - left, offsetY:Math.floor(top * dpr + 1e-6) / dpr - top};
+    this.render(true);
   }
 
   configure(settings = {}) {
-    this.settings = normalizeCrosshair({ ...this.settings, ...settings });
-    this.render();
+    this.settings = normalizeCrosshair({...this.settings, ...settings});
+    this.render(true);
     return this.settings;
   }
 
   update(state = {}) {
-    const next = { ...this.state, ...state };
-    const changed = next.scoped !== this.state.scoped || next.alive !== this.state.alive
-      || next.viewportHeight !== this.state.viewportHeight || next.weaponGap !== this.state.weaponGap
-      || (this.settings.style !== 4 && next.spread !== this.state.spread)
-      || (this.settings.followRecoil && (next.recoilX !== this.state.recoilX || next.recoilY !== this.state.recoilY));
-    this.state = next;
-    if (changed) this.render();
+    Object.assign(this.state, state);
+    this.render();
   }
 
-  render() {
-    const visible = !this.state.scoped && this.state.alive !== false;
+  render(force = false) {
+    const visible = showsWeaponCrosshair(this.state);
+    const {dpr, offsetX, offsetY} = this.layout;
+    const spread = [2,3,5].includes(this.settings.style) ? Math.round((this.state.spread || 0) * dpr) : 0;
+    const rx = this.settings.followRecoil ? Math.round((this.state.recoilX || 0) * dpr) : 0;
+    const ry = this.settings.followRecoil ? Math.round((this.state.recoilY || 0) * dpr) : 0;
+    const weaponGap = this.settings.gapUseWeaponValue ? this.state.weaponGap : 4;
+    if (!force && visible === this.visible && spread === this.spread && rx === this.rx && ry === this.ry && weaponGap === this.weaponGap) return;
+    this.visible = visible; this.spread = spread; this.rx = rx; this.ry = ry; this.weaponGap = weaponGap;
     this.svg.style.display = visible ? 'block' : 'none';
-    if (!visible) return;
-    const recoilX = this.settings.followRecoil ? bounded(this.state.recoilX, 0, -400, 400) : 0;
-    const recoilY = this.settings.followRecoil ? bounded(this.state.recoilY, 0, -400, 400) : 0;
-    this.svg.style.marginLeft = `${recoilX}px`;
-    this.svg.style.marginTop = `${recoilY}px`;
-    draw(this.svg, this.settings, { ...this.state,
-      viewportHeight: this.state.viewportHeight ?? this.window?.innerHeight ?? 1080 });
+    if (visible) draw(this.svg, crosshairGeometry(this.settings, {...this.layout, spread, weaponGap}),
+      dpr, offsetX + rx / dpr, offsetY + ry / dpr);
   }
 
-  /** Render a stationary preview at the same scale as the current game viewport. */
   renderPreview(container, settings = this.settings) {
     if (!container?.ownerDocument) throw new TypeError('Crosshair preview needs a DOM container');
-    const svg = svgFor(container.ownerDocument);
-    if (!container.style.position || container.style.position === 'static') container.style.position = 'relative';
     const previous = container.querySelector('svg[data-crosshair-preview]');
-    if (previous) previous.remove();
+    previous?.remove();
+    if (!container.style.position || container.style.position === 'static') container.style.position = 'relative';
+    const svg = svgFor(container.ownerDocument), rect = container.getBoundingClientRect(), {dpr} = this.layout;
     svg.dataset.crosshairPreview = 'true';
-    draw(svg, normalizeCrosshair(settings), { viewportHeight: this.window?.innerHeight ?? 1080 });
+    const x = Math.floor((rect.left + rect.width / 2) * dpr) / dpr - rect.left;
+    const y = Math.floor((rect.top + rect.height / 2) * dpr) / dpr - rect.top;
+    draw(svg, crosshairGeometry(settings, this.layout), dpr, x, y);
     container.append(svg);
     return svg;
   }

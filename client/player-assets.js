@@ -11,16 +11,20 @@ export const DEFAULT_AGENTS=Object.freeze({
 
 const agents=new Map(),pending=new Map(),retry=new Map();let animationSource=null;
 function prepare(source){
- if(!animationSource)return source;
+ if(!animationSource||source.scene.userData.cs2DefaultAgent)return source;
  const names=new Set();source.scene.traverse(node=>names.add(node.name));
- source.animations=animationSource.animations.map(original=>{const clip=original.clone();clip.tracks=clip.tracks.filter(track=>names.has(THREE.PropertyBinding.parseTrackName(track.name).nodeName));clip.duration=Math.max(.1,clip.duration);return clip;});
+ source.animations=animationSource.animations.map(original=>new THREE.AnimationClip(
+  original.name,Math.max(.1,original.duration),
+  original.tracks.filter(track=>names.has(THREE.PropertyBinding.parseTrackName(track.name).nodeName)),
+  original.blendMode
+ ));
  source.scene.userData.cs2DefaultAgent=true;return source;
 }
 export function loadedPlayerAsset(id){return agents.get(id);}
-export async function loadAgent(id,{onProgress}={}){
+export async function loadAgent(id,{onProgress,signal}={}){
  if(agents.has(id))return agents.get(id);if(pending.has(id))return pending.get(id);
  const asset=AGENT_ASSETS[id];if(!asset)throw Error('探员资源尚不可用');
- const task=(async()=>{const response=await fetchCachedAsset(new URL(asset.model,document.baseURI).href,{sha256:asset.sha256,bytes:asset.bytes,onProgress});if(!response.ok)throw Error('探员下载失败');const source=await gameGLTFLoader().parseAsync(await response.arrayBuffer(),new URL('.',new URL(asset.model,document.baseURI)).href);prepare(source);agents.set(id,source);return source;})();pending.set(id,task);try{return await task;}finally{pending.delete(id);}
+ const task=(async()=>{const response=await fetchCachedAsset(new URL(asset.model,document.baseURI).href,{sha256:asset.sha256,bytes:asset.bytes,onProgress,signal});if(!response.ok)throw Error('探员下载失败');const source=await gameGLTFLoader().parseAsync(await response.arrayBuffer(),new URL('.',new URL(asset.model,document.baseURI)).href);prepare(source);agents.set(id,source);return source;})();pending.set(id,task);try{return await task;}finally{pending.delete(id);}
 }
 export function requestAgent(id){if(!id||agents.has(id)||pending.has(id)||(retry.get(id)||0)>performance.now())return;retry.set(id,performance.now()+30000);loadAgent(id).catch(()=>{});}
 export async function loadPlayerAssets(loader){

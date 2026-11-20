@@ -28,7 +28,7 @@
     "inventory": "weapon_m4a1_silencer_am_m4a1s_bluesmoke",
     "rawGLB": "output/cs2-skins/m4a1/m4a1.glb",
     "wearMin": 0,
-    "wearMax": 1,
+    "wearMax": 0.08,
     "preview": "previews/m4a1.webp"
   },
   {
@@ -44,7 +44,7 @@
     "inventory": "weapon_awp_gs_awp_gungnir",
     "rawGLB": "output/cs2-skins/awp/awp.glb",
     "wearMin": 0,
-    "wearMax": 1,
+    "wearMax": 0.6,
     "preview": "previews/awp.webp"
   },
   {
@@ -60,7 +60,7 @@
     "inventory": "weapon_glock_am_emerald_marbleized_glock",
     "rawGLB": "output/cs2-skins/glock/glock.glb",
     "wearMin": 0,
-    "wearMax": 1,
+    "wearMax": 0.5,
     "preview": "previews/glock.webp"
   },
   {
@@ -76,12 +76,12 @@
     "inventory": "weapon_usp_silencer_cu_usp_printstream",
     "rawGLB": "output/cs2-skins/usp/usp.glb",
     "wearMin": 0,
-    "wearMax": 1,
+    "wearMax": 0.85,
     "preview": "previews/usp.webp"
   },
   {
     "id": "ak47",
-    "file": "optional/ak47-fire-serpent",
+    "file": "official-wear/ak47-fire-serpent",
     "name": "AK-47 | Fire Serpent",
     "chineseName": "火蛇",
     "englishName": "AK-47 | Fire Serpent",
@@ -91,8 +91,8 @@
     "input": "materials/models/weapons/customization/rif_ak47/rif_ak47_composite_inputs.vmat",
     "inventory": "weapon_ak47_cu_fireserpent_ak47_bravo",
     "rawGLB": "output/cs2-skins/ak47/ak47.glb",
-    "wearMin": 0,
-    "wearMax": 1,
+    "wearMin": 0.06,
+    "wearMax": 0.76,
     "preview": "optional/previews/ak47-fire-serpent.webp"
   },
   {
@@ -113,7 +113,7 @@
   },
   {
     "id": "awp",
-    "file": "optional/awp-asiimov",
+    "file": "official-wear/awp-asiimov",
     "name": "AWP | Asiimov",
     "chineseName": "二西莫夫",
     "englishName": "AWP | Asiimov",
@@ -123,7 +123,7 @@
     "input": "materials/models/weapons/customization/snip_awp/snip_awp_composite_inputs.vmat",
     "inventory": "weapon_awp_cu_awp_asimov",
     "rawGLB": "output/cs2-skins/awp/awp.glb",
-    "wearMin": 0,
+    "wearMin": 0.18,
     "wearMax": 1,
     "preview": "optional/previews/awp-asiimov.webp"
   },
@@ -172,7 +172,7 @@
     "inventory": "weapon_usp_silencer_cu_usps_noir",
     "rawGLB": "output/cs2-skins/usp/usp.glb",
     "wearMin": 0,
-    "wearMax": 1,
+    "wearMax": 0.7,
     "preview": "optional/previews/usp-neo-noir.webp"
   },
   {
@@ -188,7 +188,7 @@
     "inventory": "weapon_knife_karambit_am_ruby_marbleized",
     "rawGLB": "output/cs2-skins/karambit/karambit.glb",
     "wearMin": 0,
-    "wearMax": 1,
+    "wearMax": 0.08,
     "preview": "optional/previews/karambit-ruby.webp"
   },
   {
@@ -204,7 +204,7 @@
     "inventory": "weapon_knife_karambit_am_blackpearl_marbleized",
     "rawGLB": "output/cs2-skins/karambit/karambit.glb",
     "wearMin": 0,
-    "wearMax": 1,
+    "wearMax": 0.08,
     "preview": "optional/previews/karambit-black-pearl.webp"
   }
 ]

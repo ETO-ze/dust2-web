@@ -8,9 +8,27 @@ import {BoxGeometry} from 'three';
 import {initPhysics,createPlayerState,stepPlayer} from '../shared/physics.js';
 import {probeNavEdge,createEdgeController,edgeMovementInput} from '../scripts/maps/navigation-movement.mjs';
 import {loadPrivatePhysics} from '../scripts/maps/load-private-physics.mjs';
+import {applyPrivateCollisionExclusions} from '../shared/private-map-collision.js';
 const box=(x,y,z,w,h,d)=>{const g=new BoxGeometry(w,h,d).toNonIndexed();g.translate(x,y,z);const p=[...g.attributes.position.array];g.dispose();return p;};
 const floor=()=>box(0,-.5,0,20,1,20);
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+
+test('native player exclusions preserve projectile masks and require exact source groups',()=>{
+ const groups=[{name:'foliage',source:'world_physics.gltf',firstTriangle:0,triangles:2,mask:7,
+  extras:{SurfaceProperty:'foliage',CollisionGroup:'ConditionallySolid',InteractAs:[]}}];
+ const identity={map:'de_train',sourceSha256:'1'.repeat(64),physicsSha256:'2'.repeat(64),groupsSha256:'3'.repeat(64)};
+ const row={firstTriangle:0,triangles:2,oldMask:7,nativeAttribute:0,nativeSurface:0,nativeShapes:1,
+  group:'ConditionallySolid',interactAs:[],surfaceProperty:'foliage',interactExclude:['npc','player']};
+ const policy={...identity,excludedGroups:[],nativePlayerExclusions:{...identity,schemaVersion:1,
+  worldModel:'maps/de_train/world_physics.vmdl_c',worldPhysicsSha256:'4'.repeat(64),groups:[row]}};
+ const mask=new Uint8Array([7,7,1]);
+ applyPrivateCollisionExclusions(mask,groups,policy);
+ assert.deepEqual([...mask],[6,6,1]);
+ for(const changes of [{surfaceProperty:'glass'},{triangles:3},{interactExclude:['npc']}]){
+  const changed={...policy,nativePlayerExclusions:{...policy.nativePlayerExclusions,groups:[{...row,...changes}]}};
+  assert.throws(()=>applyPrivateCollisionExclusions(mask,groups,changed),/does not match/);
+ }
+});
 
 test('NAV jump edge uses real jump and can be replayed without moving the character directly',()=>{
  initPhysics(new Float32Array([...floor(),...box(2,.5,0,2,1,3)]),null,{mapPatches:false});

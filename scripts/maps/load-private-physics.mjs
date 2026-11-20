@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {applyPrivateCollisionExclusions} from '../../shared/private-map-collision.js';
 const sha=buffer=>crypto.createHash('sha256').update(buffer).digest('hex');
 
 /** Only the hash-bound source entity policy may remove collision groups.
@@ -17,12 +18,7 @@ export function loadPrivatePhysics(directory,channel=1) {
  const physicsSha256=sha(bytes),maskSha256=sha(originalMask);
  if(policy.map!==map.id||policy.sourceSha256!==map.sourceSha256||policy.physicsSha256!==physicsSha256||policy.maskSha256!==maskSha256||policy.groupsSha256!==sha(groupsBytes))throw new Error('Private collision policy does not match immutable map geometry');
  const mask=Buffer.from(originalMask);
- for(const group of policy.excludedGroups){
-  if(!Number.isSafeInteger(group.firstTriangle)||!Number.isSafeInteger(group.triangles)||group.firstTriangle<0||group.triangles<0||group.firstTriangle+group.triangles>mask.length||!['never-solid','initially-disabled'].includes(group.reason)||group.solid!==false||group.resolved!==true)throw new Error('Invalid private collision policy exclusion');
-  if(!groups.some(g=>g.name==='func_brush'&&g.source==='map_physics.gltf'&&g.firstTriangle===group.firstTriangle&&g.triangles===group.triangles))throw new Error('Private collision policy excludes an unmatched brush group');
-  if(!group.sourceEntities?.length||!group.sourceEntities.every(e=>group.reason==='never-solid'?e.solidity===1:e.solidity===0&&[true,1,'true','1'].includes(e.startdisabled)))throw new Error('Private collision policy is not supported by source entity state');
-  mask.fill(0,group.firstTriangle,group.firstTriangle+group.triangles);
- }
+ applyPrivateCollisionExclusions(mask,groups,policy);
  const all=new Float32Array(bytes.buffer,bytes.byteOffset,bytes.length/4);
  if(all.length!==mask.length*9)throw new Error('Collision mask length does not match geometry');
  const positions=new Float32Array(mask.filter(m=>m&channel).length*9);

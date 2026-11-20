@@ -131,14 +131,14 @@ test('private pages lazily initialize the shared config before downloading the a
  globalThis.__DUST2_PRIVATE_MAP__={renderUrl:'https://game.test/review/maps/de_mirage/render/map.gltf'};
  const bytes=new TextEncoder().encode('asset data'),hash=createHash('sha256').update(bytes).digest('hex'),calls=[];
  globalThis.fetch=async value=>{const url=String(value);calls.push(url);
-  if(url==='https://game.test/review/download-config-1.3.0.json')return Response.json({schemaVersion:1,assetBaseURL:'https://static.test/assets/',mapBaseURL:null,fallbackToGameServer:false});
+  if(url==='https://game.test/review/download-config.json')return Response.json({schemaVersion:1,assetBaseURL:'https://static.test/assets/',mapBaseURL:null,fallbackToGameServer:false});
   if(url==='https://static.test/assets/asset-manifest.json')return Response.json({files:[{path:'assets/rifle.glb',sha256:hash,bytes:bytes.length,group:'weapons'}]});
   if(url==='https://static.test/assets/rifle.glb?v='+hash.slice(0,12))return new Response(bytes);
   throw Error('Unexpected download: '+url);
  };
  const {fetchCachedAsset}=await import('./client/loading.js');
  assert.equal(await (await fetchCachedAsset('assets/rifle.glb')).text(),'asset data');
- assert.deepEqual(calls,['https://game.test/review/download-config-1.3.0.json','https://static.test/assets/asset-manifest.json','https://static.test/assets/rifle.glb?v='+hash.slice(0,12)]);
+ assert.deepEqual(calls,['https://game.test/review/download-config.json','https://static.test/assets/asset-manifest.json','https://static.test/assets/rifle.glb?v='+hash.slice(0,12)]);
  `;
  const child=spawnSync(process.execPath,['--input-type=module','--eval',script],{cwd:new URL('../',import.meta.url),encoding:'utf8'});
  assert.equal(child.status,0,child.stderr||child.stdout);
@@ -186,4 +186,25 @@ test('Android installed optional assets read the game root configuration and kee
  `;
  const child=spawnSync(process.execPath,['--input-type=module','--eval',script],{cwd:new URL('../',import.meta.url),encoding:'utf8'});
  assert.equal(child.status,0,child.stderr||child.stdout);
+});
+
+test('packaged private skin revisions stay local while other assets still use the CDN',t=>{
+ const first='assets/weapons/cs2-skins/official-wear/ak47-fire-serpent.glb';
+ const second='assets/weapons/cs2-skins/official-wear/awp-asiimov.glb';
+ const expansion='assets/weapons/cs2-skins/expansion/ak47-new-finish.glb';
+ const art='assets/weapons/cs2-skins/expansion/previews/ak47-new-finish.webp';
+ const prior=globalThis.__DUST2_PRIVATE_MAP__;
+ t.after(()=>{if(prior===undefined)delete globalThis.__DUST2_PRIVATE_MAP__;else globalThis.__DUST2_PRIVATE_MAP__=prior;});
+ globalThis.__DUST2_PRIVATE_MAP__={flatOnly:true,localSkinPaths:[first,expansion,art,'assets/manifest.json']};
+ const opts={pageURL:'https://localhost.test/perf/',config};
+ assert.equal(assetDownloadURL(first+'?v=abc',opts).href,opts.pageURL+first+'?v=abc');
+ assert.equal(assetDownloadURL(expansion,opts).href,opts.pageURL+expansion);
+ assert.equal(assetDownloadURL(art,opts).href,opts.pageURL+art);
+ assert.equal(assetDownloadURL(second,opts).origin,'https://static.test');
+ assert.equal(assetDownloadURL('assets/manifest.json',opts).origin,'https://static.test');
+ globalThis.__DUST2_PRIVATE_MAP__.flatOnly=false;
+ assert.equal(assetDownloadURL(first,opts).origin,'https://static.test');
+ globalThis.__DUST2_PRIVATE_MAP__.graphicsMode='quality';
+ for(const file of [first,expansion,art])assert.equal(assetDownloadURL(file,opts).href,opts.pageURL+file);
+ assert.equal(assetDownloadURL(second,opts).origin,'https://static.test');
 });

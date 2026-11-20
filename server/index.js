@@ -4,10 +4,11 @@ import { readFile, stat } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { randomBytes } from 'node:crypto';
+import { createHash,randomBytes } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { PRIMARY_WEAPONS } from '../shared/weapons.js';
 import { normalizeSkinLoadout } from '../shared/skins.js';
+import { roomSkinPlan,roomAgentIds } from '../shared/room-cosmetics.js';
 import { normalizeAgentLoadout } from '../shared/agents.js';
 import {BOT_DIFFICULTIES,normalizeBotDifficulty} from '../shared/bot-difficulty.js';
 import { botCount } from '../shared/match-rules.js';
@@ -38,6 +39,15 @@ function send(socket, value) {
 }
 
 function error(socket, code, message) { send(socket, { type: 'error', code, message }); }
+
+function roomAppearance(room){
+  const plan=roomSkinPlan(room),agentIds=roomAgentIds(room);
+  // A fixed-size revision keeps a full ten-player cosmetic list out of the
+  // existing 4 KiB join packet. Sorting makes it independent of owner order.
+  const signature=JSON.stringify([[...plan.activeSkinIds].sort(),[...plan.carriedSkinIds].sort(),[...plan.skinIds].sort(),agentIds]);
+  const revision=createHash('sha256').update(signature).digest('hex').slice(0,24);
+  return {room:room.code,mode:room.mode,...plan,agentIds,revision};
+}
 
 function joinSettings(msg) {
   const incompatible=compatibilityError(msg);if(incompatible)return {error:incompatible};
@@ -120,6 +130,18 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         socket.listRoomsAt=now;
         send(socket,{type:'rooms',...(privateMap?{mapId:privateMap.mapId,mapSignature:privateMap.mapSignature,physicsSha256:privateMap.config.physicsSha256}:{}),rooms:[...rooms.values()].filter(r=>r.humanCount>0).map(r=>({code:r.code,mode:r.mode,botDifficulty:r.botDifficulty,humans:r.humanCount,bots:r.botCount,scores:r.scores,phase:r.round.phase,joinable:r.humanCount<10&&r.match.status!=='ended'})).sort((a,b)=>Number(b.joinable)-Number(a.joinable)||b.humans-a.humans)});return;
       }
+      if (msg.type === 'roomCosmetics') {
+        if (socket.playerId || now - (socket.cosmeticsAt || 0) < 1000) return;
+        socket.cosmeticsAt = now;
+        const code = typeof msg.room === 'string' ? msg.room.trim().toUpperCase() : '';
+        const room = rooms.get(code);
+        if (!room) { error(socket,'ROOM_GONE','房间已经关闭，请在大厅重新选择。'); return; }
+        if (room.humanCount >= 10 || room.match.status === 'ended') {
+          error(socket,'ROOM_UNAVAILABLE','房间已满或对局已结束，请在大厅重新选择。'); return;
+        }
+        send(socket,{type:'roomCosmetics',...roomAppearance(room)});
+        return;
+      }
       if (msg.type === 'join') {
         if (socket.playerId) { error(socket, 'ALREADY_JOINED', '当前连接已经加入房间。'); return; }
         if(privateMap&&(msg.mapId!==privateMap.mapId||msg.mapSignature!==privateMap.mapSignature)){error(socket,'MAP_MISMATCH','地图或碰撞版本不匹配，请重新载入当前地图。');return;}
@@ -128,6 +150,13 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         if (!settings.room) { do { settings.room = randomBytes(3).toString('hex').toUpperCase(); } while (rooms.has(settings.room)); }
         let room = rooms.get(settings.room), created = false;
         if(msg.existing===true&&!room){error(socket,'ROOM_GONE','房间已经关闭，请在大厅选择有玩家的房间。');return;}
+        if(room && msg.existing===true && typeof msg.appearanceRevision==='string'){
+          const appearance=roomAppearance(room);
+          if(appearance.revision!==msg.appearanceRevision){
+            send(socket,{type:'roomCosmeticsChanged',...appearance});
+            return;
+          }
+        }
         if (!room) {
           if (rooms.size >= maxRooms) { error(socket, 'SERVER_FULL', '服务器当前房间数量已达上限。'); return; }
           room = new GameRoom(settings.room, { mode: settings.mode, bots: settings.bots, botDifficulty:settings.botDifficulty, rules, privateMap }); rooms.set(settings.room, room); created = true;

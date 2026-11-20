@@ -4,5 +4,6 @@ export function filterSkins({weapon='all',category='all',query='',availability='
  const search=String(query).trim().toLocaleLowerCase();
  return SKINS.filter(s=>(weapon==='all'||s.weapon===weapon)&&(category==='all'||getWeapon(s.weapon).category===category)
   && (!search||`${s.name} ${s.englishName||''} ${getWeapon(s.weapon).name}`.toLocaleLowerCase().includes(search))
-  && (availability==='all'||availability==='equipped'&&loadout[s.weapon]===s.id||availability==='saved'&&downloaded.has(s.id)));
+  && (availability==='all'||availability==='vanilla'&&s.condition==='Vanilla'||availability==='popular'&&s.collection==='popular'
+   ||availability==='equipped'&&loadout[s.weapon]===s.id||availability==='saved'&&downloaded.has(s.id)));
 }

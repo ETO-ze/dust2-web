@@ -2,7 +2,7 @@ import {preferences} from './persistence.js';
 import {LOADOUT_GROUPS,LOADOUT_LABELS,normalizeWeaponLoadout,loadoutCandidates,replaceLoadoutSlot,canReplaceLoadoutSlot} from '../shared/weapon-loadout.js';
 import {getWeapon} from '../shared/weapons.js';
 import {getSkin,DEFAULT_SKINS} from '../shared/skins.js';
-import {imageAssetURL} from './image-asset-url.js';
+import {skinPreviewURL} from './skin-preview.js';
 import {uiIconUrl} from './ui-icons.js';
 import './loadout-menu.css';
 export class LoadoutMenu{
@@ -18,7 +18,7 @@ export class LoadoutMenu{
  }
  open(){this.draft=normalizeWeaponLoadout(this.loadout);this.element.hidden=false;this.render();this.element.querySelector('[data-armory-close]').focus();}
  close(){this.element.hidden=true;}
- art(id){const skin=getSkin(this.getSkins()[id]||DEFAULT_SKINS[id]);return skin?.preview?imageAssetURL(skin.preview):uiIconUrl(id);}
+ art(id){const skin=getSkin(this.getSkins()[id]||DEFAULT_SKINS[id]);return skin?.preview?skinPreviewURL(skin):uiIconUrl(id);}
  render(){
   const editable=this.canEdit()&&!this.busy;this.element.dataset.team=this.team;
   for(const b of this.element.querySelectorAll('[data-loadout-team]')){const selected=b.dataset.loadoutTeam===this.team;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));}

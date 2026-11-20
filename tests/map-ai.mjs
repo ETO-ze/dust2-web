@@ -39,6 +39,21 @@ test('squad roles ignore humans and takeovers, while noise leaves the other anch
  assert(director.events.filter(e=>e.kind==='rotation').length<=1);
  players[0].controllerId='human';director.update(players);assert(!director.orders.has('ct0'));
 });
+
+test('private default commits from observed site contact; fake pressure rejoins and retries blocked exits',()=>{
+ for(const tempo of ['default','fake']){
+  let now=100;const g=graph(),route=g.route.bind(g);let blocked=false;g.route=(...args)=>blocked?null:route(...args);
+  const senses=new MapPerception({clock:()=>now}),director=new MapSquadDirector(g,{clock:()=>now,perception:senses});
+  const players=Array.from({length:5},(_,i)=>({...p('t'+i,'T'),hasBomb:i===1}));
+  const strategy={round:1,id:'test-'+tempo,tempo,site:'B',decisionAt:1000,fakeUntil:1000,...(tempo==='fake'?{committedSite:'B'}:{})};
+  const room={clock:()=>now,round:{number:1,phase:'live'},attackPlan:strategy,players:new Map(players.map(p=>[p.id,p]))};
+  director.begin(players,{room});assert([...director.orders.values()].every(o=>o.stageUntil===1000));
+  if(tempo==='fake'){assert([...director.orders.values()].some(o=>o.diversion));assert.equal(director.orders.get('t1').diversion,false);}
+  senses.publish('T',{kind:'visual',enemyId:'observed',point:nodes[2],confidence:1,ttl:2200});
+  blocked=true;now=1100;director.update(players);assert([...director.orders.values()].every(o=>o.state==='await-valid-route'&&o.stageUntil>now));
+  blocked=false;now=3800;director.update(players);assert([...director.orders.values()].every(o=>o.site==='B'&&o.stageUntil===0&&o.route.length>0&&o.state==='advance'));
+ }
+});
 test('route following blocks unverified edges and replans around a failed one',()=>{
  const g=graph(),order={revision:1,route:g.route(1,3),goal:nodes[2],state:'advance'},player=p('bot','T');
  const noProof=new MapRouteFollower(g,{edgePlans:new Map()});assert.equal(noProof.tick(player,order,1/30).state,'await-edge-validation');

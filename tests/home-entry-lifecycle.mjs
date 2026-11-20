@@ -38,7 +38,7 @@ function fixture({href='https://game.test/',pending=false,privateError=null,exis
   history:{replaceState(_state,_title,url){location.href=String(url);location.pathname=new URL(url).pathname;historyChanges.push(String(url));}},
   preferences:{getItem:key=>settings.get(key)||null,setItem:(key,value)=>settings.set(key,value),readJSON:()=>({automatic:automaticFullscreen})},
   matchMedia:()=>({matches:coarse}),requestGameFullscreen:()=>{actions.push('fullscreen');return Promise.resolve();},initOffline:()=>Promise.resolve(),
-  initHomeImages:()=>Promise.resolve(),hydrateHomeImages:()=>{},prepareHomeMapImages:id=>mapImages.push(id),
+  mountMapStyle:()=>{},initHomeImages:()=>Promise.resolve(),hydrateHomeImages:()=>{},prepareHomeMapImages:id=>mapImages.push(id),
   mountLobby(options){const lobby={options,disposed:false,dispose(){this.disposed=true;}};lobbies.push(lobby);return lobby;},
   runtimeImport(name){imports.push(name);actions.push('import-'+name);const ready=(pending?gate.promise:privateError?Promise.reject(privateError):Promise.resolve()).then(complete);return name==='private'?Promise.resolve({ready}):ready;},
  });

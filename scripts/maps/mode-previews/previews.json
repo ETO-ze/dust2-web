@@ -1,0 +1,52 @@
+{
+  "maps": {
+    "de_dust2": {
+      "performance": "de_dust2-performance.webp",
+      "quality": "de_dust2-quality.webp",
+      "thumbnail": "de_dust2-thumb.webp",
+      "aligned": true
+    },
+    "de_mirage": {
+      "performance": "de_mirage-performance.webp",
+      "quality": "de_mirage-quality.webp",
+      "thumbnail": "de_mirage-thumb.webp",
+      "aligned": true
+    },
+    "de_inferno": {
+      "performance": "de_inferno-performance.webp",
+      "quality": "de_inferno-quality.webp",
+      "thumbnail": "de_inferno-thumb.webp",
+      "aligned": true
+    },
+    "de_nuke": {
+      "performance": "de_nuke-performance.webp",
+      "thumbnail": "de_nuke-thumb.webp",
+      "aligned": false
+    },
+    "de_ancient": {
+      "performance": "de_ancient-performance.webp",
+      "thumbnail": "de_ancient-thumb.webp",
+      "aligned": false
+    },
+    "de_anubis": {
+      "performance": "de_anubis-performance.webp",
+      "thumbnail": "de_anubis-thumb.webp",
+      "aligned": false
+    },
+    "de_cache": {
+      "performance": "de_cache-performance.webp",
+      "thumbnail": "de_cache-thumb.webp",
+      "aligned": false
+    },
+    "de_train": {
+      "performance": "de_train-performance.webp",
+      "thumbnail": "de_train-thumb.webp",
+      "aligned": false
+    },
+    "de_vertigo": {
+      "performance": "de_vertigo-performance.webp",
+      "thumbnail": "de_vertigo-thumb.webp",
+      "aligned": false
+    }
+  }
+}

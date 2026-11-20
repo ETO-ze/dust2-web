@@ -28,17 +28,17 @@ export class PrivateMapBreakables {
     this.color=new THREE.Color();this.matrix=new THREE.Matrix4();this.rotation=new THREE.Quaternion();this.euler=new THREE.Euler();this.scale=new THREE.Vector3();
     scene.add(this.fragmentMesh);this.reset();
   }
-  apply(entry,broken){
+  apply(entry,broken,open=entry.definition.initialOpen===true){
     entry.broken=broken;
-    for(const object of entry.intact)object.visible=broken?false:entry.initial.get(object);
-    for(const object of entry.remains)object.visible=broken;
+    for(const object of entry.intact)object.visible=broken||open?false:entry.initial.get(object);
+    for(const object of entry.remains)object.visible=entry.definition.button?open&&!broken:broken;
   }
   sync(snapshot){
     if(!Array.isArray(snapshot?.mapBreakables))return;
     if(this.round!==snapshot.round?.number){this.clearFragments();this.round=snapshot.round?.number;}
-    const states=new Map(snapshot.mapBreakables.filter(state=>typeof state?.id==='string'&&typeof state.broken==='boolean').map(state=>[state.id,state.broken]));
+    const states=new Map(snapshot.mapBreakables.filter(state=>typeof state?.id==='string'&&typeof state.broken==='boolean').map(state=>[state.id,state]));
     // A complete snapshot repairs both missed break events and late joining.
-    for(const [id,entry]of this.entries)if(states.has(id))this.apply(entry,states.get(id));
+    for(const [id,entry]of this.entries)if(states.has(id)){const state=states.get(id);this.apply(entry,state.broken,state.open);}
   }
   event(event,listener){
     if(event?.type!=='map_breakable_broken')return false;

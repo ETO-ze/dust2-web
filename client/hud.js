@@ -1,4 +1,5 @@
 import { MAP } from '../shared/map-data.js';
+import {legacyBombSiteAt} from '../shared/bomb-zones.js';
 import { UTILITY_IDS, EQUIPMENT } from '../shared/equipment.js';
 import { getWeapon } from '../shared/weapons.js';
 import { getSkin, DEFAULT_SKINS } from '../shared/skins.js';
@@ -121,7 +122,7 @@ export class HUD {
     this.kitIcon.hidden=!self.defuseKit;
     this.text('money', `$ ${Math.max(0, Math.round(number(self.money))).toLocaleString('en-US')}`);
     const heldSkin=getSkin(self.skinId||DEFAULT_SKINS[self.weapon]),knifeName=self.weapon==='knife'&&heldSkin?.animationFamily?heldSkin.name.split(' · ')[0]:weapon.name;
-    this.text('weapon-name', knifeName);this.text('slot3',self.weapon==='knife'?'3 '+knifeName:'3 近战武器');
+    this.text('weapon-name', weapon.burstSize?knifeName+(self.burstMode?' · 三连发':' · 半自动'):knifeName);this.text('slot3',self.weapon==='knife'?'3 '+knifeName:'3 近战武器');
     this.text('weapon-skin', getSkin(self.skinId||DEFAULT_SKINS[self.weapon])?.name || '');
     const silhouette=document.getElementById('active-weapon-icon');if(silhouette&&this.iconWeapon!==self.weapon+':'+self.skinId){this.iconWeapon=self.weapon+':'+self.skinId;if(self.weapon==='knife'&&heldSkin?.animationFamily){const image=document.createElement('img');image.src=imageAssetURL(heldSkin.preview);image.alt=knifeName;silhouette.replaceChildren(image);}else silhouette.replaceChildren(uiIcon(self.weapon,weapon.name));}
     this.text('ammo', [3,5].includes(weapon.slot) ? '—' : Math.max(0, Math.floor(number(self.ammo))));
@@ -187,7 +188,7 @@ export class HUD {
     const bomb = snapshot.bomb || {};
     let text = '', progress = 0, showTrack = false;
     if (self.alive && snapshot.mode === 'defuse' && snapshot.round?.phase === 'live') {
-      const site = Object.entries(MAP.sites || {}).find(([, point]) => distanceXZ(self, point) <= number(point.radius, 6) && Math.abs(number(self.y) - number(point.y)) < 3)?.[0];
+      const site = self.plantSite!==undefined?self.plantSite:self.grounded!==false?legacyBombSiteAt(MAP,self):null;
       if (bomb.actorId === self.id && bomb.action) {
         text = bomb.action === 'plant' ? `正在安装 · ${site || bomb.site || ''} 区 · 保持按住左键 / E` : '正在拆除炸弹 · 保持按住 E';
         progress = clamp(bomb.progress, 0, 1); showTrack = true;
@@ -262,13 +263,34 @@ export class HUD {
     for (const player of snapshot.players || []) {
       if (player.id === self.id || player.team !== self.team || !player.alive) continue;
       const point = this.radarPoint(player);
-      ctx.beginPath(); ctx.arc(point.x, point.y, 3.9, 0, Math.PI * 2);
+      ctx.save(); ctx.translate(point.x,point.y); ctx.rotate(-number(player.yaw));
+      ctx.fillStyle=TEAM_COLORS[player.team]; ctx.beginPath(); ctx.moveTo(0,-8);
+      ctx.lineTo(3,-3);ctx.lineTo(-3,-3);ctx.closePath();ctx.fill();ctx.restore();
+      ctx.beginPath(); ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
       ctx.fillStyle = TEAM_COLORS[player.team] || '#8bcebb'; ctx.fill();
       ctx.strokeStyle = '#101815'; ctx.lineWidth = 1.3; ctx.stroke();
+      if (Number.isInteger(player.seat)) {
+        ctx.save(); ctx.fillStyle='#111';ctx.font='bold 8px sans-serif';ctx.textAlign='center';
+        ctx.fillText(String(player.seat+1),point.x,point.y+2.7);ctx.restore();
+      }
     }
-    // Enemy shots reveal only their last firing position, briefly, never live tracking.
+    const spotted=new Set();
+    for(const contact of snapshot.radarContacts||[]) {
+      const age=snapshot.time-contact.at+Math.max(0,time-this.receivedAt);
+      if(age>=1400) continue;
+      spotted.add(contact.id);
+      const point=this.radarPoint(contact);
+      ctx.save(); ctx.translate(point.x,point.y); ctx.globalAlpha=Math.min(1,(1400-age)/600);
+      ctx.strokeStyle='#ff7967';ctx.fillStyle='#ff7967';ctx.lineWidth=1.7;
+      ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(4,0);ctx.lineTo(0,5);ctx.lineTo(-4,0);ctx.closePath();
+      if(age<350)ctx.fill(); else ctx.stroke();
+      if(Math.abs(contact.y-self.y)>3){ctx.font='10px sans-serif';ctx.fillText(contact.y>self.y?'↑':'↓',5,3);}
+      ctx.restore();
+    }
+    // A sound marker expires at the last firing position.
     for (const [id, reveal] of this.revealed) {
       if (reveal.until <= time) { this.revealed.delete(id); continue; }
+      if (spotted.has(id)) continue;
       const point = this.radarPoint(reveal);
       ctx.globalAlpha = Math.min(1, (reveal.until - time) / 450);
       ctx.fillStyle = '#ee8169'; ctx.beginPath(); ctx.arc(point.x, point.y, 3.5, 0, Math.PI * 2); ctx.fill();

@@ -26,6 +26,11 @@ export function privateMapDownloadURL(value, config) {
 export function privateMapFetcher(config,{fetcher=fetch}={}) {
  return async(value,options={})=>{
   const original=new URL(value),remote=privateMapDownloadURL(original,config);
+  // The performance gateway verifies these URLs against its sealed, per-file manifest.
+  // Leave the live room configuration and unversioned asset paths fresh.
+  if(config.flatOnly && options.cache==='no-store' && /^[a-f0-9]{64}$/.test(original.searchParams.get('v') || '')){
+    options={...options,cache:'default'};
+  }
   if(remote.href===original.href)return fetcher(original,options);
   options.signal?.throwIfAborted();
   let response;

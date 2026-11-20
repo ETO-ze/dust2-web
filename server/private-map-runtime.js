@@ -4,10 +4,11 @@ import crypto from 'node:crypto';
 import {createReadStream} from 'node:fs';
 import {configurePrivateMap} from '../shared/private-map-context.js';
 import {initPhysics,raycastWorld,raycastGrenadeWorld,raycastWorldContact} from '../shared/physics.js';
+import {PRIVATE_MOVEMENT_MODEL,laddersForMap} from '../shared/ladder-movement.js';
 import {loadPrivatePhysics} from '../scripts/maps/load-private-physics.mjs';
 import {MapTacticalGraph} from './map-tactical-graph.js';
 import {PrivateMapBots} from './private-map-bots.js';
-import {PRIVATE_BREAKABLES} from '../shared/private-map-breakables-data.js';
+import {privateEntities} from '../shared/private-map-entities.js';
 import {PrivateMapBreakables} from '../shared/private-map-breakables.js';
 import {MIRAGE_JUMP_IDENTITY,MIRAGE_JUMP_LINKS} from '../shared/private-map-jump-links.js';
 
@@ -20,15 +21,15 @@ export function loadPrivateMapRuntime(directory,{id,libraryUrl=''}={}) {
  const player=loadPrivatePhysics(directory,1),bullet=loadPrivatePhysics(directory,2),grenade=loadPrivatePhysics(directory,4);
  const navigationSha256=sha(navBytes),auditSha256=sha(auditBytes);
  if(audit.schemaVersion!==2||audit.sourceSha256!==meta.sourceSha256||audit.physicsSha256!==player.physicsSha256||audit.maskSha256!==player.maskSha256||audit.policySha256!==player.policySha256||audit.navigationSha256!==navigationSha256)throw Error('Private navigation evidence does not match current source, geometry, and collision policy');
- const breakablePolicy=meta.id===PRIVATE_BREAKABLES.mapId?PRIVATE_BREAKABLES:null;
+ const breakablePolicy=privateEntities(meta.id);
  if(breakablePolicy&&(breakablePolicy.sourceSha256!==meta.sourceSha256||breakablePolicy.physicsSha256!==player.physicsSha256||breakablePolicy.maskSha256!==player.maskSha256||breakablePolicy.groupsSha256!==sha(fs.readFileSync(path.join(compiled,'physics-groups.json')))))throw Error('Breakable policy does not match original map');
  const breakables=breakablePolicy?.objects||[],sourceTrianglesByChannel={1:player.sourceTriangles,2:bullet.sourceTriangles,4:grenade.sourceTriangles};
  let activeBreakables=new PrivateMapBreakables(breakables,sourceTrianglesByChannel);
  const jumpLinks=meta.id===MIRAGE_JUMP_IDENTITY.mapId&&meta.sourceSha256===MIRAGE_JUMP_IDENTITY.sourceSha256&&player.physicsSha256===MIRAGE_JUMP_IDENTITY.physicsSha256?MIRAGE_JUMP_LINKS:[];
- const identity={mapId:meta.id,metadataSha256:sha(metadataBytes),sourceSha256:meta.sourceSha256,physicsSha256:player.physicsSha256,maskSha256:player.maskSha256,policySha256:player.policySha256,navigationSha256,auditSha256,movementModel:'source-air-private-v1',jumpLinksSha256:sha(JSON.stringify(jumpLinks)),...(breakablePolicy?{breakablesSha256:sha(JSON.stringify(breakablePolicy))}:{})};
+ const identity={mapId:meta.id,metadataSha256:sha(metadataBytes),sourceSha256:meta.sourceSha256,physicsSha256:player.physicsSha256,maskSha256:player.maskSha256,policySha256:player.policySha256,navigationSha256,auditSha256,movementModel:PRIVATE_MOVEMENT_MODEL,laddersSha256:sha(JSON.stringify(laddersForMap(meta))),jumpLinksSha256:sha(JSON.stringify(jumpLinks)),...(breakablePolicy?{breakablesSha256:sha(JSON.stringify(breakablePolicy))}:{})};
  const mapSignature=sha(JSON.stringify(identity));
  configurePrivateMap(meta,nav,{...identity,mapSignature});
- initPhysics(player.positions,null,{mapPatches:false,bulletPositions:bullet.positions,grenadePositions:grenade.positions,copyPositions:false,airMovement:'source',triangleEnabled:(channel,index)=>activeBreakables.triangleEnabled(channel,index)});
+ initPhysics(player.positions,null,{map:meta,collisionKey:()=>activeBreakables.collisionKey(),mapPatches:false,bulletPositions:bullet.positions,grenadePositions:grenade.positions,copyPositions:false,airMovement:'source',triangleEnabled:(channel,index)=>activeBreakables.triangleEnabled(channel,index)});
  const stands=new Map(audit.standPoints.map(n=>[n.id,n])),accepted=new Set(audit.acceptedEdges),nodes=nav.map(n=>({...n,...stands.get(n.id)}));
  const jumpEdges=new Set(jumpLinks.map(link=>`${link.navFrom}>${link.navTo}`));
  for(const link of jumpLinks){const from=nodes.find(n=>n.id===link.navFrom),to=nodes.find(n=>n.id===link.navTo);if(!from||!to||!stands.has(from.id)||!stands.has(to.id))throw Error('Jump link has no validated navigation anchor');if(!from.neighbors.includes(to.id))from.neighbors=[...from.neighbors,to.id];}

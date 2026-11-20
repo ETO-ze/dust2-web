@@ -1,10 +1,14 @@
+import {PRIVATE_MOVEMENT_MODEL} from '../shared/ladder-movement.js';
+import {isPerformanceMap} from '../shared/performance-map-pool.js';
 export const PRIVATE_MAP_IDS=['de_dust2','de_mirage','de_inferno'];
 const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
 export function privateConfig(config,pageURL){
- const page=new URL(pageURL),match=/\/play\/(de_dust2|de_mirage|de_inferno)\/$/.exec(page.pathname);
- if(!match||config?.private!==true||config.id!==match[1]||config.mapId!==match[1])throw Error('私有地图入口与服务器配置不一致');
+ const page=new URL(pageURL),match=/\/play\/(de_[a-z0-9]+)\/$/.exec(page.pathname);
+ const allowed=match && (PRIVATE_MAP_IDS.includes(match[1]) || (config?.flatOnly===true && page.pathname.startsWith('/perf/play/') && isPerformanceMap(match[1])));
+ if(!allowed||config?.private!==true||config.id!==match[1]||config.mapId!==match[1])throw Error('私有地图入口与服务器配置不一致');
  for(const key of ['mapSignature','sourceSha256','physicsSha256','maskSha256','policySha256','navigationSha256','metadataSha256','jumpLinksSha256'])if(!hash(config[key]))throw Error('私有地图缺少有效签名：'+key);
- if(config.movementModel!=='source-air-private-v1')throw Error('私有地图移动模型与客户端不一致');
+ if(config.movementModel===PRIVATE_MOVEMENT_MODEL&&!hash(config.laddersSha256))throw Error('私有地图缺少梯子签名');
+ if(![PRIVATE_MOVEMENT_MODEL,'source-air-private-v1'].includes(config.movementModel))throw Error('私有地图移动模型与客户端不一致');
  const result={...config};
  for(const key of ['metadataUrl','navUrl','physicsUrl','maskUrl','groupsUrl','policyUrl','renderUrl']){
   const url=new URL(config[key],page);

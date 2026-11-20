@@ -4,7 +4,7 @@ import { AWP_ZOOM_FOVS, AWP_ZOOM_TIME, CS2_BASE_FOV, DEFAULT_CROSSHAIR,
   DONK_CROSSHAIR_SOURCE, cs2FovToVertical, cs2FovToHorizontal,
   mouseRadiansPerCount, decodeCrosshairCode, normalizeCrosshair, normalizeAimSettings,
 } from '../shared/cs2-settings.js';
-import { crosshairGeometry } from '../client/crosshair.js';
+import { crosshairGeometry, showsWeaponCrosshair } from '../client/crosshair.js';
 
 const near = (actual, expected, tolerance = 1e-10) => assert.ok(Math.abs(actual - expected) < tolerance, `${actual} != ${expected}`);
 
@@ -76,4 +76,37 @@ test('style 4 never widens on movement; classic dynamic style and preview option
   assert.equal(crosshairGeometry({ ...DEFAULT_CROSSHAIR, size: 0, dot: true }).rects.length, 1);
   assert.equal(crosshairGeometry({ ...DEFAULT_CROSSHAIR, alpha: 0 }).opacity, 0);
   assert.equal(crosshairGeometry({ ...DEFAULT_CROSSHAIR, useAlpha: false, alpha: 0 }).opacity, 1);
+});
+
+test('legacy share-code dimensions snap to physical pixels and the gap uses unscaled pixels', () => {
+  const native = crosshairGeometry(DEFAULT_CROSSHAIR, {viewportHeight:1080});
+  assert.deepEqual(native.rects, [
+    {x:-1,y:-3,width:3,height:2},{x:-1,y:2,width:3,height:2},
+    {x:-3,y:-1,width:2,height:3},{x:2,y:-1,width:2,height:3},
+  ]);
+  for (const height of [960,1080,2160]) {
+    const s = {...DEFAULT_CROSSHAIR, size:2, thickness:0.5, gap:-1.7, dot:true, outline:true, outlineThickness:1};
+    const {rects:[top,bottom,left,right,dot],outlineX,outlineY} = crosshairGeometry(s, {viewportHeight:height});
+    assert.equal(dot.y - top.y - top.height, 2);
+    assert.equal(bottom.y - dot.y - dot.height, 2);
+    assert.equal(dot.x - left.x - left.width, 2);
+    assert.equal(right.x - dot.x - dot.width, 2);
+    assert.equal(outlineX, 1);
+    assert.equal(outlineY, 1);
+    if (height === 1080) assert.equal(left.width, 4); // 4.5 rounds to even.
+  }
+});
+
+test('stretched 4:3 projects the crosshair horizontally and scoped, sniper and bomb views suppress it', () => {
+  const {rects:[top,,left]} = crosshairGeometry(DEFAULT_CROSSHAIR, {viewportHeight:1080,stretchX:4/3});
+  assert.equal(top.width, 4);
+  assert.equal(left.width, 3);
+  assert.equal(top.height, 2);
+  assert.equal(left.height, 3);
+  assert.equal(showsWeaponCrosshair({alive:true}), true);
+  assert.equal(showsWeaponCrosshair({alive:true,zoomStyle:'optic'}), true);
+  assert.equal(showsWeaponCrosshair({alive:true,zoomStyle:'optic',scoped:true}), false);
+  assert.equal(showsWeaponCrosshair({alive:true,zoomStyle:'scope'}), false);
+  assert.equal(showsWeaponCrosshair({alive:false}), false);
+  assert.equal(showsWeaponCrosshair({alive:true,bombCamera:true}), false);
 });

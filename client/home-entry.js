@@ -1,3 +1,4 @@
+import {mountMapStyle} from './map-style.js';
 import './style.css';
 import './interface.css';
 import './mobile-layout.css';
@@ -13,6 +14,7 @@ import {initHomeImages,hydrateHomeImages,prepareHomeMapImages} from './image-ass
 // Selecting a map never imports the renderer, physics or resource loaders.
 const $=id=>document.getElementById(id);
 let selected=publicMapForPage(location.href),runtime=null,booting=null,lobby=null,failed=false;
+mountMapStyle();
 const installed=globalThis.__DUST2_PORTABLE__||location.pathname.includes('/__installed__/');
 if(installed){
  hydrateHomeImages();prepareHomeMapImages('de_dust2');
