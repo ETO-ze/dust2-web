@@ -11,9 +11,9 @@ const available=directory&&fs.existsSync(directory+'/compiled/map.json')&&JSON.p
 test('actual Mirage source panels break by gun and knife, preserve other collision and restore each round',{skip:!available},async()=>{
  const context=loadPrivateMapRuntime(directory),{GameRoom}=await import('../server/game.js');let now=10000;
  const room=new GameRoom('PANELS',{bots:0,privateMap:context,clock:()=>now}),p=room.addHuman({},{name:'Breakable QA',team:'CT'});
- assert.equal(context.config.breakables.length,3);const results=[];
+ const panels=context.config.breakables.filter(d=>d.material!=='glass');assert.equal(panels.length,3);const results=[];
  const random=Math.random;Math.random=()=>0;
- try{for(const object of context.config.breakables){
+ try{for(const object of panels){
   const center=Object.fromEntries(['x','y','z'].map(a=>[a,(object.bounds.min[a]+object.bounds.max[a])/2]));let found;
   for(const axis of ['x','z'])for(const sign of [-1,1]){
    if(found)break;const origin={...center,[axis]:object.bounds[sign>0?'max':'min'][axis]+sign*.45},direction={x:0,y:0,z:0,[axis]:-sign},hit=raycastWorldHit(origin,direction,1);

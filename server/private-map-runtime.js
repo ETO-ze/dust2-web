@@ -3,7 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {createReadStream} from 'node:fs';
 import {configurePrivateMap} from '../shared/private-map-context.js';
-import {initPhysics,raycastWorld,raycastGrenadeWorld,raycastWorldContact} from '../shared/physics.js';
+import {initPhysics,sightBlocked,raycastGrenadeWorld,raycastWorldContact} from '../shared/physics.js';
 import {PRIVATE_MOVEMENT_MODEL,laddersForMap} from '../shared/ladder-movement.js';
 import {loadPrivatePhysics} from '../scripts/maps/load-private-physics.mjs';
 import {MapTacticalGraph} from './map-tactical-graph.js';
@@ -38,7 +38,8 @@ export function loadPrivateMapRuntime(directory,{id,libraryUrl=''}={}) {
  for(const link of jumpLinks)plans.set(`${link.navFrom}>${link.navTo}`,{mode:'scripted-jump',link});
  const base=`maps/${meta.id}/`,config={private:true,id:meta.id,name:meta.name,...identity,mapSignature,breakables,initialHiddenNodeIndices:breakablePolicy?.initialHiddenNodeIndices||[],metadataUrl:base+'map.json',navUrl:base+'nav.json',physicsUrl:base+'physics.f32',maskUrl:base+'physics-mask.u8',groupsUrl:base+'physics-groups.json',policyUrl:base+'entity-collision-policy.json',renderUrl:`${libraryUrl.replace(/\/$/,'')}/maps/${meta.id}/render/map.gltf`,socketPath:'ws'};
  const allowed=new Map(['map.json','nav.json','physics.f32','physics-mask.u8','physics-groups.json'].map(f=>['/'+base+f,path.join(compiled,f)]));allowed.set('/'+base+'entity-collision-policy.json',path.join(directory,'entity-collision-policy.json'));
- const world={raycastWorld:raycastGrenadeWorld,raycastContact:raycastWorldContact,clearSight(a,b){const d=Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);return d<.01||raycastWorld(a,{x:(b.x-a.x)/d,y:(b.y-a.y)/d,z:(b.z-a.z)/d},d-.03)===null;}};
+ const glassTriangle=index=>activeBreakables.atTriangle(2,index)?.material==='glass';
+ const world={raycastWorld:raycastGrenadeWorld,raycastContact:raycastWorldContact,clearSight(a,b){const d=Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);return d<=.03||!sightBlocked(a,{x:(b.x-a.x)/d,y:(b.y-a.y)/d,z:(b.z-a.z)/d},d-.03,glassTriangle);}};
  return {mapId:meta.id,mapSignature,config,meta,graph,plans,identity,world,createBots:room=>new PrivateMapBots(room,{graph,plans,world}),
   createBreakables(){activeBreakables=new PrivateMapBreakables(breakables,sourceTrianglesByChannel);return activeBreakables;},
   activate(room){if(room?.mapBreakables)activeBreakables=room.mapBreakables;},

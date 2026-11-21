@@ -1,4 +1,5 @@
 import {PRIVATE_BREAKABLES} from './private-map-breakables-data.js';
+import {GLASS_MAPS} from './private-map-glass-data.js';
 
 // de_nuke VPK, Hammer entity 2:61814:42349, model nuke_vent_slats.vmdl.
 // Its 1 HP model starts with the ten louvers tilted. Both intact poses span the
@@ -17,6 +18,12 @@ export const NUKE_VENT = {
     button:{min:[10.5664,-10.5664,35.50919],max:[12.192,-8.4836,35.83939]},
     slab:{min:[10.56639,-10.56641,35.56242],max:[12.192,-8.4836,35.66160]}}],
 };
-export function privateEntities(id){
-  return id===PRIVATE_BREAKABLES.mapId?PRIVATE_BREAKABLES:id===NUKE_VENT.mapId?NUKE_VENT:null;
+const policies = {...GLASS_MAPS};
+for (const base of [PRIVATE_BREAKABLES, NUKE_VENT]) {
+  const glass = GLASS_MAPS[base.mapId];
+  for (const key of ['sourceSha256','renderSha256','physicsSha256','groupsSha256','maskSha256']) {
+    if (glass[key] !== base[key]) throw Error('Glass policy has a different source: ' + base.mapId);
+  }
+  policies[base.mapId] = {...base, objects: [...base.objects, ...glass.objects]};
 }
+export function privateEntities(id){ return policies[id] || null; }

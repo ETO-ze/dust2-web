@@ -70,11 +70,12 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
   let initialHidden = config.initialHiddenNodeIndices || [];
   const entityPolicy=privateEntities(config.id);
   if(entityPolicy&&(config.id==='de_mirage'||config.movementModel===PRIVATE_MOVEMENT_MODEL||config.breakablesSha256)){
-   const visualHash = config.flatOnly ? config.flatBreakableVisuals?.renderSha256 : entityPolicy.renderSha256;
-   if(await hashBytes(new TextEncoder().encode(JSON.stringify(entityPolicy)))!==config.breakablesSha256||(qualityHash??await hashBytes(gltfBytes))!==visualHash||JSON.stringify(config.breakables)!==JSON.stringify(entityPolicy.objects)||JSON.stringify(config.initialHiddenNodeIndices)!==JSON.stringify(entityPolicy.initialHiddenNodeIndices))throw Error('可破坏物配置与当前原始地图不一致');
+   const visualHashes = config.flatOnly ? [config.flatBreakableVisuals?.renderSha256 || gltfFile.sha256] : [entityPolicy.renderSha256,entityPolicy.alternateRenderSha256];
+   if(await hashBytes(new TextEncoder().encode(JSON.stringify(entityPolicy)))!==config.breakablesSha256||!visualHashes.includes(qualityHash??await hashBytes(gltfBytes))||JSON.stringify(config.breakables)!==JSON.stringify(entityPolicy.objects)||JSON.stringify(config.initialHiddenNodeIndices)!==JSON.stringify(entityPolicy.initialHiddenNodeIndices))throw Error('可破坏物配置与当前原始地图不一致');
    if (config.flatOnly) {
      visualDefinitions = config.breakables.map(definition => {
-       const node = config.flatBreakableVisuals.nodesById?.[definition.id];
+       if(definition.pane)return {...definition, proceduralPane:true, nodeNames:[], nodeIndices:[]};
+       const node = config.flatBreakableVisuals?.nodesById?.[definition.id];
        if (!Number.isInteger(node) || json.nodes[node]?.name !== definition.id)
          throw Error('极简地图的可破坏物节点与配置不一致');
        const opened=definition.openNodeName?config.flatBreakableVisuals.nodesById?.[definition.openNodeName]:null;

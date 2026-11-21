@@ -109,6 +109,17 @@ export function isHullClear(p,height=STAND_HEIGHT){const hit=world?.hullIntersec
 export function raycastWorld(origin, direction, maxDistance=300) {
   return raycastChannel(bulletWorld||world,origin,direction,maxDistance);
 }
+export function sightBlocked(origin,direction,distance,transparentTriangle){
+  const collision=bulletWorld||world;
+  if(!collision)return false;
+  ray.origin.set(origin.x,origin.y,origin.z);
+  ray.direction.set(direction.x,direction.y,direction.z).normalize();
+  const opaque=hit=>collision.hitEnabled(hit)&&!transparentTriangle(Math.floor(hit.face.a/3));
+  const first=collision.bvh.raycastFirst(ray,DoubleSide,0,distance);
+  if(!first)return false;
+  if(opaque(first))return true;
+  return collision.bvh.raycast(ray,DoubleSide,0,distance).some(opaque);
+}
 /** First enabled bullet collider, retaining its original channel triangle ID. */
 export function raycastWorldHit(origin,direction,maxDistance=300){
   const collision=bulletWorld||world;if(!collision)return null;

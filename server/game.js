@@ -618,7 +618,7 @@ export class GameRoom {
     this.emit('flash',{grenadeId:grenade.id,ownerId:grenade.ownerId,origin:copyPoint(grenade),radius:config.radius,duration:config.duration,affected});
   }
 
-  visibleToBot(a,b){return clearSight(a,b)&&!this.grenades.blocksSight(a,b);}
+  visibleToBot(a,b){return (this.privateMap?.world?.clearSight||clearSight)(a,b)&&!this.grenades.blocksSight(a,b);}
 
   heldSkin(p,weapon=p.weapon){
     const skin=getSkin(p.inventory[weapon]?.skinId||p.skins[weapon]);
@@ -1111,7 +1111,7 @@ export class GameRoom {
       roundKills:p.roundKills||0,lifeKills:p.lifeKills||0,killCards:p.killCards||[],
       respawnIn: p.respawnAt ? Math.max(0, (p.respawnAt - now) / 1000) : 0, lastShotTime: p.lastShotTime }));
     const events = drainEvents ? this.events.splice(0) : [...this.events];
-    return { type: 'snapshot', radarBySide:radarBySide(this), ...(this.privateMap?{mapId:this.privateMap.mapId,mapSignature:this.privateMap.mapSignature,physicsSha256:this.privateMap.config.physicsSha256,mapBreakables:this.mapBreakables?.snapshot()||[]}:{}), time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),botDifficulty:this.botDifficulty,desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,weaponRequests:privateRequests(this),droppedWeapons:this.droppedWeapons.snapshot(),defuseKits:this.defuseKits.map(k=>({...k})),...this.grenades.snapshot(),
+    return { type: 'snapshot', radarBySide:radarBySide(this), ...(this.privateMap?{mapId:this.privateMap.mapId,mapSignature:this.privateMap.mapSignature,physicsSha256:this.privateMap.config.physicsSha256,...(this.mapBreakables?.networkSnapshot()||{mapBreakables:[]})}:{}), time: now, room: this.code, mode: this.mode, hostId:this.hostId,seats:this.roomSeats(),botDifficulty:this.botDifficulty,desiredBots:this.desiredBots,botCount:this.botCount,match:this.matchSnapshot(),players,weaponRequests:privateRequests(this),droppedWeapons:this.droppedWeapons.snapshot(),defuseKits:this.defuseKits.map(k=>({...k})),...this.grenades.snapshot(),
       round: { ...this.round, timeLeft: this.round.phaseEndsAt ? Math.max(0, (this.round.phaseEndsAt - now) / 1000) : 0 },
       bomb: { ...this.bomb, remaining: this.bomb.state === 'planted' ? Math.max(0, (this.bomb.explodesAt - now) / 1000) : 0 }, scores: { ...this.scores }, events };
   }

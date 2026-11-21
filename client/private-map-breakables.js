@@ -4,6 +4,7 @@ import * as THREE from 'three';
 export class PrivateMapBreakables {
   constructor({gltf,scene,definitions=[],initialHiddenNodeIndices=[],onBroken=()=>{}}){
     this.scene=scene;this.onBroken=onBroken;this.entries=new Map();this.fragments=[];this.round=null;
+    this.panes=[];this.originalMaterials=new Map();this.glassMaterials=new Set();
     const nodes=new Map();
     gltf.scene.traverse(object=>{const index=gltf.parser?.associations?.get(object)?.nodes;if(Number.isSafeInteger(index)){if(!nodes.has(index))nodes.set(index,[]);nodes.get(index).push(object);}});
     const claimed=new Set();
@@ -15,6 +16,28 @@ export class PrivateMapBreakables {
       if(typeof definition.id!=='string'||this.entries.has(definition.id))throw Error('可破坏物标识重复或无效');
       if(definition.nodeNames&&(!Array.isArray(definition.nodeNames)||definition.nodeNames.length!==definition.nodeIndices?.length||definition.nodeIndices.some((index,i)=>gltf.parser?.json?.nodes?.[index]?.name!==definition.nodeNames[i])))throw Error('可破坏物原始节点名称不一致：'+definition.id);
       const intact=resolve(definition.nodeIndices,definition.id),remains=resolve(definition.restoredNodeIndices||[],definition.id);
+      if(definition.proceduralPane){
+        if(!this.paneMaterial)this.paneMaterial=new THREE.MeshBasicMaterial({color:0x9fcadd,opacity:.20,transparent:true,depthWrite:false,side:THREE.DoubleSide,forceSinglePass:true});
+        const geometry=new THREE.BufferGeometry();
+        geometry.setAttribute('position',new THREE.Float32BufferAttribute(definition.pane,3));
+        const pane=new THREE.Mesh(geometry,this.paneMaterial);pane.name=definition.id;
+        gltf.scene.add(pane);pane.updateWorldMatrix(true,false);this.panes.push(pane);intact.push(pane);
+      }else if(definition.pane){
+        // Preserve source UVs and geometry. Valve exports glass alpha and additive sky
+        // effects separately; the stock glTF material renders the second layer opaque.
+        intact.forEach((root,layer)=>root.traverse(node=>{
+          if(!node.isMesh)return;
+          this.originalMaterials.set(node,node.material);
+          const tint=source=>{
+            const material=source.clone();
+            material.transparent=true;material.depthWrite=false;material.opacity=layer ? .07 : .27;
+            material.visible=true;material.side=THREE.DoubleSide;material.forceSinglePass=true;
+            if(layer)material.blending=THREE.AdditiveBlending;
+            this.glassMaterials.add(material);return material;
+          };
+          node.material=Array.isArray(node.material)?node.material.map(tint):tint(node.material);
+        }));
+      }
       if(!intact.length)throw Error('可破坏物缺少原始节点：'+definition.id);
       for(const object of [...intact,...remains]){if(claimed.has(object))throw Error('可破坏物场景节点重叠');claimed.add(object);}
       this.entries.set(definition.id,{definition,intact,remains,initial:new Map(intact.map(object=>[object,object.visible])),broken:false});
@@ -52,7 +75,8 @@ export class PrivateMapBreakables {
     for(let i=0;i<10;i++){
       if(this.fragments.length>=48)this.fragments.shift();
       const angle=(i*2.399963),speed=1+(i%4)*.45;
-      this.fragments.push({position:new THREE.Vector3(origin.x,origin.y,origin.z),velocity:new THREE.Vector3(Math.cos(angle)*speed,.6+(i%3)*.3,Math.sin(angle)*speed),life:.7,age:0,seed:i,color:entry.definition.material==='wood'?0x998061:0x938f87});
+      const glass=entry.definition.material==='glass';
+      this.fragments.push({position:new THREE.Vector3(origin.x,origin.y,origin.z),velocity:new THREE.Vector3(Math.cos(angle)*speed,.6+(i%3)*.3,Math.sin(angle)*speed),life:.7,age:0,seed:i,glass,color:glass?0xb7dbe4:entry.definition.material==='wood'?0x998061:0x938f87});
     }
     this.update(0);return true;
   }
@@ -64,7 +88,7 @@ export class PrivateMapBreakables {
     this.fragmentMesh.count=this.fragments.length;this.fragmentMesh.visible=!!this.fragments.length;
     for(const [index,fragment]of this.fragments.entries()){
       this.euler.set(fragment.age*5+fragment.seed,fragment.age*3,fragment.seed*.4);this.rotation.setFromEuler(this.euler);
-      this.scale.set(.06,.035,.007).multiplyScalar(Math.min(1,fragment.life*7));this.matrix.compose(fragment.position,this.rotation,this.scale);
+      this.scale.set(.06,.035,fragment.glass ? .002 : .007).multiplyScalar(Math.min(1,fragment.life*7));this.matrix.compose(fragment.position,this.rotation,this.scale);
       this.fragmentMesh.setMatrixAt(index,this.matrix);this.fragmentMesh.setColorAt(index,this.color.setHex(fragment.color));
     }
     this.fragmentMesh.instanceMatrix.needsUpdate=true;if(this.fragmentMesh.instanceColor)this.fragmentMesh.instanceColor.needsUpdate=true;
@@ -72,5 +96,12 @@ export class PrivateMapBreakables {
   clearFragments(){this.fragments.length=0;this.fragmentMesh.count=0;this.fragmentMesh.visible=false;}
   reset(){this.round=null;this.clearFragments();for(const entry of this.entries.values())this.apply(entry,false);for(const object of this.initialHidden)object.visible=false;}
   status(){return {count:this.entries.size,broken:[...this.entries].filter(([,entry])=>entry.broken).map(([id])=>id),fragments:this.fragments.length};}
-  dispose(){this.reset();this.fragmentMesh.removeFromParent();this.fragmentMesh.dispose();this.fragmentGeometry.dispose();this.fragmentMaterial.dispose();}
+  dispose(){
+    this.reset();
+    for(const pane of this.panes){pane.removeFromParent();pane.geometry.dispose();}
+    this.paneMaterial?.dispose();
+    for(const [node,material]of this.originalMaterials)node.material=material;
+    for(const material of this.glassMaterials)material.dispose();
+    this.fragmentMesh.removeFromParent();this.fragmentMesh.dispose();this.fragmentGeometry.dispose();this.fragmentMaterial.dispose();
+  }
 }

@@ -3,28 +3,40 @@
 export class PrivateMapBreakables {
  constructor(definitions=[],sourceTrianglesByChannel={}){
   this.definitions=definitions;this.byId=new Map();this.owners={};this.broken=new Set();this.opened=new Set();this.health=new Map();
+  const sourceOwners=new Map();
+  this.glass=definitions.filter(def=>def.material==='glass');
+  this.nonGlass=definitions.filter(def=>def.material!=='glass');
   for(const def of definitions){
    if(!def.id||this.byId.has(def.id)||!Number.isSafeInteger(def.firstTriangle)||def.firstTriangle<0||!Number.isSafeInteger(def.triangles)||def.triangles<=0||!Number.isFinite(def.health)||def.health<=0)throw Error('Invalid breakable definition');
    this.byId.set(def.id,def);
+   for(let source=def.firstTriangle; source<def.firstTriangle+def.triangles; source++){
+    if(sourceOwners.has(source))throw Error('Overlapping breakable collision ranges');
+    sourceOwners.set(source,def.id);
+   }
   }
   for(const [channel,indices]of Object.entries(sourceTrianglesByChannel)){
    const owners=new Map();
-   for(let i=0;i<indices.length;i++)for(const def of definitions)if(indices[i]>=def.firstTriangle&&indices[i]<def.firstTriangle+def.triangles){if(owners.has(i))throw Error('Overlapping breakable collision ranges');owners.set(i,def.id);}
+   if(sourceOwners.size)for(let i=0;i<indices.length;i++){const id=sourceOwners.get(indices[i]);if(id)owners.set(i,id);}
    this.owners[channel]=owners;
   }
   this.reset();
  }
- reset(){this.broken.clear();this.opened=new Set(this.definitions.filter(d=>d.initialOpen).map(d=>d.id));this.health=new Map(this.definitions.map(d=>[d.id,d.health]));this.nextToggle=new Map();}
+ reset(){this.key=null;this.broken.clear();this.opened=new Set(this.definitions.filter(d=>d.initialOpen).map(d=>d.id));this.health=new Map(this.definitions.map(d=>[d.id,d.health]));this.nextToggle=new Map();}
  toggle(id,now){
   if(!this.byId.get(id)?.button||this.broken.has(id)||now<(this.nextToggle.get(id)||0))return false;
   if(this.opened.has(id))this.opened.delete(id);else this.opened.add(id);
   this.nextToggle.set(id,now+700); // Original map relay enables the opposite relay after 0.7 s.
   return true;
  }
- collisionKey(){return this.definitions.map(d=>this.broken.has(d.id)?'0':'1').join('');}
+ collisionKey(){return this.key??=this.definitions.map(d=>this.broken.has(d.id)?'0':'1').join('');}
  triangleEnabled(channel,index){const id=this.owners[channel]?.get(index);return !id||!this.broken.has(id);}
  atTriangle(channel,index){const id=this.owners[channel]?.get(index);return id&&!this.broken.has(id)?this.byId.get(id):null;}
- snapshot(){return this.definitions.map(d=>({id:d.id,broken:this.broken.has(d.id),...(d.button?{open:this.opened.has(d.id)}:{})}));}
+ snapshot(definitions=this.definitions){return definitions.map(d=>({id:d.id,broken:this.broken.has(d.id),...(d.button?{open:this.opened.has(d.id)}:{})}));}
+ networkSnapshot(){
+  if(!this.glass.length)return {mapBreakables:this.snapshot()};
+  return {mapBreakables:this.snapshot(this.nonGlass),
+   glassState:this.glass.map(d=>this.broken.has(d.id)?'1':'0').join('')};
+ }
  applySnapshot(states=[]){
   this.reset();for(const state of states){
     if(!this.byId.has(state?.id))continue;
@@ -37,6 +49,16 @@ export class PrivateMapBreakables {
  damage(id,amount){
   if(!this.byId.has(id)||this.broken.has(id)||!Number.isFinite(amount)||amount<=0)return false;
   const health=Math.max(0,this.health.get(id)-amount);this.health.set(id,health);
-  if(health>0)return false;this.broken.add(id);return true;
+  if(health>0)return false;this.key=null;this.broken.add(id);return true;
  }
+}
+
+// The policy order is part of the verified map signature. Send the complete glass state
+// on every snapshot so late joins and missed events cost only one byte per pane.
+export function expandGlassState(snapshot, definitions){
+ if(typeof snapshot.glassState!=='string')return;
+ const glass=definitions.filter(d=>d.material==='glass');
+ if(!Array.isArray(snapshot.mapBreakables)||snapshot.glassState.length!==glass.length||/[^01]/.test(snapshot.glassState))throw Error('玻璃状态与地图版本不一致');
+ snapshot.mapBreakables.push(...glass.map((d,i)=>({id:d.id,broken:snapshot.glassState[i]==='1'})));
+ delete snapshot.glassState;
 }

@@ -66,6 +66,7 @@ import { connectionTarget } from './connection-target.js';
 import {knifeInterval} from '../shared/melee.js';
 import {privateCompatibilityError} from './private-game-config.js';
 
+import {expandGlassState} from '../shared/private-map-breakables.js';
 const privateMap=globalThis.__DUST2_PRIVATE_MAP__||null;
 const connection = privateMap?{socketURL:privateMap.socketURL,inviteBase:null,offline:false}:connectionTarget(location.href, globalThis.__DUST2_PORTABLE__);
 
@@ -471,6 +472,7 @@ function connect(joinExisting,revision){
 function handleSnapshot(data){
   lastSnapshotAt=performance.now();
   const previousRound=snapshot?.round?.number;
+  if(privateMap)expandGlassState(data,privateMap.breakables||[]);
   snapshot=data;if(privateMap&&Array.isArray(data.mapBreakables))mapResultCache?.breakableCollision?.applySnapshot(data.mapBreakables);mapResultCache?.breakables?.sync(data);botSettings.refresh();roomMenu.update(data,connectionId);utilityEffects.sync(data);droppedWeapons.sync(data);
   const identity=data.players.find(p=>p.id===connectionId);if(!identity)return;
   const bodyId=identity.controlledBotId||connectionId;
