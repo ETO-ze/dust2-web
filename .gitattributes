@@ -9,6 +9,7 @@
 *.sh text eol=lf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
+*.blend binary
 *.png binary
 *.webp binary
 *.jpg binary

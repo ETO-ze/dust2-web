@@ -1,0 +1,11 @@
+{
+  "de_dust2":   {"plasterWall": true},
+  "de_mirage":  {"plasterWall": true, "floorSlabs": true},
+  "de_inferno": {"plasterWall": true, "floorSlabs": true},
+  "de_nuke":    {"floorSlabs": true},
+  "de_ancient": {"brickWall": true, "floorSlabs": true},
+  "de_anubis":  {"floorSlabs": true},
+  "de_cache":   {},
+  "de_train":   {"brickWall": true, "plainConcrete": true},
+  "de_vertigo": {"floorSlabs": true}
+}

@@ -74,13 +74,15 @@ test('architectural surfaces share one tiled, mipmapped atlas and preserve opaqu
   const {loadFlatSurfaceDetail} = await import('../client/flat-surface-detail.js');
   const [first, second] = await Promise.all([loadFlatSurfaceDetail(), loadFlatSurfaceDetail()]);
   assert.equal(first, second);
-  assert.equal(first.image.depth, 6);
-  assert.equal(first.image.data.length, first.image.width * first.image.height * 6);
+  assert.equal(first.image.depth, 8);
+  assert.equal(first.image.width, 512);
+  assert.equal(first.image.height, 512);
+  assert.equal(first.image.data.length, first.image.width * first.image.height * first.image.depth);
   assert.equal(first.format, THREE.RedFormat);
   assert.equal(first.wrapS, THREE.RepeatWrapping);
   assert.equal(first.wrapT, THREE.RepeatWrapping);
   assert.equal(first.generateMipmaps, true);
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < first.image.depth; i++) {
     const size = first.image.width * first.image.height;
     assert.ok(new Set(first.image.data.subarray(i * size, (i + 1) * size)).size > 5);
   }
@@ -127,7 +129,81 @@ test('the repeating metal finish does not imprint the source panel frame on ever
     Array.from({length: height}, (_, y) => metal[y * width + width - 1]),
   ];
   for (const edge of edges) {
-    // One stored four-bit texture level spans seventeen decoded gray levels.
+    // A panel border in the repeated finish visibly darkens an entire sample edge.
     assert.ok(Math.abs(mean(edge) - textureMean) < 12);
+  }
+});
+
+test('nine arenas share the exact Blender tiles and retain their map palettes without creating geometry', async () => {
+  const {createHash} = await import('node:crypto');
+  const {loadFlatSurfaceDetail} = await import('../client/flat-surface-detail.js');
+  const {sha256} = await import('../client/arena-finishes/shared.js');
+  const palettes = new Set();
+  let sharedPixels;
+  for (const short of ['dust2','mirage','inferno','nuke','ancient','anubis','cache','train','vertigo']) {
+    const id = 'de_' + short;
+    const texture = await loadFlatSurfaceDetail(id);
+    const {width,height,depth,data} = texture.image;
+    assert.deepEqual([width,height,depth], [512,512,6]);
+    assert.equal(texture.anisotropy,4);
+    if (!sharedPixels) {
+      sharedPixels = data;
+      const encoded = Uint8Array.from(data, byte => Math.round(byte*63/255));
+      assert.equal(createHash('sha256').update(encoded).digest('hex'),sha256);
+    }
+    assert.equal(data, sharedPixels);
+    const root = new THREE.Group();
+    const geometry = new THREE.BoxGeometry();
+    const original = new THREE.MeshBasicMaterial({vertexColors:true});
+    Object.assign(original.userData, {bakedSurface:true,surfaceMaterialVersion:1});
+    const mesh = new THREE.Mesh(geometry,original);
+    root.add(mesh);
+    const index = geometry.index, batches = geometry.groups.length;
+    applyFlatMaterials(root,texture,id);
+    assert.equal(root.children.length,1);
+    assert.equal(mesh.geometry,geometry);
+    assert.equal(mesh.geometry.index,index);
+    assert.equal(mesh.geometry.groups.length,batches);
+    assert.equal(mesh.material.customProgramCacheKey(),'dust2-plane-finishes-v2-6');
+    const shader = {...THREE.ShaderLib.basic,uniforms:{}};
+    mesh.material.onBeforeCompile(shader);
+    assert.equal(shader.uniforms.uFinishScale.value.length,6);
+    const cuts = shader.uniforms.uSourcePlates.value;
+    assert.equal(cuts.length,7);
+    assert.ok(cuts.every(c => c.x>0 && c.y>c.x && 1.1*c.y<1));
+    const palette = shader.uniforms.uArenaBase.value;
+    assert.ok(palette[4].length() < palette[0].length());
+    palettes.add(palette[0].toArray().join(','));
+    mesh.material.dispose();
+    geometry.dispose();
+    texture.dispose();
+  }
+  assert.equal(palettes.size,9);
+});
+
+test('nine map styles use authored finishes, validate the baked rows and work with the JS gzip fallback', async () => {
+  const {createHash} = await import('node:crypto');
+  const {sha256} = await import('../client/flat-surface-swatches.js');
+  const {loadFlatSurfaceDetail,applySurfaceDetail} = await import('../client/flat-surface-detail.js');
+  const atlas = await loadFlatSurfaceDetail();
+  const levels = Uint8Array.from(atlas.image.data, value => Math.round(value * 63 / 255));
+  assert.equal(createHash('sha256').update(levels).digest('hex'), sha256);
+  assert.equal(Object.keys(atlas.userData.profiles).length, 9);
+  const program = mapId => {
+    const mat = new THREE.MeshBasicMaterial();
+    applySurfaceDetail(mat, atlas, mapId);
+    const shader = {...THREE.ShaderLib.basic,uniforms:{}};
+    mat.onBeforeCompile(shader);
+    return shader;
+  };
+  assert.deepEqual(program('de_ancient').uniforms.uMapFinish.value.toArray().slice(0,2), [6,4]);
+  assert.deepEqual(program('de_nuke').uniforms.uMapFinish.value.toArray().slice(0,2), [0,7]);
+  const native = globalThis.DecompressionStream;
+  try {
+    globalThis.DecompressionStream = undefined;
+    const {loadFlatSurfaceDetail: fallback} = await import('../client/flat-surface-detail.js?gzip-fallback');
+    assert.deepEqual((await fallback()).image.data, atlas.image.data);
+  } finally {
+    globalThis.DecompressionStream = native;
   }
 });

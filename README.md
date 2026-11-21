@@ -19,11 +19,11 @@
 | 高画质 | 炙热沙城 II、荒漠迷城、炼狱小镇 |
 | 高帧率 | 上述三图，以及核子危机、远古遗迹、阿努比斯、死城之谜、列车停放站、殒命大厦 |
 
-高帧率模式简化地图表面，保留天空、探员、武器和手套的材质。核子危机标准对局中原本禁用的工业门已从渲染与碰撞中移除。下图取自同一机位，门后的通道可以双向通过。
+高帧率模式先压平建筑原色中圆滑的高光和细碎阴影，再按墙面、地坪与掩体配色。A、B 包点采用粗字形与明暗轮廓，地面喷漆和入口可见的墙面标牌帮助玩家判断点位。
 
-![核子危机通道修复前后](docs/screenshots/nine-map-nuke.jpg)
+![建筑表面平整化前后的同机位画面](docs/screenshots/flat-surface-comparison.webp)
 
-[查看九张地图的高帧率实拍](docs/screenshots/nine-map-surfaces.jpg) · [查看 Blender 材质优化前后](docs/screenshots/nine-map-blender.jpg)
+[入口视角的 A、B 标牌](docs/screenshots/flat-site-markers.webp) · [九图 Blender 工程](https://github.com/ETO-ze/dust2-web/releases/tag/map-art-flat-signs-20261121) · [材质库与构建说明](docs/FLAT-SURFACES.md)
 
 ## 对战与装备
 
@@ -38,4 +38,4 @@
 
 九图服务器和浏览器客户端在同一发行页提供。发布附件附带 SHA-256 校验文件，安装步骤与本地验证方法见[九图运行说明](docs/NINE-MAPS-LOBBY.md)。另可下载[Android 与 Windows 在线客户端](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.2.0-cdn.1)及[独立离线版](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.2.0)。
 
-本项目由 GPT-6 参与开发。触控、离线运行与部分人机设计参考了 [dust2-offline](https://github.com/henhaogame/dust2-offline)。本项目与 Valve 无隶属关系。地图、音乐、外观和第三方组件的来源与使用条件见[素材来源](docs/ASSETS.md)和[许可说明](LICENSE.md)。
+本项目由 GPT-6 参与开发。触控、离线运行与部分人机设计参考了 [dust2-offline](https://github.com/henhaogame/dust2-offline)。本项目与 Valve 无隶属关系。原创代码和文档采用 [MIT 许可证](LICENSE.md)。地图、音乐、外观及第三方组件的来源和使用条件见[第三方声明](THIRD-PARTY-NOTICES.md)与[素材来源](docs/ASSETS.md)。

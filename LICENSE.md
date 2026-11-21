@@ -1,9 +1,21 @@
-# Rights and attribution
+MIT License
 
-This repository contains the source code and documentation of the DuskRain Dust II browser game. No general open-source license has been assigned to the original project code at this time.
+Copyright (c) 2026 the dust2-web contributors
 
-Counter-Strike, Dust II, Valve game models, textures, animations, audio, finish artwork and the corresponding imagery retain the rights of Valve and their respective creators. Including screenshots or providing a technical asset manifest does not relicense those works. This is an independent personal browser project, not an official Valve product or a distribution of the Source 2 engine.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-Third-party libraries and assets retain their own licenses. See [asset sources and setup](docs/ASSETS.md), the package metadata for Three.js, three-mesh-bvh, ws and Vite, and the notices accompanying individual sources. CC0 notices for Kenney or Quaternius do not apply to Valve assets.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-The optional Android GeckoView test package includes the unmodified Mozilla GeckoView engine `157.0.20260924084938`. Its covered source is available under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/), with third-party components retaining their accompanying notices. The engine's license notices remain in the packaged Mozilla resources. Corresponding upstream sources: [Firefox 157.0 source archive](https://archive.mozilla.org/pub/firefox/releases/157.0/source/firefox-157.0.source.tar.xz) and [GeckoView Java sources](https://maven.mozilla.org/maven2/org/mozilla/geckoview/geckoview/157.0.20260924084938/geckoview-157.0.20260924084938-sources.jar). These licenses do not relicense the original game code or Valve assets.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

@@ -137,7 +137,9 @@ def main():
     runtime_version = subprocess.check_output([str(out / 'runtime/node.exe'), '--version'], text=True).strip()
     if runtime_version != NODE:
         raise RuntimeError('Unexpected bundled runtime version')
-    copy(ROOT / 'LICENSE.md', out / 'licenses/PROJECT-RIGHTS.md')
+    copy(ROOT / 'LICENSE.md', out / 'licenses/LICENSE.md')
+    copy(ROOT / 'THIRD-PARTY-NOTICES.md', out / 'licenses/PROJECT-RIGHTS.md')
+    copy(ROOT / 'scripts/maps/mode-ui/type/OFL.txt', out / 'licenses/Barlow-OFL.txt')
     sources = (ROOT / 'docs/ASSETS.md').read_text(encoding='utf-8').split('## 来源和归属', 1)[1].split('## 下载器验证', 1)[0]
     (out / 'licenses/ASSET-SOURCES.md').write_text('# 资源来源和归属\n' + sources, encoding='utf-8')
     for source in (ROOT / 'docs/assets-sources').glob('*'):

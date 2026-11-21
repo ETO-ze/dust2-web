@@ -1,5 +1,6 @@
 import {flattenMapDocument} from './flat-map-materials.js';
 import {applyFlatMaterials} from './flat-map-renderer.js';
+import {createFlatSiteMarkings,replaceOriginalFloorPaint} from './flat-site-markings.js';
 import {loadFlatSurfaceDetail} from './flat-surface-detail.js';
 import {prepareFlatSky} from './flat-sky.js';
 import * as THREE from 'three';
@@ -39,7 +40,7 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
  const check=()=>signal?.throwIfAborted();
  let transport=null;
  const progress=new PrivateMapProgress((label,state)=>onProgress(label,{...state,cacheBytes:transport?.stats.cacheBytes||0}));
- let loadedRoot=null,sky=null,breakables=null,loader=null,committed=false,firstFailure=null;
+ let loadedRoot=null,sky=null,breakables=null,loader=null,finishAtlas=null,committed=false,firstFailure=null;
  const stopFailedJob=error=>{firstFailure||=error;controller.abort(firstFailure);manager.abort();return firstFailure;};
  const failTogether=promise=>promise.catch(error=>{throw stopFailedJob(error);});
  try{
@@ -113,9 +114,20 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
    }
   });
   if(flat){
-    const details=json.extras?.surfaceMaterialVersion===1 ? await loadFlatSurfaceDetail() : null;
+    finishAtlas=json.extras?.surfaceMaterialVersion===1 ? await loadFlatSurfaceDetail(config.id) : null;
     check();
-    applyFlatMaterials(group,details);
+    if(finishAtlas)textures.add(finishAtlas);
+    applyFlatMaterials(group,finishAtlas,config.id);
+    if(config.flatOnly){
+      const markings=await createFlatSiteMarkings(MAP,manager);
+      if(markings){
+        textures.add(markings.material.map);
+        replaceOriginalFloorPaint(loadedRoot,MAP,gltfFile.sha256,files.get('map.bin')?.sha256);
+        loadedRoot.add(markings);
+        markings.updateWorldMatrix(true,false);
+      }
+      check();
+    }
   }
   for(const texture of textures)texture.anisotropy=4;
   group.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});
@@ -133,6 +145,6 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
   return {mapData:MAP,positions:collision.positionsByChannel[1],bulletPositions:collision.positionsByChannel[2],grenadePositions:collision.positionsByChannel[4],mapPatches:false,group,breakables,breakableCollision,lights:[hemisphere,sun],spawn:MAP.spawns.T[0],physicsSha256:collision.physicsSha256,loadStats:{...progress.snapshot(),duplicateImages,transport:transport?.stats||null}};
  }finally{
   parentSignal?.removeEventListener('abort',abort);
-  if(!committed){controller.abort();manager.abort();loader?.disposePrivateTextures();breakables?.dispose();disposeScene(loadedRoot);sky?.dispose();}
+  if(!committed){controller.abort();manager.abort();loader?.disposePrivateTextures();breakables?.dispose();disposeScene(loadedRoot);sky?.dispose();if(finishAtlas?.userData.mapTiles)finishAtlas.dispose();}
  }
 }

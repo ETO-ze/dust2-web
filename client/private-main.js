@@ -77,6 +77,9 @@ async function bootstrap(){
 }
 export const ready=bootstrap().then(module=>{
  gameRuntime=module;
+ for(const button of document.querySelectorAll('[data-enable-after-map]'))button.disabled=false;
+ const status=document.getElementById('menu-status');
+ if(status?.textContent==='正在准备对战菜单与装备库…')status.textContent='创建房间并分享邀请链接，或输入房间码加入已有对局。';
  if(directoryRoute){
   const target=consumeDirectoryJoin(new URL(location.href),url=>history.replaceState(null,'',url));
   if(target)module.joinDirectoryRoom(target,true);

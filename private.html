@@ -5,7 +5,7 @@
 <canvas id="game-canvas" aria-label="Dust2 三维游戏画面"></canvas>
 <div id="menu" class="screen menu-screen home-menu">
   <div class="menu-photo"></div><div class="menu-shade"></div>
-  <header class="menu-header"><a class="wordmark" href="./">DUSKRAIN<small>战术对战</small></a><nav class="main-nav" aria-label="游戏导航"><button id="menu-play-tab" class="active" type="button">地图与对战</button><button id="menu-skins" type="button">装备</button><button id="menu-settings" type="button">设置</button></nav><div class="menu-profile"><span>PRIVATE TEST</span></div></header>
+  <header class="menu-header"><a class="wordmark" href="./">DUSKRAIN<small>战术对战</small></a><nav class="main-nav" aria-label="游戏导航"><button id="menu-play-tab" class="active" type="button">地图与对战</button><button id="menu-skins" disabled data-enable-after-map type="button">装备</button><button id="menu-settings" disabled data-enable-after-map type="button">设置</button></nav><div class="menu-profile"><span>PRIVATE TEST</span></div></header>
   <div class="play-bar" aria-hidden="true"><span class="play-bar-active">联机房间</span><span>DUST II · 炙热沙城 II</span><span id="lobby-mode-label">竞技爆破</span></div>
   <main class="menu-content">
     <section class="hero-copy map-showcase" aria-labelledby="home-map-title">
@@ -40,8 +40,8 @@
       <div class="loadout-grid" role="group" aria-label="选择开局主武器"><button type="button" data-primary="ak47" class="loadout-choice selected" aria-pressed="true"><span class="weapon-number">步枪</span><b>AK-47</b><small>火神</small><img src="assets/weapons/cs2-loadout/previews/ak47-vulcan.webp" alt="AK-47 火神"></button><button type="button" data-primary="m4a1" class="loadout-choice" aria-pressed="false"><span class="weapon-number">消音步枪</span><b>M4A1-S</b><small>印花集</small><img src="assets/weapons/cs2-loadout/previews/m4a1-printstream.webp" alt="M4A1-S 印花集"></button><button type="button" data-primary="awp" class="loadout-choice" aria-pressed="false"><span class="weapon-number">狙击步枪</span><b>AWP</b><small>巨龙传说</small><img src="assets/weapons/cs2-loadout/previews/awp-dragon-lore.webp" alt="AWP 巨龙传说"></button></div>
       <div class="knife-loadout"><img src="assets/ui-cs2/knife.svg" alt="爪子刀"><b>多普勒 · 蓝宝石</b><span>树篱迷宫 · 崭新出厂</span></div>
       </div></details>
-      <div class="deploy-actions"><button id="start-button" class="primary-button">创建房间 <span aria-hidden="true">→</span></button><div class="join-row"><input id="room-code" aria-label="房间码" placeholder="输入房间码" maxlength="12"><button id="join-button">加入房间</button></div></div>
-      <div id="menu-status" role="status">创建房间并分享邀请链接，或输入房间码加入已有对局。</div>
+      <div class="deploy-actions"><button id="start-button" disabled data-enable-after-map class="primary-button">创建房间 <span aria-hidden="true">→</span></button><div class="join-row"><input id="room-code" aria-label="房间码" placeholder="输入房间码" maxlength="12"><button id="join-button" disabled data-enable-after-map>加入房间</button></div></div>
+      <div id="menu-status" role="status">正在准备对战菜单与装备库…</div>
     </section>
   </main>
   <footer class="menu-footer"><span>WASD 移动　·　B 购买　·　Tab 战况</span><div><button id="menu-offline">本地资源</button><button id="credits-button">素材来源</button><a class="private-map-switch" data-map-library href="../../">测试地图 ↗</a></div><span>个人体验版 · 非 Valve 官方产品</span></footer>
