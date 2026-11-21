@@ -343,7 +343,7 @@ async function loadGame(audioUnlocked, directoryNavigation=false){
   if(failure)throw failure.reason;
   if(privateMap)signal.throwIfAborted();
   const mapResult=mapResultCache;
-  if(mapResult.breakables){const sounds=await import('./private-breakable-audio.js');await sounds.preparePrivateBreakableAudio(audio,signal);mapResult.breakables.onBroken=e=>sounds.playPrivateBreakableAudio(audio,e,{x:camera.position.x,y:camera.position.y,z:camera.position.z,yaw:camera.rotation.y});}
+  if(mapResult.breakables){const sounds=await import('./private-breakable-audio.js');await sounds.preparePrivateBreakableAudio(audio,signal,mapResult.breakables.entries.values());mapResult.breakables.onBroken=e=>sounds.playPrivateBreakableAudio(audio,e,{x:camera.position.x,y:camera.position.y,z:camera.position.z,yaw:camera.rotation.y});}
   $('load-label').textContent='建立碰撞与武器动作';await paint();const collisionStart=performance.now();
   initPhysics(mapResult.positions,null,privateMap?{map:privateMap.movementModel===PRIVATE_MOVEMENT_MODEL?MAP:null,collisionKey:()=>mapResult.breakableCollision.collisionKey(),mapPatches:false,airMovement:'source',triangleEnabled:(channel,index)=>mapResult.breakableCollision.triangleEnabled(channel,index),copyPositions:false,bulletPositions:mapResult.bulletPositions,grenadePositions:mapResult.grenadePositions}:undefined);viewWeapon ||= new ViewWeapon(gunCamera);applyQuality();
   if(privateMap)diagnostics.event('private-map-collision-ready',{durationMs:Math.round(performance.now()-collisionStart)});

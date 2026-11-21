@@ -1,6 +1,6 @@
 {
   "source": "User-installed Counter-Strike 2 / Valve",
-  "selection": "Original physics sounds selected for metal_sheetmetal and wood_furniture; models do not specify an exact sound event.",
+  "selection": "Valve physics samples selected for metal, wood and breakable panes.",
   "files": [
     {
       "material": "metal",
@@ -42,6 +42,29 @@
       ],
       "format": {
         "duration": "1.227370"
+      }
+    },
+    {
+      "material": "glass",
+      "file": "glass-break.mp3",
+      "source": "sounds/physics/glass/glass_sheet_break1.vsnd_c",
+      "depot": "2347770",
+      "manifest": "8225060435969537482",
+      "sourceCrc32": "857570c0",
+      "extractedSha256": "19becfb65a3e3fde795f1fcacea8de3de32527bdd53fed5f769db50f05019143",
+      "sha256": "8e03a030532b19b4e539d4d582d98c84542b03c3d2ea9c6a3d0af8ef990b103d",
+      "bytes": 26938,
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 1
+        }
+      ],
+      "format": {
+        "duration": "1.797755"
       }
     }
   ]
