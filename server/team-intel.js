@@ -1,3 +1,4 @@
+import {updateBombSpotting} from './bomb-radar.js';
 import {eyePosition} from '../shared/aim.js';
 import {getWeapon} from '../shared/weapons.js';
 import {cs2FovToVertical} from '../shared/cs2-settings.js';
@@ -41,6 +42,7 @@ export function updateTeamVision(room){
  const now=room.clock();
  if(room.round.phase!=='live'||(!room.gridVision && room.mode!=='defuse')||now<(room.nextTeamVisionAt||0))return;
  room.nextTeamVisionAt=now+200;
+ if(room.mode==='defuse')updateBombSpotting(room,now);
  const players=[...room.players.values()];
  if(!room.gridVision && !players.some(p=>p.alive&&p.team==='CT'&&p.bot&&!p.controllerId))return;
  const enemies=players.filter(p=>p.alive&&now>=(p.protectionUntil||0));

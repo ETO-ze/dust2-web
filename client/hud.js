@@ -1,3 +1,4 @@
+import {renderMatchRadar} from './match-radar.js';
 import { MAP } from '../shared/map-data.js';
 import {legacyBombSiteAt} from '../shared/bomb-zones.js';
 import { UTILITY_IDS, EQUIPMENT } from '../shared/equipment.js';
@@ -66,7 +67,7 @@ export class HUD {
     this.radarImage = new Image();
     this.radarImage.onload = () => {
       this.radarReady = true;
-      if (this.lastSnapshot && this.lastSelf) this.drawRadar(this.lastSnapshot, this.lastSelf, now());
+      this.lastRadar = -Infinity;
     };
     // Keep nested deployments such as /dust2/ on their own asset path.
     const radarPath = String(MAP.overview?.image || 'assets/valve-dust2/de_dust2_radar_psd.png').replace(/^\/+/, '');
@@ -171,7 +172,6 @@ export class HUD {
       !self.alive ? '阵亡后无法购买，等待下一回合。' : buyLeft <= 0 ? '本回合购买时间已结束。' :
         !inBuyZone ? `请返回己方出生区购买 · 剩余 ${Math.ceil(buyLeft)} 秒` : `购买时间剩余 ${Math.ceil(buyLeft)} 秒 · 当前 $${number(self.money)}`);
     if (time - this.lastBoard >= 250) { this.updateScoreboard(snapshot, self); this.updateRosters(snapshot,self); this.lastBoard = time; }
-    if (time - this.lastRadar >= 50) { this.drawRadar(snapshot, self, time); this.lastRadar = time; }
     this.pruneFeed(time);
   }
 
@@ -233,74 +233,13 @@ export class HUD {
     for(const team of ['CT','T']){const host=this.elements[`team-roster-${team.toLowerCase()}`];if(!host)continue;const players=(snapshot.players||[]).filter(p=>p.team===team);host.replaceChildren(...Array.from({length:Math.max(5,players.length)},(_,i)=>{const p=players[i],card=document.createElement('div');card.className=`roster-player${p?'':' empty'}${p&&!p.alive?' dead':''}${p?.id===self.id?' self':''}`;card.dataset.team=team;if(!p){card.append(uiIcon(team));card.title='空位';return card;}card.title=`${p.bot?'BOT ':''}${p.name} · ${p.alive?'存活':'阵亡'}`;const assetPreview=AGENT_ASSETS[p.agentId]?.preview,preview=typeof assetPreview==='string'?assetPreview:assetPreview?.file;if(preview){const image=document.createElement('img');image.src=imageAssetURL(preview);image.alt='';image.className='roster-portrait';card.append(image);}else card.append(uiIcon(team));if(!p.alive)card.append(uiIcon('death','阵亡','roster-death'));const label=document.createElement('span');label.textContent=p.name||'玩家';card.append(label);const health=document.createElement('i');health.style.width=`${p.alive?(p.team===self.team?clamp(p.health,0,100):100):0}%`;card.append(health);if(p.hasBomb&&p.team===self.team)card.append(uiIcon('c4','携带炸弹','roster-bomb'));return card;}));}
   }
 
-  radarPoint(position) {
-    const overview = MAP.overview || {};
-    const units = number(MAP.metersPerSourceUnit, 0.0254) || 0.0254;
-    const scale = number(overview.scale, 4.4) || 4.4;
-    const size = number(overview.size, 1024) || 1024;
-    return {
-      x: ((number(position.x) / units - number(overview.pos_x, -2476)) / scale) * (this.radar.width / size),
-      y: ((number(overview.pos_y, 3239) + number(position.z) / units) / scale) * (this.radar.height / size),
-    };
-  }
-
-  drawRadar(snapshot, self, time) {
-    const ctx = this.context;
-    if (!ctx || !this.radar) return;
-    const { width, height } = this.radar;
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#101815'; ctx.fillRect(0, 0, width, height);
-    if (this.radarReady) { ctx.globalAlpha = 0.87; ctx.drawImage(this.radarImage, 0, 0, width, height); ctx.globalAlpha = 1; }
-    ctx.save();
-    ctx.beginPath(); ctx.rect(0, 0, width, height); ctx.clip();
-    for (const player of snapshot.players || []) {
-      if (player.id === self.id || player.team !== self.team || !player.alive) continue;
-      const point = this.radarPoint(player);
-      ctx.save(); ctx.translate(point.x,point.y); ctx.rotate(-number(player.yaw));
-      ctx.fillStyle=TEAM_COLORS[player.team]; ctx.beginPath(); ctx.moveTo(0,-8);
-      ctx.lineTo(3,-3);ctx.lineTo(-3,-3);ctx.closePath();ctx.fill();ctx.restore();
-      ctx.beginPath(); ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
-      ctx.fillStyle = TEAM_COLORS[player.team] || '#8bcebb'; ctx.fill();
-      ctx.strokeStyle = '#101815'; ctx.lineWidth = 1.3; ctx.stroke();
-      if (Number.isInteger(player.seat)) {
-        ctx.save(); ctx.fillStyle='#111';ctx.font='bold 8px sans-serif';ctx.textAlign='center';
-        ctx.fillText(String(player.seat+1),point.x,point.y+2.7);ctx.restore();
-      }
-    }
-    const spotted=new Set();
-    for(const contact of snapshot.radarContacts||[]) {
-      const age=snapshot.time-contact.at+Math.max(0,time-this.receivedAt);
-      if(age>=1400) continue;
-      spotted.add(contact.id);
-      const point=this.radarPoint(contact);
-      ctx.save(); ctx.translate(point.x,point.y); ctx.globalAlpha=Math.min(1,(1400-age)/600);
-      ctx.strokeStyle='#ff7967';ctx.fillStyle='#ff7967';ctx.lineWidth=1.7;
-      ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(4,0);ctx.lineTo(0,5);ctx.lineTo(-4,0);ctx.closePath();
-      if(age<350)ctx.fill(); else ctx.stroke();
-      if(Math.abs(contact.y-self.y)>3){ctx.font='10px sans-serif';ctx.fillText(contact.y>self.y?'↑':'↓',5,3);}
-      ctx.restore();
-    }
-    // A sound marker expires at the last firing position.
-    for (const [id, reveal] of this.revealed) {
-      if (reveal.until <= time) { this.revealed.delete(id); continue; }
-      if (spotted.has(id)) continue;
-      const point = this.radarPoint(reveal);
-      ctx.globalAlpha = Math.min(1, (reveal.until - time) / 450);
-      ctx.fillStyle = '#ee8169'; ctx.beginPath(); ctx.arc(point.x, point.y, 3.5, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-    const bomb = snapshot.bomb || {};
-    if (bomb.state === 'planted' || (self.team === 'T' && bomb.state === 'dropped')) {
-      const point = this.radarPoint(bomb);
-      ctx.save(); ctx.translate(point.x, point.y); ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = bomb.state === 'planted' ? '#ff916d' : '#f7d785'; ctx.fillRect(-3.5, -3.5, 7, 7); ctx.restore();
-    }
-    const point = this.radarPoint(self);
-    ctx.save(); ctx.translate(point.x, point.y); ctx.rotate(-number(self.yaw));
-    ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(4.8, 5); ctx.lineTo(0, 2.5); ctx.lineTo(-4.8, 5); ctx.closePath();
-    ctx.fillStyle = self.alive ? '#efffbd' : '#999'; ctx.fill();
-    ctx.strokeStyle = '#142015'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
-    ctx.restore();
+  radarFrame(snapshot,viewer,focus,time,bombCamera,rotate){
+    if(!this.context||!viewer||!snapshot)return;
+    const turning=focus.yaw!==this.lastRadarYaw;
+    if(time-this.lastRadar<(turning?1000/60:1000/30)-.5)return;
+    this.lastRadar=time;this.lastRadarYaw=focus.yaw;
+    renderMatchRadar({canvas:this.radar,ctx:this.context,map:MAP,image:this.radarReady?this.radarImage:null,
+      snapshot,viewer,focus,time,rotate,receivedAt:this.receivedAt,revealed:this.revealed,bombCamera});
   }
 
   event(event, snapshot = this.lastSnapshot, myId = this.myId) {
@@ -380,7 +319,7 @@ export class HUD {
     this.killCards.reset();
     this.seenEvents.clear(); this.revealed.clear(); this.combo = 0; this.lastKillAt = -Infinity;
     for (const entry of this.feed) { clearTimeout(entry.timer); entry.node.remove(); }
-    this.feed = []; this.lastSnapshot = null; this.snapshotTime = null;
+    this.feed = []; this.lastSnapshot = null; this.snapshotTime = null; this.lastRadar = -Infinity;
     this.boardKey='';this.rosterKey='';
     clearTimeout(this.killTimer); this.elements['kill-confirm']?.classList.remove('visible', 'expire');
   }

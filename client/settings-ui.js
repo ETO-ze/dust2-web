@@ -23,6 +23,11 @@ export function mountSettings({controls,crosshair,getSettings,onSettings,videoDe
     select('#'+id).onchange=e=>{const n=Number(e.target.value);if(!Number.isFinite(n)||n<.05||n>max){e.target.value=getSettings()[key];return;}onSettings({[key]:n});};
   }
   for(const key of ['aspect','display'])select('#cs-'+key).onchange=e=>onSettings({[key]:e.target.value});
+  const radarRow=document.createElement('label');
+  radarRow.className='config-row';
+  radarRow.innerHTML='雷达方向<select id="cs-radar-direction"><option value="view">跟随视角</option><option value="north">固定北方</option></select>';
+  select('#cs-display').closest('label').after(radarRow);
+  select('#cs-radar-direction').onchange=e=>onSettings({radarRotate:e.target.value==='view'});
   const resolutionRow=document.createElement('label');
   resolutionRow.className='config-row';
   resolutionRow.innerHTML='<span>极简模式渲染比例 <output id="cs-render-dimensions"></output></span><select id="cs-flat-render-scale" aria-label="极简模式渲染比例"><option value="0.75">75%</option><option value="1">100% · 原生优先</option><option value="1.25">125%</option><option value="1.5">150%</option></select>';
@@ -33,10 +38,10 @@ export function mountSettings({controls,crosshair,getSettings,onSettings,videoDe
   select('#cs-quality').closest('label').after(clarityRow);
   const clarityNote=document.createElement('p');clarityNote.hidden=!mobileDevice();clarityNote.textContent='默认「清晰」兼顾细节与流畅，性能充足可切「高清」。立即生效并自动保存；画质保持最低也能提高清晰度。';clarityRow.after(clarityNote);
   select('#cs-mobile-clarity').onchange=e=>{onSettings({mobileClarity:e.target.value});videoRefresh();};
-  function videoRefresh(){select('#cs-flat-render-scale').value=String(getSettings().flatRenderScale||1);select('#cs-mobile-clarity').value=getSettings().mobileClarity||'clear';for(const key of ['aspect','display'])select('#cs-'+key).value=getSettings()[key];select('#cs-quality').value=getSettings().quality;select('#cs-brightness').value=getSettings().brightness;select('#brightness-value').textContent=`${getSettings().brightness}%`;}
+  function videoRefresh(){select('#cs-radar-direction').value=getSettings().radarRotate===false?'north':'view';select('#cs-flat-render-scale').value=String(getSettings().flatRenderScale||1);select('#cs-mobile-clarity').value=getSettings().mobileClarity||'clear';for(const key of ['aspect','display'])select('#cs-'+key).value=getSettings()[key];select('#cs-quality').value=getSettings().quality;select('#cs-brightness').value=getSettings().brightness;select('#brightness-value').textContent=`${getSettings().brightness}%`;}
   select('#cs-quality').onchange=e=>onSettings({quality:e.target.value});
   select('#cs-brightness').oninput=e=>{onSettings({brightness:Number(e.target.value)});videoRefresh();};
-  select('#reset-video').onclick=()=>{onSettings({flatRenderScale:1,mobileClarity:'clear',quality:'low',brightness:100,...videoDefaults});videoRefresh();};
+  select('#reset-video').onclick=()=>{onSettings({radarRotate:true,flatRenderScale:1,mobileClarity:'clear',quality:'low',brightness:100,...videoDefaults});videoRefresh();};
   videoRefresh();
   const fields=[['size','长度',0,10,.1],['thickness','粗细',0,5,.1],['gap','间距',-10,10,.1],['alpha','透明度',0,255,1],['red','红',0,255,1],['green','绿',0,255,1],['blue','蓝',0,255,1],['outlineThickness','描边粗细',0,3,.5]];
   select('#crosshair-fields').innerHTML=fields.map(([key,label,min,max,step])=>`<label>${label}<input data-crosshair="${key}" type="number" min="${min}" max="${max}" step="${step}"></label>`).join('')+[['dot','中心点'],['outline','描边'],['tStyle','T 字形']].map(([key,label])=>`<label>${label}<input data-crosshair="${key}" type="checkbox"></label>`).join('');
