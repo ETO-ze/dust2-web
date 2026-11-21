@@ -25,7 +25,8 @@ import {syncChallengeRoster} from './bot-challenge.js';
 import {randomBytes} from 'node:crypto';
 import { MAP } from '../shared/map-data.js';
 import {bombSiteAt,plantedBombPosition} from '../shared/bomb-zones.js';
-import { createPlayerState, stepPlayer, raycastWorld, raycastWorldContact, raycastGrenadeWorld, raycastWorldHit, floorHeight } from '../shared/physics.js';
+import {c4Damage} from './c4-blast.js';
+import { createPlayerState, stepPlayer, raycastWorld, raycastWorldContact, raycastGrenadeWorld, raycastWorldHit, floorHeight, STAND_HEIGHT, CROUCH_HEIGHT } from '../shared/physics.js';
 import { WEAPONS, PRIMARY_WEAPONS, getWeapon, normalizeWeapon, canTeamUseWeapon, defaultPrimaryForTeam, weaponSpeedScale } from '../shared/weapons.js';
 import { DEFAULT_SKINS, getSkin, normalizeSkinLoadout } from '../shared/skins.js';
 import { DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } from '../shared/agents.js';
@@ -848,6 +849,20 @@ export class GameRoom {
 
   siteAt(p) { return bombSiteAt(MAP,p); }
 
+  detonateBomb() {
+    const bomb=this.bomb;
+    if(bomb.state!=='planted'||this.clock()<bomb.explodesAt||this.mode!=='defuse'||!combatPhase(this.round.phase)||this.match.status==='ended')return;
+    bomb.state='exploded';
+    this.emit('bomb_exploded',copyPoint(bomb));
+    for(const body of this.players.values()){
+      if(!body.alive)continue;
+      const center={x:body.x,y:body.y+(body.crouch ? CROUCH_HEIGHT : STAND_HEIGHT)/2,z:body.z};
+      const damage=c4Damage(MAP.id,dist(bomb,center));
+      if(damage>0)this.damagePlayer(body,null,damage,'c4');
+    }
+    this.endRound('T','炸弹爆炸',this.plantMvp);
+  }
+
   bombIntent(p,input){
     if(!p?.alive||!p.grounded||this.mode!=='defuse'||this.round.phase!=='live')return null;
     const bomb=this.bomb,continuing=bomb.actorId===p.id;
@@ -868,7 +883,7 @@ export class GameRoom {
       if (pickup) { pickup.hasBomb = true;this.giveWeapon(pickup,'c4'); bomb.carrierId = pickup.id; bomb.state = 'carried'; }
     }
     if (bomb.state === 'planted' && now >= bomb.explodesAt) {
-      bomb.state = 'exploded'; this.emit('bomb_exploded', { x: bomb.x, y: bomb.y, z: bomb.z }); this.endRound('T','炸弹爆炸',this.plantMvp); return;
+      this.detonateBomb(); return;
     }
     let actor = null, action = null, site = null;
     if (bomb.state === 'carried') {
@@ -1020,6 +1035,9 @@ export class GameRoom {
     this.maybeStart();
     this.recordPoses();
     if (this.mode === 'defuse') {
+      // A plant can still expire during the short playable interval after a team wipe.
+      // Resolve deadlines in order even if one delayed tick spans the round boundary.
+      if(this.round.phase==='ended'&&this.bomb.explodesAt<=this.round.phaseEndsAt)this.detonateBomb();
       if (this.round.phase === 'freeze' && now >= this.round.phaseEndsAt) { this.round.phase = 'live';this.round.liveStartedAt=now; this.round.phaseEndsAt = now + this.rules.roundSeconds * 1000; }
       else if (this.round.phase === 'ended' && now >= this.round.phaseEndsAt) { if (this.count('T') && this.count('CT')) this.startRound(); else { this.round.phase = 'waiting'; this.round.phaseEndsAt = 0; } }
     }
