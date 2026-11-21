@@ -1,3 +1,5 @@
+import {objectiveMvp,roundMvp,matchMvp} from './mvp.js';
+import { isMusicKit } from '../shared/music-kits.js';
 import {useMapButton} from './map-buttons.js';
 import {botPeek} from './bot-peek.js';
 import {hearEvent,movementNoise,hearNoise} from './bot-hearing.js';
@@ -217,7 +219,7 @@ export class GameRoom {
     this.desiredBots=this.botCount;syncChallengeRoster(this);this.maybeStart();this.emit('bots_changed',{botCount:this.botCount,desiredBots:this.desiredBots});return {ok:true,botCount:this.botCount};
   }
 
-  addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents, weaponLoadout, movementProtocol, shotProtocol }) {
+  addHuman(socket, { musicKit, name, team = 'auto', primary = 'auto', skins, agents, weaponLoadout, movementProtocol, shotProtocol }) {
     if (this.humanCount >= this.humanCapacity) throw new Error(`房间已满，最多 ${this.humanCapacity} 名玩家。`);
     let assigned = team;
     if(this.botDifficulty==='vitality'&&this.challengeTeamId){
@@ -234,6 +236,7 @@ export class GameRoom {
     const player = this.makePlayer(id, name, assigned, false, primary, weaponLoadout??null);
     player.shotProtocol=shotProtocol===1?1:0;player.shotCommands=player.shotProtocol===1;
     if(movementProtocol===1){player.movementStream=new MovementStream(player.lifeId);player.movementAt=this.clock();}
+    if(isMusicKit(musicKit))player.musicKit=musicKit;
     player.skins=normalizeSkinLoadout(skins);
     player.weaponLoadout=normalizeWeaponLoadout(weaponLoadout);
     player.agents=normalizeAgentLoadout(agents);player.agentId=player.agents[assigned];
@@ -242,13 +245,13 @@ export class GameRoom {
     if(this.botDifficulty==='vitality'&&!this.challengeTeamId){this.challengeTeamId=player.teamId==='A'?'B':'A';this.desiredBots=Math.max(5,this.desiredBots);}
     if (this.match.status==='ended'||(this.mode === 'defuse' && ['live', 'ended'].includes(this.round.phase))) { player.alive = false; player.health = 0; player.respawnAt = 0; }
     this.ensureBots();
-    this.emit('join', { playerId: id, name, team: assigned, bot: false });
+    this.emit('join', { playerId: id, name, team: assigned, bot: false, musicKit:player.musicKit });
     this.maybeStart();
     return player;
   }
 
   makePlayer(id, name, team, bot, primary = 'auto', weaponLoadout) {
-    const player = { ...createPlayerState(this.pickSpawn(team)), id, seat:this.freeSeat(team), lifeId:1,name, team, teamId:this.teamForSide(team), bot, health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
+    const player = { ...createPlayerState(this.pickSpawn(team)), id, seat:this.freeSeat(team), lifeId:1,name, team, teamId:this.teamForSide(team), bot, musicKit:bot?'valve_cs2_01':'neckdeep_01', health: 100, armor: this.mode === 'deathmatch' ? 100 : 0, alive: true,
       money: this.mode === 'deathmatch' ? 16000 : 800, kills: 0, roundKills:0,lifeKills:0,killCards:[],deaths: 0, assists: 0,headshots:0, inventory: {}, skins:{...DEFAULT_SKINS}, slot: this.mode === 'deathmatch' ? 1 : 2,
       helmet:this.mode==='deathmatch',defuseKit:false,zoomLevel:0,flashBlindUntil:0,agents:{...DEFAULT_AGENT_IDS},agentId:DEFAULT_AGENT_IDS[team],
       weapon: 'pistol', input: neutralInput(), inputAt: 0, seq: -1, lastReceivedSeq: -1, lastShotTime: 0, nextShotAt: 0, reloadEndsAt: 0,
@@ -480,7 +483,7 @@ export class GameRoom {
       }
     }
     this.round = { number: this.round.number + 1, phase: 'freeze', phaseEndsAt: now + this.rules.freezeSeconds * 1000, buyEndsAt: now + (this.rules.freezeSeconds + this.rules.buySeconds) * 1000, winner: null, reason: '' };
-    this.weaponRequests=new Map();this.bomb = this.emptyBomb();this.teamIntel={};this.teamSightings={};this.defensePlan=null;this.botAttackSite=null;this.utilityClaims=new Map();this.botExecutions=new Map();this.attackPlan=null;this.botFlashes=[];this.botUtilityTimeline.clear();
+    this.weaponRequests=new Map();this.plantMvp=null;this.bomb = this.emptyBomb();this.teamIntel={};this.teamSightings={};this.defensePlan=null;this.botAttackSite=null;this.utilityClaims=new Map();this.botExecutions=new Map();this.attackPlan=null;this.botFlashes=[];this.botUtilityTimeline.clear();
     this.botAlerts={};this.botRotation=null;this.nextTeamVisionAt=0;
     this.grenades.clear();this.defuseKits=[];
     this.droppedWeapons.clear();
@@ -519,7 +522,7 @@ export class GameRoom {
     this.emit('spawn', { playerId: p.id, x: p.x, y: p.y, z: p.z });
   }
 
-  endRound(team, reason) {
+  endRound(team, reason, objective=null) {
     if (this.round.phase !== 'live'||this.match.status==='ended') return;
     this.round.phase = 'ended'; this.round.winner = team; this.round.reason = reason;
     this.round.phaseEndsAt = this.clock() + this.rules.endSeconds * 1000;
@@ -527,8 +530,9 @@ export class GameRoom {
     this.match.roundsPlayed++;
     settleEconomy(this,team,reason);adaptAfterRound(this,team);
     this.bomb.action = null; this.bomb.actorId = null; this.bomb.progress = 0;
-    const mvp=[...this.players.values()].filter(p=>p.team===team).sort((a,b)=>(b.roundKills||0)-(a.roundKills||0))[0];
-    this.emit('round_end', { winner: team, reason,mvpId:mvp?.id||null, scores: { ...this.scores } });
+    const mvp=roundMvp(this,team,objective);
+    this.round.mvp=mvp;
+    this.emit('round_end',{round:this.round.number,winner:team,reason,mvp,mvpId:mvp?.id||null,scores:{...this.scores}});
     const scores=Object.fromEntries(Object.entries(this.teamSides).map(([id,side])=>[id,this.scores[side]]));
     const decision=defuseDecision(scores,this.match.roundsPlayed);
     Object.assign(this.match,{period:decision.period,overtimeNumber:decision.overtimeNumber,winTarget:decision.winTarget});
@@ -539,7 +543,7 @@ export class GameRoom {
 
   endMatch(winnerTeamId,reason){
     if(this.match.status==='ended')return;
-    Object.assign(this.match,{status:'ended',winnerTeamId,reason,endedAt:this.clock()});
+    Object.assign(this.match,{status:'ended',winnerTeamId,reason,endedAt:this.clock(),mvp:matchMvp(this,winnerTeamId)});
     Object.assign(this.round,{phase:'matchEnded',phaseEndsAt:0,winner:this.teamSides[winnerTeamId],reason});
     this.pendingTransition=null;this.grenades.clear();this.defuseKits=[];
     for(const p of this.players.values()){p.respawnAt=0;p.reloadEndsAt=0;p.pendingFire=false;this.cancelGrenade(p,'match');p.input=neutralInput();p.effectiveInput=neutralInput();p.vx=p.vy=p.vz=0;}
@@ -864,7 +868,7 @@ export class GameRoom {
       if (pickup) { pickup.hasBomb = true;this.giveWeapon(pickup,'c4'); bomb.carrierId = pickup.id; bomb.state = 'carried'; }
     }
     if (bomb.state === 'planted' && now >= bomb.explodesAt) {
-      bomb.state = 'exploded'; this.emit('bomb_exploded', { x: bomb.x, y: bomb.y, z: bomb.z }); this.endRound('T', '炸弹爆炸'); return;
+      bomb.state = 'exploded'; this.emit('bomb_exploded', { x: bomb.x, y: bomb.y, z: bomb.z }); this.endRound('T','炸弹爆炸',this.plantMvp); return;
     }
     let actor = null, action = null, site = null;
     if (bomb.state === 'carried') {
@@ -887,9 +891,10 @@ export class GameRoom {
     actor.objectiveLocked=false;
     if (action === 'plant') {
       actor.hasBomb = false;delete actor.inventory.c4;this.selectSlot(actor,Object.keys(actor.inventory).some(id=>getWeapon(id).slot===1)?1:Object.keys(actor.inventory).some(id=>getWeapon(id).slot===2)?2:3);actor.input.slot=actor.slot; actor.money = Math.min(16000, actor.money + 300);
+      this.plantMvp=objectiveMvp(this,actor,'plant');
       Object.assign(bomb, plantedBombPosition(actor,floorHeight), { state: 'planted', carrierId: null, site, plantedAt: now, explodesAt: now + this.rules.bombSeconds * 1000, planterId: actor.id, action: null, actorId: null, progress: 0 });
       this.emit('bomb_planted', { playerId: actor.id, site, explodesAt: bomb.explodesAt, x: bomb.x, y: bomb.y, z: bomb.z });
-    } else { bomb.state = 'defused'; this.emit('bomb_defused', { playerId: actor.id }); this.endRound('CT', '炸弹已拆除'); }
+    } else { bomb.state = 'defused'; this.emit('bomb_defused', { playerId: actor.id }); this.endRound('CT','炸弹已拆除',objectiveMvp(this,actor,'defuse')); }
   }
 
   nearestNav(point) {

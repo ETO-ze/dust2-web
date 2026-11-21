@@ -4,10 +4,26 @@ import { createReadStream } from 'node:fs';
 import { lstat, mkdir, open, readFile, realpath, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SKINS } from '../shared/skins.js';
+import { packagedSkinAssets } from '../shared/packaged-skin-assets.js';
+import { packagedAgentAssets } from '../shared/packaged-agent-assets.js';
+import { packagedMusicAssets } from '../shared/packaged-music-assets.js';
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_ROOT = path.join(PROJECT_ROOT, 'public', 'assets');
 const DEFAULT_LOCK = path.join(PROJECT_ROOT, 'config', 'assets-lock.json');
+
+// The original CDN release and the map gateway publish complementary inventories.
+// Operators may still supply one complete mirror with --base-url.
+export function releaseAssetLocks(baseLock) {
+  validateLock(baseLock);
+  const extras = [...packagedSkinAssets(SKINS), ...packagedAgentAssets(), ...packagedMusicAssets()];
+  const onGateway = new Map(extras.map(file => [file.path, file]));
+  return [
+    { ...baseLock, files: baseLock.files.filter(file => !onGateway.has(file.path)) },
+    { schemaVersion: 1, baseURL: 'https://cs2.duskrain.cn/perf/', files: [...onGateway.values()] },
+  ];
+}
 
 export function validateAssetPath(value) {
   if (typeof value !== 'string' || !value.startsWith('assets/')) throw new Error(`Asset path must start with assets/: ${value}`);
@@ -156,19 +172,22 @@ async function main() {
       return;
     } else throw new Error(`Unknown or incomplete option: ${args[index]}`);
   }
-  const lock = JSON.parse(await readFile(DEFAULT_LOCK, 'utf8'));
-  console.log(`${options.check ? 'Checking' : 'Restoring'} ${lock.files.length} locked assets (${(lock.totalBytes / 1048576).toFixed(1)} MiB).`);
-  let reported = 0;
-  const result = await syncAssets(lock, { ...options, onProgress(status, progress) {
-    if (status.status === 'error') console.error(`${status.path}: ${status.message}`);
-    const completed = progress.downloaded + progress.skipped + progress.errors.length;
-    if (completed - reported >= 25 || completed === progress.total) {
-      console.log(`${completed}/${progress.total} — downloaded ${progress.downloaded}, verified ${progress.skipped}, failed ${progress.errors.length}`);
-      reported = completed;
-    }
-  } });
-  if (result.errors.length) process.exitCode = 1;
-  else console.log('Assets verified. Ready for npm run build and npm start.');
+  const locks = releaseAssetLocks(JSON.parse(await readFile(DEFAULT_LOCK, 'utf8')));
+  for (const lock of locks) {
+    const bytes = lock.files.reduce((sum, asset) => sum + asset.bytes, 0);
+    console.log(`${options.check ? 'Checking' : 'Restoring'} ${lock.files.length} locked assets (${(bytes / 1048576).toFixed(1)} MiB).`);
+    let reported = 0;
+    const result = await syncAssets(lock, { ...options, onProgress(status, progress) {
+      if (status.status === 'error') console.error(`${status.path}: ${status.message}`);
+      const completed = progress.downloaded + progress.skipped + progress.errors.length;
+      if (completed - reported >= 25 || completed === progress.total) {
+        console.log(`${completed}/${progress.total} — downloaded ${progress.downloaded}, verified ${progress.skipped}, failed ${progress.errors.length}`);
+        reported = completed;
+      }
+    } });
+    if (result.errors.length) process.exitCode = 1;
+  }
+  if (!process.exitCode) console.log('Assets verified. Ready for npm run build and npm start.');
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

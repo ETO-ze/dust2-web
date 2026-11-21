@@ -1,0 +1,714 @@
+{
+  "alleycvt_01": {
+    "id": "alleycvt_01",
+    "defindex": "music_kit-105",
+    "name": "相信",
+    "artist": "ALLEYCVT & LEVEL UP",
+    "downloadRequired": true,
+    "cues": {
+      "menu": {
+        "file": "alleycvt_01/mainmenu-c8e8bbb73038.mp3",
+        "source": "sounds/music/alleycvt_01/mainmenu.vsnd_c",
+        "sha256": "c8e8bbb73038d178c5adec6d23e725eec6964411b07ee747c60bfd287fcb6046",
+        "bytes": 2772044,
+        "duration": 161.601247,
+        "sourceCrc32": "2d96d624"
+      },
+      "roundStart": {
+        "file": "alleycvt_01/startround_01-24e954739ef0.mp3",
+        "source": "sounds/music/alleycvt_01/startround_01.vsnd_c",
+        "sha256": "24e954739ef05db9c84fa7468d52486467ecef3944d74e002e20dddc44ded9af",
+        "bytes": 234564,
+        "duration": 12.801247,
+        "sourceCrc32": "912bd3cd"
+      },
+      "roundWon": {
+        "file": "alleycvt_01/wonround-8d5b4ab6adfb.mp3",
+        "source": "sounds/music/alleycvt_01/wonround.vsnd_c",
+        "sha256": "8d5b4ab6adfba4e89bd34789a7efac9f8f1793d59630ffb2fb3a92491f89d3d7",
+        "bytes": 154160,
+        "duration": 8.001678,
+        "sourceCrc32": "a6daff77"
+      },
+      "roundLost": {
+        "file": "alleycvt_01/lostround-98806441b366.mp3",
+        "source": "sounds/music/alleycvt_01/lostround.vsnd_c",
+        "sha256": "98806441b3668236c710f10cf4b24b43f330bbcdabe20a7038538237e7fa1f59",
+        "bytes": 100946,
+        "duration": 5.601678,
+        "sourceCrc32": "97608d42"
+      },
+      "mvp": {
+        "file": "alleycvt_01/roundmvpanthem_01-57ad61984397.mp3",
+        "source": "sounds/music/alleycvt_01/roundmvpanthem_01.vsnd_c",
+        "sha256": "57ad619843979225ec21fb3702cb14818b4b7ae3eab5bff5c4a9a856d91fb98f",
+        "bytes": 147365,
+        "duration": 8.001678,
+        "sourceCrc32": "a4450903"
+      },
+      "matchEnd": {
+        "file": "alleycvt_01/endofmatch-29d0826f8a9e.mp3",
+        "source": "sounds/music/alleycvt_01/endofmatch.vsnd_c",
+        "sha256": "29d0826f8a9e0cd3ee961da032b5ebc2cbce8643fe28795a76d28cc9abb0b80d",
+        "bytes": 1024313,
+        "duration": 57.610839,
+        "sourceCrc32": "41d9d2a1"
+      },
+      "bombPlanted": {
+        "file": "alleycvt_01/bombplanted-04fe2c14a820.mp3",
+        "source": "sounds/music/alleycvt_01/bombplanted.vsnd_c",
+        "sha256": "04fe2c14a82014b26ac9b4e116c27340beb6e714e993878b61f4c752bffe8565",
+        "bytes": 606339,
+        "duration": 37.601247,
+        "sourceCrc32": "eb53f3e8"
+      },
+      "bombWarning": {
+        "file": "alleycvt_01/bombtenseccount-768e9418d1a8.mp3",
+        "source": "sounds/music/alleycvt_01/bombtenseccount.vsnd_c",
+        "sha256": "768e9418d1a8eebda8732a241b549b8347e6f08fe76a4efca8a0dc81af599106",
+        "bytes": 176848,
+        "duration": 10.400839,
+        "sourceCrc32": "dd70821a"
+      },
+      "roundWarning": {
+        "file": "alleycvt_01/roundtenseccount-c8a42afb8628.mp3",
+        "source": "sounds/music/alleycvt_01/roundtenseccount.vsnd_c",
+        "sha256": "c8a42afb8628cb78dbe8f8156959f96bba9dfd9ffa52e40ab795ca77debe4c5e",
+        "bytes": 193218,
+        "duration": 11.400839,
+        "sourceCrc32": "5876cd3c"
+      },
+      "death": {
+        "file": "alleycvt_01/deathcam-6f753e1c4ccb.mp3",
+        "source": "sounds/music/alleycvt_01/deathcam.vsnd_c",
+        "sha256": "6f753e1c4ccb34ad7b6fccfc6f4d11823aa32e2c185aa223d613719aaa31d864",
+        "bytes": 92374,
+        "duration": 5.601678,
+        "sourceCrc32": "62b28e5b"
+      }
+    }
+  },
+  "arcando_01": {
+    "id": "arcando_01",
+    "defindex": "music_kit-106",
+    "name": "超声波",
+    "artist": "Arcando & Pirapus",
+    "downloadRequired": true,
+    "cues": {
+      "menu": {
+        "file": "arcando_01/mainmenu-9541dba94c0c.mp3",
+        "source": "sounds/music/arcando_01/mainmenu.vsnd_c",
+        "sha256": "9541dba94c0c548394089042d512b513b9f4249b572b91be97b6b8cfe8049363",
+        "bytes": 3252135,
+        "duration": 185.143923,
+        "sourceCrc32": "83357032"
+      },
+      "roundStart": {
+        "file": "arcando_01/startround_01-b2ccd5babb1f.mp3",
+        "source": "sounds/music/arcando_01/startround_01.vsnd_c",
+        "sha256": "b2ccd5babb1fd249e9cc7700b2880c59395f09e699709dbdf3d883d5a4ba50f2",
+        "bytes": 192602,
+        "duration": 10.971791,
+        "sourceCrc32": "efd22449"
+      },
+      "roundWon": {
+        "file": "arcando_01/wonround-6e6aacb7a1df.mp3",
+        "source": "sounds/music/arcando_01/wonround.vsnd_c",
+        "sha256": "6e6aacb7a1df48f517e188b084cee7c3248cd564f6b45e52dc84ffc45d655951",
+        "bytes": 134418,
+        "duration": 7.544286,
+        "sourceCrc32": "f91bb0b7"
+      },
+      "roundLost": {
+        "file": "arcando_01/lostround-8274b084ac61.mp3",
+        "source": "sounds/music/arcando_01/lostround.vsnd_c",
+        "sha256": "8274b084ac6190646905bf59df8c5758a5c3bae78b5a9461b07d1681b0cff310",
+        "bytes": 133688,
+        "duration": 7.544286,
+        "sourceCrc32": "d4512e38"
+      },
+      "mvp": {
+        "file": "arcando_01/roundmvpanthem_01-39362311d5fb.mp3",
+        "source": "sounds/music/arcando_01/roundmvpanthem_01.vsnd_c",
+        "sha256": "39362311d5fb25fb75ef8d099a657c386f62908f22da0326bf7908abdacd2a19",
+        "bytes": 139644,
+        "duration": 7.544286,
+        "sourceCrc32": "33208595"
+      },
+      "matchEnd": {
+        "file": "arcando_01/endofmatch-bdf2ae4571ce.mp3",
+        "source": "sounds/music/arcando_01/endofmatch.vsnd_c",
+        "sha256": "bdf2ae4571ce0a969dd54d61cf47309b296330cc28aa84b55940def570e715d8",
+        "bytes": 1612996,
+        "duration": 92.581429,
+        "sourceCrc32": "6766d2da"
+      },
+      "bombPlanted": {
+        "file": "arcando_01/bombplanted-083ddff6d904.mp3",
+        "source": "sounds/music/arcando_01/bombplanted.vsnd_c",
+        "sha256": "083ddff6d90430aaa5b7324af533d28042db86fb5964655676b547cf4b776173",
+        "bytes": 614333,
+        "duration": 37.028934,
+        "sourceCrc32": "3e7c2902"
+      },
+      "bombWarning": {
+        "file": "arcando_01/bombtenseccount-3a1cb39ddc87.mp3",
+        "source": "sounds/music/arcando_01/bombtenseccount.vsnd_c",
+        "sha256": "3a1cb39ddc877b93c2f6e9df1b699d6fb5a0e55ca06dd047a11af38cfa496baa",
+        "bytes": 192714,
+        "duration": 10.971791,
+        "sourceCrc32": "08b6b4d4"
+      },
+      "roundWarning": {
+        "file": "arcando_01/roundtenseccount-2b971b6f0cc6.mp3",
+        "source": "sounds/music/arcando_01/roundtenseccount.vsnd_c",
+        "sha256": "2b971b6f0cc6612d39a9e01cb84a6a73ba3c803b892e93f92920e80dc5ed0b61",
+        "bytes": 199176,
+        "duration": 11.314649,
+        "sourceCrc32": "f89a110d"
+      },
+      "death": {
+        "file": "arcando_01/deathcam-45c2a33259f1.mp3",
+        "source": "sounds/music/arcando_01/deathcam.vsnd_c",
+        "sha256": "45c2a33259f12accfecfb0e28bc6608395c169f5ccac82955fbfa74f4763a6e9",
+        "bytes": 76946,
+        "duration": 4.801429,
+        "sourceCrc32": "613e352d"
+      }
+    }
+  },
+  "djdiesel_01": {
+    "id": "djdiesel_01",
+    "defindex": "music_kit-107",
+    "name": "甩起头来",
+    "artist": "DJ DIESEL & Hairitage",
+    "downloadRequired": true,
+    "cues": {
+      "menu": {
+        "file": "djdiesel_01/mainmenu-6ffc963c20e4.mp3",
+        "source": "sounds/music/djdiesel_01/mainmenu.vsnd_c",
+        "sha256": "6ffc963c20e454687f461e3453da2ab92bc184d50fe4d0ac0379ad2ebe897ec3",
+        "bytes": 3685037,
+        "duration": 204.799592,
+        "sourceCrc32": "bb6758f0"
+      },
+      "roundStart": {
+        "file": "djdiesel_01/startround_01-e0179e5e788f.mp3",
+        "source": "sounds/music/djdiesel_01/startround_01.vsnd_c",
+        "sha256": "e0179e5e788fc4a966fa474b43050ce29995d13bc4f4cff308d9716c3ec28af2",
+        "bytes": 224311,
+        "duration": 12.801247,
+        "sourceCrc32": "727f25a8"
+      },
+      "roundWon": {
+        "file": "djdiesel_01/wonround-f8a4557b462b.mp3",
+        "source": "sounds/music/djdiesel_01/wonround.vsnd_c",
+        "sha256": "f8a4557b462b993544424a3fc183dc801c2fb7134118052fdce3053ab2b2bd8d",
+        "bytes": 136697,
+        "duration": 8.001791,
+        "sourceCrc32": "0fa26d2a"
+      },
+      "roundLost": {
+        "file": "djdiesel_01/lostround-f45ba3729bd4.mp3",
+        "source": "sounds/music/djdiesel_01/lostround.vsnd_c",
+        "sha256": "f45ba3729bd47529241ed41903661a717820067fefa03b9d2fe042a9ddd23331",
+        "bytes": 103626,
+        "duration": 6.401678,
+        "sourceCrc32": "34680859"
+      },
+      "mvp": {
+        "file": "djdiesel_01/roundmvpanthem_01-42810a6f3606.mp3",
+        "source": "sounds/music/djdiesel_01/roundmvpanthem_01.vsnd_c",
+        "sha256": "42810a6f360653e6a7bdcad1dece59e23c6d93c8e215731db8d0bd1da7cc93fc",
+        "bytes": 147881,
+        "duration": 8.001678,
+        "sourceCrc32": "a99e4db0"
+      },
+      "matchEnd": {
+        "file": "djdiesel_01/endofmatch-c6e95e296a36.mp3",
+        "source": "sounds/music/djdiesel_01/endofmatch.vsnd_c",
+        "sha256": "c6e95e296a368ed8f033607818e3ffa69a7e5e218c421896a517c2012f59cca1",
+        "bytes": 1945083,
+        "duration": 104.001678,
+        "sourceCrc32": "1e303581"
+      },
+      "bombPlanted": {
+        "file": "djdiesel_01/bombplanted-aa877744b307.mp3",
+        "source": "sounds/music/djdiesel_01/bombplanted.vsnd_c",
+        "sha256": "aa877744b307a86b7dd432de701a2638fef3aec5a75b121a364fe10e1ecc42dc",
+        "bytes": 576702,
+        "duration": 34.800839,
+        "sourceCrc32": "c8596967"
+      },
+      "bombWarning": {
+        "file": "djdiesel_01/bombtenseccount-425ed476d637.mp3",
+        "source": "sounds/music/djdiesel_01/bombtenseccount.vsnd_c",
+        "sha256": "425ed476d6378c2b75f249557b65ab889b4ee5c95d8e9e461c89b6b141961365",
+        "bytes": 173899,
+        "duration": 10.664989,
+        "sourceCrc32": "3c40c0a7"
+      },
+      "roundWarning": {
+        "file": "djdiesel_01/roundtenseccount-f2a9255d4502.mp3",
+        "source": "sounds/music/djdiesel_01/roundtenseccount.vsnd_c",
+        "sha256": "f2a9255d45025085fb4d0bed9a5b7242f51aa693b6f4b0d7aa29ead539eff7f4",
+        "bytes": 175048,
+        "duration": 10.664989,
+        "sourceCrc32": "765851dc"
+      },
+      "death": {
+        "file": "djdiesel_01/deathcam-2438ddc6d34d.mp3",
+        "source": "sounds/music/djdiesel_01/deathcam.vsnd_c",
+        "sha256": "2438ddc6d34dde9e2d52e02e8072fcb2b98ecf771993adbb6f80871a1a468604",
+        "bytes": 80389,
+        "duration": 4.801678,
+        "sourceCrc32": "1b7221db"
+      }
+    }
+  },
+  "fool_01": {
+    "id": "fool_01",
+    "defindex": "music_kit-108",
+    "name": "狂徒",
+    "artist": "F.O.O.L",
+    "downloadRequired": true,
+    "cues": {
+      "menu": {
+        "file": "fool_01/mainmenu-fc69335fea79.mp3",
+        "source": "sounds/music/fool_01/mainmenu.vsnd_c",
+        "sha256": "fc69335fea791b3e5d869e1edd2038aa749467736cc264d5901faf7e564649e7",
+        "bytes": 4317688,
+        "duration": 250.921701,
+        "sourceCrc32": "9e7d3bb3"
+      },
+      "roundStart": {
+        "file": "fool_01/startround_01-3a8aae37c9c4.mp3",
+        "source": "sounds/music/fool_01/startround_01.vsnd_c",
+        "sha256": "3a8aae37c9c434b4efe295bafdece01d628d873000d79ef2140f202ada82f07b",
+        "bytes": 298439,
+        "duration": 17.457596,
+        "sourceCrc32": "073eb6c2"
+      },
+      "roundWon": {
+        "file": "fool_01/wonround-3c8254b5a562.mp3",
+        "source": "sounds/music/fool_01/wonround.vsnd_c",
+        "sha256": "3c8254b5a56238b55b19bd5bea4a042cbfdbfcb7ce944c58f60df5773774e979",
+        "bytes": 148490,
+        "duration": 8.729025,
+        "sourceCrc32": "9490eb92"
+      },
+      "roundLost": {
+        "file": "fool_01/lostround-378faf7aa505.mp3",
+        "source": "sounds/music/fool_01/lostround.vsnd_c",
+        "sha256": "378faf7aa505e8862a106175b6f67c3340987d39e3def09125f0b3b58df6489e",
+        "bytes": 123961,
+        "duration": 7.637052,
+        "sourceCrc32": "6f30cee6"
+      },
+      "mvp": {
+        "file": "fool_01/roundmvpanthem_01-f5327dd49e99.mp3",
+        "source": "sounds/music/fool_01/roundmvpanthem_01.vsnd_c",
+        "sha256": "f5327dd49e991ca1b627f2da163a657be68d18e2292adf7dad754000a49492a5",
+        "bytes": 148694,
+        "duration": 8.729025,
+        "sourceCrc32": "ee453234"
+      },
+      "matchEnd": {
+        "file": "fool_01/endofmatch-1969bdc4f91f.mp3",
+        "source": "sounds/music/fool_01/endofmatch.vsnd_c",
+        "sha256": "1969bdc4f91f4ba82a334424285a9652b5e7c56e2c59710f783ca65ac3fc6b4f",
+        "bytes": 1037499,
+        "duration": 60.001791,
+        "sourceCrc32": "0475b562"
+      },
+      "bombPlanted": {
+        "file": "fool_01/bombplanted-9ffac9f09bd9.mp3",
+        "source": "sounds/music/fool_01/bombplanted.vsnd_c",
+        "sha256": "9ffac9f09bd9dfd181c3cb5284869d99a73ff6032f57f8254a8218040ab7d425",
+        "bytes": 656619,
+        "duration": 40.364739,
+        "sourceCrc32": "f23b59be"
+      },
+      "bombWarning": {
+        "file": "fool_01/bombtenseccount-696b7506e68e.mp3",
+        "source": "sounds/music/fool_01/bombtenseccount.vsnd_c",
+        "sha256": "696b7506e68e7252a407e8ab7c9fcd71ae92de37b699eda1dd545881fe464fe8",
+        "bytes": 182792,
+        "duration": 10.912063,
+        "sourceCrc32": "945b9564"
+      },
+      "roundWarning": {
+        "file": "fool_01/roundtenseccount-0da0b77b82e2.mp3",
+        "source": "sounds/music/fool_01/roundtenseccount.vsnd_c",
+        "sha256": "0da0b77b82e2b6c0281c6dbe22d75ebd81d5b0222ea0266c2f591ccb57602bca",
+        "bytes": 177969,
+        "duration": 10.912063,
+        "sourceCrc32": "96d33a9d"
+      },
+      "death": {
+        "file": "fool_01/deathcam-9d09a9d85208.mp3",
+        "source": "sounds/music/fool_01/deathcam.vsnd_c",
+        "sha256": "9d09a9d852087f6a9ebb16cc0cf1268aa645125324b2615211f3f16459bc0ac3",
+        "bytes": 144194,
+        "duration": 8.729025,
+        "sourceCrc32": "b47e4818"
+      }
+    }
+  },
+  "noisestorm_01": {
+    "id": "noisestorm_01",
+    "defindex": "music_kit-109",
+    "name": "横行无忌",
+    "artist": "Noisestorm",
+    "downloadRequired": true,
+    "cues": {
+      "menu": {
+        "file": "noisestorm_01/mainmenu-bca12eb43ce9.mp3",
+        "source": "sounds/music/noisestorm_01/mainmenu.vsnd_c",
+        "sha256": "bca12eb43ce97d25be0d995071387a02836eaf2880693eafbf6eba0352a8166e",
+        "bytes": 2896409,
+        "duration": 161.295011,
+        "sourceCrc32": "3ba1fbd6"
+      },
+      "roundStart": {
+        "file": "noisestorm_01/startround_01-d4fa6cb69f54.mp3",
+        "source": "sounds/music/noisestorm_01/startround_01.vsnd_c",
+        "sha256": "d4fa6cb69f544f1859aa4133ecb56856d52c10487d19ac27889270cc7b993a9b",
+        "bytes": 180664,
+        "duration": 7.695011,
+        "sourceCrc32": "ec82534a"
+      },
+      "roundWon": {
+        "file": "noisestorm_01/wonround-9e65deab2d1f.mp3",
+        "source": "sounds/music/noisestorm_01/wonround.vsnd_c",
+        "sha256": "9e65deab2d1ff1d00f5b0b4c71855c43d4d2216063d61552187ef34537a51134",
+        "bytes": 116902,
+        "duration": 6.735011,
+        "sourceCrc32": "3be32711"
+      },
+      "roundLost": {
+        "file": "noisestorm_01/lostround-29ce3b27d7e4.mp3",
+        "source": "sounds/music/noisestorm_01/lostround.vsnd_c",
+        "sha256": "29ce3b27d7e4527e26e268a9030cfa7c4384d9593c8996aae39c9aa1354e9eaf",
+        "bytes": 117424,
+        "duration": 6.735011,
+        "sourceCrc32": "56af0ade"
+      },
+      "mvp": {
+        "file": "noisestorm_01/roundmvpanthem_01-6aababcba9ab.mp3",
+        "source": "sounds/music/noisestorm_01/roundmvpanthem_01.vsnd_c",
+        "sha256": "6aababcba9ab6e171f52fc54157963af248c4df2bb94cdc7bd3354c149eb3bff",
+        "bytes": 116895,
+        "duration": 6.735011,
+        "sourceCrc32": "1a400e99"
+      },
+      "matchEnd": {
+        "file": "noisestorm_01/endofmatch-79977f792c68.mp3",
+        "source": "sounds/music/noisestorm_01/endofmatch.vsnd_c",
+        "sha256": "79977f792c68f661ad456a0b5695a216a30c845d5724e82d7c6eac8f256f23f1",
+        "bytes": 1461967,
+        "duration": 83.535011,
+        "sourceCrc32": "4dc86bd0"
+      },
+      "bombPlanted": {
+        "file": "noisestorm_01/bombplanted-8613b889fb54.mp3",
+        "source": "sounds/music/noisestorm_01/bombplanted.vsnd_c",
+        "sha256": "8613b889fb545d69f4b1a9a9f43961fe05bc53d187995e576af1783b1223c1b0",
+        "bytes": 662386,
+        "duration": 38.415011,
+        "sourceCrc32": "723c6f50"
+      },
+      "bombWarning": {
+        "file": "noisestorm_01/bombtenseccount-e2a3dfd7feb1.mp3",
+        "source": "sounds/music/noisestorm_01/bombtenseccount.vsnd_c",
+        "sha256": "e2a3dfd7feb1fa73e7a27cca1d86ca6051c932acf47c01f962116c12dce57f35",
+        "bytes": 200112,
+        "duration": 11.535011,
+        "sourceCrc32": "54931450"
+      },
+      "roundWarning": {
+        "file": "noisestorm_01/roundtenseccount-d6fe2cd1d9d1.mp3",
+        "source": "sounds/music/noisestorm_01/roundtenseccount.vsnd_c",
+        "sha256": "d6fe2cd1d9d1e53745fb4f92724ab30650132321ce690eed30c3948cfaac23df",
+        "bytes": 186770,
+        "duration": 10.575011,
+        "sourceCrc32": "a0375a94"
+      },
+      "death": {
+        "file": "noisestorm_01/deathcam-7306ac8c68aa.mp3",
+        "source": "sounds/music/noisestorm_01/deathcam.vsnd_c",
+        "sha256": "7306ac8c68aadb852ad7ac6a723c156f7479060f027a66e09f1a45833dbb9a99",
+        "bytes": 89703,
+        "duration": 4.815011,
+        "sourceCrc32": "8500452f"
+      }
+    }
+  },
+  "pegboardnerds_01": {
+    "id": "pegboardnerds_01",
+    "defindex": "music_kit-110",
+    "name": "断开连接",
+    "artist": "Pegboard Nerds",
+    "downloadRequired": true,
+    "cues": {
+      "menu": {
+        "file": "pegboardnerds_01/mainmenu-3f85489b881f.mp3",
+        "source": "sounds/music/pegboardnerds_01/mainmenu.vsnd_c",
+        "sha256": "3f85489b881f2eb5484fd6796ec9177655851f3e1fe49d6f75e57b6090e21ce5",
+        "bytes": 4038523,
+        "duration": 241.876463,
+        "sourceCrc32": "7698bd38"
+      },
+      "roundStart": {
+        "file": "pegboardnerds_01/startround_01-e27718106125.mp3",
+        "source": "sounds/music/pegboardnerds_01/startround_01.vsnd_c",
+        "sha256": "e277181061255a9379ed65dd206096820312555d81cf4344d2573a5173ca6669",
+        "bytes": 295416,
+        "duration": 15.012698,
+        "sourceCrc32": "8881ff3d"
+      },
+      "roundWon": {
+        "file": "pegboardnerds_01/wonround-99454ec631cd.mp3",
+        "source": "sounds/music/pegboardnerds_01/wonround.vsnd_c",
+        "sha256": "99454ec631cd218963b4a702d9a94f62c2db6a29f94d302847299ec898870de2",
+        "bytes": 132217,
+        "duration": 7.738844,
+        "sourceCrc32": "64b3b0e0"
+      },
+      "roundLost": {
+        "file": "pegboardnerds_01/lostround-463553263c80.mp3",
+        "source": "sounds/music/pegboardnerds_01/lostround.vsnd_c",
+        "sha256": "463553263c80e51fca9244df36e186ec5c09fb8f95e5a4ebdb67aa9c1d174890",
+        "bytes": 141072,
+        "duration": 8.439456,
+        "sourceCrc32": "76e70ecb"
+      },
+      "mvp": {
+        "file": "pegboardnerds_01/roundmvpanthem_01-f19d696ddac0.mp3",
+        "source": "sounds/music/pegboardnerds_01/roundmvpanthem_01.vsnd_c",
+        "sha256": "f19d696ddac09fda3c004b332adf9d055e221f03f2a5ee30d6a6092ddaf7fe8f",
+        "bytes": 129401,
+        "duration": 7.628413,
+        "sourceCrc32": "22eab2c7"
+      },
+      "matchEnd": {
+        "file": "pegboardnerds_01/endofmatch-6034eb86121b.mp3",
+        "source": "sounds/music/pegboardnerds_01/endofmatch.vsnd_c",
+        "sha256": "6034eb86121b07de77d6fddb1f2316b438bd22ca8c228bf29eb7d9d73b93ff94",
+        "bytes": 1361227,
+        "duration": 79.69873,
+        "sourceCrc32": "7439b2b9"
+      },
+      "bombPlanted": {
+        "file": "pegboardnerds_01/bombplanted-69c313882eab.mp3",
+        "source": "sounds/music/pegboardnerds_01/bombplanted.vsnd_c",
+        "sha256": "69c313882eab9ea8ef867a7b0687ed0eefdc4f173a1394c8830e44456d20e97c",
+        "bytes": 632549,
+        "duration": 38.438957,
+        "sourceCrc32": "aae4ef82"
+      },
+      "bombWarning": {
+        "file": "pegboardnerds_01/bombtenseccount-765607f4fcba.mp3",
+        "source": "sounds/music/pegboardnerds_01/bombtenseccount.vsnd_c",
+        "sha256": "765607f4fcbafdd1bc20178a3569efc33ab463532b32a68e2b813e771f7c4c09",
+        "bytes": 183285,
+        "duration": 11.250975,
+        "sourceCrc32": "43bd234e"
+      },
+      "roundWarning": {
+        "file": "pegboardnerds_01/roundtenseccount-87f481fbae7d.mp3",
+        "source": "sounds/music/pegboardnerds_01/roundtenseccount.vsnd_c",
+        "sha256": "87f481fbae7d3ab8780f6fbc7d636c5d0e6a0eb1f48497d03293782a0849033d",
+        "bytes": 198128,
+        "duration": 11.720204,
+        "sourceCrc32": "580e5d36"
+      },
+      "death": {
+        "file": "pegboardnerds_01/deathcam-bdc1ddc9cfc0.mp3",
+        "source": "sounds/music/pegboardnerds_01/deathcam.vsnd_c",
+        "sha256": "bdc1ddc9cfc074438ff7284f11c831a2cfe2cee1b0e64b45f5a85638216afbc2",
+        "bytes": 81438,
+        "duration": 4.689456,
+        "sourceCrc32": "f4f755a0"
+      }
+    }
+  },
+  "tristam_braken_01": {
+    "id": "tristam_braken_01",
+    "defindex": "music_kit-111",
+    "name": "翱翔",
+    "artist": "Tristam & Braken",
+    "downloadRequired": true,
+    "cues": {
+      "menu": {
+        "file": "tristam_braken_01/mainmenu-043873a3472e.mp3",
+        "source": "sounds/music/tristam_braken_01/mainmenu.vsnd_c",
+        "sha256": "043873a3472e53d7a91e6d2d8ed245a0e18ebbd24e24045b7389e8d8ae0d5fda",
+        "bytes": 3568484,
+        "duration": 219.429909,
+        "sourceCrc32": "88a16e6f"
+      },
+      "roundStart": {
+        "file": "tristam_braken_01/startround_01-a79fbdecd141.mp3",
+        "source": "sounds/music/tristam_braken_01/startround_01.vsnd_c",
+        "sha256": "a79fbdecd141ceed0a4564d6ada9169280c0412368d4233ef22f022cdcfb31fe",
+        "bytes": 182677,
+        "duration": 10.97322,
+        "sourceCrc32": "3e12ad2a"
+      },
+      "roundWon": {
+        "file": "tristam_braken_01/wonround-e683fba61966.mp3",
+        "source": "sounds/music/tristam_braken_01/wonround.vsnd_c",
+        "sha256": "e683fba61966437c12d33b26f087bb856f29059bf5bf1c6479169b4bd1f2692b",
+        "bytes": 120943,
+        "duration": 7.37322,
+        "sourceCrc32": "9f2a6ce5"
+      },
+      "roundLost": {
+        "file": "tristam_braken_01/lostround-589203d81a93.mp3",
+        "source": "sounds/music/tristam_braken_01/lostround.vsnd_c",
+        "sha256": "589203d81a9301833092c19d3695ddc5a9c94ba8a37ceb14793da3d261c7577d",
+        "bytes": 125524,
+        "duration": 7.718299,
+        "sourceCrc32": "cdc566d8"
+      },
+      "mvp": {
+        "file": "tristam_braken_01/roundmvpanthem_01-e1891549eadf.mp3",
+        "source": "sounds/music/tristam_braken_01/roundmvpanthem_01.vsnd_c",
+        "sha256": "e1891549eadf57ca40f8dba789d1efdbc64a7b803f83294d9ee0977323fd85fd",
+        "bytes": 121044,
+        "duration": 7.37322,
+        "sourceCrc32": "d874b1f6"
+      },
+      "matchEnd": {
+        "file": "tristam_braken_01/endofmatch-77cbbbeb6c8e.mp3",
+        "source": "sounds/music/tristam_braken_01/endofmatch.vsnd_c",
+        "sha256": "77cbbbeb6c8e36569f6191e04b773af826cbf0abe7494cfc999775fc6d377f10",
+        "bytes": 2318286,
+        "duration": 141.602676,
+        "sourceCrc32": "86dd893f"
+      },
+      "bombPlanted": {
+        "file": "tristam_braken_01/bombplanted-230e06418b56.mp3",
+        "source": "sounds/music/tristam_braken_01/bombplanted.vsnd_c",
+        "sha256": "230e06418b56ee9f5e96efcde0fb2830b1be78aefbc995335f3b496dc41074c4",
+        "bytes": 643628,
+        "duration": 38.744649,
+        "sourceCrc32": "f16eb166"
+      },
+      "bombWarning": {
+        "file": "tristam_braken_01/bombtenseccount-f2951099dc98.mp3",
+        "source": "sounds/music/tristam_braken_01/bombtenseccount.vsnd_c",
+        "sha256": "f2951099dc98e40d1e40abebc6cadbc41d6ebdf3b60c39176fd4eb4bd32f4f82",
+        "bytes": 181731,
+        "duration": 10.97322,
+        "sourceCrc32": "0b70c045"
+      },
+      "roundWarning": {
+        "file": "tristam_braken_01/roundtenseccount-51d489ea9a41.mp3",
+        "source": "sounds/music/tristam_braken_01/roundtenseccount.vsnd_c",
+        "sha256": "51d489ea9a41962b668b8814b253abe8396b58c328d2438c96ce504216c802fb",
+        "bytes": 205419,
+        "duration": 12.001791,
+        "sourceCrc32": "fbdb17c9"
+      },
+      "death": {
+        "file": "tristam_braken_01/deathcam-18484152388c.mp3",
+        "source": "sounds/music/tristam_braken_01/deathcam.vsnd_c",
+        "sha256": "18484152388c58d2bba7b313ae7432daee5d16b0017c713641230e6bdc14d87f",
+        "bytes": 82776,
+        "duration": 5.144649,
+        "sourceCrc32": "1b8137be"
+      }
+    }
+  },
+  "vicetone_01": {
+    "id": "vicetone_01",
+    "defindex": "music_kit-112",
+    "name": "内华达",
+    "artist": "Vicetone & Cozi Zuehlsdorff",
+    "downloadRequired": true,
+    "cues": {
+      "menu": {
+        "file": "vicetone_01/mainmenu-60d601240b74.mp3",
+        "source": "sounds/music/vicetone_01/mainmenu.vsnd_c",
+        "sha256": "60d601240b745b943994390a7b1b20bec24cebb7ff009f0e42d90ad696ab2f50",
+        "bytes": 3506068,
+        "duration": 208.562993,
+        "sourceCrc32": "70742bc2"
+      },
+      "roundStart": {
+        "file": "vicetone_01/startround_01-ebeb6ccfbc7a.mp3",
+        "source": "sounds/music/vicetone_01/startround_01.vsnd_c",
+        "sha256": "ebeb6ccfbc7aa5d290d39e9478cfd0fa58db1fd1cfb37260839b4b9975542789",
+        "bytes": 303983,
+        "duration": 15.485374,
+        "sourceCrc32": "1bb722e0"
+      },
+      "roundWon": {
+        "file": "vicetone_01/wonround-64f6dbd4ec04.mp3",
+        "source": "sounds/music/vicetone_01/wonround.vsnd_c",
+        "sha256": "64f6dbd4ec047438493125f94306007f057126e2a939cb4d9fbecd902058a71b",
+        "bytes": 139955,
+        "duration": 7.985896,
+        "sourceCrc32": "683582f5"
+      },
+      "roundLost": {
+        "file": "vicetone_01/lostround-e342f37dd74c.mp3",
+        "source": "sounds/music/vicetone_01/lostround.vsnd_c",
+        "sha256": "e342f37dd74cafeec10f22fb4d1bed3dc2e6ca949fe1e15574720bc24bc53765",
+        "bytes": 134406,
+        "duration": 7.985896,
+        "sourceCrc32": "3beea93a"
+      },
+      "mvp": {
+        "file": "vicetone_01/roundmvpanthem_01-64f6dbd4ec04.mp3",
+        "source": "sounds/music/vicetone_01/roundmvpanthem_01.vsnd_c",
+        "sha256": "64f6dbd4ec047438493125f94306007f057126e2a939cb4d9fbecd902058a71b",
+        "bytes": 139955,
+        "duration": 7.985896,
+        "sourceCrc32": "ef196aac"
+      },
+      "matchEnd": {
+        "file": "vicetone_01/endofmatch-accc8d3ec157.mp3",
+        "source": "sounds/music/vicetone_01/endofmatch.vsnd_c",
+        "sha256": "accc8d3ec157bac8925e9286892faf8f0f33ea7d79fba084a18a6970f631f7cd",
+        "bytes": 1635353,
+        "duration": 95.808458,
+        "sourceCrc32": "075b0810"
+      },
+      "bombPlanted": {
+        "file": "vicetone_01/bombplanted-75c86579e2b1.mp3",
+        "source": "sounds/music/vicetone_01/bombplanted.vsnd_c",
+        "sha256": "75c86579e2b1affcafd5e25fb28d6aa423c5df67e9daf310004eb5e72b81209b",
+        "bytes": 654939,
+        "duration": 37.259569,
+        "sourceCrc32": "4e28f8a2"
+      },
+      "bombWarning": {
+        "file": "vicetone_01/bombtenseccount-75075e84665c.mp3",
+        "source": "sounds/music/vicetone_01/bombtenseccount.vsnd_c",
+        "sha256": "75075e84665c3dcbb36b95dfdd724a4d9a833fae60cb5a6e569fc234fcf36ec2",
+        "bytes": 204405,
+        "duration": 11.612404,
+        "sourceCrc32": "5441f4fa"
+      },
+      "roundWarning": {
+        "file": "vicetone_01/roundtenseccount-f70e14b93799.mp3",
+        "source": "sounds/music/vicetone_01/roundtenseccount.vsnd_c",
+        "sha256": "f70e14b9379968062de6d0a831ff73e6164b1124984f8b968291f7290730eb0e",
+        "bytes": 190282,
+        "duration": 11.615624,
+        "sourceCrc32": "388fdc1a"
+      },
+      "death": {
+        "file": "vicetone_01/deathcam-cacc223310f4.mp3",
+        "source": "sounds/music/vicetone_01/deathcam.vsnd_c",
+        "sha256": "cacc223310f4da114903b5a5ab76c334bae91971bb5b905e590799e560fc9776",
+        "bytes": 96654,
+        "duration": 5.80898,
+        "sourceCrc32": "d1d3f070"
+      }
+    }
+  }
+}

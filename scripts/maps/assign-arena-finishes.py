@@ -178,9 +178,9 @@ def assign_neutral(rules,palette,map_id):
     n=geo.outputs['True Normal']
     axes=node('ShaderNodeSeparateXYZ')
     put(axes.inputs[0],n)
-    tint=np.asarray(palette['mapTints'][map_id])
-    wall=(*np.asarray(palette['layers'][0])*tint,1)
-    floor=(*np.asarray(palette['layers'][4])*tint,1)
+    paints=palette['mapLayers'][map_id]
+    wall=(*paints[0],1)
+    floor=(*paints[4],1)
     base=mix(ramp(axes.outputs['Z'],.65,.92,'Slope to floor'),wall,floor,'Wall and floor coat')
     coat=node('ShaderNodeGroup','Neutral masonry')
     coat.node_tree=rules
@@ -270,7 +270,7 @@ def create(src,output,library,entries,palette):
         coat.label='Arena coating / palette and lighting'
         tree.links.new(pigment.outputs['Color'],coat.inputs['Source pigment'])
         tree.links.new(geo.outputs['True Normal'],coat.inputs['Face normal'])
-        base=np.asarray(palette['layers'][i])*palette['mapTints'][map_id]
+        base=palette['mapLayers'][map_id][i]
         coat.inputs['Coating pigment'].default_value=base
         tree.links.new(coat.outputs[0],output_color.inputs[0])
         author=next(n for n in tree.nodes if n.type=='GROUP' and n!=coat)
@@ -327,7 +327,7 @@ def main():
         if args.maps_v1:
             build=runpy.run_path(str(SCRIPTS/'blender-crisp-geometry.py'))['create_scene']
             shutil.copy2(args.source.parent/'Map-Finishes.blend',staging/'Map-Finishes.blend')
-        for map_id in palette['mapTints']:
+        for map_id in palette['mapLayers']:
             if args.maps_v1:
                 build(args.maps_v1/map_id,staging)
                 scene_file=staging/'scenes'/(map_id+'.blend')

@@ -22,7 +22,7 @@ class Element {
  }
 }
 function fixture({href='https://game.test/',pending=false,privateError=null,existingAudio=null,coarse=false,automaticFullscreen=true}={}){
- const ids=['nickname','mode','bots','team','room-code','room-capacity-note','menu-status','start-button','join-button','menu-settings','menu-skins','menu-offline','menu-play-tab','credits-button','credits','close-credits','room-mode-note','loadout-mode','lobby-mode-label','auto-team'];
+ const ids=['nickname','mode','bots','team','room-code','room-capacity-note','menu-status','start-button','join-button','menu-settings','menu-skins','menu-agents','menu-music','menu-offline','menu-play-tab','credits-button','credits','close-credits','room-mode-note','loadout-mode','lobby-mode-label','auto-team'];
  const elements=new Map(ids.map(id=>[id,new Element()]));
  for(const [id,value]of [['nickname','Player'],['mode','defuse'],['bots','6'],['team','T']])elements.get(id).value=value;
  const maps=PUBLIC_MAPS.map(map=>new Element({mapId:map.id})),teams=['T','CT'].map(team=>new Element({team})),primaries=['ak47','m4a1','awp'].map(primary=>new Element({primary})),labels=[new Element()];primaries[0].classes.add('selected');
@@ -76,8 +76,8 @@ test('changing maps after loading uses navigation instead of mutating a running 
 });
 
 test('settings, equipment and resource panels can be reopened before a later start or join',async()=>{
- const f=fixture();for(const id of ['menu-settings','menu-skins','menu-offline','menu-settings']){f.elements.get(id).click();await flush();}
- assert.deepEqual(f.imports,['main']);assert.deepEqual(f.panels,['settings','skins','offline','settings']);assert.deepEqual(f.starts,[]);
+ const f=fixture();for(const id of ['menu-settings','menu-skins','menu-agents','menu-music','menu-offline','menu-settings']){f.elements.get(id).click();await flush();}
+ assert.deepEqual(f.imports,['main']);assert.deepEqual(f.panels,['settings','skins','agents','music','offline','settings']);assert.deepEqual(f.starts,[]);
  assert.deepEqual(f.mapImages,[],'opening optional panels does not preload map loading art');
  f.elements.get('start-button').click();await flush();f.elements.get('room-code').value='FRIEND';f.elements.get('join-button').click();await flush();
  assert.deepEqual(f.starts,[false,true]);assert.deepEqual(f.normalHandlerStarts,[]);assert.equal(f.audioCalls.filter(call=>call[0]==='runtime-resume').length,2);

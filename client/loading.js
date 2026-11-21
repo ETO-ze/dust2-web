@@ -30,6 +30,39 @@ export function releaseDownloads(){for(const b of blobs.values())URL.revokeObjec
 export function useDownloadedAssets(manager=DefaultLoadingManager){manager.setURLModifier(assetURL);}
 export async function isAssetSaved(sha256,bytes){if(bundled&&(await bundledManifest()).files.some(f=>f.sha256===sha256&&f.bytes===bytes))return true;const cache=await stores();if(!cache||!sha256)return false;const hit=await cache.assets.match(hashKey(sha256));return !!hit&&Number(hit.headers.get('x-dust2-bytes'))===bytes;}
 
+// Inventory badges scan keys once. Open responses only for catalog hashes
+// actually present, using the same byte-count check as individual equips.
+export async function savedCatalogAssets(resources, signal){
+  const expected=new Map(resources.map(item=>[item.sha256,item.bytes]));
+  const saved=new Set();
+  if(bundled){
+    for(const file of (await bundledManifest()).files)
+      if(expected.get(file.sha256)===file.bytes)saved.add(file.sha256);
+  }
+  if(!globalThis.caches||signal?.aborted)return saved;
+  let cache,keys;
+  try{
+    cache=await caches.open(cacheNames().assets);
+    keys=await cache.keys();
+  }catch{return saved;}
+  const prefix=hashKey('');
+  const candidates=keys.filter(key=>{
+    if(!key.url.startsWith(prefix))return false;
+    const hash=key.url.slice(prefix.length);
+    return expected.has(hash)&&!saved.has(hash);
+  }).values();
+  const checkNext=async()=>{
+    for(const key of candidates){
+      if(signal?.aborted)return;
+      const hash=key.url.slice(prefix.length);
+      const hit=await cache.match(key).catch(()=>null);
+      if(hit&&Number(hit.headers.get('x-dust2-bytes'))===expected.get(hash))saved.add(hash);
+    }
+  };
+  await Promise.all(Array.from({length:4},checkNext));
+  return saved;
+}
+
 /** SHA-keyed immutable assets. Without a supplied hash, the computed SHA is
  * indexed by URL; use sha256 or a versioned URL when optional content changes.
  * onProgress receives {loaded,total,fromCache,cached}, in decoded bytes. */

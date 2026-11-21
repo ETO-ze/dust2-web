@@ -164,7 +164,7 @@ test('nine arenas share the exact Blender tiles and retain their map palettes wi
     assert.equal(mesh.geometry,geometry);
     assert.equal(mesh.geometry.index,index);
     assert.equal(mesh.geometry.groups.length,batches);
-    assert.equal(mesh.material.customProgramCacheKey(),'dust2-plane-finishes-v2-6');
+    assert.equal(mesh.material.customProgramCacheKey(),'dust2-plane-finishes-v3-6');
     const shader = {...THREE.ShaderLib.basic,uniforms:{}};
     mesh.material.onBeforeCompile(shader);
     assert.equal(shader.uniforms.uFinishScale.value.length,6);
@@ -173,6 +173,7 @@ test('nine arenas share the exact Blender tiles and retain their map palettes wi
     assert.ok(cuts.every(c => c.x>0 && c.y>c.x && 1.1*c.y<1));
     const palette = shader.uniforms.uArenaBase.value;
     assert.ok(palette[4].length() < palette[0].length());
+    assert.ok(palette[1].z > palette[2].z && palette[1].x < palette[2].x, 'steel and wood must keep distinct hues');
     palettes.add(palette[0].toArray().join(','));
     mesh.material.dispose();
     geometry.dispose();

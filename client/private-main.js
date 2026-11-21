@@ -3,6 +3,7 @@ import {configurePrivateMap} from '../shared/private-map-context.js';
 import {privateConfig} from './private-game-config.js';
 import {MIRAGE_JUMP_LINKS} from '../shared/private-map-jump-links.js';
 import {initDownloadOrigin} from './download-origin.js';
+import {hydrateHomeImages} from './image-asset-url.js';
 import {privateMapDownloads,privateMapFetcher} from './private-map-download.js';
 import {mountPortalRoom} from './portal-room.js';
 import {mountGameRoomDirectory} from './game-room-directory.js';
@@ -25,6 +26,7 @@ async function bootstrap(){
  const request=async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('私有地图配置暂不可用 ('+r.status+')');return r.json();};
  const originalConfig=privateConfig(await request(new URL('private-map.json',location.href)),location.href);
  const delivery=await initDownloadOrigin({configURL:new URL('../../../download-config.json',originalConfig.renderUrl),pageURL:location.href});
+ hydrateHomeImages();
  const config=privateMapDownloads(originalConfig,delivery),mapFetch=privateMapFetcher(config);
  const jumpLinks=config.id==='de_mirage'?MIRAGE_JUMP_LINKS:[];
  const jumpDigest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(jumpLinks)))),byte=>byte.toString(16).padStart(2,'0')).join('');
@@ -53,7 +55,7 @@ async function bootstrap(){
  const region=document.querySelector('.match-heading .region');if(region)region.textContent=map.name.toUpperCase();
  const pauseHeading=document.querySelector('#pause-menu .eyebrow');if(pauseHeading)pauseHeading.textContent=map.name.toUpperCase()+' / IN MATCH';
  const boardHeading=document.querySelector('#scoreboard .board-heading h2');if(boardHeading){boardHeading.replaceChildren(document.createTextNode(map.name.toUpperCase()+' '));const label=document.createElement('small');label.textContent='战况';boardHeading.append(label);}
- if(!config.publicPool)for(const el of document.querySelectorAll('.map-emblem img,.loading-tactical img')){el.src=map.overview.image;el.alt=map.name+' 战术地图';}
+ for(const el of document.querySelectorAll('.map-emblem img,.loading-tactical img')){el.src=map.overview.image;el.alt=map.name+' 战术地图';}
  const banner=document.querySelector('.loading-map-title>p');if(banner)banner.textContent=config.publicPool?'A、B 双爆破点布局，中路连接多个攻防区域。':'私有原始地图联机测试。按图加载，规则仍由服务器计算。';
  const cover=new URL('../../../previews/'+map.id+'.png',config.renderUrl).href;
  if(!directoryRoute&&!config.publicPool)document.documentElement.style.setProperty('--loading-map-cover',`url(${JSON.stringify(cover)})`);

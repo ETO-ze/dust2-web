@@ -26,8 +26,9 @@ export function privateCompatibilityError(message,config){
  return message.mapId!==config.mapId||message.mapSignature!==config.mapSignature||message.physicsSha256!==config.physicsSha256?'服务器地图或碰撞版本不同，请返回地图库刷新后重试。':null;
 }
 export function clientAssetManifest(manifest,privateMode=false){
- if(!privateMode)return manifest;
- const files=manifest.files.filter(file=>!['map','collision'].includes(file.group)&&!/(?:^|\/)assets\/(?:map-cs2|map-mobile|valve-dust2)\//.test(file.path));
+ const files=manifest.files.filter(file=>file.group!=='sky'&&(!privateMode||
+  (!['map','collision'].includes(file.group)&&!/(?:^|\/)assets\/(?:map-cs2|map-mobile|valve-dust2)\//.test(file.path))));
+ if(files.length===manifest.files.length)return manifest;
  return {...manifest,files,totalBytes:files.reduce((n,f)=>n+f.bytes,0)};
 }
 export function privateMapMemoryReason({renderBytes,physicsBytes,deviceMemory=0,remainingHeap=Infinity}){

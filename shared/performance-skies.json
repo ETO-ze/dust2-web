@@ -1,11 +1,11 @@
 {
-  "de_dust2": {"material":"materials/skybox/sky_de_dust2","yaw":0,"exposure":1,"cloudLayer":0.48},
-  "de_mirage": {"material":"materials/skybox/sky_de_mirage","yaw":0,"exposure":1,"cloudLayer":0.52},
-  "de_inferno": {"material":"materials/skybox/test/s2_de_inferno_sky01","yaw":245,"exposure":0.5},
-  "de_nuke": {"material":"materials/skybox/sky_de_nuke","yaw":0,"exposure":1,"cloudLayer":0.60},
-  "de_ancient": {"material":"materials/skybox/sky_hr_aztec_02_v1","yaw":65,"exposure":1},
-  "de_anubis": {"material":"materials/skybox/sky_de_annubis","yaw":270,"exposure":1.45,"cloudLayer":0.37},
-  "de_cache": {"material":"materials/de_cache/sky/de_cache_sky_001","yaw":116,"exposure":4},
-  "de_train": {"material":"materials/skybox/sky_overcast_01","yaw":47.349056,"exposure":1.2},
-  "de_vertigo": {"material":"materials/skybox/sky_de_vertigo","yaw":247.5,"exposure":2,"cloudLayer":0.57}
+  "de_dust2": {"material":"materials/skybox/sky_de_dust2","yaw":0,"exposure":1,"sourceWidth":2048},
+  "de_mirage": {"material":"materials/skybox/sky_de_mirage","yaw":0,"exposure":1,"sourceWidth":2048},
+  "de_inferno": {"material":"materials/skybox/test/s2_de_inferno_sky01","yaw":245,"exposure":0.5,"sourceWidth":4096},
+  "de_nuke": {"material":"materials/skybox/sky_de_nuke","yaw":0,"exposure":1,"sourceWidth":1024},
+  "de_ancient": {"material":"materials/skybox/sky_hr_aztec_02_v1","yaw":65,"exposure":1,"sourceWidth":8192},
+  "de_anubis": {"material":"materials/skybox/sky_de_annubis","yaw":270,"exposure":1.45,"sourceWidth":2048},
+  "de_cache": {"material":"materials/de_cache/sky/de_cache_sky_001","yaw":116,"exposure":4,"sourceWidth":4096},
+  "de_train": {"material":"materials/skybox/sky_overcast_01","yaw":47.349056,"exposure":1.2,"sourceWidth":4096},
+  "de_vertigo": {"material":"materials/skybox/sky_de_vertigo","yaw":247.5,"exposure":2,"sourceWidth":2048}
 }

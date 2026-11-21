@@ -6,6 +6,7 @@ import {SKINS} from '../../shared/skins.js';
 import {UTILITY_ASSETS} from '../../shared/utility-assets.js';
 import {AGENT_ASSETS} from '../../shared/agent-assets.js';
 import {AGENT_ARM_ASSETS} from '../../shared/agent-arm-assets.js';
+import {optionalMusicClips} from '../optional-music-assets.mjs';
 import {ReleaseInventory,addAssetManifests,addMaps,toPublicManifest,MAP_IDS,validateReleaseId,writeLocalMetadata} from './release-manifest.mjs';
 
 const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
@@ -28,7 +29,7 @@ export async function collectOptionalAssets(publicRoot){
   for(const asset of Object.values(AGENT_ASSETS)){add(asset.model,asset.bytes,asset.sha256);add(asset.preview.file,asset.preview.bytes,asset.preview.sha256);}
   for(const asset of Object.values(AGENT_ARM_ASSETS))add(asset.model,asset.bytes,asset.sha256);
   const music=JSON.parse(await fs.readFile(path.join(publicRoot,'assets/audio/music/manifest.json'),'utf8'));
-  for(const kit of Object.values(music.kits))for(const cue of Object.values(kit.cues))add('assets/audio/music/optional/'+cue.file,cue.bytes,cue.sha256);
+  for(const cue of optionalMusicClips(music))add('assets/audio/music/optional/'+cue.file,cue.bytes,cue.sha256);
   return assets;
 }
 export async function buildRelease(options){

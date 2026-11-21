@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {mobileDevice} from './device-profile.js';
 import skies from '../shared/performance-skies.json' with {type: 'json'};
 
 const mounted = new WeakMap();
@@ -96,7 +97,7 @@ export function panoramaMesh(texture, yaw) {
   return mesh;
 }
 
-export async function prepareFlatSky(mapId, {signal} = {}) {
+export async function prepareFlatSky(mapId, {signal, compact = mobileDevice()} = {}) {
   const spec = skies[mapId];
   let image, texture, mesh, scene;
   const details = {mapId, source:'fallback', downloadBytes:0};
@@ -104,11 +105,31 @@ export async function prepareFlatSky(mapId, {signal} = {}) {
   // pixels until dispose, so THREE can upload again after WebGL context loss.
   try {
     if (!spec) throw Error('Unknown map sky');
-    const url = new URL(`./flat-skies/${mapId}.webp`, import.meta.url);
-    const decoded = await readPanorama(url, signal);
+    const native = new URL(`./flat-skies/${mapId}.webp`, import.meta.url);
+    const hasCompact = spec.sourceWidth > 2048;
+    const smaller = hasCompact ? new URL(`./flat-skies/compact/${mapId}.webp`, import.meta.url) : null;
+    const load = async (url, width) => {
+      const decoded = await readPanorama(url, signal);
+      if (decoded.image.width !== width || decoded.image.height !== width / 2) {
+        decoded.image.close?.();
+        throw Error('Invalid sky panorama');
+      }
+      return decoded;
+    };
+    let decoded;
+    if (compact && hasCompact) {
+      decoded = await load(smaller, 2048);
+    } else {
+      try {
+        decoded = await load(native, Math.min(4096, spec.sourceWidth));
+      } catch (error) {
+        signal?.throwIfAborted();
+        if (!hasCompact) throw error;
+        decoded = await load(smaller, 2048);
+      }
+    }
     image = decoded.image;
     signal?.throwIfAborted();
-    if (image.width !== image.height * 2 || image.width > 1536) throw Error('Invalid sky panorama');
     texture = new THREE.Texture(image);
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.wrapS = THREE.RepeatWrapping;
@@ -116,7 +137,7 @@ export async function prepareFlatSky(mapId, {signal} = {}) {
     texture.generateMipmaps = texture.flipY = false;
     texture.needsUpdate = true;
     mesh = panoramaMesh(texture, spec.yaw);
-    Object.assign(details, {source:'map-panorama', material:spec.material, yaw:spec.yaw,
+    Object.assign(details, {source:'map-panorama', material:spec.material, sourceWidth:spec.sourceWidth, yaw:spec.yaw,
       resolution:`${image.width} × ${image.height}`, downloadBytes:decoded.bytes});
   } catch (error) {
     image?.close?.();

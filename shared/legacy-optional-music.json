@@ -1,0 +1,188 @@
+{
+  "blitzkids_01": {
+    "id": "blitzkids_01",
+    "artist": "Blitz Kids",
+    "name": "有为青年",
+    "downloadRequired": true,
+    "cues": {
+      "roundStart": {
+        "file": "blitzkids_01/startround_01.mp3",
+        "source": "sounds/music/blitzkids_01/startround_01.vsnd_c",
+        "bytes": 252640,
+        "sha256": "57625c5640854dfa735910aa9c0fc9d4bc2fd13d35f58f6d697e9ed7d75fc13a"
+      },
+      "roundWon": {
+        "file": "blitzkids_01/wonround.mp3",
+        "source": "sounds/music/blitzkids_01/wonround.vsnd_c",
+        "bytes": 157033,
+        "sha256": "f32cd30874deb0840cfd0495f65e85ff05f1a6f0c18653824c7f5553ac924ebf"
+      },
+      "roundLost": {
+        "file": "blitzkids_01/lostround.mp3",
+        "source": "sounds/music/blitzkids_01/lostround.vsnd_c",
+        "bytes": 151079,
+        "sha256": "9ddc3065a93af9948f7aa0ffb04d521f4d91cea78656a5d41529d18b930ad04b"
+      },
+      "mvp": {
+        "file": "blitzkids_01/roundmvpanthem_01.mp3",
+        "source": "sounds/music/blitzkids_01/roundmvpanthem_01.vsnd_c",
+        "bytes": 146159,
+        "sha256": "3f1312d1225c1ac6544f5246c8e75391010f6feee6f9c4333ef6c81ce490b422"
+      },
+      "matchEnd": {
+        "file": "blitzkids_01/endofmatch.mp3",
+        "source": "sounds/music/blitzkids_01/endofmatch.vsnd_c",
+        "bytes": 971579,
+        "sha256": "947e5044c468d014c68c654bf1a8e92c7b437ba5a3b590fbe1661097dbba8d9f"
+      },
+      "bombPlanted": {
+        "file": "blitzkids_01/bombplanted.mp3",
+        "source": "sounds/music/blitzkids_01/bombplanted.vsnd_c",
+        "bytes": 644040,
+        "sha256": "97b9974cabb2fba6adf85df24aac0d833d7f693f4274359e196bdc95189a3d63"
+      },
+      "bombWarning": {
+        "file": "blitzkids_01/bombtenseccount.mp3",
+        "source": "sounds/music/blitzkids_01/bombtenseccount.vsnd_c",
+        "bytes": 195501,
+        "sha256": "687ffd8c59a5a34ef8dec870ef7d592a1644ef891419975b9c4e6f33c6f5c7e4"
+      },
+      "roundWarning": {
+        "file": "blitzkids_01/roundtenseccount.mp3",
+        "source": "sounds/music/blitzkids_01/roundtenseccount.vsnd_c",
+        "bytes": 196423,
+        "sha256": "4387a05ee7265c41a6808385cc2e50648dd8ca9796c20494185deecd34db44a2"
+      },
+      "death": {
+        "file": "blitzkids_01/deathcam.mp3",
+        "source": "sounds/music/blitzkids_01/deathcam.vsnd_c",
+        "bytes": 73883,
+        "sha256": "430a51990ecacb8352b6bcfb6e40be7868698ec6c63e3112822dbdf9f672943c"
+      }
+    }
+  },
+  "neckdeep_02": {
+    "id": "neckdeep_02",
+    "artist": "Neck Deep",
+    "name": "躺平青年",
+    "downloadRequired": true,
+    "cues": {
+      "roundStart": {
+        "file": "neckdeep_02/startround_01.mp3",
+        "source": "sounds/music/neckdeep_02/startround_01.vsnd_c",
+        "bytes": 306272,
+        "sha256": "ea773d8e133945f705c7f623ef91d464ab4b43fe629b9ab71c82113cdcf865d3"
+      },
+      "roundWon": {
+        "file": "neckdeep_02/wonround.mp3",
+        "source": "sounds/music/neckdeep_02/wonround.vsnd_c",
+        "bytes": 148431,
+        "sha256": "3538c5063de41341e8453e3c9ca1e3a728feea9d866764ebeb5a4fa5d1bb9486"
+      },
+      "roundLost": {
+        "file": "neckdeep_02/lostround.mp3",
+        "source": "sounds/music/neckdeep_02/lostround.vsnd_c",
+        "bytes": 105732,
+        "sha256": "ee3fb77f8a4da396ea4385692e4db707e31bf1e5b137fcc13ef35e263bf14072"
+      },
+      "mvp": {
+        "file": "neckdeep_02/roundmvpanthem_01.mp3",
+        "source": "sounds/music/neckdeep_02/roundmvpanthem_01.vsnd_c",
+        "bytes": 232172,
+        "sha256": "5cb28ab223d574f8c264366c67fb554717d468847cd5757850231649d9ce2e74"
+      },
+      "matchEnd": {
+        "file": "neckdeep_02/endofmatch.mp3",
+        "source": "sounds/music/neckdeep_02/endofmatch.vsnd_c",
+        "bytes": 855082,
+        "sha256": "bfa9bdab0b385723b62e52bcb65ea1c663ede62a877ae123bf14b377bacf9aa5"
+      },
+      "bombPlanted": {
+        "file": "neckdeep_02/bombplanted.mp3",
+        "source": "sounds/music/neckdeep_02/bombplanted.vsnd_c",
+        "bytes": 715002,
+        "sha256": "d239f49f82c7c1c75f576fcd05db0bb89541815514e1eb5545e9118458201d60"
+      },
+      "bombWarning": {
+        "file": "neckdeep_02/bombtenseccount.mp3",
+        "source": "sounds/music/neckdeep_02/bombtenseccount.vsnd_c",
+        "bytes": 212505,
+        "sha256": "388567543584a655656cb7cb13680d8fc9a8988f811dcf1d2b010106864c4a2a"
+      },
+      "roundWarning": {
+        "file": "neckdeep_02/roundtenseccount.mp3",
+        "source": "sounds/music/neckdeep_02/roundtenseccount.vsnd_c",
+        "bytes": 196767,
+        "sha256": "4548adda2317299f62f3c4dbeb6e06f97164d3a2932d4b215f273bc177ab855e"
+      },
+      "death": {
+        "file": "neckdeep_02/deathcam.mp3",
+        "source": "sounds/music/neckdeep_02/deathcam.vsnd_c",
+        "bytes": 129652,
+        "sha256": "06344236c8087de52f05347dd6354a6df74fc316ea8a4e737ffced61fae554ae"
+      }
+    }
+  },
+  "isoxo_01": {
+    "id": "isoxo_01",
+    "artist": "ISOxo",
+    "name": "非人类",
+    "downloadRequired": true,
+    "cues": {
+      "roundStart": {
+        "file": "isoxo_01/startround_01.mp3",
+        "source": "sounds/music/isoxo_01/startround_01.vsnd_c",
+        "bytes": 550582,
+        "sha256": "7f3f08d4e446b064d82d3607d04fe4cfd42afb188954727f49ae2881f5d743f5"
+      },
+      "roundWon": {
+        "file": "isoxo_01/wonround.mp3",
+        "source": "sounds/music/isoxo_01/wonround.vsnd_c",
+        "bytes": 295578,
+        "sha256": "f868f54c3371631e8157537593c0fd8f032403066dc82be0487ef852d1fca025"
+      },
+      "roundLost": {
+        "file": "isoxo_01/lostround.mp3",
+        "source": "sounds/music/isoxo_01/lostround.vsnd_c",
+        "bytes": 284063,
+        "sha256": "2d0ed2c191285e9af3c9e66ed33c5d9964cf45008929b7b349513034474f5468"
+      },
+      "mvp": {
+        "file": "isoxo_01/roundmvpanthem_01.mp3",
+        "source": "sounds/music/isoxo_01/roundmvpanthem_01.vsnd_c",
+        "bytes": 212359,
+        "sha256": "987930ca41d2b26841783426ec34ec43fccd43815efc01408932e620a09d8524"
+      },
+      "matchEnd": {
+        "file": "isoxo_01/endofmatch.mp3",
+        "source": "sounds/music/isoxo_01/endofmatch.vsnd_c",
+        "bytes": 817462,
+        "sha256": "eae02fe88e0f400a22286d8547e3e9e92003a32deea3d42673db697d2335950b"
+      },
+      "bombPlanted": {
+        "file": "isoxo_01/bombplanted.mp3",
+        "source": "sounds/music/isoxo_01/bombplanted.vsnd_c",
+        "bytes": 855357,
+        "sha256": "e7e59fa1e8c89d6566a70bc1d9d0a931d928cb160e7c62b8f4927d09b84c12f9"
+      },
+      "bombWarning": {
+        "file": "isoxo_01/bombtenseccount.mp3",
+        "source": "sounds/music/isoxo_01/bombtenseccount.vsnd_c",
+        "bytes": 185288,
+        "sha256": "a2a947ece3db040807c293e875cf01d2932abd2aadf9917923b071b8152f7663"
+      },
+      "roundWarning": {
+        "file": "isoxo_01/roundtenseccount.mp3",
+        "source": "sounds/music/isoxo_01/roundtenseccount.vsnd_c",
+        "bytes": 319851,
+        "sha256": "e768521241ec1164b5988640b665d2168a6f74afdf4657d0ff03154b8e84b78c"
+      },
+      "death": {
+        "file": "isoxo_01/deathcam.mp3",
+        "source": "sounds/music/isoxo_01/deathcam.vsnd_c",
+        "bytes": 144033,
+        "sha256": "d7312cbf6fcb77a3edb7629eee15c256288003c0d89783ea01af8099198d9c85"
+      }
+    }
+  }
+}

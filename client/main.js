@@ -169,6 +169,7 @@ const settingsUI=mountSettings({controls,crosshair,videoDefaults,getSettings:()=
 }});
 const botSettings=mountBotSettings(settingsUI,{getState:()=>({connected,host:snapshot?.hostId===connectionId,value:connected?snapshot?.botDifficulty:preferredBotDifficulty}),onChange:value=>{if(connected)send({type:'setBotDifficulty',botDifficulty:value});else saveBotPreference(value);}});
 mountMusicSettings(settingsUI,matchAudio,audio);
+matchAudio.onKitChange=kit=>{if(connected)send({type:'equipMusic',kit});};
 mountFrameSettings(settingsUI);
 let pendingSkinEquip=null,lastSkinEquipAt=0;
 async function equipSkin(skin){
@@ -360,7 +361,7 @@ async function loadGame(audioUnlocked, directoryNavigation=false){
 
 async function start(joinExisting=false, directoryNavigation=false){
   if(touchControls?.enabled&&!directoryNavigation)mobileShell?.enter();
-  if(loading)return;loading=true;pendingJoin=joinExisting;
+  if(loading)return;loading=true;pendingJoin=joinExisting;matchAudio.stop();
   $('start-button').disabled=true;$('join-button').disabled=true;$('loading-screen').hidden=false;
   $('loading-error').hidden=true;$('loading-spinner').hidden=false;
   $('loading-mode').textContent=$('mode').value==='defuse'?'经典爆破 · 回合制':'团队死斗 · 自动重生';
@@ -401,6 +402,7 @@ async function start(joinExisting=false, directoryNavigation=false){
       setLoadStage('download',attempt?'装备已变更，补充房间外观':'准备房间探员与第一人称手套');
       for(const id of new Set([...ownAgents,...appearance.agentIds]))await loadAgent(id,{signal});
       for(const id of ownAgents)await loadAgentArms(id,{signal});
+      await matchAudio.prepareRoom(appearance.musicKitIds||[],!joinExisting&&Number($('bots').value)>0,signal);
       const visible=[...ownHands,...appearance.activeSkinIds,...ownReserves,...botWeapons];
       const reserves=reserveWarmIds(appearance.carriedSkinIds,visible,mobileDevice());
       const result=await prepareRoomWeapons({active:[...visible,...reserves],
@@ -423,7 +425,7 @@ function connect(joinExisting,revision){
   const outcome=new Promise(resolve=>{settle=resolve;});
   let rejected=false;
   const timeout=setTimeout(()=>{if(!connected&&socket===activeSocket){$('menu-status').textContent='服务器连接超时，请确认游戏服务已启动。';socket.close();}},15000);
-  socket.addEventListener('open',()=>{if(socket!==activeSocket)return;const name=$('nickname').value.trim()||'Player';preferences.setItem('dust2.name',name);activeSocket.send(JSON.stringify({type:'join',clientBuild:CLIENT_BUILD,rulesVersion:RULES_VERSION,assetVersion:ASSET_VERSION,...(privateMap?{mapId:privateMap.mapId,mapSignature:privateMap.mapSignature,physicsSha256:privateMap.physicsSha256}:{}),existing:joinExisting,...(revision?{appearanceRevision:revision}:{}),name,movementProtocol:1,shotProtocol:1,room:joinExisting?$('room-code').value.trim().toUpperCase():undefined,mode:$('mode').value,team:$('team').value,primary,skins:skins.loadout,weaponLoadout:armory.loadout,agents:agentsUI.loadout,bots:Number($('bots').value),botDifficulty:preferredBotDifficulty}));});
+  socket.addEventListener('open',()=>{if(socket!==activeSocket)return;const name=$('nickname').value.trim()||'Player';preferences.setItem('dust2.name',name);activeSocket.send(JSON.stringify({type:'join',clientBuild:CLIENT_BUILD,rulesVersion:RULES_VERSION,assetVersion:ASSET_VERSION,...(privateMap?{mapId:privateMap.mapId,mapSignature:privateMap.mapSignature,physicsSha256:privateMap.physicsSha256}:{}),existing:joinExisting,...(revision?{appearanceRevision:revision}:{}),name,movementProtocol:1,shotProtocol:1,room:joinExisting?$('room-code').value.trim().toUpperCase():undefined,mode:$('mode').value,team:$('team').value,primary,skins:skins.loadout,weaponLoadout:armory.loadout,agents:agentsUI.loadout,musicKit:matchAudio.kit,bots:Number($('bots').value),botDifficulty:preferredBotDifficulty}));});
   socket.addEventListener('message',e=>{if(socket!==activeSocket)return;let data;try{data=JSON.parse(e.data);}catch{return;}
     if(data.type==='roomCosmeticsChanged' && revision && data.room===$('room-code').value.trim().toUpperCase()){
       clearTimeout(timeout);socket=null;activeSocket.close();settle(readRoomAppearance(data));return;
@@ -534,7 +536,7 @@ function handleSnapshot(data){
 function handleEvent(e){
   mapResultCache?.breakables?.event(e,camera.position);
   chat.receive(e);
-  matchPresentation.handleEvent(e,snapshot,connectionId);matchAudio.event(e,self);
+  matchPresentation.handleEvent(e,snapshot,connectionId);matchAudio.event(e,self,snapshot);
   if(e.type==='match_end'){clearGameInput();mouseFire=false;document.exitPointerLock?.();$('pause-menu').hidden=true;$('buy-menu').hidden=true;}
   if(e.type==='weapon_picked_up'&&e.playerId===myId){slot=self.slot;resetScope();hud.toast(`已拾取 ${getWeapon(e.weaponId).name}`);}
   utilityEffects.event(e,spectating?.id||myId);
@@ -602,7 +604,7 @@ function applyShotKick(w,heavy=false){
 }
 
 async function lockPointer(){if(!connected||!self||contextLost||snapshot?.match?.status==='ended')return;canvas.focus({preventScroll:true});$('pause-menu').hidden=true;$('buy-menu').hidden=true;clearGameInput();if(touchControls?.enabled){mobileShell?.enter();const motionPermission=mobileAim.authorize();touchPlaying=true;await audio.start();await motionPermission;syncTouchSurface();return;}try{await audio.start();await canvas.requestPointerLock({unadjustedMovement:true});}catch{try{await canvas.requestPointerLock();}catch{$('pause-menu').hidden=false;hud.toast('请点击继续游戏以启用鼠标控制。');}}}
-function showMenu(){releaseRoomHands();shop.cancel();armory.close();skins.close();mapResultCache?.breakableCollision?.reset();mapResultCache?.breakables?.reset();chat.reset();chat.element.hidden=true;matchAudio.stop();bombView.clear();roomMenu.element.hidden=true;displayedHostBots=null;audio.stopAll();effects.clear();utilityEffects.clear();droppedWeapons.clear();hud.reset();matchView.reset();matchPresentation.reset();spectating=null;spectatorLook=null;shotPrediction.pending=[];mouseFire=false;shotPrediction.triggered=false;clearGameInput();resetScope();document.exitPointerLock?.();document.body.classList.remove('playing');$('menu').hidden=false;$('hud').hidden=true;$('pause-menu').hidden=true;$('buy-menu').hidden=true;$('scoreboard').hidden=true;for(const a of actors.values())a.dispose(scene);actors.clear();self=null;snapshot=null;}
+function showMenu(){releaseRoomHands();shop.cancel();armory.close();skins.close();mapResultCache?.breakableCollision?.reset();mapResultCache?.breakables?.reset();chat.reset();chat.element.hidden=true;matchAudio.stop();bombView.clear();roomMenu.element.hidden=true;displayedHostBots=null;audio.stopAll();effects.clear();utilityEffects.clear();droppedWeapons.clear();hud.reset();matchView.reset();matchPresentation.reset();spectating=null;spectatorLook=null;shotPrediction.pending=[];mouseFire=false;shotPrediction.triggered=false;clearGameInput();resetScope();document.exitPointerLock?.();document.body.classList.remove('playing');$('menu').hidden=false;$('hud').hidden=true;$('pause-menu').hidden=true;$('buy-menu').hidden=true;$('scoreboard').hidden=true;for(const a of actors.values())a.dispose(scene);actors.clear();self=null;snapshot=null;if(document.visibilityState==='visible'&&audio.ctx?.state==='running')matchAudio.play('menu');}
 function toggleBuy(){if(!connected)return;if(!self?.alive&&$('buy-menu').hidden){hud.toast('阵亡时无法购买，重生或下一回合后可打开商店。');return;}if($('buy-menu').hidden){$('buy-menu').hidden=false;$('pause-menu').hidden=true;mouseFire=false;resetScope();clearGameInput();shop.update({player:{...self,skins:skins.loadout,weaponLoadout:myId===connectionId?armory.loadout:null},mode,round:snapshot?.round,time:snapshot?.time});document.exitPointerLock();$('close-buy').focus();}else{$('buy-menu').hidden=true;lockPointer();}}
 
 async function invite(){if(!room)return;if(connection.offline){hud.toast('当前是本机练习；与朋友对战请使用“在线联机”启动入口');return;}let url=new URL(location.href);url.searchParams.set('room',room);if(inviteBase){url=new URL(inviteBase);url.searchParams.set('room',room);}try{await navigator.clipboard.writeText(url.href);hud.toast('邀请链接已复制，发送给朋友即可加入');}catch{hud.toast(`房间 ${room} · ${url.href}`);}}
@@ -640,7 +642,8 @@ $('retry-load').addEventListener('click',()=>start(pendingJoin));
 
 for(const parent of [$('pause-menu').querySelector('.utility-row'),$('invite-button').parentElement]){const button=document.createElement('button');button.className='room-open';button.textContent='房间 / 阵营';button.onclick=()=>{clearGameInput();mouseFire=false;roomMenu.update(snapshot,connectionId);roomMenu.open();};parent.append(button);}
 $('start-button').addEventListener('click',()=>start(false));$('join-button').addEventListener('click',()=>{if(!$('room-code').value.trim()){$('menu-status').textContent='请输入朋友发来的房间码。';return;}start(true);});
-for(const parent of [$('menu-settings').parentElement,$('game-settings').parentElement]){const button=document.createElement('button');button.type='button';button.textContent='探员仓库';button.className='agents-button';button.onclick=()=>agentsUI.open(self?.team||$('team').value);parent.append(button);}
+for(const id of ['menu-agents','game-agents']) $(id).onclick=()=>openHomePanel('agents');
+for(const id of ['menu-music','game-music']) $(id).onclick=()=>openHomePanel('music');
 $('menu-skins').onclick=()=>armory.open();$('game-loadout').onclick=()=>armory.open();$('game-skins').onclick=()=>skins.open();$('menu-offline').onclick=()=>offlineMenu.open();
 $('game-settings').addEventListener('click',()=>settingsUI.open());$('menu-settings').addEventListener('click',()=>settingsUI.open());
 $('resume-button').addEventListener('click',lockPointer);
@@ -690,7 +693,15 @@ if(!privateMap?.flatOnly&&privateMap?.graphicsMode!=='quality'){
 export function prepareHomeLoadout({team,primary:weapon}){choosePrimary(weapon);chooseTeam(team);updateModeLabels();}
 export function startFromHome(join=false){return start(join);}
 export function unlockAudioFromHome(){audio.resume().catch(()=>{});}
-export function openHomePanel(panel){if(panel==='settings')settingsUI.open();else if(panel==='skins')armory.open();else if(panel==='offline')offlineMenu.open();}
+export function openHomePanel(panel){
+  if(panel==='music'){
+    settingsUI.open();
+    settingsUI.element.querySelector('[data-tab="audio"]').click();
+  }else if(panel==='agents')agentsUI.open(self?.team||$('team').value);
+  else if(panel==='settings')settingsUI.open();
+  else if(panel==='skins')armory.open();
+  else if(panel==='offline')offlineMenu.open();
+}
 
 const framePacer=new FramePacer();let lastRenderTime=performance.now(),fpsFrames=0,fpsSeconds=0;
 function frame(now){

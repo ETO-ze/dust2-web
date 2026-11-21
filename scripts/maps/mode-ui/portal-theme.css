@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Barlow Condensed";
-  src: url("./type/barlow-condensed-extrabold-italic.ttf") format("truetype");
+  src: url("./type/barlow-condensed-extrabold-italic.woff2") format("woff2");
   font-style: italic;
   font-weight: 800;
   font-display: swap;

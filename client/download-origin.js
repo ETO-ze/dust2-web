@@ -1,5 +1,7 @@
 import {validateDownloadConfig} from '../shared/download-config.js';
+import {isPackagedAgentPath} from '../shared/packaged-agent-assets.js';
 import {isPackagedSkinPath} from '../shared/packaged-skin-assets.js';
+import {packagedMusicKitForPath} from '../shared/music-kits.js';
 
 const DEFAULT_CONFIG=Object.freeze({schemaVersion:1,assetBaseURL:null,mapBaseURL:null,fallbackToGameServer:false});
 const AVAILABILITY_STATUS=new Set([404,408,429,500,502,503,504]);
@@ -41,7 +43,12 @@ export function assetDownloadURL(value,{pageURL=defaultPageURL(),config=download
  // A private map server may already carry newly verified skin models in its package.
  const map=globalThis.__DUST2_PRIVATE_MAP__;
  const assetPath='assets/'+relative;
- if((map?.flatOnly||map?.graphicsMode==='quality')&&isPackagedSkinPath(assetPath)&&Array.isArray(map.localSkinPaths)&&map.localSkinPaths.includes(assetPath))return url;
+ if(map?.flatOnly||map?.graphicsMode==='quality'){
+  if(isPackagedSkinPath(assetPath)&&Array.isArray(map.localSkinPaths)&&map.localSkinPaths.includes(assetPath))return url;
+  if(isPackagedAgentPath(assetPath)&&Array.isArray(map.localAgentPaths)&&map.localAgentPaths.includes(assetPath))return url;
+  const musicKit=packagedMusicKitForPath(assetPath);
+  if(musicKit&&Array.isArray(map.localMusicKits)&&map.localMusicKits.includes(musicKit))return url;
+ }
  const remote=new URL('./'+relative,config.assetBaseURL);
  remote.search=url.search;
  return remote;

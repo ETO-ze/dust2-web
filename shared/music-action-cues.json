@@ -1,0 +1,106 @@
+{
+  "alleycvt_01": {
+    "file": "alleycvt_01/startaction_01-2a498877fd0d.mp3",
+    "source": "sounds/music/alleycvt_01/startaction_01.vsnd_c",
+    "sha256": "2a498877fd0d9868a9db0842a051247fb0aa8946969c3c79193fac00fe08f575",
+    "bytes": 263544,
+    "duration": 14.401247,
+    "sourceCrc32": "36f04e31"
+  },
+  "arcando_01": {
+    "file": "arcando_01/startaction_01-c45346dd61f0.mp3",
+    "source": "sounds/music/arcando_01/startaction_01.vsnd_c",
+    "sha256": "c45346dd61f0744c8ec68f4d541ce528acc2ac2e190bcfbbb5fd9b595331c459",
+    "bytes": 214194,
+    "duration": 12.351429,
+    "sourceCrc32": "235cf7c3"
+  },
+  "blitzkids_01": {
+    "file": "blitzkids_01/startaction_01-0e39bc190752.mp3",
+    "source": "sounds/music/blitzkids_01/startaction_01.vsnd_c",
+    "sha256": "0e39bc1907529e01832c96cb766819ff13c01ce7f184dc5ea93f6ab7d9b26f21",
+    "bytes": 167602,
+    "duration": 10.475125,
+    "sourceCrc32": "dbac159b"
+  },
+  "djdiesel_01": {
+    "file": "djdiesel_01/startaction_01-5e028a334d89.mp3",
+    "source": "sounds/music/djdiesel_01/startaction_01.vsnd_c",
+    "sha256": "5e028a334d89251c5e758372bf947643cabdad0d2a8797317db575ae6e7c254a",
+    "bytes": 207366,
+    "duration": 12.801247,
+    "sourceCrc32": "169db51a"
+  },
+  "fool_01": {
+    "file": "fool_01/startaction_01-dee3a0c24c7a.mp3",
+    "source": "sounds/music/fool_01/startaction_01.vsnd_c",
+    "sha256": "dee3a0c24c7ae254bc733f8fbcbf5744d88af0a0704288f1ca87c4a26b26a94b",
+    "bytes": 246210,
+    "duration": 14.183923,
+    "sourceCrc32": "b818ee2b"
+  },
+  "isoxo_01": {
+    "file": "isoxo_01/startaction_01-1e0abb2eb654.mp3",
+    "source": "sounds/music/isoxo_01/startaction_01.vsnd_c",
+    "sha256": "1e0abb2eb65402ae2126ab2c6e0951490c2a2fc22dff49c945f75ff2c2ab82a4",
+    "bytes": 265291,
+    "duration": 15.238095,
+    "sourceCrc32": "90f9f39b"
+  },
+  "neckdeep_01": {
+    "file": "neckdeep_01/startaction_01-47b3539d1620.mp3",
+    "source": "sounds/music/neckdeep_01/startaction_01.vsnd_c",
+    "sha256": "47b3539d162053714dd9d76eb29f3042a2777c3fb03d99757182d9521313294b",
+    "bytes": 180141,
+    "duration": 11.258813,
+    "sourceCrc32": "773a9602"
+  },
+  "neckdeep_02": {
+    "file": "neckdeep_02/startaction_01-37d61ea33235.mp3",
+    "source": "sounds/music/neckdeep_02/startaction_01.vsnd_c",
+    "sha256": "37d61ea33235aea1a37975c1553a28e7b5c8f1b36ad61d5bedc98f93b79cb0f2",
+    "bytes": 271256,
+    "duration": 16.9535,
+    "sourceCrc32": "7d3f6815"
+  },
+  "noisestorm_01": {
+    "file": "noisestorm_01/startaction_01-99ed6bec5a2c.mp3",
+    "source": "sounds/music/noisestorm_01/startaction_01.vsnd_c",
+    "sha256": "99ed6bec5a2c04d3ae9c1bb623e23c97c60aa071ca334ce1f47eca619d47c4c8",
+    "bytes": 338806,
+    "duration": 18.255011,
+    "sourceCrc32": "fd8e2813"
+  },
+  "pegboardnerds_01": {
+    "file": "pegboardnerds_01/startaction_01-e377bc7d596c.mp3",
+    "source": "sounds/music/pegboardnerds_01/startaction_01.vsnd_c",
+    "sha256": "e377bc7d596cf480de2bf3bc2806ec6e0f611e4d2d22c891db875c5acd01de8c",
+    "bytes": 306998,
+    "duration": 15.236327,
+    "sourceCrc32": "18f9828b"
+  },
+  "tristam_braken_01": {
+    "file": "tristam_braken_01/startaction_01-eafebe8db07e.mp3",
+    "source": "sounds/music/tristam_braken_01/startaction_01.vsnd_c",
+    "sha256": "eafebe8db07e59875042f7f6694beca03c06831387741c0906e88c16698ea96d",
+    "bytes": 217794,
+    "duration": 13.37322,
+    "sourceCrc32": "d03611b1"
+  },
+  "valve_cs2_01": {
+    "file": "valve_cs2_01/startaction_01-5ce0b1139cb6.mp3",
+    "source": "sounds/music/valve_cs2_01/startaction_01.vsnd_c",
+    "sha256": "5ce0b1139cb6f9df0d3530ec12a3b1e78ece85e49f6c77ac90655773e0b0d4bf",
+    "bytes": 416427,
+    "duration": 25.34483,
+    "sourceCrc32": "3d98dd96"
+  },
+  "vicetone_01": {
+    "file": "vicetone_01/startaction_01-bf068e260b3d.mp3",
+    "source": "sounds/music/vicetone_01/startaction_01.vsnd_c",
+    "sha256": "bf068e260b3d8a598c73e1ccc1ec54b27840cc141707ca4895b408e771ad8417",
+    "bytes": 217869,
+    "duration": 12.098798,
+    "sourceCrc32": "305ba692"
+  }
+}

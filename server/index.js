@@ -1,3 +1,4 @@
+import { isMusicKit, roomMusicKits } from '../shared/music-kits.js';
 import {snapshotForSide} from './snapshot-view.js';
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -61,12 +62,12 @@ function publicRoomDirectory(rooms, includeNames = false) {
 }
 
 function roomAppearance(room){
-  const plan=roomSkinPlan(room),agentIds=roomAgentIds(room);
+  const plan=roomSkinPlan(room),agentIds=roomAgentIds(room),musicKitIds=roomMusicKits(room);
   // A fixed-size revision keeps a full ten-player cosmetic list out of the
   // existing 4 KiB join packet. Sorting makes it independent of owner order.
-  const signature=JSON.stringify([[...plan.activeSkinIds].sort(),[...plan.carriedSkinIds].sort(),[...plan.skinIds].sort(),agentIds]);
+  const signature=JSON.stringify([[...plan.activeSkinIds].sort(),[...plan.carriedSkinIds].sort(),[...plan.skinIds].sort(),agentIds,musicKitIds]);
   const revision=createHash('sha256').update(signature).digest('hex').slice(0,24);
-  return {room:room.code,mode:room.mode,...plan,agentIds,revision};
+  return {room:room.code,mode:room.mode,...plan,agentIds,musicKitIds,revision};
 }
 
 function joinSettings(msg) {
@@ -83,8 +84,9 @@ function joinSettings(msg) {
   if(msg.bots!==undefined&&(!Number.isInteger(msg.bots)||msg.bots<0||msg.bots>9))return {error:'机器人数量必须为 0–9 的整数。'};
   if(msg.botDifficulty!==undefined&&!BOT_DIFFICULTIES.includes(msg.botDifficulty))return {error:'无效的人机难度。'};
   const bots = botCount(msg.bots),botDifficulty=normalizeBotDifficulty(msg.botDifficulty);
+  if(msg.musicKit!==undefined&&!isMusicKit(msg.musicKit))return {error:'无效的音乐盒。'};
   const primary = PRIMARY_WEAPONS.includes(msg.primary) ? msg.primary : 'auto';
-  return { name, room, mode, team, bots, botDifficulty, primary, visibility:msg.visibility, weaponLoadout:msg.weaponLoadout,skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0,shotProtocol:msg.shotProtocol===1?1:0 };
+  return { name, room, mode, team, bots, botDifficulty, primary, musicKit:msg.musicKit, visibility:msg.visibility, weaponLoadout:msg.weaponLoadout,skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0,shotProtocol:msg.shotProtocol===1?1:0 };
 }
 
 /** Start the authoritative server after loading collision geometry. No external services. */
@@ -231,6 +233,13 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         if(now-(socket.equipSkinAt||0)<250){error(socket,'SKIN_RATE','更换过于频繁，请稍后重试。');return;}
         socket.equipSkinAt=now;const result=room.equipSkin(socket.playerId,msg.weapon,msg.skin);
         if(!result.ok)error(socket,'SKIN_REJECTED',result.message);else send(socket,{type:'skinEquipped',...result});
+      } else if(msg.type==='equipMusic'){
+        const player=room.players.get(socket.playerId);
+        if(!player||!isMusicKit(msg.kit)){error(socket,'MUSIC_REJECTED','无效的音乐盒。');return;}
+        if(player.musicKit!==msg.kit){
+          player.musicKit=msg.kit;
+          room.emit('music_equipped',{playerId:player.id,musicKit:player.musicKit});
+        }
       } else if(msg.type==='equipAgent'){
         if(now-(socket.equipAgentAt||0)<250){error(socket,'AGENT_RATE','更换过于频繁，请稍后重试。');return;}
         socket.equipAgentAt=now;const result=room.equipAgent(socket.playerId,msg.agent);

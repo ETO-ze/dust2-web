@@ -6,7 +6,6 @@ import {mobileDevice} from './device-profile.js';
 import * as THREE from 'three';
 import {gameGLTFLoader} from './gltf-loader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import { MAP } from '../shared/map-data.js';
 import { assetURL, useDownloadedAssets } from './loading.js';
 
@@ -33,10 +32,9 @@ export async function createMapScene(scene,{onProgress=()=>{},signal,flat=false}
     if (!response.ok) throw Error('极简场景读取失败 (' + response.status + ')');
     return loader.parseAsync(flattenMapDocument(await response.json()), new URL('.', mapURL).href);
   };
-  const [gltf,response,sky]=await Promise.all([
+  const [gltf,response]=await Promise.all([
     readMap(),
     fetch(assetURL(assetUrl(MAP.geometryUrl))),
-    flat?null:new HDRLoader(manager).loadAsync(assetUrl('assets/sky/daylight.hdr?v=5244534e9cf5')),
   ]);
   if(!response.ok)throw new Error(`地图碰撞下载失败 (${response.status})`);
   const positions=new Float32Array(await response.arrayBuffer());
@@ -91,18 +89,12 @@ export async function createMapScene(scene,{onProgress=()=>{},signal,flat=false}
     if(target.distanceToSquared(origin)>1e-8)sunDirection.subVectors(target,origin).normalize();
   }
   for(const light of originalLights)light.removeFromParent();
-  const flatSky = flat ? await prepareFlatSky('de_dust2', {signal}) : null;
+  const sky = await prepareFlatSky('de_dust2', {signal});
   scene.add(group);
   // The map is static: retain its already-computed transforms instead of
   // multiplying every imported object matrix on every animation frame.
   group.traverse(object=>{object.matrixAutoUpdate=false;object.matrixWorldAutoUpdate=false;});
-  if(flat)flatSky.mount(scene);
-  else {
-    sky.mapping=THREE.EquirectangularReflectionMapping;
-    scene.background=sky;scene.backgroundIntensity=.8;
-    scene.backgroundRotation.y=1.2;
-    scene.userData.sky={source:'Poly Haven / Kloofendal 48d Partly Cloudy',resolution:'2048 × 1024',downloadBytes:5451493};
-  }
+  sky.mount(scene);
   scene.fog=new THREE.Fog(0xc9d8de,140,300);
   const hemisphere=new THREE.HemisphereLight(0xd5e9ff,0x99805f,2.15);
   hemisphere.name='dust2-web-sky';

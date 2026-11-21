@@ -4,7 +4,6 @@ import {createFlatSiteMarkings,replaceOriginalFloorPaint} from './flat-site-mark
 import {loadFlatSurfaceDetail} from './flat-surface-detail.js';
 import {prepareFlatSky} from './flat-sky.js';
 import * as THREE from 'three';
-import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {privateRenderManifest,privateRenderDependencies,deduplicatePrivateImages,readPrivateResource,PrivateMapProgress,privateGLTFLoader} from './private-map-loader.js';
 import {PrivateMapTransport} from './private-map-transport.js';
 import {useDownloadedAssets} from './loading.js';
@@ -93,7 +92,7 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
   const jobs=await Promise.allSettled([
    failTogether(loader.parseAsync(json,root.href).then(gltf=>{loadedRoot=gltf.scene;return gltf;})),
    collisionPromise,
-   failTogether((flat?prepareFlatSky(config.id,{signal}):new HDRLoader(manager).loadAsync(new URL('assets/sky/daylight.hdr?v=5244534e9cf5',document.baseURI).href)).then(value=>{sky=value;return value;})),
+   failTogether(prepareFlatSky(config.id,{signal}).then(value=>{sky=value;return value;})),
   ]);
   const failed=jobs.find(job=>job.status==='rejected');if(failed)throw firstFailure||failed.reason;check();progress.finish();
   const collision=jobs[1].value;
@@ -135,11 +134,7 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
   sun.position.set(-30,100,30);sun.castShadow=false;
   check();if(config.breakables?.length)breakables=new PrivateMapBreakables({gltf:jobs[0].value,scene,definitions:visualDefinitions,initialHiddenNodeIndices:initialHidden});
   scene.add(group,hemisphere,sun);
-  if(flat)sky.mount(scene);
-  else {
-   sky.mapping=THREE.EquirectangularReflectionMapping;scene.background=sky;scene.backgroundIntensity=.8;scene.backgroundRotation.y=1.2;
-   scene.userData.sky={source:'Poly Haven / Kloofendal 48d Partly Cloudy',privateMap:true};
-  }
+  sky.mount(scene);
   group.userData.renderStats={meshCount,triangles,outlineSegments,inactiveLayoutMeshes,materials:materials.size,textures:textures.size,originalCS2Materials:!flat,style:flat?'flat':'original',lightingParityValidated:false};
   committed=true;onProgress(MAP.name+(flat?' 极简场景已就绪':' 原始场景已就绪'));
   return {mapData:MAP,positions:collision.positionsByChannel[1],bulletPositions:collision.positionsByChannel[2],grenadePositions:collision.positionsByChannel[4],mapPatches:false,group,breakables,breakableCollision,lights:[hemisphere,sun],spawn:MAP.spawns.T[0],physicsSha256:collision.physicsSha256,loadStats:{...progress.snapshot(),duplicateImages,transport:transport?.stats||null}};

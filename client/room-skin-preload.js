@@ -1,4 +1,5 @@
 import { fetchCachedAsset, isAssetSaved } from './loading.js';
+import { isMusicKit } from '../shared/music-kits.js';
 import { skinResources } from '../shared/room-cosmetics.js';
 import { getSkin } from '../shared/skins.js';
 import { AGENT_CATALOG,getAgent } from '../shared/agents.js';
@@ -9,7 +10,7 @@ export function readRoomAppearance(msg) {
   return {skinIds,activeSkinIds:approved(msg.activeSkinIds).filter(id=>skinIds.includes(id)).slice(0,10),
     carriedSkinIds:approved(msg.carriedSkinIds).filter(id=>skinIds.includes(id)),
     revision:typeof msg.revision==='string'&&/^[0-9a-f]{24}$/.test(msg.revision)?msg.revision:null,
-    mode:msg.mode,agentIds:[...new Set((Array.isArray(msg.agentIds)?msg.agentIds:[]).filter(id=>getAgent(id)))].slice(0,AGENT_CATALOG.length)};
+    mode:msg.mode,...(Array.isArray(msg.musicKitIds)?{musicKitIds:[...new Set(msg.musicKitIds.filter(isMusicKit))].slice(0,10)}:{}),agentIds:[...new Set((Array.isArray(msg.agentIds)?msg.agentIds:[]).filter(id=>getAgent(id)))].slice(0,AGENT_CATALOG.length)};
 }
 
 // Reserve weapons share a small decoding budget. All carried files are cached

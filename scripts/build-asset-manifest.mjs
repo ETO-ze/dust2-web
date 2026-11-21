@@ -20,7 +20,7 @@ async function add(relative, group) {
 async function walk(dir, group) {
   for (const entry of await readdir(path.join(root, dir), { withFileTypes: true })) {
     const file = dir + '/' + entry.name;
-    if(file==='assets/viewmodel/arms.glb')continue;
+    if(file==='assets/viewmodel/arms.glb'||file==='assets/characters-cs2/popular')continue;
     if (entry.isDirectory() && !['optional','arms'].includes(entry.name)) await walk(file, group);
     else if (/\.(glb|gltf|bin|webp|png|jpe?g|mp3|wav|ogg|svg)$/i.test(file)) await add(file, group);
   }
@@ -28,8 +28,6 @@ async function walk(dir, group) {
 let entries = [];
 await add('assets/map-cs2/dust2-web.gltf', 'map');
 await add('assets/map/positions.f32', 'collision');
-await add('assets/sky/daylight.hdr','sky');
-await add('assets/sky/source.json','sky');
 await walk('assets/audio', 'audio');
 await add('assets/audio/cs2/manifest.json', 'audio');
 await add('assets/audio/music/manifest.json','audio');

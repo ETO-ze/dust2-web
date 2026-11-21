@@ -1,19 +1,18 @@
 """Bake nine map-specific Valve sky panoramas for the lightweight renderer.
 
 Inputs: CS2 pak01_dir.vpk and its referenced numbered siblings; VRF CLI. Uses
-Node (for the existing index parser), numpy, OpenCV with OpenEXR, and Pillow.
+Node (for the existing index parser), numpy, OpenEXR, OpenCV and Pillow.
 Work files are reusable. Revalidate the compiled texture and material CRCs on
 every run, so changing game versions cannot reuse an old EXR.
 """
 import argparse
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
 import zlib
 
-os.environ.setdefault("OPENCV_IO_ENABLE_OPENEXR", "1")
+import OpenEXR
 import cv2
 import numpy as np
 from PIL import Image
@@ -49,24 +48,16 @@ def decode(entry, index, vrf, work, extension):
     return result
 
 
-def add_cloud_layer(rgb, strength, solar):
-    # Several Source maps use a smooth env_sky plus independent sky geometry.
-    # Composite the existing CC0 Kloofendal photograph at bake time. Align
-    # azimuth using the VMAT's solar direction and preserve the native horizon.
-    cloud = cv2.imread(str(ROOT / "public/assets/sky/daylight.hdr"), cv2.IMREAD_UNCHANGED)
-    height, width = rgb.shape[:2]
-    cloud = cv2.resize(cloud, (width, height), interpolation=cv2.INTER_AREA)[:, :, ::-1]
-    _, sun_x = np.unravel_index(np.argmax(cloud[:height // 2].sum(axis=2)), (height // 2, width))
-    if solar:
-        x, y, _ = map(float, solar.strip("[]").split()[:3])
-        target = round(np.arctan2(-y, x) * width / (2 * np.pi))
-        cloud = np.roll(cloud, target - sun_x, axis=1)
-    # Match the photographed sky's exposure to the map before compositing.
-    upper = slice(height // 8, height // 3)
-    cloud = cloud * np.clip(np.median(rgb[upper]) / max(.001, np.median(cloud[upper])), .35, 1.8)
-    t = np.clip((.51 - np.arange(height) / height) * 12, 0, 1).reshape(-1, 1, 1)
-    weight = strength * t * t * (3 - 2 * t)
-    return (rgb + (cloud - rgb) * weight).astype("float32")
+def write_panorama(rgb, width, exposure, output):
+    height = width // 2
+    # Downsample and tone-map in linear light; transfer to sRGB only once.
+    scaled = cv2.resize(rgb, (width, height), interpolation=cv2.INTER_AREA)
+    scaled = np.maximum(scaled, 0) * exposure
+    mapped = np.clip((scaled * (2.51 * scaled + .03)) / (scaled * (2.43 * scaled + .59) + .14), 0, 1)
+    srgb = np.where(mapped <= .0031308, mapped * 12.92, 1.055 * mapped ** (1 / 2.4) - .055)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(np.rint(srgb * 255).astype('uint8')).save(output, quality=95, method=6)
+    print(f"{output.name}: {width}x{height}, {output.stat().st_size} bytes", flush=True)
 
 
 def bake(args):
@@ -80,22 +71,23 @@ def bake(args):
         values = dict(re.findall(r'"([^"]+)"\s+"([^"]*)"', material))
         texture = entries[values["g_tSkyTexture"] + "_c"]
         exr = decode(texture, args.index, args.vrf, args.work, ".exr")
-        rgba = cv2.imread(str(exr), cv2.IMREAD_UNCHANGED)
-        if rgba is None or rgba.dtype != np.float32 or rgba.shape[1] != 2 * rgba.shape[0]:
+        channels = OpenEXR.File(str(exr)).channels()
+        channel = channels.get("RGBA") or channels.get("RGB")
+        if channel is None:
+            raise ValueError("Sky has no RGB channels: " + str(exr))
+        rgba = channel.pixels
+        if rgba.dtype not in (np.float16, np.float32) or rgba.shape[1] != 2 * rgba.shape[0]:
             raise ValueError("Expected a linear 2:1 HDR panorama: " + str(exr))
-        width = min(1536, rgba.shape[1])
-        rgb = cv2.resize(rgba[:, :, :3], (width, width // 2), interpolation=cv2.INTER_AREA)[:, :, ::-1]
+        if rgba.shape[1] != sky["sourceWidth"]:
+            raise ValueError(f"{map_id}: source width changed, review the source sky before rebaking")
         exposure = sum(float(values.get(key, 0)) for key in
                        ("g_flBrightnessExposureBias", "g_flRenderOnlyExposureBias"))
-        rgb = np.maximum(rgb, 0) * (sky["exposure"] * 2 ** exposure)
-        if sky.get("cloudLayer"):
-            rgb = add_cloud_layer(rgb, sky["cloudLayer"], values.get("SolarPosition"))
-        # Compress HDR highlights in linear light before the final sRGB transfer.
-        ldr = np.clip((rgb * (2.51 * rgb + 0.03)) / (rgb * (2.43 * rgb + 0.59) + 0.14), 0, 1)
-        srgb = np.where(ldr <= 0.0031308, ldr * 12.92, 1.055 * ldr ** (1 / 2.4) - 0.055)
-        output = args.output / (map_id + ".webp")
-        Image.fromarray(np.rint(srgb * 255).astype("uint8")).save(output, quality=86, method=6)
-        print(f"{map_id}: {texture['path']}, {width}x{width // 2}, {output.stat().st_size} bytes", flush=True)
+        gain = sky["exposure"] * 2 ** exposure
+        rgb = rgba[:, :, :3].astype(np.float32, copy=False)
+        print(f"{map_id} {texture['path']}, VTEX CRC32 {texture['crc']:08x}", flush=True)
+        write_panorama(rgb, min(4096, sky["sourceWidth"]), gain, args.output / (map_id + ".webp"))
+        if sky["sourceWidth"] > 2048:
+            write_panorama(rgb, 2048, gain, args.output / "compact" / (map_id + ".webp"))
 
 
 if __name__ == "__main__":

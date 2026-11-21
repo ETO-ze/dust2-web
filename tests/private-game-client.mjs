@@ -35,6 +35,16 @@ test('private base preload preserves weapons/audio and omits both legacy Dust II
  const filtered=clientAssetManifest(original,true);assert.deepEqual(filtered.files.map(f=>f.group),['weapons','audio']);assert.equal(filtered.totalBytes,20);assert.equal(original.files.length,5);
 });
 
+test('both match entries skip the obsolete HDR download from an older installed manifest', () => {
+ const files = [{group:'weapons',bytes:20,path:'assets/weapons/ak47.glb'},
+                {group:'sky',bytes:5451493,path:'assets/sky/daylight.hdr'}];
+ for (const privateMode of [false,true]) {
+   const result=clientAssetManifest({files,totalBytes:5451513},privateMode);
+   assert.deepEqual(result.files,[files[0]]);
+   assert.equal(result.totalBytes,20);
+ }
+});
+
 test('original Inferno geometry and low-memory budgets return an explicit guard before decoding',()=>{
  assert.equal(privateMapMemoryReason({renderBytes:104641648,physicsBytes:4850748,deviceMemory:8,remainingHeap:2e9}),null);
  assert.match(privateMapMemoryReason({renderBytes:865375444,physicsBytes:98753364}),/验收/);

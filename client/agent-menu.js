@@ -1,7 +1,8 @@
 import {preferences} from './persistence.js';
 import { AGENT_CATALOG, DEFAULT_AGENT_IDS, getAgent, normalizeAgentLoadout } from '../shared/agents.js';
 import { AGENT_ASSETS } from '../shared/agent-assets.js';
-import { loadAgent as loadAgentAsset } from './player-assets.js';
+import {AGENT_ARM_ASSETS} from '../shared/agent-arm-assets.js';
+import { loadAgent as loadAgentAsset, loadAgentArms } from './player-assets.js';
 import './agents.css';
 import {imageAssetURL} from './image-asset-url.js';
 
@@ -15,8 +16,8 @@ export function readAgentLoadout(){
 
 /** Loading happens only after selecting a card, before the server equip callback. */
 export class AgentMenu {
-  constructor({onEquip=async()=>{},loadAgent=loadAgentAsset}={}){
-    this.loadout=readAgentLoadout();this.onEquip=onEquip;this.loadAgent=loadAgent;
+  constructor({onEquip=async()=>{},loadAgent=loadAgentAsset,loadArms=loadAgentArms}={}){
+    this.loadout=readAgentLoadout();this.onEquip=onEquip;this.loadAgent=loadAgent;this.loadArms=loadArms;
     this.busy=false;this.destroyed=false;this.activeTeam='CT';
     const modal=document.createElement('div');modal.id='agent-menu';modal.className='overlay';modal.hidden=true;
     modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');
@@ -81,7 +82,7 @@ export class AgentMenu {
         const name=document.createElement('b');name.className='agent-name';name.textContent=agent.name;
         const english=document.createElement('span');english.className='agent-english';english.textContent=agent.englishName||'';
         const note=document.createElement('small');note.className='agent-item-state';
-        note.textContent=selected?'✓ 已装备':agent.isDefault?'CS2 默认探员':Number(agent.bytes)>0?`装备 · ${(agent.bytes/1048576).toFixed(1)} MB`:'装备 · 按需下载';
+        note.textContent=selected?'✓ 已装备':agent.isDefault?'CS2 默认探员':Number(agent.bytes)>0?`装备 · ${((agent.bytes+(AGENT_ARM_ASSETS[agent.id]?.bytes||0))/1048576).toFixed(1)} MB`:'装备 · 按需下载';
         button.append(visual,name,english,note);button.onclick=()=>this.equip(agent);grid.append(button);
       }
       section.append(heading,grid);teams.append(section);
@@ -99,14 +100,18 @@ export class AgentMenu {
     const progress=this.element.querySelector('.agent-progress');progress.hidden=false;progress.removeAttribute('value');
     this.status(`准备 ${agent.name}…`);
     try{
-      await this.loadAgent(agent.id,{onProgress:update=>{
+      const arms=AGENT_ARM_ASSETS[agent.id];
+      const total=agent.bytes+arms.bytes;
+      const report=(previous,limit,label)=>update=>{
         if(this.destroyed)return;
-        const bytes=typeof update==='number'?update:Number(update?.bytes??update?.loaded)||0;
-        const total=Number(update?.total)||Number(agent.bytes)||0;
-        const percent=total>0?Math.min(100,Math.max(0,Math.round(bytes/total*100))):null;
-        if(percent!==null)progress.value=percent;
-        this.status(`${update?.cached?'读取本机缓存':'下载'} ${agent.name}${percent!==null?` · ${percent}%`:bytes>0?` · ${(bytes/1048576).toFixed(1)} MB`:''}`);
-      }});
+        const received=typeof update==='number'?update:Number(update?.bytes??update?.loaded)||0;
+        const percent=Math.round(100*(previous+Math.max(0,Math.min(limit,received)))/total);
+        progress.value=percent;
+        this.status(`${update?.cached?'读取本机缓存':'准备'}${label} · ${percent}%`);
+      };
+      await this.loadAgent(agent.id,{onProgress:report(0,agent.bytes,'探员模型')});
+      if(this.destroyed)return;
+      await this.loadArms(agent.id,{onProgress:report(agent.bytes,arms.bytes,'第一人称手臂')});
       if(this.destroyed)return;
       progress.value=100;this.status(`正在装备 ${agent.name}…`);
       const next=normalizeAgentLoadout({...this.loadout,[agent.team]:agent.id});

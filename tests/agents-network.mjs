@@ -31,10 +31,10 @@ const playerIn=(message,id)=>message.players?.find(p=>p.id===id);
 const waitPlayer=(peer,id,predicate,after=0)=>peer.waitFor(m=>m.type==='snapshot'&&playerIn(m,id)&&predicate(playerIn(m,id)),after);
 
 test('agent catalog has stable side-specific defaults and rejects path or wrong-team substitutions',()=>{
-  assert.equal(AGENT_CATALOG.length,4);assert.equal(new Set(AGENT_CATALOG.map(a=>a.id)).size,4);
+  assert.equal(AGENT_CATALOG.length,10);assert.equal(new Set(AGENT_CATALOG.map(a=>a.id)).size,10);
   assert.deepEqual(DEFAULT_AGENT_IDS,{CT:'ct-sas',T:'t-phoenix'});
   for(const team of ['CT','T']){
-    const agents=AGENT_CATALOG.filter(a=>a.team===team);assert.equal(agents.length,2);assert.equal(agents.filter(a=>a.isDefault).length,1);
+    const agents=AGENT_CATALOG.filter(a=>a.team===team);assert.equal(agents.length,5);assert.equal(agents.filter(a=>a.isDefault).length,1);
   }
   assert.deepEqual(normalizeAgentLoadout({CT:'ct-ava',T:'t-miami'}),{CT:'ct-ava',T:'t-miami'});
   for(const invalid of [null,[],{CT:'t-miami',T:'ct-ava'},{CT:'../agent.glb',T:'https://invalid.example/agent.glb'},{CT:{toString:null},T:'__proto__'}])assert.deepEqual(normalizeAgentLoadout(invalid),DEFAULT_AGENT_IDS);
@@ -66,6 +66,19 @@ test('agent cosmetics synchronize through real sockets without changing authorit
     const snapshot=await waitPlayer(observer,player.id,p=>p.agentId==='t-phoenix',mark),p=playerIn(snapshot,player.id);
     assert.deepEqual({health:p.health,armor:p.armor,money:p.money,kills:p.kills,deaths:p.deaths,team:p.team},before);
     assert.deepEqual(player.inventory,inventory);assert.deepEqual(hit(),beforeHit);assert.equal(other.agentId,'ct-ava');
+  });
+
+  await t.test('market-selected agents replicate on both sides, including changes while connected',async()=>{
+    for(const agent of AGENT_CATALOG.filter(agent=>agent.definition)){
+      const wearer=agent.team==='T'?owner:observer;
+      const watcher=wearer===owner?observer:owner;
+      const mark=watcher.mark();
+      const ack=await equip(wearer,agent.id);
+      assert.equal(ack.agent,agent.id);
+      await waitPlayer(watcher,wearer.welcome.id,state=>state.agentId===agent.id,mark);
+    }
+    await equip(owner,'t-phoenix');
+    await equip(observer,'ct-ava');
   });
 
   await t.test('live updates reject opposite-side agents, unknown IDs, objects and arbitrary locations',async()=>{

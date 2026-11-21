@@ -5,6 +5,7 @@ import {createServer} from 'node:http';
 import {spawnSync} from 'node:child_process';
 import {validateDownloadConfig} from '../shared/download-config.js';
 import {assetDownloadURL,fetchAssetDownload,getDownloadOrigin,initDownloadOrigin} from '../client/download-origin.js';
+import {packagedMusicAssets} from '../shared/packaged-music-assets.js';
 
 const page='https://game.test/review/play/de_mirage/';
 const config={schemaVersion:1,assetBaseURL:'https://static.test/release/assets/',mapBaseURL:'https://static.test/release/maps/',fallbackToGameServer:false};
@@ -189,15 +190,20 @@ test('Android installed optional assets read the game root configuration and kee
 });
 
 test('packaged private skin revisions stay local while other assets still use the CDN',t=>{
+ const agent='assets/characters-cs2/popular/ct-syfers/body-1234567890ab.glb';
+ const unlisted='assets/characters-cs2/popular/ct-syfers/arms-9876543210ab.glb';
+ const invalid='assets/characters-cs2/popular/ct-syfers/body.glb';
  const first='assets/weapons/cs2-skins/official-wear/ak47-fire-serpent.glb';
  const second='assets/weapons/cs2-skins/official-wear/awp-asiimov.glb';
  const expansion='assets/weapons/cs2-skins/expansion/ak47-new-finish.glb';
  const art='assets/weapons/cs2-skins/expansion/previews/ak47-new-finish.webp';
  const prior=globalThis.__DUST2_PRIVATE_MAP__;
  t.after(()=>{if(prior===undefined)delete globalThis.__DUST2_PRIVATE_MAP__;else globalThis.__DUST2_PRIVATE_MAP__=prior;});
- globalThis.__DUST2_PRIVATE_MAP__={flatOnly:true,localSkinPaths:[first,expansion,art,'assets/manifest.json']};
+ globalThis.__DUST2_PRIVATE_MAP__={flatOnly:true,localSkinPaths:[first,expansion,art,'assets/manifest.json'],localAgentPaths:[agent,invalid]};
  const opts={pageURL:'https://localhost.test/perf/',config};
  assert.equal(assetDownloadURL(first+'?v=abc',opts).href,opts.pageURL+first+'?v=abc');
+ assert.equal(assetDownloadURL(agent,opts).href,opts.pageURL+agent);
+ for(const file of [unlisted,invalid])assert.equal(assetDownloadURL(file,opts).origin,'https://static.test');
  assert.equal(assetDownloadURL(expansion,opts).href,opts.pageURL+expansion);
  assert.equal(assetDownloadURL(art,opts).href,opts.pageURL+art);
  assert.equal(assetDownloadURL(second,opts).origin,'https://static.test');
@@ -205,6 +211,21 @@ test('packaged private skin revisions stay local while other assets still use th
  globalThis.__DUST2_PRIVATE_MAP__.flatOnly=false;
  assert.equal(assetDownloadURL(first,opts).origin,'https://static.test');
  globalThis.__DUST2_PRIVATE_MAP__.graphicsMode='quality';
- for(const file of [first,expansion,art])assert.equal(assetDownloadURL(file,opts).href,opts.pageURL+file);
+ for(const file of [first,expansion,art,agent])assert.equal(assetDownloadURL(file,opts).href,opts.pageURL+file);
  assert.equal(assetDownloadURL(second,opts).origin,'https://static.test');
+});
+
+test('complete local music kits serve packaged cues in either rendering mode; old base cues keep their CDN',t=>{
+ const music=packagedMusicAssets(),ids=[...new Set(music.map(cue=>cue.id))];
+ const prior=globalThis.__DUST2_PRIVATE_MAP__;
+ t.after(()=>{if(prior===undefined)delete globalThis.__DUST2_PRIVATE_MAP__;else globalThis.__DUST2_PRIVATE_MAP__=prior;});
+ const opts={pageURL:'https://game.test/perf/',config};
+ for(const mode of [{flatOnly:true},{graphicsMode:'quality'}]){
+  globalThis.__DUST2_PRIVATE_MAP__={...mode,localMusicKits:ids};
+  for(const cue of music)assert.equal(assetDownloadURL(cue.path,opts).href,opts.pageURL+cue.path);
+  for(const path of ['assets/audio/music/optional/valve_cs2_01/mainmenu.mp3','assets/audio/music/optional/other/mainmenu.mp3','assets/audio/music/manifest.json'])
+    assert.equal(assetDownloadURL(path,opts).origin,'https://static.test');
+  globalThis.__DUST2_PRIVATE_MAP__.localMusicKits=[];
+  assert.equal(assetDownloadURL(music[0].path,opts).origin,'https://static.test');
+ }
 });

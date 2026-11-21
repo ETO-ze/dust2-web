@@ -87,7 +87,7 @@ if(installed){
   try{const game=await prepare();if(action==='start'||action==='join'){prepareHomeMapImages(selected.id);game.startFromHome(action==='join');}else game.openHomePanel(action);}catch{}
  }
  // Capture prevents a lazy-loaded runtime from handling the same first click twice.
- const actions={'start-button':'start','join-button':'join','menu-settings':'settings','menu-skins':'skins','menu-offline':'offline'};
+ const actions={'start-button':'start','join-button':'join','menu-settings':'settings','menu-skins':'skins','menu-agents':'agents','menu-music':'music','menu-offline':'offline'};
  for(const [id,action]of Object.entries(actions))$(id).addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();activate(action);},true);
  $('menu-play-tab').addEventListener('click',()=>$('start-button').focus());
  $('credits-button').addEventListener('click',()=>{$('credits').hidden=false;});$('close-credits').addEventListener('click',()=>{$('credits').hidden=true;});

@@ -1,16 +1,56 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { execFile as run } from 'node:child_process';
 import { createServer } from 'node:http';
 import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
-import { syncAsset, syncAssets, validateAssetPath } from '../scripts/fetch-assets.mjs';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import { releaseAssetLocks, syncAsset, syncAssets, validateAssetPath, validateLock } from '../scripts/fetch-assets.mjs';
 
 function entry(filePath, body) {
   return { path: filePath, bytes: Buffer.byteLength(body), sha256: createHash('sha256').update(body).digest('hex') };
 }
+
+test('a clean checkout restores catalogue revisions from their publishing host only once', () => {
+  const original = entry('assets/ui-cs2/armor.svg', 'armor');
+  const stale = entry('assets/weapons/cs2-skins/official-wear/ak47-fire-serpent.glb', 'old');
+  const [cdn, gateway] = releaseAssetLocks({ schemaVersion: 1, baseURL: 'https://cdn.example/', files: [original, stale] });
+  assert.deepEqual(cdn.files, [original]);
+  validateLock(gateway);
+  assert.equal(gateway.baseURL, 'https://cs2.duskrain.cn/perf/');
+  const current = gateway.files.find(item => item.path === stale.path);
+  assert.ok(current && current.sha256 !== stale.sha256);
+  assert.ok(gateway.files.some(item => /characters-cs2\/popular\/.+\/arms-/.test(item.path)));
+  assert.ok(gateway.files.some(item => item.path.includes('/music/optional/vicetone_01/')));
+});
+
+test('desktop and mobile startup manifests exclude optional agents and music', async t => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'dust2-optional-manifest-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const assets = path.join(root, 'public', 'assets');
+  const required = [
+    'map-cs2/dust2-web.gltf', 'map-mobile/dust2-clear.gltf', 'map/positions.f32',
+    'sky/daylight.hdr', 'sky/source.json', 'audio/cs2/manifest.json', 'audio/music/manifest.json',
+    'characters-cs2/ct-sas.glb', 'characters-cs2/arms/ct-sas.glb', 'characters-cs2/arms/t-phoenix.glb',
+    'weapons/cs2-loadout/previews/weapon.webp', 'ui-cs2/health.svg',
+  ];
+  const optional = ['characters-cs2/popular/ct-syfers/body.glb', 'characters-cs2/optional/ct-ava.glb',
+    'audio/music/optional/vicetone_01/mvp.mp3'];
+  for (const file of [...required, ...optional]) {
+    await mkdir(path.dirname(path.join(assets, file)), {recursive:true});
+    await writeFile(path.join(assets, file), '{}');
+  }
+  await promisify(run)(process.execPath, [fileURLToPath(new URL('../scripts/build-asset-manifest.mjs', import.meta.url))], {cwd:root});
+  for (const name of ['asset-manifest.json', 'asset-manifest-mobile.json']) {
+    const files = JSON.parse(await readFile(path.join(assets, name), 'utf8')).files.map(item => item.path);
+    assert.ok(files.includes('assets/characters-cs2/arms/ct-sas.glb'));
+    for (const file of optional) assert.ok(!files.includes('assets/' + file), file);
+  }
+});
 
 async function fixture(t, handler) {
   const temporary = await mkdtemp(path.join(os.tmpdir(), 'dust2-assets-test-'));

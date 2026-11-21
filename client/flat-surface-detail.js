@@ -46,7 +46,7 @@ function makeTexture(pixels, side, finishes, profiles) {
 }
 
 export async function loadFlatSurfaceDetail(mapId) {
-  if (Object.hasOwn(arena.mapTints, mapId)) {
+  if (Object.hasOwn(arena.mapLayers, mapId)) {
     // Keep the decoded tiles shared while each map owns a disposable GPU texture.
     arenaPixels ??= import('./arena-finishes/shared.js').then(unpack).catch(error => {
       arenaPixels = undefined;
@@ -120,7 +120,9 @@ const arenaUniforms = `
     float plate=flattenSourceLight(luminance,cuts);
     float hi=max(source.r,max(source.g,source.b)), lo=min(source.r,min(source.g,source.b));
     float chroma=(hi-lo)/max(hi,.08);
-    float accent=.72*smoothstep(.35,.74,chroma)*smoothstep(.035,.13,luminance);
+    float fadedPaint=.16*smoothstep(.12,.42,chroma);
+    float landmark=.56*smoothstep(.35,.74,chroma);
+    float accent=(fadedPaint+landmark)*smoothstep(.035,.13,luminance);
     // Retain landmark hue after removing its source-light magnitude.
     vec3 pigment=mix(base,.68*source/max(hi,.08),accent);
     float facing=dot(normal,uArenaKey);
@@ -148,7 +150,7 @@ export function applySurfaceDetail(material, texture, mapId) {
   const finishes = texture.userData.finishes;
   const local = texture.userData.mapTiles === true;
   const rules = local ? assignments[mapId] || {} : {};
-  material.customProgramCacheKey = () => (local ? 'dust2-plane-finishes-v2-' : 'dust2-architectural-surfaces-v4-') + finishes.length;
+  material.customProgramCacheKey = () => (local ? 'dust2-plane-finishes-v3-' : 'dust2-architectural-surfaces-v4-') + finishes.length;
   material.onBeforeCompile = shader => {
     Object.assign(shader.uniforms, {
       uSurfaceDetail: {value:texture},
@@ -160,8 +162,7 @@ export function applySurfaceDetail(material, texture, mapId) {
       uGrainPigment: {value:new Vector3(...profile[4])},
     });
     if (local) {
-      const tint = arena.mapTints[mapId];
-      shader.uniforms.uArenaBase = {value:arena.layers.map(rgb => new Vector3(...rgb).multiply(new Vector3(...tint)))};
+      shader.uniforms.uArenaBase = {value:arena.mapLayers[mapId].map(rgb => new Vector3(...rgb))};
       shader.uniforms.uSourcePlates = {value:plates[mapId].map(pair => new Vector2(...pair))};
       shader.uniforms.uArenaKey = {value:new Vector3(...arena.keyDirection).normalize()};
       shader.uniforms.uArenaLuma = {value:new Vector3(...arena.sourceLuma)};

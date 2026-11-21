@@ -153,8 +153,9 @@ def plane_group():
     r,green,b=sep.outputs
     hi=g.op('MAXIMUM',r,g.op('MAXIMUM',green,b)); lo=g.op('MINIMUM',r,g.op('MINIMUM',green,b))
     sat=g.op('DIVIDE',g.op('SUBTRACT',hi,lo),g.op('MAXIMUM',hi,.08))
-    accent=g.op('MULTIPLY',.72,g.op('MULTIPLY',g.smooth(sat,.35,.74,'Landmark saturation'),
-                                     g.smooth(y,.035,.13,'Keep dark lettering')))
+    faded=g.op('MULTIPLY',.16,g.smooth(sat,.12,.42,'Faded paint'))
+    landmark=g.op('MULTIPLY',.56,g.smooth(sat,.35,.74,'Landmark saturation'))
+    accent=g.op('MULTIPLY',g.op('ADD',faded,landmark),g.smooth(y,.035,.13,'Keep dark lettering'))
     hue=g.vec('SCALE',s['Source pigment'],g.op('DIVIDE',.68,g.op('MAXIMUM',hi,.08)),'Level accent colour')
     paint=g.mix(accent,s['Coating pigment'],hue,'Second stage / flat architectural paint')
     k=np.asarray(PALETTE['keyDirection'])
@@ -198,8 +199,9 @@ def topology(scene):
 
 
 def bind(scene, map_id, out, cuts, atlas, site_binder):
-    # Preserve the previous full-map file, materials, UV mapping, world and operators.
+    # Refresh paint swatches even when the input scene was built with an older palette.
     new=plane_group()
+    paints=PALETTE['mapLayers'][map_id]
     with bpy.data.libraries.load(str((out/'Surface-Library.blend').resolve()),link=False) as (src,dst):
         dst.node_groups=['Finish / '+name for name in NAMES]
     for i,name in enumerate([*NAMES,'Map pigment / retained source lighting']):
@@ -208,13 +210,19 @@ def bind(scene, map_id, out, cuts, atlas, site_binder):
         coat=next(n for n in tree.nodes if n.type=='GROUP' and n.node_tree.name.startswith('Arena / matte'))
         links={key:coat.inputs[key].links[0].from_socket for key in ['Source pigment','Face normal']}
         base=coat.inputs['Coating pigment']
-        if base.is_linked: links['Coating pigment']=base.links[0].from_socket
-        default=tuple(base.default_value)
+        if base.is_linked:
+            blend=base.links[0].from_node
+            if blend.label!='Wall and floor coat': raise ValueError('Unknown neutral paint mix')
+            blend.inputs[1].default_value=(*paints[0],1)
+            blend.inputs[2].default_value=(*paints[4],1)
+            links['Coating pigment']=blend.outputs[0]
         target=coat.outputs['Color'].links[0].to_socket
         coat.node_tree=new
         coat.label='Flatten source illumination, then apply paint'
         for k,v in links.items(): tree.links.new(v,coat.inputs[k])
-        if 'Coating pigment' not in links: coat.inputs['Coating pigment'].default_value=default
+        if 'Coating pigment' not in links:
+            coat.inputs['Coating pigment'].default_value=paints[i]
+            m.diffuse_color=(*paints[i],1)
         coat.inputs['Deep pigment'].default_value=cuts[i][0]
         coat.inputs['Lit pigment'].default_value=cuts[i][1]
         tree.links.new(coat.outputs['Color'],target)
@@ -244,6 +252,11 @@ def bind(scene, map_id, out, cuts, atlas, site_binder):
     coords=(cells+(.5+(edge-1)*x)/edge)*.5
     uv.foreach_set('uv',np.ascontiguousarray(coords,dtype=np.float32).ravel())
     site_binder(scene,map_id)
+    sky_node=next(n for n in scene.world.node_tree.nodes if n.type=='TEX_IMAGE')
+    old_sky=sky_node.image
+    sky_node.image=bpy.data.images.load(str((CLIENT/'flat-skies'/(map_id+'.webp')).resolve()),check_existing=False)
+    sky_node.image.pack()
+    if not old_sky.users: bpy.data.images.remove(old_sky)
     scene['material_design']='Planar source-light plates / architectural paint'
     return new_image
 
@@ -280,10 +293,10 @@ def main():
     parser.add_argument('stage',choices=['profile','scenes'])
     parser.add_argument('source',type=Path)
     parser.add_argument('output',type=Path)
-    parser.add_argument('--maps',nargs='+',choices=PALETTE['mapTints'])
+    parser.add_argument('--maps',nargs='+',choices=PALETTE['mapLayers'])
     args=parser.parse_args(sys.argv[sys.argv.index('--')+1:])
     args.output.mkdir(parents=True,exist_ok=True)
-    maps=args.maps or list(PALETTE['mapTints'])
+    maps=args.maps or list(PALETTE['mapLayers'])
     if args.stage=='profile':
         if args.maps: raise ValueError('The shared profile needs all nine maps')
         records={}; evidence={}
@@ -313,6 +326,10 @@ def main():
         bpy.ops.wm.open_mainfile(filepath=str(out.resolve()),load_ui=False)
         if topology(bpy.context.scene)!=identity: raise ValueError('Geometry changed')
         for i,name in enumerate(NAMES):
+            material=bpy.data.materials[name]
+            painted=next(n for n in material.node_tree.nodes if n.label=='Flatten source illumination, then apply paint')
+            if not np.allclose(painted.inputs['Coating pigment'].default_value,PALETTE['mapLayers'][map_id][i]):
+                raise ValueError(name+' paint differs from web palette')
             image=bpy.data.images[name+' / R8']
             pix=np.empty((atlas[i].size,4),np.float32)
             image.pixels.foreach_get(pix.ravel())
@@ -320,8 +337,11 @@ def main():
                 raise ValueError(name+' tile changed on reopen')
         if sign_sha!=hashlib.sha256((CLIENT/'flat-site-stencils.png').read_bytes()).hexdigest():
             raise ValueError('Packed site artwork differs')
+        sky=next(n.image for n in bpy.context.scene.world.node_tree.nodes if n.type=='TEX_IMAGE')
+        if bytes(sky.packed_file.data)!=(CLIENT/'flat-skies'/(map_id+'.webp')).read_bytes():
+            raise ValueError('Packed map sky differs')
         proof[map_id]=dict(topology=identity,renderTriangles=bpy.context.scene['render_triangles'],
-                           packedSiteArt=sign_sha,packedLayers=len(atlas))
+                           packedSiteArt=sign_sha,packedLayers=len(atlas),skySize=list(sky.size))
         print('CHECKED',map_id,proof[map_id],flush=True)
     (args.output/'scene-audit.json').write_text(json.dumps(proof,indent=2),'utf8')
 

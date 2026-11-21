@@ -8,6 +8,8 @@ import {fileURLToPath} from 'node:url';
 import {PERFORMANCE_MAPS, isPerformanceMap} from '../shared/performance-map-pool.js';
 import {findQualityPacks} from './performance-quality.js';
 import {SKINS} from '../shared/skins.js';
+import {packagedAgentAssets} from '../shared/packaged-agent-assets.js';
+import {packagedMusicAssets} from '../shared/packaged-music-assets.js';
 import {packagedSkinAssets} from '../shared/packaged-skin-assets.js';
 
 const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -28,11 +30,22 @@ const types={'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css',
 const json=(res,code,data)=>res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store'}).end(JSON.stringify(data));
 function file(req,res,location,immutable=false){
   if(!fs.existsSync(location)||!fs.statSync(location).isFile()){res.writeHead(404).end();return;}
-  const useGzip=/\bgzip\b/.test(req.headers['accept-encoding']||'')&&fs.existsSync(location+'.gz');
+  const acceptsGzip=(req.headers['accept-encoding']||'').split(',').some(value=>{
+    const [coding,weight]=value.trim().toLowerCase().split(/\s*;\s*/);
+    return coding==='gzip' && (weight===undefined || /^q=(?:1(?:\.0{0,3})?|0\.\d{1,3})$/.test(weight) && Number(weight.slice(2))>0);
+  });
+  const useGzip=acceptsGzip&&fs.existsSync(location+'.gz');
   const physical=useGzip?location+'.gz':location;
-  const headers={'Content-Type':types[path.extname(location)]||'application/octet-stream','Content-Length':fs.statSync(physical).size,
+  const stat=fs.statSync(physical);
+  const tag='W/"'+[stat.ino,stat.size,stat.mtimeMs,useGzip?'gz':'raw'].join('-')+'"';
+  const headers={'Content-Type':types[path.extname(location)]||'application/octet-stream','ETag':tag,
     'Cache-Control':immutable?'public, max-age=31536000, immutable':'no-cache','Vary':'Accept-Encoding'};
   if(useGzip)headers['Content-Encoding']='gzip';
+  const validators=(req.headers['if-none-match']||'').split(',').map(value=>value.trim());
+  if(validators.includes('*')||validators.some(value=>value.replace(/^W\//,'')===tag.slice(2))){
+    res.writeHead(304,headers).end();return;
+  }
+  headers['Content-Length']=stat.size;
   res.writeHead(200,headers);
   if(req.method==='HEAD'){res.end();return;}
   const stream=fs.createReadStream(physical);stream.on('error',()=>res.destroy());res.on('close',()=>stream.destroy());stream.pipe(res);
@@ -116,12 +129,18 @@ async function performanceRooms() {
 }
 
 // Locally packaged skin revisions can precede publication to the shared CDN.
-const localSkinPaths=packagedSkinAssets(SKINS).filter(asset=>{
+function packagedPaths(assets){return assets.filter(asset=>{
   const file=[dist,publicDir].map(base=>path.join(base,asset.path)).find(name=>fs.existsSync(name));
   if(!file)return false;
   const stat=fs.statSync(file);
   return stat.isFile() && stat.size===asset.bytes;
-}).map(asset=>asset.path);
+}).map(asset=>asset.path);}
+const localSkinPaths=packagedPaths(packagedSkinAssets(SKINS));
+const localAgentPaths=packagedPaths(packagedAgentAssets());
+const musicAssets=packagedMusicAssets();
+const availableMusic=new Set(packagedPaths(musicAssets));
+const localMusicKits=[...new Set(musicAssets.map(asset=>asset.id))]
+  .filter(id=>musicAssets.every(asset=>asset.id!==id||availableMusic.has(asset.path)));
 function mapConfig(id,w,quality){
   return fetch('http://127.0.0.1:'+w.port+'/private-map.json').then(r=>r.json()).then(config=>{
     const remap=path.join(root,id,'flat-breakables.json');
@@ -131,8 +150,9 @@ function mapConfig(id,w,quality){
       const name=path.posix.basename(config[key]), digest=hashes[name];
       if(digest)urls[key]=(quality?'/perf/quality/maps/':'/perf/maps/')+id+'/'+name+'?v='+digest;
     }
-    if(quality)return {...config,...urls,flatOnly:false,graphicsMode:'quality',renderUrl:'/perf/quality/maps/'+id+'/render/map.gltf',localSkinPaths};
-    return {...config,...urls,flatOnly:true,localSkinPaths,...(fs.existsSync(remap)?{flatBreakableVisuals:JSON.parse(fs.readFileSync(remap))}:{})};
+    const cosmetics={localSkinPaths,localAgentPaths,localMusicKits};
+    if(quality)return {...config,...urls,...cosmetics,flatOnly:false,graphicsMode:'quality',renderUrl:'/perf/quality/maps/'+id+'/render/map.gltf'};
+    return {...config,...urls,...cosmetics,flatOnly:true,...(fs.existsSync(remap)?{flatBreakableVisuals:JSON.parse(fs.readFileSync(remap))}:{})};
   });
 }
 function safePath(base,tail){
