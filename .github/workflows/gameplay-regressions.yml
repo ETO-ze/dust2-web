@@ -44,6 +44,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Supply a flat test floor for the equipment WebSocket room
+        run: |
+          mkdir -p public/assets/map
+          echo '{"positions":[-200,0,-200,200,0,200,200,0,-200,-200,0,-200,-200,0,200,200,0,200]}' > public/assets/map/collision.json
+          node -e "require('node:fs').writeFileSync('public/assets/map/penetration-materials.u8', Buffer.alloc(2))"
       - name: C4, radar, MVP, equipment and map interactions
         run: >-
           node --test tests/c4-blast.mjs tests/rotating-radar.mjs
