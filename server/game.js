@@ -618,7 +618,7 @@ export class GameRoom {
     this.emit('flash',{grenadeId:grenade.id,ownerId:grenade.ownerId,origin:copyPoint(grenade),radius:config.radius,duration:config.duration,affected});
   }
 
-  visibleToBot(a,b){return (this.privateMap?.world?.clearSight||clearSight)(a,b)&&!this.grenades.blocksSight(a,b);}
+  visibleToBot(a,b){return (this.privateMap?.world?.clearSight||clearSight)(a,b,.18)&&!this.grenades.blocksSight(a,b);}
 
   heldSkin(p,weapon=p.weapon){
     const skin=getSkin(p.inventory[weapon]?.skinId||p.skins[weapon]);
