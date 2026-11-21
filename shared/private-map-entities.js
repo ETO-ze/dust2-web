@@ -27,3 +27,10 @@ for (const base of [PRIVATE_BREAKABLES, NUKE_VENT]) {
   policies[base.mapId] = {...base, objects: [...base.objects, ...glass.objects]};
 }
 export function privateEntities(id){ return policies[id] || null; }
+
+// A compact document addresses a different binary layout. Never accept the
+// document and geometry hashes independently, even when both are known.
+export function qualityEntityRenderMatches(policy, documentHash, bufferHash) {
+  if (documentHash === policy.renderSha256) return !policy.renderBufferSha256 || bufferHash === policy.renderBufferSha256;
+  return !!policy.alternateRenderSha256 && documentHash === policy.alternateRenderSha256 && bufferHash === policy.alternateBufferSha256;
+}

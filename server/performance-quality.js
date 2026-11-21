@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {validateMapTransport, transportObjectName} from '../scripts/maps/transport-schema.mjs';
-import {privateEntities} from '../shared/private-map-entities.js';
+import {privateEntities,qualityEntityRenderMatches} from '../shared/private-map-entities.js';
 
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -28,6 +28,9 @@ function originalPack(id, gameRoot, library, transportRoot) {
     files.set(name, {path:name, bytes:entry.bytes, sha256:entry.sha256});
   }
   let raw = path.join(source, 'raw');
+  const entities = privateEntities(id);
+  if (entities && (files.get('map.gltf')?.sha256 !== entities.renderSha256 ||
+      !qualityEntityRenderMatches(entities, entities.renderSha256, files.get('map.bin')?.sha256))) throw Error('原图模型与实体来源不符');
   if (files.get('map.bin')?.bytes > maxBuffer) {
     const proof = read(path.join(source, 'derived', 'render-equivalence.json'));
     if (proof.byteEquivalent !== true || proof.threshold512MiBPassed !== true ||
@@ -38,8 +41,8 @@ function originalPack(id, gameRoot, library, transportRoot) {
     files.set('map.bin', {path:'map.bin', bytes:proof.derived.bufferBytes, sha256:proof.derived.bufferSha256});
   }
   const model = fs.readFileSync(path.join(raw, 'map.gltf')), gltf = JSON.parse(model);
-  const gltfHash = digest(model), entities = privateEntities(id);
-  if (gltfHash !== files.get('map.gltf')?.sha256 || (entities && entities.renderSha256 !== gltfHash) || !gltf.images?.length) throw Error('原图材质或实体版本不符');
+  const gltfHash = digest(model);
+  if (gltfHash !== files.get('map.gltf')?.sha256 || (entities && !qualityEntityRenderMatches(entities,gltfHash,files.get('map.bin')?.sha256)) || !gltf.images?.length) throw Error('原图材质或实体版本不符');
   const used = new Set(['map.gltf']);
   for (const entry of [...gltf.images, ...gltf.buffers]) {
     const file = files.get(entry.uri);

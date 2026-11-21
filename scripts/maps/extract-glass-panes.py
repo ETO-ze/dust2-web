@@ -121,7 +121,13 @@ def extract(root, map_id):
                 for key in ('min', 'max', 'count'):
                     assert (alternate['accessors'][new_primitive['attributes']['POSITION']][key] ==
                             render['accessors'][old_primitive['attributes']['POSITION']][key])
+        proof = read(root / 'derived/render-equivalence.json')
+        assert proof['byteEquivalent'] and proof['primitiveOrderPreserved'] and proof['threshold512MiBPassed']
+        result['renderBufferSha256'] = digest(root / 'raw/map.bin')
         result['alternateRenderSha256'] = digest(compact)
+        result['alternateBufferSha256'] = digest(compact.with_name('map.bin'))
+        assert (proof['source']['gltfSha256'], proof['source']['bufferSha256']) == (result['renderSha256'], result['renderBufferSha256'])
+        assert (proof['derived']['gltfSha256'], proof['derived']['bufferSha256']) == (result['alternateRenderSha256'], result['alternateBufferSha256'])
     return result
 
 

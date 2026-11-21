@@ -12,7 +12,7 @@ import {decodePrivateMapCollision} from '../shared/private-map-collision.js';
 import {privateMapMemoryReason} from './private-game-config.js';
 import {PrivateMapBreakables} from './private-map-breakables.js';
 import {PrivateMapBreakables as BreakableCollisionState} from '../shared/private-map-breakables.js';
-import {privateEntities} from '../shared/private-map-entities.js';
+import {privateEntities,qualityEntityRenderMatches} from '../shared/private-map-entities.js';
 import {PRIVATE_MOVEMENT_MODEL} from '../shared/ladder-movement.js';
 import {privateMapFetcher} from './private-map-download.js';
 import {omitInactiveQualityMeshes} from './quality-map-layout.js';
@@ -70,8 +70,10 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
   let initialHidden = config.initialHiddenNodeIndices || [];
   const entityPolicy=privateEntities(config.id);
   if(entityPolicy&&(config.id==='de_mirage'||config.movementModel===PRIVATE_MOVEMENT_MODEL||config.breakablesSha256)){
-   const visualHashes = config.flatOnly ? [config.flatBreakableVisuals?.renderSha256 || gltfFile.sha256] : [entityPolicy.renderSha256,entityPolicy.alternateRenderSha256];
-   if(await hashBytes(new TextEncoder().encode(JSON.stringify(entityPolicy)))!==config.breakablesSha256||!visualHashes.includes(qualityHash??await hashBytes(gltfBytes))||JSON.stringify(config.breakables)!==JSON.stringify(entityPolicy.objects)||JSON.stringify(config.initialHiddenNodeIndices)!==JSON.stringify(entityPolicy.initialHiddenNodeIndices))throw Error('可破坏物配置与当前原始地图不一致');
+   const visualMatches = config.flatOnly
+     ? await hashBytes(gltfBytes) === (config.flatBreakableVisuals?.renderSha256 || gltfFile.sha256)
+     : qualityEntityRenderMatches(entityPolicy,qualityHash,files.get('map.bin')?.sha256);
+   if(await hashBytes(new TextEncoder().encode(JSON.stringify(entityPolicy)))!==config.breakablesSha256||!visualMatches||JSON.stringify(config.breakables)!==JSON.stringify(entityPolicy.objects)||JSON.stringify(config.initialHiddenNodeIndices)!==JSON.stringify(entityPolicy.initialHiddenNodeIndices))throw Error('可破坏物配置与当前原始地图不一致');
    if (config.flatOnly) {
      visualDefinitions = config.breakables.map(definition => {
        if(definition.pane)return {...definition, proceduralPane:true, nodeNames:[], nodeIndices:[]};
