@@ -2,7 +2,7 @@
 
 支持 5 对 5 的网页第一人称对战。玩家可以从联机大厅加入已有房间，也可以选择地图、画面模式和人机数量创建房间。游戏按所选地图加载资源，开火、命中、经济和人机由房间服务器计算。
 
-[进入游戏](https://cs2.duskrain.cn/perf/) · [联机大厅](https://cs2.duskrain.cn/perf/#onlineRooms) · [下载九图发行包](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.4.0-perf.6) · [运行说明](docs/NINE-MAPS-LOBBY.md)
+[进入游戏](https://cs2.duskrain.cn/perf/) · [联机大厅](https://cs2.duskrain.cn/perf/#onlineRooms) · [版本更新记录](CHANGELOG.md) · [下载九图发行包](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.4.0-perf.6) · [运行说明](docs/NINE-MAPS-LOBBY.md)
 
 ![地图选择与画面模式](docs/screenshots/nine-map-selector.webp)
 

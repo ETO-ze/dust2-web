@@ -1,0 +1,55 @@
+name: Gameplay regressions
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release-record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check that gameplay changes have a release record
+        env:
+          BEFORE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          AFTER: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          base="$BEFORE"
+          if [[ -z "$base" || "$base" =~ ^0+$ ]]; then
+            base=$(git hash-object -w -t tree /dev/null)
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            base=$(git merge-base "$BEFORE" "$AFTER")
+          fi
+          if ! git diff --quiet "$base" "$AFTER" -- client server shared scripts public config deploy android portable index.html private.html package.json; then
+            if git diff --quiet "$base" "$AFTER" -- CHANGELOG.md; then
+              echo 'Add the player-visible changes and verification to CHANGELOG.md.'
+              exit 1
+            fi
+          fi
+          version=$(node -p "require('./package.json').version")
+          awk -v version="$version" '$1 == "##" && $2 == version { found=1 } END { exit !found }' CHANGELOG.md
+  gameplay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: C4, radar, MVP, equipment and map interactions
+        run: >-
+          node --test tests/c4-blast.mjs tests/rotating-radar.mjs
+          tests/round-mvp.mjs tests/room-cosmetics.mjs
+          tests/private-map-glass.mjs tests/private-map-ladders.mjs
+      - name: Build both web game entry points
+        env:
+          DUSTII_REVIEW_BUILD: '1'
+        run: npm exec -- vite build
