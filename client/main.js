@@ -92,7 +92,10 @@ const scopeOverlay=new ScopeOverlay($('scope'));
 const effects=new Effects(scene);
 const utilityEffects=new UtilityEffects(scene);
 const matchView=new MatchView();
-const matchPresentation=new MatchPresentation(document.body,{onReturn:()=>$('leave-button').click(),onEnd:()=>{clearGameInput();document.exitPointerLock?.();$('pause-menu').hidden=true;}});
+const matchPresentation=new MatchPresentation(document.body,{onReturn:()=>{
+  $('leave-button').click();
+  if(document.body.classList.contains('portal-room'))location.assign('/perf/#onlineRooms');
+},onEnd:()=>{clearGameInput();document.exitPointerLock?.();$('pause-menu').hidden=true;}});
 const droppedWeapons=new DroppedWeapons(scene);
 let spectatorLook=null;
 let displayedHostBots=null;

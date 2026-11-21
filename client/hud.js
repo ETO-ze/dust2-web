@@ -154,14 +154,7 @@ export class HUD {
           round.phase === 'ended' ? '下一回合即将开始' : `回合 ${number(round.number, 1)}`);
 
     let title = '', subtitle = '';
-    if (round.phase==='matchEnded'||snapshot.match?.status==='ended') {
-      const winner=snapshot.match?.teams?.[snapshot.match.winnerTeamId];
-      title=winner?.side===self.team?'比赛胜利':'比赛结束';
-      subtitle=`${number(snapshot.match?.teams?.A?.score)} : ${number(snapshot.match?.teams?.B?.score)} · ${round.reason||'返回大厅开始下一场比赛'}`;
-    } else if (round.phase === 'ended') {
-      title = round.winner === 'CT' ? '防守方 CT 获胜' : round.winner === 'T' ? '进攻方 T 获胜' : '回合结束';
-      subtitle = `${round.reason || ''}${round.reason ? ' · ' : ''}${Math.ceil(roundLeft)} 秒后下一回合`;
-    } else if (mode === 'defuse' && round.phase === 'waiting') {
+    if (mode === 'defuse' && round.phase === 'waiting') {
       title = '等待交战双方'; subtitle = '邀请朋友加入，或添加机器人开始对局';
     } else if (round.phase === 'freeze') {
       title = `回合 ${number(round.number, 1)}`;
@@ -356,8 +349,6 @@ export class HUD {
     } else if (event.type === 'round_start') {
       this.combo = 0;
       this.revealed.clear(); this.toast('新回合开始 · B 购买装备');
-    } else if (event.type === 'round_end') {
-      this.toast(event.reason || `${event.winner === 'CT' ? '防守方 CT' : '进攻方 T'} 赢得回合`);
     } else if (event.type === 'bomb_planted') {
       this.toast(`${event.site || ''} 区炸弹已安装 · 40 秒倒计时`);
     } else if (event.type === 'bomb_defused') {
