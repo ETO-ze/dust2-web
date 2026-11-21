@@ -93,6 +93,10 @@ export function flattenMapDocument(json, {authoredColors = false} = {}) {
     const flat = {pbrMetallicRoughness: pbr, alphaMode: material.alphaMode || 'OPAQUE',
       doubleSided: !!material.doubleSided, extras: {flatHidden: hidden, flatOverlay: overlay}};
     if (authoredColors && material.extras?.performanceFence === true) flat.extras.performanceFence = true;
+    if (authoredColors && json.extras?.surfaceMaterialVersion === 1 &&
+        material.extras?.surfaceMaterialVersion === 1 && flat.alphaMode === 'OPAQUE') {
+      flat.extras.surfaceMaterialVersion = 1;
+    }
     if (authoredColors && material.extensions?.KHR_materials_unlit) {
       flat.extensions={KHR_materials_unlit:{}};
       flat.extras.bakedSurface=true;

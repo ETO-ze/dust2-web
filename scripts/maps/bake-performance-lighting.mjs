@@ -35,12 +35,28 @@ for (const node of doc.nodes) {
   const xyz = arrayFor(pos, Float32Array, 3);
   const rgba = arrayFor(col, Uint8Array, 4);
   const index = arrayFor(p.indices, doc.accessors[p.indices].componentType === 5123 ? Uint16Array : Uint32Array, 1);
-  chunks.push({node, pos, col, elements: p.indices, xyz, rgba, index});
+  const fittedRanges=mesh.extras?.fittedRanges;
+  const paintRanges=mesh.extras?.paintRanges;
+  if(fittedRanges||paintRanges) {
+    delete mesh.extras.fittedRanges;
+    delete mesh.extras.paintRanges;
+    if(!Object.keys(mesh.extras).length)delete mesh.extras;
+  }
+  chunks.push({node, pos, col, elements: p.indices, xyz, rgba, index, fittedRanges, paintRanges});
 }
 
 const beforeReduction = chunks.reduce((n, c) => n + c.index.length / 3, 0);
 await reduceSectors(chunks);
 const outputTriangles = chunks.reduce((n, c) => n + c.index.length / 3, 0);
+if(doc.extras?.surfaceMaterialVersion===1){
+  const counts={};
+  for(const c of chunks)for(let i=0;i<c.index.length;i+=3){
+    const a=c.rgba[c.index[i]*4+3],b=c.rgba[c.index[i+1]*4+3],d=c.rgba[c.index[i+2]*4+3];
+    if(a!==b||a!==d)throw Error('Surface IDs cross a triangle in '+c.node.name);
+    counts[a]=(counts[a]||0)+1;
+  }
+  doc.extras.surfaceTriangles=counts;
+}
 
 // Exclude destructible pieces from the shadow world. Their colour can receive ambient light.
 const occluders = chunks.filter(({node}) => /^(?:sector|tile)_/.test(node.name));
@@ -78,7 +94,10 @@ function illumination(x, y, z) {
   openness /= skyDirections.length;
   ray.direction.copy(sunlight);
   const sunny = bvh.raycastFirst(ray, DoubleSide, .15, 95) ? 0 : 1;
-  const scale = .28 + .45 * openness + .37 * sunny;
+  // A binary sun ray at the three corners of a large wall triangle otherwise
+  // paints a dark wedge across the whole face. Keep broad ambient modelling
+  // and reserve a smaller range for direct light.
+  const scale = .42 + .44 * openness + .24 * sunny;
   const light = [scale * (.94 + .12 * sunny), scale * (.99 + .025 * sunny), scale * (1.07 - .10 * sunny)];
   cache.set(key, light);
   return light;

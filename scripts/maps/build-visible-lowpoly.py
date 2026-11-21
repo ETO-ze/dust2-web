@@ -33,6 +33,48 @@ def palette(source, target):
     target.write_bytes(buf)
     print(source.parent.parent.parent.name,f'{len(used)} albedo thumbnails', flush=True)
 
+def floor_paint(source):
+    """Trace the narrow horizontal wayfinding marks before reducing the source texture."""
+    doc=json.loads(source.read_bytes())
+    masks={}
+    for i,material in enumerate(doc.get('materials',[])):
+        name=material.get('name','').lower()
+        valve=material.get('extras',{}).get('vmat',{})
+        texture=material.get('pbrMetallicRoughness',{}).get('baseColorTexture')
+        if not name.startswith(('nuke_floor_arrow_','nuke_floor_markings_')) or not texture or valve.get('ShaderName')!='csgo_static_overlay.vfx':
+            continue
+        src=doc['images'][doc['textures'][texture['index']]['source']]['uri']
+        with Image.open(source.parent / unquote(src)) as image:
+            art=image.convert('RGBA')
+            art.thumbnail((256,256),Image.Resampling.BOX)
+        w,h=art.size
+        pixels=art.load()
+        rectangles=[]; previous={}
+        for y in range(h):
+            row={}; x=0
+            while x<w:
+                r,g,b,a=pixels[x,y]
+                if a<90:
+                    x+=1
+                    continue
+                start=x
+                color=(r//32,g//32,b//32)
+                x+=1
+                while x<w:
+                    r,g,b,a=pixels[x,y]
+                    if a<90 or (r//32,g//32,b//32)!=color:break
+                    x+=1
+                key=(start,x,color)
+                rectangle=previous.get(key)
+                if rectangle is None:
+                    rectangle=[start/w,y/h,x/w,(y+1)/h,*[min(255,v*32+16) for v in color]]
+                    rectangles.append(rectangle)
+                else:rectangle[3]=(y+1)/h
+                row[key]=rectangle
+            previous=row
+        masks[i]=rectangles
+    return masks
+
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--source',type=pathlib.Path,required=True)
@@ -48,5 +90,8 @@ def main():
     table=a.cache/(a.map+'-'+key+'.rgba')
     if not table.is_file():palette(a.source,table)
     if not a.palette_only:
-        subprocess.run(['node',str(HERE/'visible-lowpoly.mjs'),str(a.source),str(a.output),a.map,str(table),str(SIDE),str(a.budget),*([str(a.entities)] if a.entities is not None else [])],check=True)
+        masks=a.cache/(a.map+'-'+key+'-floor-paint-v1.json')
+        if not masks.exists():
+            masks.write_text(json.dumps(floor_paint(a.source),separators=(',',':')),encoding='utf8')
+        subprocess.run(['node',str(HERE/'visible-lowpoly.mjs'),str(a.source),str(a.output),a.map,str(table),str(SIDE),str(a.budget),str(a.entities or ''),str(masks)],check=True)
 if __name__=='__main__':main()

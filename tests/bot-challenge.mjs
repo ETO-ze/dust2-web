@@ -6,6 +6,9 @@ import {initPhysics} from '../shared/physics.js';
 import {VITALITY_ROSTER,botDifficultyFor,challengeEvidence,challengeOpeningPost} from '../server/bot-challenge.js';
 import {effectiveBotSkill} from '../server/bot-adaptation.js';
 import {BOT_AIM,angleDifference} from '../server/bot-aim.js';
+import {PrivateFlashCooperation} from '../server/private-bot-cooperation.js';
+import {PrivateMapBots} from '../server/private-map-bots.js';
+import {MapSquadDirector,MapPerception} from '../server/map-ai.js';
 function flat(){const g=new BoxGeometry(500,1,500).toNonIndexed();g.translate(0,-.5,0);initPhysics(g.attributes.position.array);g.dispose();}
 const roster=room=>[...room.players.values()].filter(p=>p.challengeProfile);
 test('challenge reserves a complete five-player opponent squad, preserves identities across halftime and releases names on exit',()=>{
@@ -18,7 +21,11 @@ test('challenge reserves a complete five-player opponent squad, preserves identi
  const names=roster(room).map(p=>p.name);room.pendingTransition={swapSides:true,resetMoney:800};room.startRound();
  assert.deepEqual(roster(room).map(p=>p.name),names);assert(roster(room).every(p=>p.team==='T'));assert.equal(host.team,'CT');
  const newcomer=room.addHuman({},{name:'After swap',team:'auto'});assert.equal(newcomer.team,'CT');assert.equal(roster(room).length,5);
+ for (const name of ['Fourth','Fifth']) room.addHuman({},{name,team:'auto'});
+ assert.equal(room.humanCapacity,5);assert.equal(room.joinable,false);
+ assert.throws(()=>room.addHuman({},{name:'Sixth',team:'auto'}),/已满/);
  room.setBotDifficulty(host.id,'normal');assert.equal(roster(room).length,0);assert([...room.players.values()].filter(p=>p.bot).every(p=>/BOT/.test(p.name)));
+ assert.equal(room.humanCapacity,10);assert.equal(room.joinable,true);
 });
 test('enabling challenge rebalances six existing bots and rejects a room with an opposing human',()=>{
  flat();const room=new GameRoom('REBALANCE',{bots:6}),host=room.addHuman({},{name:'Host',team:'CT'});
@@ -41,4 +48,17 @@ test('demo-derived opening posts require nearby audited NAV and a valid route; n
  assert.equal(challengeOpeningPost(room,p,{nearest:()=>node,route:()=>null}),null);
  const post=challengeOpeningPost(room,p,{nearest:()=>node,route:()=>[node]});assert.equal(post.place,'SnipersNest');
  assert.equal(challengeOpeningPost(room,p,{nearest:()=>({...node,x:node.x+100}),route:()=>[node]}),null);
+});
+test('flash cooperation requires real teammates to turn and never controls humans, owned bots or an unsafe close target',()=>{
+ let now=1000;const world={clearSight:()=>true},c=new PrivateFlashCooperation(()=>now,world),owner={id:'o',bot:true,alive:true,team:'T',x:0,y:0,z:0,yaw:0},friend={...owner,id:'f',x:2};
+ const result={point:{x:0,y:1.6,z:-15},seconds:1.5};assert(c.prepare(owner,result,[owner,friend]));assert.equal(c.canRelease(owner,[owner,friend]),false);
+ const away=c.instruction(friend);assert(away);Object.assign(friend,away);assert(c.canRelease(owner,[owner,friend]));assert.equal(c.instruction({...friend,bot:false}),null);assert.equal(c.instruction({...friend,controllerId:'human'}),null);
+ assert.equal(c.instruction(owner),null);c.released(owner);assert(c.instruction(owner));now+=1800;assert.equal(c.instruction(friend),null);
+ assert.equal(c.prepare(owner,result,[owner,{...friend,bot:false,yaw:0}]),false);
+ assert.equal(c.prepare(owner,{...result,point:{x:0,y:1.6,z:-2}},[owner]),false);
+});
+test('private utility releases dead or taken-over owners independently per team',()=>{
+ const a={id:'a',team:'T',bot:true,alive:false},b={id:'b',team:'CT',bot:true,alive:true,controllerId:'human'};
+ const players=new Map([[a.id,a],[b.id,b]]),room={clock:()=>1000,round:{number:1},players,botDifficulty:'normal',grenades:{blocksSight:()=>false}},world={clearSight:()=>false};
+ const adapter=new PrivateMapBots(room,{graph:{},plans:new Map(),world});adapter.director={begin(){},update(){}};adapter.refresh();adapter.utilityOwners.set('T','a');adapter.utilityOwners.set('CT','b');adapter.reviewAt=0;adapter.refresh();assert.equal(adapter.utilityOwners.size,0);
 });

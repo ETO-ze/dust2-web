@@ -1,5 +1,6 @@
 import {flattenMapDocument} from './flat-map-materials.js';
 import {applyFlatMaterials} from './flat-map-renderer.js';
+import {loadFlatSurfaceDetail} from './flat-surface-detail.js';
 import {prepareFlatSky} from './flat-sky.js';
 import * as THREE from 'three';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
@@ -14,6 +15,11 @@ import {PrivateMapBreakables as BreakableCollisionState} from '../shared/private
 import {privateEntities} from '../shared/private-map-entities.js';
 import {PRIVATE_MOVEMENT_MODEL} from '../shared/ladder-movement.js';
 import {privateMapFetcher} from './private-map-download.js';
+import {omitInactiveQualityMeshes} from './quality-map-layout.js';
+
+async function hashBytes(bytes){
+ return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
+}
 
 function disposeScene(group){
  const textures=new Set(),materials=new Set(),geometries=new Set();
@@ -52,8 +58,9 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
   const gltfProgress=(loaded,total)=>progress.bytes('map.gltf',loaded,total);
   const gltfBytes=transport?.file('raw/map.gltf')?await transport.read('raw/map.gltf',{onBytes:gltfProgress}):await readPrivateResource(gltfURL,{signal,bytes:gltfFile.bytes,onBytes:gltfProgress,fetcher});
   progress.done('map.gltf');const text=new TextDecoder().decode(gltfBytes),json=JSON.parse(text);
-  // Alias only identical source files. The original JSON text above remains
-  // unchanged for Mirage's hash-bound breakable node validation below.
+  const qualityHash=config.flatOnly?null:await hashBytes(gltfBytes);
+  if(qualityHash&&qualityHash!==gltfFile.sha256)throw Error('原图模型与渲染清单版本不一致');
+  const inactiveLayoutMeshes=qualityHash?omitInactiveQualityMeshes(json,config.id,qualityHash):0;
   privateRenderDependencies(json,files);
   if(flat)flattenMapDocument(json,{authoredColors:config.flatOnly===true});
   const duplicateImages=deduplicatePrivateImages(json,files);
@@ -63,9 +70,8 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
   let initialHidden = config.initialHiddenNodeIndices || [];
   const entityPolicy=privateEntities(config.id);
   if(entityPolicy&&(config.id==='de_mirage'||config.movementModel===PRIVATE_MOVEMENT_MODEL||config.breakablesSha256)){
-   const hash=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),byte=>byte.toString(16).padStart(2,'0')).join('');
    const visualHash = config.flatOnly ? config.flatBreakableVisuals?.renderSha256 : entityPolicy.renderSha256;
-   if(await hash(JSON.stringify(entityPolicy))!==config.breakablesSha256||await hash(text)!==visualHash||JSON.stringify(config.breakables)!==JSON.stringify(entityPolicy.objects)||JSON.stringify(config.initialHiddenNodeIndices)!==JSON.stringify(entityPolicy.initialHiddenNodeIndices))throw Error('可破坏物配置与当前原始地图不一致');
+   if(await hashBytes(new TextEncoder().encode(JSON.stringify(entityPolicy)))!==config.breakablesSha256||(qualityHash??await hashBytes(gltfBytes))!==visualHash||JSON.stringify(config.breakables)!==JSON.stringify(entityPolicy.objects)||JSON.stringify(config.initialHiddenNodeIndices)!==JSON.stringify(entityPolicy.initialHiddenNodeIndices))throw Error('可破坏物配置与当前原始地图不一致');
    if (config.flatOnly) {
      visualDefinitions = config.breakables.map(definition => {
        const node = config.flatBreakableVisuals.nodesById?.[definition.id];
@@ -106,7 +112,11 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
     for(const value of Object.values(material))if(value?.isTexture)textures.add(value);
    }
   });
-  if(flat)applyFlatMaterials(group);
+  if(flat){
+    const details=json.extras?.surfaceMaterialVersion===1 ? await loadFlatSurfaceDetail() : null;
+    check();
+    applyFlatMaterials(group,details);
+  }
   for(const texture of textures)texture.anisotropy=4;
   group.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});
   const hemisphere=new THREE.HemisphereLight(0xe4edff,0x8f846b,2),sun=new THREE.DirectionalLight(0xffefd6,3);
@@ -118,7 +128,7 @@ export async function createPrivateMapScene(scene,{onProgress=()=>{},signal,flat
    sky.mapping=THREE.EquirectangularReflectionMapping;scene.background=sky;scene.backgroundIntensity=.8;scene.backgroundRotation.y=1.2;
    scene.userData.sky={source:'Poly Haven / Kloofendal 48d Partly Cloudy',privateMap:true};
   }
-  group.userData.renderStats={meshCount,triangles,outlineSegments,materials:materials.size,textures:textures.size,originalCS2Materials:!flat,style:flat?'flat':'original',lightingParityValidated:false};
+  group.userData.renderStats={meshCount,triangles,outlineSegments,inactiveLayoutMeshes,materials:materials.size,textures:textures.size,originalCS2Materials:!flat,style:flat?'flat':'original',lightingParityValidated:false};
   committed=true;onProgress(MAP.name+(flat?' 极简场景已就绪':' 原始场景已就绪'));
   return {mapData:MAP,positions:collision.positionsByChannel[1],bulletPositions:collision.positionsByChannel[2],grenadePositions:collision.positionsByChannel[4],mapPatches:false,group,breakables,breakableCollision,lights:[hemisphere,sun],spawn:MAP.spawns.T[0],physicsSha256:collision.physicsSha256,loadStats:{...progress.snapshot(),duplicateImages,transport:transport?.stats||null}};
  }finally{

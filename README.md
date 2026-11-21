@@ -1,118 +1,41 @@
 # DUSKRAIN · 网页战术对战
 
-GPT-6 参与开发的第一人称射击项目，支持网页、Android 与 Windows 在线联机，包含服务器权威判定、战术人机与移动端操作。
+支持 5 对 5 的网页第一人称对战。玩家可以从联机大厅加入已有房间，也可以选择地图、画面模式和人机数量创建房间。游戏按所选地图加载资源，开火、命中、经济和人机由房间服务器计算。
 
-[网页版](https://cs2.duskrain.cn/) · [九图发行包](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.4.0-perf.4-216) · [九图运行说明](docs/NINE-MAPS-216.md) · [Android 与 Windows 安装包](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.2.0-cdn.1)
+[进入游戏](https://cs2.duskrain.cn/perf/) · [联机大厅](https://cs2.duskrain.cn/perf/#onlineRooms) · [下载九图发行包](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.4.0-perf.5) · [运行说明](docs/NINE-MAPS-LOBBY.md)
 
-## 九图地图池与 216 款外观
+![地图选择与画面模式](docs/screenshots/nine-map-selector.webp)
 
-高帧率模式包含沙二、米拉吉、炼狱小镇、核子危机、远古遗迹、阿努比斯、死城之谜、列车停放站和殒命大厦。选图后可预览场景，再创建房间或加入对局。
+## 联机大厅
 
-皮肤库收录 **216 款可装备外观**。本轮增加 156 款，包括 34 款枪械原厂外观、102 款热门涂装和 20 款原厂刀型。现在每把枪都有原厂外观和三款按成交数据选取的涂装。刀具栏共有 22 款原厂刀型。固定的“树篱迷宫”手套单独列在装备清单中。
+所有地图上的公开对局合并为一份列表。每行显示地图、模式、房间码、真人昵称、人机数量和可加入人数。大厅可见时每 5 秒更新，支持手动刷新。高画质与高帧率玩家可以同房。仅供邀请的房间可通过房间码加入。
 
-加入已有房间时，客户端先核对房内装备，预载手持武器的模型、贴图与动作，再发送入房请求。备用武器按设备预算解码，重复资源按 SHA-256 复用。装备在加载期间发生变化时，客户端复用已完成的工作，补齐所需资源。
+![游戏菜单中的公开房间和玩家列表](docs/screenshots/nine-map-lobby.webp)
 
-![装备菜单中保存的 M4A1-S 原厂外观](docs/screenshots/216-skin-equipped.png)
+## 地图与画面
 
-发行附件提供游戏程序、九图地图包和 SHA-256 校验清单。安装、从源码运行以及高画质资源要求见[九图运行说明](docs/NINE-MAPS-216.md)。
-
-## 经典两图网页版
-
-![公开地图池与房间配置](docs/screenshots/public-map-pool-desktop.png)
-
-*新版网页首页：地图选择、模式配置、人机数量、房间创建与联机大厅。*
-
-## 网页版 1.3.0
-
-沙二同步最新人机听觉、战术和装备系统；两张地图共用新版 HUD、键位操作、装备携带菜单与皮肤库。米拉吉保留现有地图资源、碰撞、导航、跳点和地图专用人机路线。
-
-- **装备携带：** 全部 34 把枪械可选，每方携带 15 件；CT 起始手枪可选 USP-S／P2000，配置经过服务器确认后保存在本机。
-- **皮肤库：** 50 款可选外观、35 个崭新默认外观；模型与新增动画按需加载，保留已有皮肤、手套和刀型选择。
-- **局内操作：** 护甲数值居中、拆弹器与装备位置调整；商店连续购买进入队列；重复 F 不再重置检视，R 可取消，刀具 FR 切换平滑衔接。
-- **对局反馈：** 己方全员阵亡且 C4 已安装时自动观战 C4，显示拆爆倒计时；听觉信息只提供近似位置，射击仍需视觉确认。
-
-![装备携带与全部武器选择](docs/screenshots/armory-1.3.0.png)
-
-*实际浏览器截图：阵营装备携带、分类替换与崭新默认外观。*
-
-![沙二新版 HUD 与 AUG](docs/screenshots/dust2-hud-1.3.0.png)
-
-*实际浏览器截图：新版 HUD、护甲数值、装备显示与 AUG 秋叶原之选。*
-
-本次更新面向网站与公开源码；Android／Windows 下载包保持此前版本。详细变化与验证范围见 [1.3.0 更新说明](docs/ONLINE-1.3.0.md)。
-
-## 地图池与资源加载
-
-| 地图 | 网页入口 | 当前开放范围 |
-| --- | --- | --- |
-| Dust II · 炙热沙城 II | [进入沙二](https://cs2.duskrain.cn/play/de_dust2/) | 默认地图，支持人机与多人房间。 |
-| Mirage · 米拉吉 | [进入米拉吉](https://cs2.duskrain.cn/play/de_mirage/) | 一个共享房间，最多 10 名玩家。 |
-
-首页仅加载界面、地图预览与房间列表。选择地图不会启动三维场景；创建或加入房间后，才下载所选地图的资源。通用装备与声音跨地图复用，已下载文件按 SHA 缓存，资源变化时补下载对应文件。
-
-地图、材质、武器和声音通过独立下载域名分发；房间、人机、命中和经济仍由游戏服务器计算。资源缓存减少重复传输，进入场景时仍需材质解码、碰撞初始化与显卡准备。
-
-![米拉吉网页对战场景](docs/screenshots/public-mirage-gameplay.png)
-
-*公开米拉吉入口的电脑浏览器对战验证截图。*
-
-## 对战功能
-
-| 功能 | 作用 |
+| 画面模式 | 可用地图 |
 | --- | --- |
-| 多人房间 | 双方共 10 个席位，支持 CT / T 选择、房间码加入与邀请链接分享，人机填充空位。 |
-| 竞技爆破 | 率先获得 13 回合胜利；每 12 回合换边，12:12 进入加时。 |
-| 团队死斗 | 团队累计 100 次击杀获胜。 |
-| 战术人机 | 轻松、普通、困难三档；结合视线、枪声与队友信息选择路线和回防，保留平滑视觉瞄准。 |
-| 装备与经济 | 商店购买、退枪、护甲、拆弹器、捡枪与丢枪；支持五类投掷物与 C4。 |
-| 战况与协作 | 击杀反馈、爆头与助攻、死亡观战、E 接管人机、聊天和计分板。 |
-| 个性化设置 | 皮肤选择、准星、灵敏度、亮度、清晰度、画面比例与帧率上限。 |
+| 高画质 | 炙热沙城 II、荒漠迷城、炼狱小镇 |
+| 高帧率 | 上述三图，以及核子危机、远古遗迹、阿努比斯、死城之谜、列车停放站、殒命大厦 |
 
-打开菜单不会暂停在线对局。切到后台时清理操作输入，返回后重新同步服务器状态。
+高帧率模式简化地图表面，保留天空、探员、武器和手套的材质。核子危机标准对局中原本禁用的工业门已从渲染与碰撞中移除。下图取自同一机位，门后的通道可以双向通过。
 
-## 移动端操作
+![核子危机通道修复前后](docs/screenshots/nine-map-nuke.jpg)
 
-触屏摇杆负责移动，右侧按键支持开火、跳跃、切枪与投掷。布局可拖动、缩放、调整透明度，并通过布局代码或设置备份保存。
+[查看九张地图的高帧率实拍](docs/screenshots/nine-map-surfaces.jpg) · [查看 Blender 材质优化前后](docs/screenshots/nine-map-blender.jpg)
 
-陀螺仪支持对局中开启、仅开镜与关闭；提供两轴灵敏度、开镜倍率、反转和校准。轻度辅助瞄准在准星接近可见敌人时跟随躯干，遮挡、烟雾与致盲会取消辅助，命中仍由服务器判定。
+## 对战与装备
 
-<img src="docs/screenshots/public-map-pool-mobile.png" alt="手机尺寸下的地图池与房间配置" width="360">
+- **竞技爆破**采用 13 胜制，常规赛每 12 回合换边，12 比 12 进入加时。**团队死斗**以先取得 100 次击杀为胜。
+- **战术人机**结合视线、枪声、队友信息和经济做决策。玩家阵亡后可观战，按 E 接管可用的己方人机。
+- **装备与外观**支持阵营携带方案、购买与退枪、掉落拾取、护甲和拆弹器。皮肤库收录 216 款可装备外观，加入房间时优先准备房内玩家持有的武器。
+- **手机操作**支持触屏摇杆、可编辑按键布局、陀螺仪和辅助瞄准。可分别设置清晰度、画面比例、亮度与帧率上限。
 
-*390×844 CSS 像素的浏览器布局检查截图。*
+<img src="docs/screenshots/nine-map-mobile.webp" width="260" alt="手机竖屏对战准备">
 
-正式 Android 包使用 WebView；另有独立 GeckoView ARM64 测试包供内核比较。P60 真机持续帧率、温度和两种内核的对比尚未验收，正式内核保持 WebView。
+## 下载与开发
 
-## 安装与访问
+九图服务器和浏览器客户端在同一发行页提供。发布附件附带 SHA-256 校验文件，安装步骤与本地验证方法见[九图运行说明](docs/NINE-MAPS-LOBBY.md)。另可下载[Android 与 Windows 在线客户端](https://github.com/ETO-ze/dust2-web/releases/tag/online-v1.2.0-cdn.1)及[独立离线版](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.2.0)。
 
-| 入口 | 适用场景 | 下载与要求 |
-| --- | --- | --- |
-| 网页 | 直接访问地图池，与朋友在线对战。 | [cs2.duskrain.cn](https://cs2.duskrain.cn/)；首次进入所选地图需要下载资源。 |
-| Android 正式包 | 基础素材随包安装，减少重复下载。 | [1.2.0-cdn.1 APK](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0-cdn.1/DustII-Android-1.2.0-cdn.1.apk)；Android 8+、WebView 110+、WebGL 2，沿用在线包名与签名。 |
-| Windows 本地联机包 | 本地素材与运行时，连接正式联机服务器。 | [Windows x64 ZIP](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0-cdn.1/DustII-Windows-x64-20261004-102629.zip)；解压后运行 `Start-Game.cmd`。 |
-| GeckoView 测试包 | 对比 Android 浏览器内核，可与正式包共存。 | [GeckoView ARM64 APK](https://github.com/ETO-ze/dust2-web/releases/download/online-v1.2.0/DustII-Gecko-Test-1.2.0.apk)。 |
-| 独立离线版 | 无网络环境下与人机对战。 | [离线 0.2.0](https://github.com/ETO-ze/dust2-web/releases/tag/offline-v0.2.0) · [offline-v1 源码](https://github.com/ETO-ze/dust2-web/tree/offline-v1)。 |
-
-本次 1.3.0 更新针对网页版。已发布的 Android 与 Windows 包仍使用沙二入口；下载附件未因网页更新而重新打包。在线对局仍需要网络，本地素材与 CDN 不会消除线路延迟。
-
-## 开发与验证
-
-需要 Node.js 22.12+：
-
-```bash
-npm ci
-npm run assets:fetch
-npm run build
-npm start
-```
-
-运行自动测试：`node --test --test-concurrency=1 tests/*.mjs`。CDN 工具与配置见 [CDN 自动化说明](docs/CDN-AUTOMATION.md)。
-
-公开源码包含网页菜单、联机客户端、地图运行时与 CDN 下载工具。原始地图导出、私有地图库、测试入口及部署诊断不包含在仓库内；自行部署米拉吉需要另行准备匹配签名的地图、碰撞与导航数据。沙二素材继续沿用现有获取流程。
-
-地图池已进行实际浏览器进入、沙二移动与开火、米拉吉九人机和双客户端 WSS 加入／退出、共享缓存与首页按需加载验证。桌面、手机横屏和竖屏布局均已检查；这些结果不等同于 P60 真机或十名真人长时压力验收。详细范围见 [地图池说明](docs/PUBLIC-MAP-POOL.md)。
-
-## 项目与素材来源
-
-参考 [henhaogame/dust2-offline](https://github.com/henhaogame/dust2-offline) 的离线、触控和部分人机设计，并复用本项目离线 0.2.0 的决策模块进行联机适配。
-
-个人体验项目，非 Valve 官方 CS2，不包含 Source 2 引擎。素材、音乐和第三方组件的归属见 [许可说明](LICENSE.md) 与 [素材来源](docs/ASSETS.md)。
+本项目由 GPT-6 参与开发。触控、离线运行与部分人机设计参考了 [dust2-offline](https://github.com/henhaogame/dust2-offline)。本项目与 Valve 无隶属关系。地图、音乐、外观和第三方组件的来源与使用条件见[素材来源](docs/ASSETS.md)和[许可说明](LICENSE.md)。

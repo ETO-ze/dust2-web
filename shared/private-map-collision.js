@@ -18,6 +18,10 @@ export function applyPrivateCollisionExclusions(mask,groups,policy){
    if(!Array.isArray(sourceEntities)||!sourceEntities.length)throw Error('Private collision lacks source entity state');
    if(reason==='non-solid-prop'){
     if(group.name.split(' ')[0]!=='prop_dynamic'||!sourceEntities.every(e=>e.id&&e.solid===0))throw Error('Private collision lacks nonsolid prop state');
+   }else if(reason==='inactive-layout-prop'){
+    const layout=/^\[pr#\](?:props\.2v2(?:\.[ab])?|brush\.blocker(?:\.[ab])?)$/i;
+    if(group.name.split(' ')[0]!=='prop_dynamic'||!sourceEntities.every(e=>e.id&&e.startdisabled===true&&layout.test(e.targetname)&&/^models\/.+\.vmdl$/.test(e.model)))
+     throw Error('Private collision lacks disabled layout prop evidence');
    }else if(group.name!=='func_brush'||!['never-solid','initially-disabled'].includes(reason)||
      !sourceEntities.every(e=>reason==='never-solid'?e.solidity===1:e.solidity===0&&[true,1,'true','1'].includes(e.startdisabled)))throw Error('Private collision is not supported by source brush state');
   }

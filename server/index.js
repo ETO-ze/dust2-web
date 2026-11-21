@@ -40,6 +40,26 @@ function send(socket, value) {
 
 function error(socket, code, message) { send(socket, { type: 'error', code, message }); }
 
+function publicRoomDirectory(rooms, includeNames = false) {
+  const rows = [];
+  for (const room of rooms.values()) {
+    if (room.visibility !== 'public') continue;
+    const players = [];
+    for (const [id, socket] of room.clients) {
+      if (socket.readyState === WebSocket.OPEN) players.push(room.players.get(id).name);
+    }
+    if (!players.length) continue;
+    rows.push({
+      code: room.code, mode: room.mode, botDifficulty: room.botDifficulty,
+      humans: players.length, bots: room.botCount, capacity: room.humanCapacity,
+      full: room.humanCount >= room.humanCapacity, joinable: room.joinable,
+      scores: { CT: room.scores.CT, T: room.scores.T }, phase: room.round.phase,
+      ...(includeNames ? {players} : {})
+    });
+  }
+  return rows.sort((a,b) => Number(b.joinable)-Number(a.joinable) || b.humans-a.humans || a.code.localeCompare(b.code));
+}
+
 function roomAppearance(room){
   const plan=roomSkinPlan(room),agentIds=roomAgentIds(room);
   // A fixed-size revision keeps a full ten-player cosmetic list out of the
@@ -54,6 +74,7 @@ function joinSettings(msg) {
   // JSON objects can override toString/valueOf; do not coerce protocol fields.
   if (msg.name !== undefined && typeof msg.name !== 'string') return { error: '玩家名称必须是文字。' };
   if (msg.room !== undefined && typeof msg.room !== 'string') return { error: '房间码必须是文字。' };
+  if (msg.visibility !== undefined && !['public','private'].includes(msg.visibility)) return { error: '无效的房间可见性。' };
   const name = (msg.name || 'Player').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 20) || 'Player';
   const room = (msg.room || '').trim().toUpperCase();
   if (room && !/^[A-Z0-9]{4,12}$/.test(room)) return { error: '房间码应为 4–12 位英文字母或数字。' };
@@ -63,11 +84,11 @@ function joinSettings(msg) {
   if(msg.botDifficulty!==undefined&&!BOT_DIFFICULTIES.includes(msg.botDifficulty))return {error:'无效的人机难度。'};
   const bots = botCount(msg.bots),botDifficulty=normalizeBotDifficulty(msg.botDifficulty);
   const primary = PRIMARY_WEAPONS.includes(msg.primary) ? msg.primary : 'auto';
-  return { name, room, mode, team, bots, botDifficulty, primary, weaponLoadout:msg.weaponLoadout,skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0,shotProtocol:msg.shotProtocol===1?1:0 };
+  return { name, room, mode, team, bots, botDifficulty, primary, visibility:msg.visibility, weaponLoadout:msg.weaponLoadout,skins:normalizeSkinLoadout(msg.skins),agents:normalizeAgentLoadout(msg.agents),movementProtocol:msg.movementProtocol===1?1:0,shotProtocol:msg.shotProtocol===1?1:0 };
 }
 
 /** Start the authoritative server after loading collision geometry. No external services. */
-export async function startGameServer({ port = Number(process.env.PORT || 3000), host = process.env.HOST || '0.0.0.0', staticDir = path.join(ROOT, 'dist'), rules = {}, privateMap=null,indexFile='index.html' } = {}) {
+export async function startGameServer({ port = Number(process.env.PORT || 3000), host = process.env.HOST || '0.0.0.0', staticDir = path.join(ROOT, 'dist'), rules = {}, privateMap=null,indexFile='index.html', performanceDirectory=false } = {}) {
   if(MAP.private&&(!privateMap||privateMap.mapSignature!==MAP.mapSignature))throw Error('A fixed private-map process cannot start a different map server');
   if(!privateMap)await loadPhysics();
   const rooms = new Map();
@@ -85,6 +106,11 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
     try { requestPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
     catch { res.writeHead(400); res.end('Bad URL'); return; }
     if(requestPath==='/download-config.json'){sendDownloadConfig(req,res,downloadConfig);return;}
+    if (performanceDirectory && requestPath === '/room-directory.json') {
+      res.writeHead(200, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+      res.end(req.method === 'HEAD' ? undefined : JSON.stringify(publicRoomDirectory(rooms, true)));
+      return;
+    }
     if(privateMap?.handleRequest(req,res,requestPath))return;
     if (requestPath === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -128,7 +154,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
       if(msg.type==='listRooms'){
         if(now-(socket.listRoomsAt||0)<1000)return;
         socket.listRoomsAt=now;
-        send(socket,{type:'rooms',...(privateMap?{mapId:privateMap.mapId,mapSignature:privateMap.mapSignature,physicsSha256:privateMap.config.physicsSha256}:{}),rooms:[...rooms.values()].filter(r=>r.humanCount>0).map(r=>({code:r.code,mode:r.mode,botDifficulty:r.botDifficulty,humans:r.humanCount,bots:r.botCount,scores:r.scores,phase:r.round.phase,joinable:r.humanCount<10&&r.match.status!=='ended'})).sort((a,b)=>Number(b.joinable)-Number(a.joinable)||b.humans-a.humans)});return;
+        send(socket,{type:'rooms',...(privateMap?{mapId:privateMap.mapId,mapSignature:privateMap.mapSignature,physicsSha256:privateMap.config.physicsSha256}:{}),rooms:publicRoomDirectory(rooms)});return;
       }
       if (msg.type === 'roomCosmetics') {
         if (socket.playerId || now - (socket.cosmeticsAt || 0) < 1000) return;
@@ -136,7 +162,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         const code = typeof msg.room === 'string' ? msg.room.trim().toUpperCase() : '';
         const room = rooms.get(code);
         if (!room) { error(socket,'ROOM_GONE','房间已经关闭，请在大厅重新选择。'); return; }
-        if (room.humanCount >= 10 || room.match.status === 'ended') {
+        if (!room.joinable) {
           error(socket,'ROOM_UNAVAILABLE','房间已满或对局已结束，请在大厅重新选择。'); return;
         }
         send(socket,{type:'roomCosmetics',...roomAppearance(room)});
@@ -150,6 +176,9 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         if (!settings.room) { do { settings.room = randomBytes(3).toString('hex').toUpperCase(); } while (rooms.has(settings.room)); }
         let room = rooms.get(settings.room), created = false;
         if(msg.existing===true&&!room){error(socket,'ROOM_GONE','房间已经关闭，请在大厅选择有玩家的房间。');return;}
+        if (room && msg.existing === true && !room.joinable) {
+          error(socket,'ROOM_UNAVAILABLE','房间已满或对局已结束，请在大厅重新选择。'); return;
+        }
         if(room && msg.existing===true && typeof msg.appearanceRevision==='string'){
           const appearance=roomAppearance(room);
           if(appearance.revision!==msg.appearanceRevision){
@@ -159,7 +188,7 @@ export async function startGameServer({ port = Number(process.env.PORT || 3000),
         }
         if (!room) {
           if (rooms.size >= maxRooms) { error(socket, 'SERVER_FULL', '服务器当前房间数量已达上限。'); return; }
-          room = new GameRoom(settings.room, { mode: settings.mode, bots: settings.bots, botDifficulty:settings.botDifficulty, rules, privateMap }); rooms.set(settings.room, room); created = true;
+          room = new GameRoom(settings.room, { mode: settings.mode, bots: settings.bots, botDifficulty:settings.botDifficulty, visibility:settings.visibility, rules, privateMap }); rooms.set(settings.room, room); created = true;
         }
         try {
           const player = room.addHuman(socket, settings); socket.playerId = player.id; socket.roomCode = room.code;

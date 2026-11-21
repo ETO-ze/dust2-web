@@ -120,9 +120,10 @@ export function applyArmorDamage(rawDamage, player, { headshot=false, armorRatio
 }
 
 export class GameRoom {
-  constructor(code, { mode = 'defuse', bots = 6, botDifficulty = 'normal', clock = () => Date.now(), rules = {}, traceBullet=defaultTraceBullet, privateMap=null } = {}) {
+  constructor(code, { mode = 'defuse', bots = 6, botDifficulty = 'normal', visibility = 'public', clock = () => Date.now(), rules = {}, traceBullet=defaultTraceBullet, privateMap=null } = {}) {
     this.gridVision = rules.gridVision ?? (process.env.DUSTII_GRID_VISION === '1');
     this.privateMap=privateMap; this.code = code; this.mode = mode==='deathmatch'?'deathmatch':'defuse'; this.desiredBots = botCount(bots);
+    this.visibility = visibility;
     mode=this.mode;this.traceBullet=traceBullet;this.hostId=null;this.botDifficulty=normalizeBotDifficulty(botDifficulty);
     this.clock = clock; this.rules = { ...RULES, ...rules }; this.players = new Map(); this.clients = new Map();
     this.botUtilityTimeline=new BotUtilityTimeline(clock);
@@ -147,6 +148,8 @@ export class GameRoom {
   emit(type, fields = {}) { this.botUtilityTimeline.observe(type,fields,this.players);hearEvent(this,type,fields);this.privateBots?.onEvent(type,fields); this.events.push({ type, id: `${this.code}:${++this.eventCounter}`, time: this.clock(), ...fields }); if (this.events.length > 300) this.events.splice(0, this.events.length - 300); }
   count(team, humansOnly = false) { return [...this.players.values()].filter(p => p.team === team && (!humansOnly || !p.bot)).length; }
   get humanCount() { return this.clients.size; }
+  get humanCapacity() { return this.botDifficulty === 'vitality' ? 5 : MAX_PLAYERS; }
+  get joinable() { return this.humanCount < this.humanCapacity && this.match.status !== 'ended'; }
   get botCount(){return [...this.players.values()].filter(p=>p.bot).length;}
   teamForSide(side){return this.teamSides.A===side?'A':'B';}
   matchSnapshot(){return {...this.match,teams:Object.fromEntries(Object.entries(this.teamSides).map(([id,side])=>[id,{side,score:this.scores[side]}]))};}
@@ -215,7 +218,7 @@ export class GameRoom {
   }
 
   addHuman(socket, { name, team = 'auto', primary = 'auto', skins, agents, weaponLoadout, movementProtocol, shotProtocol }) {
-    if (this.humanCount >= MAX_PLAYERS) throw new Error('房间已满，最多 10 名玩家。');
+    if (this.humanCount >= this.humanCapacity) throw new Error(`房间已满，最多 ${this.humanCapacity} 名玩家。`);
     let assigned = team;
     if(this.botDifficulty==='vitality'&&this.challengeTeamId){
       const friendly=this.teamSides[this.challengeTeamId==='A'?'B':'A'];

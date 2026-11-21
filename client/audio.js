@@ -15,7 +15,7 @@ export class GameAudio {
 
   // Unlock the native context in the click without starting independent asset
   // readers while the page's cancellable prefetch is still running.
-  async resume() {
+  setupContext() {
     if (!this.ctx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) throw new Error('浏览器不支持游戏音频');
@@ -33,14 +33,23 @@ export class GameAudio {
       limiter.curve = curve; limiter.oversample = '2x';
       this.mix.connect(this.master); this.master.connect(limiter); limiter.connect(c.destination);
     }
+  }
+
+  async resume() {
+    this.setupContext();
     await this.ctx.resume();
+  }
+
+  async prepareSamples() {
+    this.setupContext();
+    if (!this.loading) this.loading = this.loadSamples().catch(error => { this.loading = null; throw error; });
+    await this.loading;
+    this.ready = true;
   }
 
   async start() {
     await this.resume();
-    if (!this.loading) this.loading = this.loadSamples().catch(error => { this.loading = null; throw error; });
-    await this.loading;
-    this.ready = true;
+    await this.prepareSamples();
   }
 
   async loadSamples() {

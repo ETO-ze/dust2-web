@@ -1,3 +1,5 @@
+import {mountRoomDirectory} from './room-directory.js';
+
 const $ = (id) => document.getElementById(id);
 const storageKey = 'duskrain.map-graphics.v1';
 const modeLabels = { quality: '高画质', performance: '高帧率' };
@@ -15,6 +17,7 @@ let images = {};
 let comparing = false;
 let cards = [];
 const failedFiles = new Set();
+const directory = mountRoomDirectory($('onlineRooms'), {graphics:() => preferred});
 
 if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) $('environment').hidden = false;
 
@@ -83,6 +86,7 @@ function renderScene() {
 
 function update() {
   currentMode = preferred === 'quality' && selected.qualityURL ? 'quality' : 'performance';
+  directory.render();
   for (const button of radios) {
     button.disabled = button.value === 'quality' && !selected.qualityURL;
     button.checked = button.value === currentMode;

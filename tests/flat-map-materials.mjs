@@ -69,3 +69,65 @@ test('only explicitly tagged wire panels receive the untextured cutout, keeping 
   assert.match(shader.vertexShader, /modelMatrix \* vec4\(transformed/);
   assert.match(shader.fragmentShader, /diffuseColor\.a \*= fenceCoverage\(\)/);
 });
+
+test('architectural surfaces share one tiled, mipmapped atlas and preserve opaque coverage', async () => {
+  const {loadFlatSurfaceDetail} = await import('../client/flat-surface-detail.js');
+  const [first, second] = await Promise.all([loadFlatSurfaceDetail(), loadFlatSurfaceDetail()]);
+  assert.equal(first, second);
+  assert.equal(first.image.depth, 6);
+  assert.equal(first.image.data.length, first.image.width * first.image.height * 6);
+  assert.equal(first.format, THREE.RedFormat);
+  assert.equal(first.wrapS, THREE.RepeatWrapping);
+  assert.equal(first.wrapT, THREE.RepeatWrapping);
+  assert.equal(first.generateMipmaps, true);
+  for (let i = 0; i < 6; i++) {
+    const size = first.image.width * first.image.height;
+    assert.ok(new Set(first.image.data.subarray(i * size, (i + 1) * size)).size > 5);
+  }
+
+  const architecturalMaterial = {extras:{surfaceMaterialVersion:1}, extensions:{KHR_materials_unlit:{}}};
+  const doc = {extras:{surfaceMaterialVersion:1}, materials:[
+    architecturalMaterial,
+    {...architecturalMaterial, alphaMode:'MASK'},
+    {...architecturalMaterial, extras:{}},
+  ]};
+  flattenMapDocument(doc, {authoredColors:true});
+  assert.deepEqual(doc.materials.map(m => m.extras.surfaceMaterialVersion), [1, undefined, undefined]);
+  const root = new THREE.Group();
+  for (const {extras} of doc.materials) {
+    const material = new THREE.MeshBasicMaterial({vertexColors:true});
+    Object.assign(material.userData, extras);
+    root.add(new THREE.Mesh(new THREE.PlaneGeometry(), material));
+  }
+  applyFlatMaterials(root, first);
+  const shaders = root.children.map(mesh => {
+    const shader = {...THREE.ShaderLib.basic, uniforms:{}};
+    mesh.material.onBeforeCompile(shader);
+    return shader;
+  });
+  assert.equal(shaders[0].uniforms.uSurfaceDetail.value, first);
+  assert.match(shaders[0].vertexShader, /vColor\.a = 1\.0/);
+  assert.match(shaders[0].fragmentShader, /textureGrad\(uSurfaceDetail/);
+  assert.ok(shaders.slice(1).every(shader => !shader.uniforms.uSurfaceDetail));
+  const legacy = {materials:[architecturalMaterial]};
+  flattenMapDocument(legacy, {authoredColors:true});
+  assert.equal(legacy.materials[0].extras.surfaceMaterialVersion, undefined);
+});
+
+test('the repeating metal finish does not imprint the source panel frame on every wall', async () => {
+  const {loadFlatSurfaceDetail} = await import('../client/flat-surface-detail.js');
+  const {data, width, height} = (await loadFlatSurfaceDetail()).image;
+  const metal = data.subarray(width * height, 2 * width * height);
+  const mean = values => values.reduce((sum, value) => sum + value, 0) / values.length;
+  const textureMean = mean(metal);
+  const edges = [
+    metal.subarray(0, width),
+    metal.subarray(-width),
+    Array.from({length: height}, (_, y) => metal[y * width]),
+    Array.from({length: height}, (_, y) => metal[y * width + width - 1]),
+  ];
+  for (const edge of edges) {
+    // One stored four-bit texture level spans seventeen decoded gray levels.
+    assert.ok(Math.abs(mean(edge) - textureMean) < 12);
+  }
+});

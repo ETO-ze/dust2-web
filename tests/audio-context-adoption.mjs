@@ -34,3 +34,11 @@ test('adopted resume rejection leaves sample loading untouched and can recover o
  await assert.rejects(audio.start(),/Gesture required/);assert.equal(samples,0);assert.equal(audio.loading,null);assert.equal(audio.ready,false);
  fail=false;await audio.start();assert.equal(samples,1);assert.equal(audio.ready,true);assert.equal(context.nodes.length,3);
 });
+
+test('a directory navigation can prepare match sounds while playback waits for a user gesture',async()=>{
+ const context=nativeContext(),audio=new GameAudio({context});let loads=0;
+ context.state='suspended';audio.loadSamples=async()=>{loads++;};
+ await audio.prepareSamples();
+ assert.equal(context.calls.length,0);assert.equal(audio.ready,true);assert.equal(loads,1);
+ await audio.start();assert.deepEqual(context.calls,[['resume']]);assert.equal(loads,1);
+});

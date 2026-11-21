@@ -1,0 +1,17 @@
+.room-directory{color:#eeefe8;min-width:0}
+.room-directory .directory-heading,.room-directory .directory-room{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.room-directory .directory-heading h2{font-size:21px;font-weight:650;line-height:1.3;margin:0}
+.room-directory .directory-refresh{border:1px solid #4a504d;background:transparent;color:#d1d8d2;padding:7px 12px;font:inherit;font-size:12px;cursor:pointer}
+.room-directory .directory-refresh:hover{border-color:#c6d0c5}
+.room-directory .directory-status{color:#b9c1bb;font-size:13px;margin:9px 0;line-height:1.5}
+.room-directory .directory-list{display:grid;gap:6px;max-height:22rem;overflow:auto;overscroll-behavior:contain}
+.room-directory .directory-room{padding:13px 15px;border:1px solid #434a47;background:#262b2b}
+.room-directory .directory-details{display:grid;min-width:0;gap:4px;overflow-wrap:anywhere}
+.room-directory .directory-details h3{margin:0;color:#eef0e7;font-size:15px;line-height:1.4;font-weight:650}
+.room-directory .directory-meta,.room-directory .directory-players{font-size:12px;line-height:1.55;color:#b8c0b9}
+.room-directory .directory-players{color:#d9ded6}
+.room-directory .directory-join{padding:8px 10px;flex:none;font-size:13px;color:#b1b8b3;text-decoration:none}
+.room-directory a.directory-join{background:#ead099;color:#25251f;font-weight:650}
+.room-directory a.directory-join:hover{background:#ffe0a2}
+.room-directory :is(a,button):focus-visible{outline:2px solid #ffde96;outline-offset:-2px}
+@media(max-width:520px){.room-directory .directory-room{gap:8px;padding:11px}.room-directory .directory-meta,.room-directory .directory-players{font-size:11px}.room-directory .directory-join{font-size:12px;padding:8px}.room-directory .directory-details h3{font-size:14px}}

@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 import math
+import os
 import pathlib
 import shutil
 import struct
@@ -18,6 +19,9 @@ repo = HERE.parents[1]
 spec = importlib.util.spec_from_file_location('source', HERE / 'compile-source.py')
 source = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(source)
+spec = importlib.util.spec_from_file_location('policy', HERE / 'build-entity-collision-policy.py')
+policy = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(policy)
 sha = source.digest
 write = source.write_json
 read = lambda p: json.loads(p.read_text(encoding='utf8'))
@@ -111,7 +115,7 @@ def main():
     reports={r['id']:r for r in read(args.library/'exports.json')}; radar=read(args.cloud/'map_data.json')
     maps=list(dict.fromkeys([*reports,*EXTRA]));rd=args.out/'radars';rd.mkdir(exist_ok=True)
     write(rd/'transforms.json',{key:radar[key] for key in maps})
-    exports=[]
+    exports=[]; changed_policies=[]
     for key in maps:
         directory=args.out/key; cp=directory/'compiled';cp.mkdir(parents=True,exist_ok=True)
         if not args.ids or key in args.ids:
@@ -122,8 +126,18 @@ def main():
                 assert read(orig/'compiled/map.json')['id']==key
                 for name in ['map.json','nav.json','physics.f32','physics-mask.u8','physics-groups.json']:
                     shutil.copyfile(orig/'compiled'/name,cp/name)
-                shutil.copyfile(orig/'entity-collision-policy.json',directory/'entity-collision-policy.json')
-                if read(orig/'navigation-audit.json').get('schemaVersion')==2:shutil.copyfile(orig/'navigation-audit.json',directory/'navigation-audit.json')
+                original_policy=read(orig/'entity-collision-policy.json')
+                record={'id':key,'directory':str(orig),'sourceSha256':read(cp/'map.json')['sourceSha256']}
+                staging_policy=directory/'entity-collision-policy.json.part'
+                policy.build(record,directory,staging_policy,original_policy.get('nativePlayerExclusions'))
+                staging_policy.replace(directory/'entity-collision-policy.json')
+                audit=read(orig/'navigation-audit.json')
+                if audit.get('schemaVersion')==2 and audit['policySha256']==sha(directory/'entity-collision-policy.json'):
+                    staging_audit=directory/'navigation-audit.json.part'
+                    shutil.copyfile(orig/'navigation-audit.json',staging_audit)
+                    staging_audit.replace(directory/'navigation-audit.json')
+                else:
+                    changed_policies.append(key)
             else:
                 assert args.geometry and sha(args.geometry)==read(args.cloud/'manifest.json')['artifacts']['geometry.zip']['sha256']
                 assert sha(args.cloud/'navs.zip')==read(args.cloud/'manifest.json')['artifacts']['navs.zip']['sha256']
@@ -144,4 +158,7 @@ def main():
             print(f'{key} {size:,} render bytes, zero textures',flush=True)
         if (cp/'map.json').exists():exports.append({'id':key,'directory':str(directory.resolve()),'sourceSha256':read(cp/'map.json')['sourceSha256']})
     write(args.out/'exports.json',exports)
+    if changed_policies:
+        subprocess.run(['node',str(HERE/'validate-navigation.mjs'),'--source-air','--all-edges',*changed_policies],
+                       env={**os.environ,'DUSTII_MAP_LIBRARY':str(args.out.resolve())},check=True)
 if __name__=='__main__':main()

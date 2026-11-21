@@ -1,10 +1,13 @@
 import './room-menu.css';
+import {PERFORMANCE_MAPS} from '../shared/performance-map-pool.js';
 
 export class RoomMenu {
   constructor({send,invite,onClose}){
     this.send=send;this.onClose=onClose;
     this.element=document.createElement('div');this.element.id='room-menu';this.element.className='overlay';this.element.hidden=true;
-    this.element.innerHTML='<section class="room-card"><header><div><div class="eyebrow">PLAY WITH FRIENDS / 5 VS 5</div><h2>对战房间 <span class="room-code"></span></h2></div><button class="room-close" aria-label="关闭房间面板">×</button></header><p class="room-description">选择空位加入阵营。房主可以在空位添加人机；爆破回合中换队需等待下一回合。</p><div class="room-teams"></div><footer><span class="room-status" role="status"></span><button class="room-invite">复制邀请链接</button><button class="primary-button room-play">返回游戏</button></footer></section>';
+    this.element.innerHTML='<section class="room-card"><header><div><div class="eyebrow">5 对 5</div><h2>对战房间 <span class="room-code"></span></h2></div><button class="room-close" aria-label="关闭房间面板">×</button></header><p class="room-description">选择空位加入阵营。房主可以在空位添加人机；爆破回合中换队需等待下一回合。</p><div class="room-teams"></div><footer><span class="room-status" role="status"></span><button class="room-invite">复制邀请链接</button><button class="primary-button room-play">返回游戏</button></footer></section>';
+    const map = PERFORMANCE_MAPS.find(entry => entry.id === (globalThis.__DUST2_PRIVATE_MAP__?.id || 'de_dust2'));
+    if (map) this.element.querySelector('.eyebrow').textContent = map.nameZh + ' · 5 对 5';
     document.body.append(this.element);
     this.element.querySelector('.room-invite').onclick=invite;
     this.element.querySelector('.room-close').onclick=()=>this.close();

@@ -310,8 +310,10 @@ function controlAction(action,{pressed,event,source}){
 }
 
 
-async function loadGame(audioUnlocked){
-  if(loaded){await audioUnlocked;await audio.start();return;}
+async function loadGame(audioUnlocked, directoryNavigation=false){
+  // Cross-map joins can decode sounds before the browser allows playback.
+  const prepareAudio = () => directoryNavigation ? audio.prepareSamples() : audioUnlocked.then(()=>audio.start());
+  if(loaded){await prepareAudio();return;}
   setLoadStage('download',privateMap?'读取通用武器与声音资源':'下载地图与武器资源');
   downloadAbort=new AbortController();
   const signal=downloadAbort.signal;
@@ -325,7 +327,7 @@ async function loadGame(audioUnlocked){
   if(privateMap)signal.throwIfAborted();
   // Do not leave audio readers running against a cancelled prefetch. The
   // context was unlocked by the click; samples start after resource preparation.
-  const audioReady=audioUnlocked.then(()=>audio.start());audioReady.catch(()=>{});
+  const audioReady=prepareAudio();audioReady.catch(()=>{});
   // Wait for every parser before opening Retry. Successful heavy work is kept
   // so a failed audio/model request cannot append a second map on the next try.
   const tasks=await Promise.allSettled([
@@ -356,8 +358,8 @@ async function loadGame(audioUnlocked){
   loaded=true;downloadAbort=null;releaseDownloads();
 }
 
-async function start(joinExisting=false){
-  if(touchControls?.enabled)mobileShell?.enter();
+async function start(joinExisting=false, directoryNavigation=false){
+  if(touchControls?.enabled&&!directoryNavigation)mobileShell?.enter();
   if(loading)return;loading=true;pendingJoin=joinExisting;
   $('start-button').disabled=true;$('join-button').disabled=true;$('loading-screen').hidden=false;
   $('loading-error').hidden=true;$('loading-spinner').hidden=false;
@@ -366,9 +368,9 @@ async function start(joinExisting=false){
   const weapon=getWeapon(primary);$('loading-weapon').textContent=`${weapon.name} · ${getSkin(skins.loadout[primary])?.name||weapon.skin}`;
   $('menu-status').textContent='正在加载战场。资源会缓存，之后进入更快。';
   setLoadStage(loaded?'connect':'download',loaded?'连接对战房间':'准备资源清单');
-  const audioUnlocked=audio.resume();audioUnlocked.catch(()=>{});
+  const audioUnlocked=directoryNavigation?Promise.resolve():audio.resume();audioUnlocked.catch(()=>{});
   try{
-    await loadGame(audioUnlocked);
+    await loadGame(audioUnlocked,directoryNavigation);
     downloadAbort=new AbortController();
     const signal=downloadAbort.signal;
     setLoadStage('download','核对房间武器外观');
@@ -674,7 +676,16 @@ function resizeViewport(){
 window.addEventListener('resize',()=>{resizeViewport();if(touchControls?.enabled){clearGameInput();touchControls.clear();}});globalThis.visualViewport?.addEventListener('resize',resizeViewport);resizeViewport();
 function syncTouchSurface(){touchControls?.setActive(touchPlaying&&gameSurfaceActive()&&snapshot?.match?.status!=='ended');}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){suspendInput();touchControls?.clear();if(connected)$('pause-menu').hidden=false;syncTouchSurface();}});
-const lobby=mountLobby({connection,mapId:privateMap?.mapId||'de_dust2',onJoin:()=>{$('team').value='auto';$('join-button').click();}});
+export function joinDirectoryRoom({code,mode}, directoryNavigation=false){
+  $('room-code').value=code;
+  $('mode').value=mode;
+  chooseTeam('auto');
+  updateModeLabels();
+  return start(true,directoryNavigation);
+}
+if(!privateMap?.flatOnly&&privateMap?.graphicsMode!=='quality'){
+  mountLobby({connection,mapId:privateMap?.mapId||'de_dust2',onJoin:()=>{$('team').value='auto';$('join-button').click();}});
+}
 
 export function prepareHomeLoadout({team,primary:weapon}){choosePrimary(weapon);chooseTeam(team);updateModeLabels();}
 export function startFromHome(join=false){return start(join);}

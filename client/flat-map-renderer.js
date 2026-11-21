@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import {createFlatWireFence} from './flat-wire-fence.js';
+import {applySurfaceDetail} from './flat-surface-detail.js';
 
 // GLTFLoader has resolved any alpha textures by this point. Use one Lambert
 // material per parsed variant, including variants produced for vertex colours.
-export function applyFlatMaterials(root) {
+export function applyFlatMaterials(root, detailTexture) {
   const replacements = new Map();
   const replace = original => {
     if (replacements.has(original)) return replacements.get(original);
@@ -22,6 +23,9 @@ export function applyFlatMaterials(root) {
       polygonOffset: baked || !!original.userData.flatOverlay, polygonOffsetFactor: baked?1:-1, polygonOffsetUnits: baked?1:-1,
     });
     if(baked)material.toneMapped=false;
+    if(detailTexture && original.userData.surfaceMaterialVersion===1 && baked && !original.map){
+      applySurfaceDetail(material,detailTexture);
+    }
     if (original.map) {
       // Preserve the exact source alpha test without sampling decorative RGB.
       material.onBeforeCompile = shader => {

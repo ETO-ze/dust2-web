@@ -7,12 +7,13 @@
   <title>地图与画面 · DUSKRAIN 对战平台</title>
   <link rel="icon" type="image/png" href="/perf/ui/icon.png">
   <link rel="stylesheet" href="/perf/ui/screen.css">
+  <link rel="stylesheet" href="/perf/ui/room-directory.css">
   <script type="module" src="/perf/ui/screen.js"></script>
 </head>
 <body>
   <header class="top"><div class="wrap mast">
-    <div class="brand"><span class="emblem" aria-hidden="true"><i></i><i></i><i></i></span><strong>DUSKRAIN</strong><span class="brand-divider"></span><span class="brand-sub">对战平台</span></div>
-    <span class="environment" id="environment" hidden><i></i>本地预览</span>
+    <div class="portal-brand"><span class="portal-mark" aria-hidden="true"><i></i><i></i><i></i></span><strong>DUSKRAIN</strong><span class="portal-product">对战平台</span></div>
+    <div class="mast-links"><a class="directory-shortcut" href="#onlineRooms">联机大厅</a><span class="environment" id="environment" hidden><i></i>本地预览</span></div>
   </div></header>
   <main class="wrap">
     <div class="heading"><h1>地图与画面</h1><button id="reset" class="quiet" type="button" hidden><span aria-hidden="true">↺</span> 恢复默认</button></div>
@@ -54,6 +55,7 @@
         <div class="rail" id="rail" role="group" aria-label="选择对战地图"></div>
       </section>
     </div>
+    <section class="room-directory" id="onlineRooms" aria-label="全部地图在线房间"></section>
     <noscript>请启用 JavaScript 以选择地图和画面模式。</noscript>
     <span id="announce" role="status" class="sr"></span>
   </main>

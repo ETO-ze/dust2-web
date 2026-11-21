@@ -4,6 +4,22 @@ import {privateConfig} from './private-game-config.js';
 import {MIRAGE_JUMP_LINKS} from '../shared/private-map-jump-links.js';
 import {initDownloadOrigin} from './download-origin.js';
 import {privateMapDownloads,privateMapFetcher} from './private-map-download.js';
+import {mountPortalRoom} from './portal-room.js';
+import {mountGameRoomDirectory} from './game-room-directory.js';
+import {consumeDirectoryJoin} from '../scripts/maps/mode-ui/room-directory.js';
+
+// The directory stays usable if the selected map's worker is busy or still loading.
+const directoryRoute=/^\/perf\/(quality\/)?play\/(de_[a-z0-9]+)\/$/.exec(location.pathname);
+let gameRuntime;
+if(directoryRoute){
+ mountPortalRoom(directoryRoute[2],directoryRoute[1]?'quality':'performance');
+ const directory=mountGameRoomDirectory({id:directoryRoute[2],graphicsMode:directoryRoute[1]?'quality':'performance'},room=>{
+  if(!gameRuntime)return false;
+  gameRuntime.joinDirectoryRoom(room);
+  return true;
+ });
+ window.addEventListener('pagehide',event=>{if(!event.persisted)directory.dispose();});
+}
 
 async function bootstrap(){
  const request=async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('私有地图配置暂不可用 ('+r.status+')');return r.json();};
@@ -40,18 +56,18 @@ async function bootstrap(){
  if(!config.publicPool)for(const el of document.querySelectorAll('.map-emblem img,.loading-tactical img')){el.src=map.overview.image;el.alt=map.name+' 战术地图';}
  const banner=document.querySelector('.loading-map-title>p');if(banner)banner.textContent=config.publicPool?'A、B 双爆破点布局，中路连接多个攻防区域。':'私有原始地图联机测试。按图加载，规则仍由服务器计算。';
  const cover=new URL('../../../previews/'+map.id+'.png',config.renderUrl).href;
- if(!config.publicPool)document.documentElement.style.setProperty('--loading-map-cover',`url(${JSON.stringify(cover)})`);
- const style=document.createElement('style');style.textContent=`body.private-game .loading-image,body.private-game .menu-photo{background-image:url(${JSON.stringify(cover)})}body.private-game .map-showcase{background-image:none}
+ if(!directoryRoute&&!config.publicPool)document.documentElement.style.setProperty('--loading-map-cover',`url(${JSON.stringify(cover)})`);
+ if(!directoryRoute){const style=document.createElement('style');style.textContent=`body.private-game .loading-image,body.private-game .menu-photo{background-image:url(${JSON.stringify(cover)})}body.private-game .map-showcase{background-image:none}
  body.private-game .private-map-switch{display:inline-flex;gap:12px;align-items:center;justify-content:center;min-height:40px;padding:9px 16px;border:1px solid #8e7950;background:#26332d;color:#f3d995;text-decoration:none;font-size:12px;white-space:nowrap;font-weight:650}
  body.private-game .play-bar>.private-map-switch{margin-left:auto}body.private-game .private-map-switch:hover{background:#35443a}body.private-game .private-map-switch:focus-visible{outline:2px solid #f3d995;outline-offset:3px}body.private-game .private-map-switch span{font-size:10px;font-weight:400;color:#cbd2bd}
  body.private-game .pause-map-switch{width:100%;min-height:42px;margin-top:5px}body.private-game .pause-actions{flex-wrap:wrap}
  @media(max-width:760px){body.private-game .private-map-switch{min-height:36px;padding:7px 11px;font-size:11px}body.private-game .play-bar>.private-map-switch span{display:none}body.private-game .play-bar{gap:12px;flex-wrap:wrap}body.private-game .play-bar>span:nth-child(2){max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
- `;document.head.append(style);
+ `;document.head.append(style);}
  const modeLibrary=config.flatOnly||config.graphicsMode==='quality';
- for(const back of document.querySelectorAll('[data-map-library]'))back.href=modeLibrary?'/perf/':new URL('../../',location.href).href;
+ if(!directoryRoute)for(const back of document.querySelectorAll('[data-map-library]'))back.href=modeLibrary?'/perf/':new URL('../../',location.href).href;
  if(modeLibrary){
   const modeName=config.flatOnly?'高帧率':'高画质';
-  document.title=map.name+' · '+modeName+'对战';
+  document.title=map.nameZh+' · '+modeName+' · DUSKRAIN';
   const cards=document.querySelector('.home-map-grid');
   if(cards){const link=document.createElement('a');link.className='private-map-switch';link.href='/perf/';link.textContent='更换地图';cards.replaceChildren(link);}
   if(banner)banner.textContent=map.nameZh+(config.flatOnly?' · 低多边形场景':' · 原版地图材质');
@@ -59,6 +75,13 @@ async function bootstrap(){
  }
  return import('./main.js');
 }
-export const ready=bootstrap().catch(error=>{console.error(error);const status=document.getElementById('menu-status');if(status)status.textContent='无法启动地图：'+error.message;for(const id of ['start-button','join-button']){const button=document.getElementById(id);if(button)button.disabled=true;}throw error;});
+export const ready=bootstrap().then(module=>{
+ gameRuntime=module;
+ if(directoryRoute){
+  const target=consumeDirectoryJoin(new URL(location.href),url=>history.replaceState(null,'',url));
+  if(target)module.joinDirectoryRoom(target,true);
+ }
+ return module;
+}).catch(error=>{console.error(error);const status=document.getElementById('menu-status');if(status)status.textContent='无法启动地图：'+error.message;for(const id of ['start-button','join-button']){const button=document.getElementById(id);if(button)button.disabled=true;}throw error;});
 // Private HTML uses this module directly; keep its rejection handled as well.
 ready.catch(()=>{});

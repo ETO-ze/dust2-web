@@ -1,0 +1,115 @@
+/* The map picker and the room share navigation, map art, typography and control colours. */
+body.portal-room #menu.home-menu {
+  --home-ink: var(--portal-ink); --home-muted: var(--portal-muted);
+  --home-accent: var(--portal-gold); --home-border: var(--portal-line);
+  display: block; background: radial-gradient(ellipse at 20% 0%,#202526,transparent 52%),var(--portal-bg);
+  font-family: var(--portal-font); color: var(--portal-ink); text-align: left;
+}
+body.portal-room #menu.home-menu[hidden] {display:none;}
+body.portal-room #menu .menu-header {
+  min-height:66px; align-items:center; flex-wrap:nowrap; gap:20px;
+  padding:0 max(var(--portal-pad),calc((100vw - var(--portal-width))/2 + var(--portal-pad)));
+  background:#171a1b; border-bottom:1px solid var(--portal-line);
+}
+body.portal-room #menu .main-nav {display:flex; align-self:stretch; align-items:stretch; width:auto; min-height:0; margin-left:auto; gap:12px;}
+body.portal-room #menu .main-nav button {white-space:nowrap; min-height:42px; color:var(--portal-muted); font-size:14px; padding:0 8px;}
+body.portal-room #menu .main-nav button.active {color:var(--portal-ink); border-color:var(--portal-gold);}
+body.portal-room #menu .menu-profile, body.portal-room #menu .play-bar {display:none;}
+body.portal-room #menu :is(.portal-page-heading,.menu-content,.menu-footer) {
+  box-sizing:border-box; width:100%; max-width:var(--portal-width); margin-inline:auto;
+  padding-inline:var(--portal-pad);
+}
+body.portal-room #menu .portal-page-heading {display:flex; justify-content:space-between; align-items:center; gap:12px; margin-block:clamp(22px,3vw,43px) 20px;}
+body.portal-room #menu .portal-page-heading h1 {font:730 clamp(27px,2.9vw,40px)/1.2 var(--portal-font); letter-spacing:-.035em; margin:0; color:var(--portal-ink);}
+body.portal-room #menu .portal-page-heading a {text-decoration:none; color:var(--portal-muted); font-size:13px; padding:8px 0;}
+body.portal-room #menu .portal-page-heading a:hover {color:var(--portal-gold);}
+body.portal-room #menu .menu-content {
+  display:grid; min-height:0; padding-block:0 32px;
+  grid-template-columns:minmax(0,1.92fr) minmax(314px,1fr);
+  grid-template-rows:auto 1fr; align-items:start; gap:16px;
+}
+body.portal-room #menu .hero-copy.map-showcase {grid-column:1; grid-row:1; align-self:start; border:1px solid var(--portal-line); background:var(--portal-panel);}
+.portal-map-art {isolation:isolate; position:relative; aspect-ratio:1.94; min-height:190px; overflow:hidden; background:#2f3838;}
+.portal-map-art img,.portal-map-art:after {position:absolute; inset:0; width:100%; height:100%;}
+.portal-map-art img {object-fit:cover; object-position:50% 52%; z-index:-2;}
+.portal-map-art img.portal-radar {object-fit:contain;}
+.portal-map-art:after {content:""; z-index:-1; background:linear-gradient(180deg,#11161552,transparent 29%,transparent 52%,#101413ce);}
+.portal-mode {position:absolute; top:16px; left:18px; color:#f1f1e9; background:#141817d6; border:1px solid #ffffff35; padding:5px 10px; font-size:12px; line-height:1.4;}
+.portal-map-caption {position:absolute; inset:auto 18px clamp(14px,2.3vw,35px) clamp(16px,2.7vw,40px); text-shadow:0 2px 14px #0006; color:#fffdf3;}
+.portal-map-zh {display:flex; align-items:center; gap:9px; font-size:clamp(14px,1.3vw,18px); font-weight:600; letter-spacing:.08em;}
+.portal-map-zh:before {content:""; height:3px; width:24px; background:var(--portal-gold);}
+body.portal-room #menu .portal-map-caption h2 {font:italic 800 clamp(58px,6.9vw,104px)/.94 var(--portal-display); letter-spacing:-.024em; text-transform:uppercase; color:inherit; margin:5px 0 0 -2px;}
+body.portal-room #menu .map-rules {display:grid; grid-template-columns:auto 1fr; gap:4px 15px; align-items:baseline; margin:0; padding:14px 18px; border:0;}
+body.portal-room #menu .map-rules b {grid-row:span 2; color:var(--portal-ink); font-size:13px;}
+body.portal-room #menu .map-rules p, body.portal-room #menu .map-rules > span {margin:0; color:var(--portal-muted); font-size:12px; line-height:1.5;}
+body.portal-room #menu .match-card {grid-column:2; grid-row:1/3; padding:clamp(17px,1.85vw,29px); border:1px solid var(--portal-line); border-radius:0; background:var(--portal-panel);}
+body.portal-room #menu .match-card h2 {font:675 23px/1.25 var(--portal-font); color:var(--portal-ink); margin:0 0 18px;}
+body.portal-room #menu :is(.room-setup-grid,.join-row) {min-width:0;}
+body.portal-room #menu .room-setup-grid {display:grid; grid-template-columns:1fr; gap:13px;}
+body.portal-room #menu .match-card :is(input,select,.join-row button,.team-choice,.loadout-choice) {border-radius:0; background:var(--portal-inset); border:1px solid #454a48; color:var(--portal-ink); font-size:13px;}
+body.portal-room #menu .match-card .field-label,
+body.portal-room #menu :is(.home-bot-difficulty,.home-options > summary) {font-size:13px; color:var(--portal-muted);}
+body.portal-room #menu .home-bot-difficulty select {background:var(--portal-inset); color:var(--portal-ink); border-color:#454a48;}
+body.portal-room #menu .bot-setup {padding:14px 0;}
+body.portal-room #menu .bot-setup > div > span, body.portal-room #menu #menu-status {color:var(--portal-muted); font-size:12px; line-height:1.5;}
+body.portal-room #menu .match-card .primary-button, body.portal-room .room-card .room-play {border:0; border-radius:0; background:var(--portal-gold); color:#201f19; font-weight:700;}
+body.portal-room #menu .match-card .primary-button:hover, body.portal-room .room-card .room-play:hover {background:#ffd783;}
+body.portal-room #menu .game-room-directory {grid-column:1; grid-row:2; margin:0; border:1px solid var(--portal-line); padding:18px; background:var(--portal-panel);}
+body.portal-room #menu .game-room-directory .directory-heading h2 {font:675 21px/1.25 var(--portal-font);}
+body.portal-room #menu .menu-footer {background:transparent; border-top:1px solid var(--portal-line);}
+body.portal-room #menu .menu-footer [data-map-library] {display:none;}
+body.portal-room #loading-screen {font-family:var(--portal-font); background:var(--portal-bg);}
+body.portal-room #loading-screen .loading-image {background-image:var(--loading-map-cover); background-size:cover;}
+body.portal-room #loading-screen .loading-header {background:#171a1be8;}
+body.portal-room #loading-screen .loading-header .portal-brand .portal-product {background:none; color:var(--portal-muted);}
+body.portal-room .room-card .eyebrow {color:var(--portal-gold); font-size:12px; letter-spacing:.06em;}
+body.portal-room #loading-screen .loading-footer {background:#202425f5; border-color:var(--portal-line);}
+body.portal-room #loading-screen .load-track i {background:var(--portal-gold);}
+body.portal-room #loading-screen .loading-map-title h1 {font-family:var(--portal-display); font-style:italic; font-weight:800;}
+body.portal-room .pause-actions {flex-wrap:wrap;}
+body.portal-room .pause-map-switch {
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  width:100%; min-height:42px; margin-top:5px; padding:8px 14px;
+  border:1px solid var(--portal-line); background:var(--portal-panel);
+  color:var(--portal-ink); text-decoration:none; font-weight:600;
+}
+body.portal-room .pause-map-switch:hover {border-color:var(--portal-gold);}
+body.portal-room #room-menu {font-family:var(--portal-font); background:#101414cd;}
+body.portal-room .room-card {background:var(--portal-panel); border:1px solid var(--portal-line); border-top:3px solid var(--portal-gold); box-shadow:0 15px 48px #0005; color:var(--portal-ink);}
+body.portal-room .room-card :is(.room-code,.room-status,.room-description,.seat-label small) {color:var(--portal-muted);}
+body.portal-room .room-card .room-seat {background:var(--portal-inset);}
+body.portal-room .room-card .room-seat.is-self {background:#303534;}
+body.portal-room .room-invite {color:var(--portal-ink); background:#292e2d; border-color:#454a48;}
+body.portal-room .room-card .room-close {color:var(--portal-muted);}
+@media(max-width:1000px) {
+  body.portal-room #menu .menu-content {grid-template-columns:minmax(0,1.5fr) minmax(288px,1fr); gap:12px;}
+}
+@media(max-width:740px) {
+  body.portal-room #menu .menu-header {min-height:54px; gap:8px;}
+  body.portal-room #menu .main-nav {gap:0;}
+  body.portal-room #menu .main-nav button {padding:0 6px; font-size:12px;}
+  body.portal-room #menu .menu-content {grid-template-columns:1fr; grid-template-rows:auto; gap:12px;}
+  body.portal-room #menu :is(.hero-copy.map-showcase,.match-card,.game-room-directory) {grid-column:1; grid-row:auto;}
+  body.portal-room #menu .room-setup-grid {grid-template-columns:1fr 1.15fr;}
+  body.portal-room #menu .portal-page-heading {margin-block:18px 12px;}
+  .portal-map-art {aspect-ratio:2.6; min-height:140px;}
+  body.portal-room #menu .portal-map-caption h2 {font-size:clamp(46px,10vw,65px);}
+}
+@media(max-width:520px) {
+  body.portal-room #menu .menu-header {flex-wrap:wrap; gap:0; padding-top:10px;}
+  body.portal-room #menu .main-nav {width:100%; margin:4px 0 0; justify-content:space-between;}
+  body.portal-room #menu .main-nav button {font-size:13px; min-height:36px;}
+  body.portal-room #menu .map-rules {gap:3px 10px; padding:10px 13px;}
+  body.portal-room #menu .portal-page-heading h1 {font-size:26px;}
+  .portal-mode {top:9px; left:10px; font-size:11px;}
+}
+@media(orientation:landscape) and (max-height:500px) and (min-width:620px) {
+  body.portal-room #menu .menu-header {min-height:40px;}
+  body.portal-room #menu .portal-page-heading {margin-block:10px;}
+  body.portal-room #menu .portal-page-heading h1 {font-size:24px;}
+  body.portal-room #menu .menu-content {grid-template-columns:minmax(0,1.5fr) minmax(265px,1fr); gap:10px;}
+  body.portal-room #menu .hero-copy.map-showcase {grid-column:1; grid-row:1;}
+  body.portal-room #menu .game-room-directory {grid-column:1; grid-row:2;}
+  body.portal-room #menu .match-card {grid-column:2; grid-row:1/3;}
+  body.portal-room #menu .main-nav button {min-height:40px;}
+}

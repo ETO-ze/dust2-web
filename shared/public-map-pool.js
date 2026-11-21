@@ -1,7 +1,7 @@
 // Public routes intentionally exclude the independent private Inferno preview.
 export const PUBLIC_MAPS=Object.freeze([
  Object.freeze({id:'de_dust2',name:'DUST II',nameZh:'炙热沙城 II'}),
- Object.freeze({id:'de_mirage',name:'MIRAGE',nameZh:'米拉吉'}),
+ Object.freeze({id:'de_mirage',name:'MIRAGE',nameZh:'荒漠迷城'}),
 ]);
 export function publicMapForPage(pageURL){
  const path=new URL(pageURL).pathname;

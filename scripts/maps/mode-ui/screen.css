@@ -1,5 +1,5 @@
-@font-face{font-family:Barlow Condensed;src:url("type/barlow-condensed-extrabold-italic.ttf") format("truetype");font-style:italic;font-weight:800;font-display:swap}
-:root{color-scheme:dark;--bg:#151819;--panel:#202425;--inset:#1a1d1e;--line:#393e3f;--fg:#f1f1e9;--muted:#b1b7b4;--gold:#f6c357;--space:clamp(14px,2.2vw,32px);background:var(--bg);color:var(--fg);font:15px/1.45 "Instrument Sans","Segoe UI","Microsoft YaHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+@import url("./portal-theme.css");
+:root{color-scheme:dark;--bg:var(--portal-bg);--panel:var(--portal-panel);--inset:var(--portal-inset);--line:var(--portal-line);--fg:var(--portal-ink);--muted:var(--portal-muted);--gold:var(--portal-gold);--space:clamp(14px,2.2vw,32px);background:var(--bg);color:var(--fg);font:15px/1.45 var(--portal-font);-webkit-font-smoothing:antialiased}
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(ellipse at 20% 0%,#202526 0,transparent 52%),var(--bg);min-height:100vh}
 button,a,input{font:inherit}
@@ -7,16 +7,13 @@ button{color:inherit;cursor:pointer}
 button,a,input{touch-action:manipulation}
 [hidden]{display:none!important}
 :focus-visible{outline:2px solid #fff;outline-offset:3px}
-.wrap{max-width:1416px;padding-inline:clamp(16px,4.5vw,66px);margin:auto}
+.wrap{max-width:var(--portal-width);padding-inline:var(--portal-pad);margin:auto}
 .top{border-bottom:1px solid #343839;background:#171a1bee}
 .mast,.brand,.environment,.heading,.pool-heading,.pool-actions,.title-count,.scene-tools,.scene-type,.compare,.cn-name,.quiet,.filter,.pages{display:flex;align-items:center}
 .mast{height:66px;justify-content:space-between}
-.brand{gap:12px}
-.brand strong{font:italic 800 24px/1 "Barlow Condensed","Arial Narrow","Segoe UI",sans-serif;letter-spacing:.045em}
-.emblem{display:flex;align-items:flex-end;gap:3px;height:22px;width:27px;transform:skew(-17deg);color:var(--gold)}
-.emblem i{display:block;background:currentColor;width:6px;height:50%}.emblem i:nth-child(2){height:79%}.emblem i:nth-child(3){height:100%}
-.brand-divider{height:16px;width:1px;background:#424646;margin:0 1px}
-.brand-sub,.environment{font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.mast-links{display:flex;align-items:center;gap:16px}.directory-shortcut{font-size:14px;color:var(--fg);text-decoration:none}.directory-shortcut:hover{color:var(--gold)}
+#onlineRooms{margin-top:24px;padding:clamp(15px,2vw,24px);background:var(--panel);border:1px solid var(--line);scroll-margin-top:12px}
+.environment{font-size:12px;letter-spacing:.06em;color:var(--muted)}
 .environment{gap:8px}.environment i{display:block;width:6px;height:6px;border-radius:50%;background:#9fba91}
 main{padding-bottom:42px}.heading{justify-content:space-between;margin:clamp(24px,3vw,43px) 0 20px}
 h1,h2,p,dl,dd{margin:0}

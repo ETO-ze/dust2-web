@@ -59,7 +59,7 @@ async function ensureWorker(id){
   // A simultaneous request may have started the same worker while awaiting an eviction.
   if(workers.has(id))return workers.get(id).ready;
   const child=spawn(process.execPath,['server/private-map-server.js'],{cwd:repo,windowsHide:true,
-    env:{...process.env,PORT:'0',HOST:'127.0.0.1',DUSTII_GRID_VISION:'1',DUSTII_PRIVATE_MAP_ID:id,
+    env:{...process.env,PORT:'0',HOST:'127.0.0.1',DUSTII_GRID_VISION:'1',DUSTII_PERFORMANCE_DIRECTORY:'1',DUSTII_PRIVATE_MAP_ID:id,
       DUSTII_PRIVATE_MAP_DIRECTORY:path.join(root,id),DUSTII_PRIVATE_LIBRARY_URL:'/perf'},
     stdio:['ignore','pipe','inherit']});
   const w={child,port:0,connections:0,touched:Date.now(),retiring:false};
@@ -79,6 +79,42 @@ async function ensureWorker(id){
 }
 const reap=setInterval(()=>{for(const w of workers.values())if(w.port&&!w.connections&&Date.now()-w.touched>idleMs)retire(w);},15000);
 reap.unref();
+
+// Lobby visitors never acquire a map slot or renew the idle timeout. A burst of
+// readers shares one query until the map's connections change or the cache expires.
+function readWorkerRooms(worker) {
+  if (!worker.directoryRead || worker.directoryRead.expires <= Date.now()) {
+    const read = {expires: Infinity};
+    read.result = fetch('http://127.0.0.1:' + worker.port + '/room-directory.json', {signal:AbortSignal.timeout(1500)})
+      .then(response => {
+        if (!response.ok) throw Error('地图房间目录暂时不可用');
+        return response.json();
+      })
+      .finally(() => { read.expires = Date.now() + 250; });
+    worker.directoryRead = read;
+  }
+  return worker.directoryRead.result;
+}
+
+async function performanceRooms() {
+  const active = worker => worker?.port && worker.connections && !worker.retiring && !worker.child.killed && worker.child.exitCode === null && worker.child.signalCode === null;
+  const occupied = PERFORMANCE_MAPS.map(map => ({map, worker:workers.get(map.id)})).filter(({worker}) => active(worker));
+  const results = await Promise.allSettled(occupied.map(({worker}) => readWorkerRooms(worker)));
+  const rooms = [];
+  let unavailable = 0, responding = 0;
+  for (const [index, {map, worker}] of occupied.entries()) {
+    if (!active(worker) || workers.get(map.id) !== worker) continue;
+    if (results[index].status === 'rejected') { unavailable++; continue; }
+    responding++;
+    for (const row of results[index].value) {
+      rooms.push({...row, id:map.id+':'+row.code, mapId:map.id, mapName:map.name, mapNameZh:map.nameZh, qualityAvailable:qualityPacks.has(map.id)});
+    }
+  }
+  if (unavailable && !responding) throw Error('地图房间目录暂时不可用');
+  rooms.sort((a,b) => Number(b.joinable)-Number(a.joinable) || b.humans-a.humans || a.id.localeCompare(b.id));
+  return {rooms, ...(unavailable ? {partial:true} : {})};
+}
+
 // Locally packaged skin revisions can precede publication to the shared CDN.
 const localSkinPaths=packagedSkinAssets(SKINS).filter(asset=>{
   const file=[dist,publicDir].map(base=>path.join(base,asset.path)).find(name=>fs.existsSync(name));
@@ -115,6 +151,7 @@ const server=http.createServer(async(req,res)=>{
   let p=url.pathname;
   if(p==='/perf'||p==='/'){res.writeHead(302,{Location:'/perf/'}).end();return;}
   if(p==='/perf/'){file(req,res,path.join(reviewAssets,'mode-ui/index.html'));return;}
+  if(p==='/perf/rooms.json'){json(res,200,await performanceRooms());return;}
   if(p==='/perf/graphics.json'){
     json(res,200,{maps:PERFORMANCE_MAPS.filter(({id})=>maps.has(id)).map(({id})=>({
       id,performanceURL:'/perf/play/'+id+'/',qualityURL:qualityPacks.has(id)?'/perf/quality/play/'+id+'/':null,
@@ -200,8 +237,8 @@ server.on('upgrade',async(req,socket,head)=>{
   if(!match||!maps.has(match[1])||(req.url.startsWith('/perf/quality/')&&!qualityPacks.has(match[1]))){socket.destroy();return;}
   try{
     const w=await ensureWorker(match[1]);if(socket.destroyed)return;
-    w.connections++;w.touched=Date.now();const upstream=net.connect(w.port,'127.0.0.1');
-    socket.once('close',()=>{w.connections--;w.touched=Date.now();upstream.destroy();});
+    w.connections++;w.touched=Date.now();w.directoryRead=null;const upstream=net.connect(w.port,'127.0.0.1');
+    socket.once('close',()=>{w.connections--;w.touched=Date.now();w.directoryRead=null;upstream.destroy();});
     upstream.on('error',()=>socket.destroy());upstream.on('close',()=>socket.destroy());socket.on('error',()=>upstream.destroy());
     upstream.once('connect',()=>{
       const headers=['GET /ws HTTP/1.1'];
